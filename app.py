@@ -1050,7 +1050,8 @@ def training_page():
     return page("Training", body)
 
 
-PICK_PRIZE = 2_500   # the handicapper's game: a correct stake pick earns this flat prize, small next to any purse (set by the chalk measurement)
+PICK_PRIZE = 1_000   # the handicapper's game: a correct stake pick earns this flat prize, small next to any purse. Measured 2026-10-29:
+                     # 89 stakes a season; always-the-favorite hits 16-30%, so chalk banks about $20-27k a season at this prize
 
 
 def stakes_tonight():
