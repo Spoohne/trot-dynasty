@@ -27,6 +27,7 @@ AI_RATE = 1.0            # what an AI barn will pay for a cover, as a share of t
 REGISTRY = 0.15          # the breed registry's cut of every cover sold: a sink on stud money
 COMMISSION = 0.05        # auction and private sale
 RESERVE = 25_000         # an AI barn keeps this much before spending
+AI_CAP = 2_500_000       # what a computer barn banks: each year half of anything above it goes back into the farm (the sink)
 BARN_MAX = 12            # AI stalls
 BARN_FULL = 10           # above this an AI barn sells its weakest, so there are always buyers
 # A player's barn grows by buying the next level: the sink that purse money is for.
@@ -731,10 +732,18 @@ def new_year(horses, ai):
     bookings.clear()                                                          # the books reopen; this season's foals are already in the nursery
     settle(horses)
     auction(grads, ai)
+    ai_overhead(ai)
     for hid, (h, _) in list(listings.items()):                # a racer listed last week that retired at the year turn:
         if hid in racing and h.retired:                       # its asking price was a racer's; take it down
             listings.pop(hid); auctions.pop(hid, None)
     return horses
+
+
+def ai_overhead(ai):
+    """The year's improvements: a flush computer barn spends half of what it holds over AI_CAP, so purses don't pile up forever."""
+    for o in ai:
+        if cash.get(o, 0) > AI_CAP:
+            book(o, "barn", -round((cash[o] - AI_CAP) / 2))
 
 
 def day(d, horses, ai, log):
@@ -872,6 +881,8 @@ if __name__ == "__main__":
     growth = [b - a for a, b in zip(totals, totals[1:])]
     print(f"circuit cash by year: {[f'${t / 1e6:.1f}M' for t in totals]}  growth/yr {[f'${g / 1e6:.1f}M' for g in growth]}")
     assert growth[2] < 1.5 * growth[0], "no money printer: cash must not grow faster each year"
+    cash[0] = AI_CAP + 1_000_000; ai_overhead({0})
+    assert cash[0] == AI_CAP + 500_000 and ledger[0]["barn"] <= -500_000, "a flush barn spends half its excess at the year tick"
 
     racing = [ledger[o].get("purses", 0) + ledger[o].get("costs", 0) for o in ai]
     purses = [ledger[o].get("purses", 0) for o in ai]
