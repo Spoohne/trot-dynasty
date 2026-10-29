@@ -93,10 +93,11 @@
 @keyframes wcflip{0%{transform:scaleX(1) rotate(-1.2deg)}45%{transform:scaleX(.02) rotate(-1.2deg)}55%{transform:scaleX(.02) rotate(-1.2deg)}
   80%{transform:scaleX(1.05) rotate(-1.2deg)}100%{transform:scaleX(1) rotate(-1.2deg)}}
 @keyframes wcback{0%{opacity:1}50%{opacity:0}100%{opacity:0}}
-#stamp{position:absolute;bottom:10px;right:18px;display:none;padding:8px 14px;border:4px double #c8202a;border-radius:6px;color:#c8202a;background:rgba(244,239,227,.18);
+#wcp{position:relative;display:table;margin:0 auto;container-type:inline-size}   /* shrink-wraps the photo: the stamp sits in the sky to the right of the horse */
+#stamp{position:absolute;top:12%;right:4%;display:none;padding:.6em 1em;border:4px double #c8202a;border-radius:6px;color:#c8202a;background:rgba(244,239,227,.18);
   font-weight:800;text-transform:uppercase;letter-spacing:.08em;text-align:center;line-height:1.05;transform:rotate(-11deg);opacity:.92;
   text-shadow:0 0 1px #c8202a;-webkit-mask:repeating-linear-gradient(35deg,#000 0 3px,#000c 3px 4px)}
-#stamp b{display:block;font-size:20px}#stamp span{font-size:26px;letter-spacing:.04em}
+#stamp b{display:block;font-size:min(20px,3.6cqw)}#stamp span{font-size:min(26px,4.6cqw);letter-spacing:.04em}   /* scales with the photo */
 #stamp.on{display:block;animation:slam .35s cubic-bezier(.2,1.6,.4,1) .9s both}
 @keyframes slam{from{transform:rotate(-11deg) scale(2.6);opacity:0}to{transform:rotate(-11deg) scale(1);opacity:.92}}
 #wcc{display:block;width:auto;max-width:100%;height:auto;max-height:44cqh;margin:0 auto;image-rendering:pixelated;border:2px solid #222}
@@ -143,7 +144,7 @@
   <div class="bot"><div id="cap"></div><div class="strip"><div id="ord"></div><div id="fr"></div></div><div id="rest"></div></div>
   <div id="field"><div class="fbrand"><img src="/mock/brand/logo_text.png" alt="Trot Dynasty"></div><div class="fh"><span>THE FIELD</span><span id="fhs"></span></div><div id="frows"></div></div>
   <div id="intro"><div class="ib"><div class="ik" id="ik"></div><div class="it" id="it"></div><div class="is" id="is"></div><div class="skip">tap to skip</div></div><div class="iw" id="iw"></div></div>
-  <div id="wc"><div id="wcmq"></div><div class="frame"><canvas id="wcc" width="640" height="300"></canvas><div id="stamp"><b>New Course Record!</b><span id="stt"></span></div>
+  <div id="wc"><div id="wcmq"></div><div class="frame"><div id="wcp"><canvas id="wcc" width="640" height="300"></canvas><div id="stamp"><b>New Course Record!</b><span id="stt"></span></div></div>
     <div class="wcb">
       <div class="wct"><img class="wcem" id="wcem" alt="" hidden><div class="wck">WINNER&#39;S CIRCLE</div><div class="wcn" id="wcn"></div><div class="wcm" id="wcm"></div><div class="wco" id="wco">Owner &middot; <b>Your Barn Name</b> &nbsp;&middot;&nbsp; Trainer &middot; <b>Trainer Name</b> &nbsp;&middot;&nbsp; Driver &middot; <b>Driver Name</b></div></div></div></div><a id="wcx" href="/" onclick="if(history.length>1){history.back();return false}" style="padding:10px 28px;border-radius:8px;background:#e8a33a;color:#111;font:700 16px system-ui;text-decoration:none">Done</a></div>
   <div id="tv"><div class="tvp"><div class="tvh"><b>OFFICIAL</b><span id="tvt"></span></div><div class="tvb"><div class="tvo"><table id="tvo"></table></div><div class="tvm"><table id="tvm"></table></div></div>
