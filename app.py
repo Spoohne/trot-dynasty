@@ -255,13 +255,15 @@ def load(path=None):
             if pl.get("emblem") or pl.get("owned"):
                 pl["emblem_lic"] = True
         G["silks_mig"] = True
-    for h in G["horses"]:                                                     # entries made on the old claiming ladder move to the new one
-        o = getattr(h, "order", None)
-        if isinstance(o, tuple) and o[0] == "claim" and o[1] in c.OLD_TAGS:
-            h.order = ("claim", c.OLD_TAGS[o[1]])
-        elif isinstance(o, tuple) and o[0] == "enter" and o[3] in c.OLD_TAGS:
-            t = c.OLD_TAGS[o[3]]
-            h.order = ("enter", c.clm_name(t), o[2], t) + tuple(o[4:])
+    if not G.get("tags_mig"):                                                 # once: entries made on the old claiming ladder move to the new one
+        for h in G["horses"]:                                                 # (the old tags are reused up the new ladder, so never twice)
+            o = getattr(h, "order", None)
+            if isinstance(o, tuple) and o[0] == "claim" and o[1] in c.OLD_TAGS:
+                h.order = ("claim", c.OLD_TAGS[o[1]])
+            elif isinstance(o, tuple) and o[0] == "enter" and o[3] in c.OLD_TAGS:
+                t = c.OLD_TAGS[o[3]]
+                h.order = ("enter", c.clm_name(t), o[2], t) + tuple(o[4:])
+        G["tags_mig"] = True
     e.AI_TRADES[0] = False                                                    # the live circuit: only players claim and buy at auction                                         # upkeep not yet covered, saved with the world
     for k, (h, price) in list(e.listings.items()):                            # listings from before auctions open as auctions now
         if k not in e.auctions:

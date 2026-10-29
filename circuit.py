@@ -57,7 +57,6 @@ def clm_name(tag):
 
 def clm_tag(tag):
     """The ladder's tag nearest a given one (an order from an older ladder still lands on a real race)."""
-    tag = OLD_TAGS.get(tag, tag)                              # the old ladder's tags map to the same level on this one
     return min((t for t, _, _ in CLAIMERS), key=lambda t: abs(t - tag))
 def _rated(h):
     return on_aged_scale(h.est, age_group(h))
