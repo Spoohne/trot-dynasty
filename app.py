@@ -200,12 +200,14 @@ def new_game(years=HISTORY, progress=None):
 
 
 def save():
-    with open(SAVE, "wb") as f:
+    with open(SAVE + ".tmp", "wb") as f:                                      # whole file or nothing: a crash mid-write never leaves a torn save
         pickle.dump({"G": G, "cash": e.cash, "ledger": e.ledger, "settled": e.settled, "listings": e.listings, "auctions": e.auctions,
                      "bookings": e.bookings, "scouted": e.scouted, "nursery": e.nursery, "level": e.level, "groomed": e.groomed, "human": set(c.HUMAN), "roster": c.ROSTER,
                      "house": c.HOUSE, "barn_trainer": c.BARN_TRAINER, "class": c.CLASS_RATING,
                      "groups": c.GROUP_STATS, "calendar": sk.CALENDAR, "claims": c.CLAIMS, "champions": sk.CHAMPIONS, "hall": sk.HALL, "epoch": c.EPOCH[0], "rolled": e.ROLLED[0], "ratings": sk.RATINGS, "stories": c.STORIES, "records": c.RECORDS,
                      "card": c.CARD, "drivers": c.DRIVER_STATS, "rng": sim.rng.getstate()}, f)
+        f.flush(); os.fsync(f.fileno())
+    os.replace(SAVE + ".tmp", SAVE)
 
 
 def _renamed(x, old, new, seen=None):
