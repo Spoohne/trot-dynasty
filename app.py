@@ -4409,7 +4409,7 @@ class H(BaseHTTPRequestHandler):
                 e.settled[h.id] = (0, 0)                                # a clean ledger: nothing of the original's purses or bills carries over
                 h.last, h.best, h.order, h.ship, h.job, h.wk = None, 999, None, None, None, None
                 h.owner, h.breeder, h.gone = o, None, "a gift from the circuit"
-                h.freshness = 100
+                h.freshness, h.ageless = 100, False                    # a copy ages like any horse; only the original is the owner's ageless one (load() reclaims those)
                 G["horses"].append(h); e.barn_size[o] = e.barn_size.get(o, 0) + 1; c.trainer_of(h); save()
                 return self.send(admin_page(f"{h.name} ({h.age}yo {sex_word(h)}, {tier_label(h)}), a copy of {ref.name}, now races for {G['players'][o].get('user')}."))
             if like:
@@ -4420,13 +4420,13 @@ class H(BaseHTTPRequestHandler):
                 h = min(pool, key=lambda x: (round(abs(x.est - ref.est)), c.age_group(x) != c.age_group(ref), -x.starts), default=None)   # nearest rating, same age if it can
             else:
                 h = find_horse(name)
-                if h and h.owner in c.HUMAN:
+                if h and h.owner in c.HUMAN and h.owner != ME:
                     return self.send(admin_page(f"{h.name} belongs to a player; the board is for that."))
             if not h or h.retired or h in e.nursery:
                 return self.send(admin_page("No racer to give."))
             was = h.owner
             e.listings.pop(h.id, None); e.auctions.pop(h.id, None); c.CLAIMS.pop(h.id, None)
-            h.owner, h.order, h.ship, h.gone = o, None, None, "a gift from the circuit"
+            h.owner, h.order, h.ship, h.gone, h.ageless = o, None, None, "a gift from the circuit", False
             e.barn_size[o] = e.barn_size.get(o, 0) + 1; e.barn_size[was] = max(0, e.barn_size.get(was, 1) - 1)
             c.trainer_of(h)
             save()
