@@ -227,7 +227,8 @@ def run_today(day, horses):
             c.record_result(h, s.name, "mile", place, s.purse, st.mean(h.est for h in field), len(field))
             h.results[-1]["race_id"] = rid
         import story as _story
-        c.STORIES[rid] = dict(_story.build(order, "mile", passing=True), id=rid, name=s.name, purse=s.purse, day=day, venue="Harness Park", passing=True)   # stakes nights are the flagship's
+        c.STORIES[rid] = dict(_story.build(order, "mile", passing=True), id=rid, name=s.name, purse=s.purse, day=day, venue="Harness Park", passing=True,
+                              sponsor=getattr(s, "sponsor", None))   # stakes nights are the flagship's; a sponsored stake carries its barn into the replay
         c.drove(order, c.STORIES[rid]["horses"], c.year_of(day))
         s.result = order
         ran.update(id(h) for h in field)
