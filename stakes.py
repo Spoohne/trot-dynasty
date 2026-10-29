@@ -111,7 +111,13 @@ class Stake:
     def eligible(self, h):
         if self.kind == "final":                              # the Crown crowns a colt and a filly in every age: boys and girls apart
             return c.age_group(h) == self.group and h.sex == ("f" if self.sex == "F&M" else "m") and not h.retired
-        return c.age_group(h) == self.group and (self.sex == "open" or h.sex == "f") and not h.retired
+        if c.age_group(h) != self.group or h.retired:
+            return False
+        if self.sex == "F&M":
+            return h.sex == "f"
+        # an open stake takes colts and fillies, unless the fillies have their own race in this division that week:
+        # then it's the colts', so a filly never has two stakes to choose between
+        return h.sex == "m" or not any(x.sex == "F&M" and x.week == self.week and x.group == self.group and x is not self for x in CALENDAR)
 
     def fee(self, day):
         if self.kind == "final":                              # the Crown is by invitation: nobody nominates
