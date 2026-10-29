@@ -340,7 +340,7 @@ buildPoles();
 let rails = [];
 function buildRails() {
   rails.forEach(r => scene.remove(r)); rails = [];
-  const white = new THREE.MeshBasicMaterial({ color: "#e8eef4" }), grey = new THREE.MeshBasicMaterial({ color: "#aeb8c2" });
+  const tl = RACE.tlook, white = new THREE.MeshBasicMaterial({ color: tl ? tl.a : "#e8eef4" }), grey = new THREE.MeshBasicMaterial({ color: tl ? tl.p : "#aeb8c2" });   // the rail in the track's accent, its posts in the primary
   for (const o of [-.6, TRACK_W + .6]) {
     const io = s => o < 0 ? o - RACE.inset(s) : o;                         // the inside rail swings in for the passing lane
     const pts = []; for (let s = 0; s <= RACE.L + 1; s += 10) pts.push(V(s, io(s), 3.2));
@@ -357,11 +357,29 @@ buildRails();
 // thrown on the ground. Everything here is in track feet, so it fits whatever the oval's size.
 let infield = [], towers = [];
 const cardTex = {};
-const card = (src, wFt, hook) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, alphaTest: .5, side: THREE.DoubleSide }));
-  (cardTex[src] = cardTex[src] || new Promise(r => new THREE.TextureLoader().load(src, t => { sharp(t); r(t); }))).then(t => {
+const card = (src, wFt, hook, tint = null) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, alphaTest: .5, side: THREE.DoubleSide }));
+  (cardTex[src] = cardTex[src] || new Promise(r => new THREE.TextureLoader().load(src, t => { sharp(t); r(t); }))).then(t0 => {
+    const t = tint ? sharp(new THREE.CanvasTexture(tint(t0.image))) : t0;   // the track's paint on its boards and stands
     m.material.map = t; m.material.needsUpdate = true; const h = wFt * t.image.height / t.image.width;
     m.geometry = new THREE.PlaneGeometry(wFt, h).translate(0, h / 2, 0); hook && hook(m, h); });
   return m; };
+// the track's paint: a drawing's saturated blues move to the track's primary color and (on the boards) its amber
+// lamps to the accent, keeping each pixel's lightness, so the pixel art stays itself in the track's colors
+const hsl = (r, g, b) => { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; if (mx === mn) return [0, 0, l];
+  const d = mx - mn, sat = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); let h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [h * 60, sat, l]; };
+const rgbOf = (h, sat, l) => { const f = n => { const k = (n + h / 30) % 12, a = sat * Math.min(l, 1 - l); return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); }; return [f(0), f(8), f(4)]; };
+function trackPaint(lamps) {
+  const tl = RACE.tlook; if (!tl) return null;
+  const hex = x => [1, 3, 5].map(k => parseInt(x.slice(k, k + 2), 16)), P = hsl(...hex(tl.p)), A = hsl(...hex(tl.a));
+  return img => { const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
+    for (let q = 0; q < p.length; q += 4) { if (!p[q + 3]) continue; const [h, sat, l] = hsl(p[q], p[q + 1], p[q + 2]);
+      let to = null;
+      if (sat > .3 && h >= 195 && h <= 255) to = P;                                         // the blues: frames, flags, trim
+      else if (lamps && sat > .5 && h >= 25 && h <= 55 && l > .35) to = A;                   // the amber lamps on a board
+      if (to) { const [r, gg, b] = rgbOf(to[0], Math.min(1, to[1] * .9 + sat * .1), l); p[q] = r; p[q + 1] = gg; p[q + 2] = b; } }
+    g.putImageData(d, 0, 0); return c; };
+}
 // a fixed object seen from anywhere: two copies of the drawing crossed at right angles, the way sprite games do trees
 const cross = (src, wFt) => { const g = new THREE.Group(); const a = card(src, wFt), b = card(src, wFt); b.rotation.y = Math.PI / 2; g.add(a, b); return g; };
 const poolTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d"), r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
@@ -380,7 +398,7 @@ function buildInfield() {
   add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: lawn }))).position.y = -.05;
   const { S, R } = RACE;
   // tote board in the middle, facing the grandstand (+z is the homestretch side)
-  add(card(P("/mock/pixel/infield/tote.png"), 130)).position.set(0, 0, R - 190);
+  add(card(P("/mock/pixel/infield/tote.png"), 130, null, trackPaint(true))).position.set(0, 0, R - 190);
   // sponsor boards along both straights, 28 ft inside the rail, facing out to the cameras
   const signs = [0, 1, 2, 3].map(i => P(`/mock/pixel/infield/sign${i}.png`));
   for (let k = 0, x = -S / 2 + 60; x < S / 2 - 40; x += 190, k++) {
@@ -396,7 +414,7 @@ function buildInfield() {
     add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, transparent: true, alphaTest: .5 }))); }
   // the long odds board above the hedge on each straight, on dark posts, facing the track
   for (const side of [1, -1]) {
-    const b = add(card(P("/mock/pixel/infield/odds.png"), 85, (m, h) => m.position.y = 12)); b.position.set(0, 0, side * (R - 42)); if (side < 0) b.rotation.y = Math.PI;
+    const b = add(card(P("/mock/pixel/infield/odds.png"), 85, (m, h) => m.position.y = 12, trackPaint(true))); b.position.set(0, 0, side * (R - 42)); if (side < 0) b.rotation.y = Math.PI;
     for (const x of [-36, 36]) { const post = add(new THREE.Mesh(new THREE.BoxGeometry(1, 12, 1).translate(0, 6, 0), new THREE.MeshBasicMaterial({ color: "#1b1f26" }))); post.position.set(x, 0, side * (R - 42.6)); }
   }
   // the middle: a lake with its fountain and the winner's-circle gazebo by the tote board; open lawn otherwise,
@@ -447,7 +465,7 @@ function buildVenue() {
     const box = new THREE.Mesh(g, [new THREE.MeshBasicMaterial({ map: side }), new THREE.MeshBasicMaterial({ color: "#232c3c" })]);   // ends with windows; roof, back and floor plain
     box.position.set(front.position.x, 0, front.position.z + 1); scene.add(box); venue.push(box);
   };
-  const stand = card(P("/mock/pixel/venue/stand_grand.png"), 480, (m, h) => buildStand(m, h)), club = card(P("/mock/pixel/venue/club.png"), 210, (m, h) => buildClub(m, h));
+  const stand = card(P("/mock/pixel/venue/stand_grand.png"), 480, (m, h) => buildStand(m, h), trackPaint(false)), club = card(P("/mock/pixel/venue/club.png"), 210, (m, h) => buildClub(m, h));
   const buildStand = (m, h) => body(stand, 480, .74, 190)(m, h), buildClub = (m, h) => body(club, 210, .8, 110)(m, h);
   const sx = RACE.pt(RACE.SF - 120, 0)[0], cx = RACE.pt(RACE.SF - 470, 0)[0], z = RACE.R + TRACK_W + 84;   // 170 ft out: just behind the broadcast camera, which sits 150 ft out on the apron
   stand.position.set(sx, 0, z); club.position.set(cx, 0, z + 25);
