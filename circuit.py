@@ -249,7 +249,8 @@ TIME_FIT = {"mile": 784.5, "half": 780.9 + 6.2 * HALF_SLOWER}, -6.2, 13.5   # ra
                                                                              # internal seconds (h.raw_time); the clock is for show
 DROP_MARGIN = 0          # owner drops to a claimer once est is under the class it would race in
 YEAR = 52                # game weeks (real days) per game year
-SHAPE_CAP = 1.0          # how far training can push one trait above (or below) the genetic ceiling: with DEV_W, ~half a length at the gate
+SHAPE_CAP = 1.0          # how far training can push one trait above (or below) the genetic ceiling. With DEV_W, two seasons of the
+                         # owner's day sheet measure ~+0.8 rating, half a length, over the stable's jogging (train_edge.py)
 SHAPED = ["early_speed", "late_speed", "stamina", "gait"]   # durability isn't trained into a horse
 FOAL_DISCOUNT = 15       # shortcut: a 2YO rates ~15 under its parents' public est; upgrade when the public sees maturity
 
@@ -343,8 +344,8 @@ def drain(h):
     return max(0.6, min(1.4, 1 - 0.05 * h.potential["durability"]))
 
 
-DEV_W = 0.15             # how much of the gap between developed and ceiling shows at the gate: a green 2YO (2 under
-                         # everywhere) is ~2 rating, a length and a half, short of its ceiling until work and racing close it
+DEV_W = 0.12             # how much of the gap between developed and ceiling shows at the gate: a green 2YO (2 under
+                         # everywhere) is ~6 rating, four lengths, short of its ceiling until work and racing close it
 JOBS = {   # the owner's day sheet for a youngster: development step, shaping step, freshness cost. "stable" is the idle week
     "stable": (0.14, 0.0, 4), "jog": (0.2, 0.06, 4), "school": (0.2, 0.09, 8), "train": (0.5, 0.15, 15)}
 YOUNG = 3                # the day sheet covers yearlings through this age; older horses are kept sound, not made
@@ -1243,7 +1244,7 @@ if __name__ == "__main__":
     y.freshness = 70.0; green = rating_tonight(y)
     y.developed = {t: y.ceiling(t) for t in RACE_TRAITS}
     print(f"a green 2YO races {rating_tonight(y) - green:.1f} rating under its made self")
-    assert 1 < rating_tonight(y) - green < 4, "a green 2YO is a length or two short, not a class"
+    assert 4 < rating_tonight(y) - green < 10, "a green 2YO is a few lengths short, not a class"
     y.owner = 0; HUMAN.add(0); y.freshness = 70.0
     assert plan(y)[3] == "stable", "an idle youngster gets the stable's jog"
     y.job = (DAY[0], "school", "stamina")
