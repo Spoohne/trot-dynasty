@@ -475,6 +475,62 @@
    "file": "../mockups/pixel/venue/barn.png",
    "model": "gpt-image-2.5-flare",
    "note": "95 ft card, 2 rows of 9 outside the backstretch"
+  },
+  {
+   "name": "day_p4_grandstand",
+   "asset_id": "25b0c2a2-5691-4991-861e-e88012cd859e",
+   "file": "day/p4_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of pixel_backdrop: daylight; panorama_day.png segment 0"
+  },
+  {
+   "name": "day_p1_barns",
+   "asset_id": "45d69c7a-b185-41db-a8b9-b03d5ce6fe33",
+   "file": "day/p1_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of pano_p1_barns: daylight; segment 3"
+  },
+  {
+   "name": "day_p2_paddock",
+   "asset_id": "c914502e-a6e0-4d9d-ad40-183c9682fda5",
+   "file": "day/p2_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of pano_p2_paddock: daylight; segment 4"
+  },
+  {
+   "name": "day_p3_clubhouse",
+   "asset_id": "6cbab3f3-8db3-4840-a2af-7d71be516b35",
+   "file": "day/p3_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of pano_p3_clubhouse: daylight; segment 5"
+  },
+  {
+   "name": "day_p5_east",
+   "asset_id": "6f1c56af-2f97-4dfa-a49c-91a0390e040d",
+   "file": "day/p5_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of pano_p5_east: daylight; segment 1"
+  },
+  {
+   "name": "day_p6_service",
+   "asset_id": "25d4d4f1-1e99-425c-b70b-c6a91e6f13bb",
+   "file": "day/p6_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of pano_p6_service: daylight; segment 2"
+  },
+  {
+   "name": "day_track_strip",
+   "asset_id": "7b441e3a-7c6c-49fa-be0d-086859657c35",
+   "file": "day/track_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of top_track_strip: daylight; its colors transferred per row onto the night strip = top/track_tile_day.png (geometry kept)"
+  },
+  {
+   "name": "day_grass",
+   "asset_id": "43e4542b-0cdd-4d3c-bf65-808f4d5f1d9d",
+   "file": "day/grass_day_raw.png",
+   "model": "gpt-image-2.5-flare edit",
+   "note": "edit of infield_grass: daylight; colors transferred onto the night tile = infield/grass_day.png"
   }
  ]
 }

@@ -4202,6 +4202,7 @@ class H(BaseHTTPRequestHandler):
                 st_["pick"] = best[1] if best else ""
                 if (lk := vlook(st_.get("venue", "Harness Park"))):
                     st_["tlook"] = dict(zip(("p", "a", "font", "motto", "badge"), lk))
+                st_["matinee"] = bool(next((v.get("day") for v in c.VENUES if v["name"] == st_.get("venue")), False))   # a daytime track: the replay draws it in daylight
                 data = json.dumps(st_).encode()
             elif os.path.isfile(showcase):                                 # showcase races built by showcase.py
                 with open(showcase, "rb") as f:

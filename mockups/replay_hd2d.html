@@ -270,7 +270,10 @@ const ART = new URLSearchParams(location.search).get("art"), PAINTED = ART === "
 const ART_SETS = { wc: ["top/track_tile.png", "infield/grass.png", "infield/hedge_c.png", "infield/tree_a.png", "infield/tree_b.png", "venue/stand.png", "infield/tote.png", "fe12_cycle.png"],
   "3d": ["infield/tote.png", "infield/odds.png", "infield/hedge_c.png", "infield/gazebo.png", "infield/fountain_jet.png", "infield/tree_a.png", "infield/tree_b.png", "venue/stand_grand.png", "venue/club.png", "venue/barn.png"] };   // 3d: stylized-3D renders of the scenery; horses stay pixel
 const ART_SET = new Set(ART_SETS[ART] || []);
-const P = src => ART && ART_SET.has(src.slice("/mock/pixel/".length)) ? src.replace("/mock/pixel/", `/mock/art_${ART}/`) : src;
+// daylight: a matinee track swaps these three for their _day versions (same pixels, the day palette; see art/day)
+let DAY = new URLSearchParams(location.search).has("day");
+const DAY_SET = new Set(["top/track_tile.png", "infield/grass.png", "panorama.png"]);
+const P = src => { const k = src.slice("/mock/pixel/".length); if (DAY && DAY_SET.has(k)) return src.replace(/\.png$/, "_day.png"); return ART && ART_SET.has(k) ? src.replace("/mock/pixel/", `/mock/art_${ART}/`) : src; };
 const sharp = t => { if (PAINTED || (t.image && /\/art_/.test(t.image.src || ""))) return crisp(t); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; return t; };   // sprites: every pixel kept, near or far
 const crisp = t => { t.magFilter = PAINTED || (t.image && /\/art_/.test(t.image.src || "")) ? THREE.LinearFilter : THREE.NearestFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = ANISO; t.colorSpace = THREE.SRGBColorSpace; return t; };
 const tex = (src, fn) => new THREE.TextureLoader().load(src, t => { crisp(t); t.needsUpdate = true; fn && fn(t); });
@@ -290,7 +293,7 @@ function buildTrack() {
   const PPF = 5.42, TW = 1792, TH = 1152, CUT = 371, o0 = 0, o1 = (TH - CUT) / PPF, v0 = 1 - CUT / TH, tileFt = TW / PPF, step = 6;
   const pos = [], uv = [], idx = [], col = [], L = RACE.L;
   // lit from the grandstand: the outside of the dirt (nearest the stands and their lights) brighter, the inside rail dimmer
-  const LIT_IN = .72, LIT_OUT = 1.12;
+  const LIT_IN = DAY ? 1 : .72, LIT_OUT = DAY ? 1 : 1.12;                   // sunlight is even; the night track is lit from the stands
   for (let s = 0, k = 0; s <= L + .01; s += step, k++) {
     for (const [o, v] of [[o0 - RACE.inset(s), v0], [o1, 0]]) { const p = V(s, o); pos.push(p.x, 0, p.z); uv.push(s / tileFt, v); const c = o === o0 ? LIT_IN : LIT_OUT; col.push(c, c, c); }
     if (k) { const a = (k - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
@@ -299,14 +302,24 @@ function buildTrack() {
   g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx);
   const t = tex(P("/mock/pixel/top/track_tile.png"), t => { t.wrapS = THREE.RepeatWrapping; });
   if (track) scene.remove(track);
-  track = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, color: 0xb0b0b0, vertexColors: true })); scene.add(track);   // a touch darker for night
+  track = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, color: DAY ? 0xffffff : 0xb0b0b0, vertexColors: true })); scene.add(track);   // a touch darker for night
 }
 buildTrack();
 
 // ---- the sky: the SpriteCook night panorama on a huge cylinder round the track
+let skyMesh = null;
 { const R = 2400, t = tex(P("/mock/pixel/panorama.png")), h = 2 * Math.PI * R * 175 / 3072;
-  const sky = new THREE.Mesh(new THREE.CylinderGeometry(R, R, h, 96, 1, true), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide, fog: false }));
+  const sky = skyMesh = new THREE.Mesh(new THREE.CylinderGeometry(R, R, h, 96, 1, true), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide, fog: false }));
   sky.position.y = h / 2 - h * .5; scene.add(sky); }   // sunk so only its sky and treeline show: the real buildings stand by the track now
+
+// daylight on a matinee track: a blue haze instead of the night fog, the day sky strip and the day lawn
+function applyDay() {
+  if (!DAY) return;
+  scene.background = new THREE.Color("#9ec4ea"); scene.fog = new THREE.Fog("#b8d4ef", 1100, 3200);
+  skyMesh.material.map = tex(P("/mock/pixel/panorama.png")); skyMesh.material.needsUpdate = true;
+  ground.material.map = tex(P("/mock/pixel/infield/grass.png"), t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(200, 200); }); ground.material.color.set("#ffffff"); ground.material.needsUpdate = true;
+}
+applyDay();
 
 // ---- quarter poles and the wire, as real posts
 function post(d, col, hgt = 12) {
@@ -422,8 +435,8 @@ function buildVenue() {
   // back, and a roof, so from any angle but dead-on it reads as a building, not a cut-out. body: share of the drawing's
   // height the walls rise to (the rest is flags and towers), and how deep it runs back from the front
   const wallTex = (() => { const c = document.createElement("canvas"); c.width = 64; c.height = 32; const g = c.getContext("2d");   // concrete with floor lines and a sparse row of lit windows
-    g.fillStyle = "#1a2232"; g.fillRect(0, 0, 64, 32); g.fillStyle = "#121925"; g.fillRect(0, 14, 64, 3); g.fillRect(0, 30, 64, 2);
-    for (let x = 4; x < 64; x += 16) { g.fillStyle = x % 32 ? "#c8944a" : "#4a4030"; g.fillRect(x, 20, 6, 5); }
+    g.fillStyle = DAY ? "#8d9199" : "#1a2232"; g.fillRect(0, 0, 64, 32); g.fillStyle = DAY ? "#6f737b" : "#121925"; g.fillRect(0, 14, 64, 3); g.fillRect(0, 30, 64, 2);
+    for (let x = 4; x < 64; x += 16) { g.fillStyle = x % 32 ? (DAY ? "#a7b9cf" : "#c8944a") : "#4a4030"; g.fillRect(x, 20, 6, 5); }   // by day the windows just reflect sky
     return sharp(new THREE.CanvasTexture(c)); })();
   const body = (front, w, share, depth) => (m, h) => {
     // a stadium's section, not a block: full height at the front, the seating rake's underside sloping down to a
@@ -1044,7 +1057,7 @@ const bulb = () => { const b = document.createElement("i"), sz = 10 + Math.rando
 const ctl = RACE.controls(() => { froze = Math.max(...RACE.state(ctl.t).map(h => h.d)) >= 5280; camSnap = true; introT = INTRO; wireZoom = null; freezeLeft = 0; });   // a scrub lets go of the held wire shot
 let ready = false;
 Promise.all([cycleLoaded, topLoaded, angLoaded, driveLoaded]).then(async () => {
-  if (RACE_ID && await RACE.load(RACE_ID, MY_NAME)) { ctl.refit(); topBar(); buildTrack(); buildPoles(); buildRails(); buildInfield(); buildVenue(); buildSurroundings(); buildScreen(); }
+  if (RACE_ID && await RACE.load(RACE_ID, MY_NAME)) { if (RACE.MATINEE) DAY = true; applyDay(); ctl.refit(); topBar(); buildTrack(); buildPoles(); buildRails(); buildInfield(); buildVenue(); buildSurroundings(); buildScreen(); }
   buildRunners(); ready = true;
   { const fin = RACE.H.map(h => h[2][6]).sort((a, b) => a - b); PHOTO = fin.length > 1 && fin[1] - fin[0] < .5; }   // margins in lengths
   document.getElementById("fhs").textContent = RACE.title.split(" · ")[0];
@@ -1085,7 +1098,7 @@ function loop(now) {
     if (freezeLeft > 0) { freezeLeft -= dt; flash.style.opacity = Math.max(0, freezeLeft - (freeze0 - .7)); } else ctl.tick(dt * SLOW);
     pfEl.style.display = freezeLeft > 0 && PHOTO ? "flex" : "none"; if (freezeLeft <= 0) { pfEl.classList.remove("on"); pfShot = false; }
     if (ctl.play && freezeLeft <= 0 && ctl.t < RACE.END) gaitT += dt * SLOW;
-    if (ctl.play && ctl.t > RACE.FIN - SLOMO && ctl.t < RACE.FIN + 1.5 && Math.random() < dt * (freezeLeft > 0 ? 22 : 12)) bulb();   // the photographers' flashes across the infield
+    if (!DAY && ctl.play && ctl.t > RACE.FIN - SLOMO && ctl.t < RACE.FIN + 1.5 && Math.random() < dt * (freezeLeft > 0 ? 22 : 12)) bulb();   // flashes only show at night   // the photographers' flashes across the infield
     const t = ctl.t, st = RACE.state(t), ord = [...st].sort((a, b) => b.d - a.d);
     SND.update(t, ord[0].d);
     // the winner hits the wire: flash, hold the frame, then let them run on through it; the result card follows once they've eased up
