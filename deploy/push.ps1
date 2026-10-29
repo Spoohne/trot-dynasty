@@ -15,6 +15,17 @@ if ($WithSave) {
 $exclude = @("--exclude=./exports", "--exclude=./snapshots", "--exclude=./.claude", "--exclude=__pycache__",
              "--exclude=*.bak*", "--exclude=./save.before-*.pkl", "--exclude=./save.pkl")
 if ($WithSave) { $exclude = $exclude | Where-Object { $_ -ne "--exclude=./save.pkl" } }
+# every deploy is a commit, so what's on the server is always a commit you can go back to
+Push-Location $root
+try {
+    if (git status --porcelain) {
+        git add -A
+        git commit -q -m "Deploy $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+    }
+    $commit = git rev-parse --short HEAD
+    if (git remote) { git push -q 2>$null }
+} finally { Pop-Location }
+Write-Host "Deploying commit $commit"
 Write-Host "Packaging..."
 tar -czf $pkg -C $root @exclude .
 "{0:N0} MB" -f ((Get-Item $pkg).Length / 1MB) | Write-Host
