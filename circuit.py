@@ -17,27 +17,27 @@ from collections import Counter
 # --- condition sheet (USTA style). name, eligible, purse, class rating
 wins_in = lambda h, n: sum(h.recent[-n:])          # wins in the last n starts (public record)
 CONDITIONS = [
-    ("NW1", lambda h: h.wins < 1, 7_000, 45),                   # maidens: lifetime
-    ("NW2L6", lambda h: wins_in(h, 6) < 2, 9_000, 50),          # above that, recent form: a horse
-    ("NW$20k", lambda h: h.earnings < 20_000, 11_000, 55),      # that stops winning drops back
-    ("NW4L10", lambda h: wins_in(h, 10) < 4, 12_000, 58),
+    ("NW1", lambda h: h.wins < 1, 8_000, 45),                   # maidens: lifetime (purses measured 2026-10-29: the bottom
+    ("NW2L6", lambda h: wins_in(h, 6) < 2, 10_000, 50),         # rungs nudged so a maiden can about cover its board)
+    ("NW$20k", lambda h: h.earnings < 20_000, 11_000, 55),      # a horse that stops winning drops back
+    ("NW4L10", lambda h: wins_in(h, 10) < 4, 13_000, 58),
     ("NW$50k", lambda h: h.earnings < 50_000, 15_000, 63),
-    ("NW$6kL5", lambda h: sum(h.last5) < 6_000, 10_000, 55),
     ("NW2L5", lambda h: wins_in(h, 5) < 2, 17_000, 68),
     ("NW$15kL5", lambda h: sum(h.last5) < 15_000, 14_000, 63),
     # the top of each young age: a fast 2- or 3-year-old that has outgrown every condition races its own age here,
     # not the veterans in the all-ages Open (and an AI barn sends its young stars here before the Invitational)
     ("2YO Open", lambda h: age_group(h) == "2", 20_000, 72),
     ("3YO Open", lambda h: age_group(h) == "3", 25_000, 75),
-    ("Aged Open", lambda h: age_group(h) == "aged", 28_000, 77),   # the top of the older horses below the all-ages classes
     # above the Invitational: the same bar, split by what a horse has earned in its career (USTA "winners over")
     ("Winners Over $1M", lambda h: _rated(h) >= 88 and h.earnings >= 1_000_000, 100_000, 95),
     ("Winners Over $500k", lambda h: _rated(h) >= 88 and h.earnings >= 500_000, 80_000, 94),
     ("Winners Over $200k", lambda h: _rated(h) >= 88 and h.earnings >= 200_000, 60_000, 93),
     ("Invitational", lambda h: _rated(h) >= 88, 50_000, 92),     # the Free-for-All: the very best, by invitation
-    ("Preferred", lambda h: _rated(h) >= 82, 40_000, 86),
-    ("Open", lambda h: True, 30_000, 78),
+    ("Preferred", lambda h: _rated(h) >= 82, 40_000, 86),       # three rungs for an older horse between the top claimer
+    ("Open", lambda h: _rated(h) >= 76, 32_000, 78),            # and the Invitational (Aged Open used to catch them all)
+    ("Aged Open", lambda h: True, 30_000, 77),                  # the top of the ordinary older horses
 ]
+RETIRED_CLASS = {"NW$6kL5": "NW$20k"}                            # classes taken off the sheet: an old order for one lands here
 WINNERS_OVER = ("Winners Over $1M", "Winners Over $500k", "Winners Over $200k")
 WO_MIN = 5                                                       # fewer entered than this: no race, they go in the Invitational
 ALL_AGES = WINNERS_OVER + ("Invitational", "Preferred", "Open")   # the top classes take every age; the conditions below them are per age
@@ -46,8 +46,10 @@ MIXED = ("2YO Open", "3YO Open", "Aged Open")                   # colts and fill
 # for each age class (2YO, 3YO, Aged); colts and fillies race together.
 # Tags sit a little under what a horse at that level earns (measured 2026-10-28: the old $50k-$1M tags ran 3-4x that),
 # so a claim is a real bargain and dropping a good horse in is a real risk. The bottom tag stays above the house's $20k.
-CLAIMERS = [(25_000, 35, 8_000), (40_000, 50, 12_000), (60_000, 58, 18_000), (90_000, 64, 24_000),
-            (125_000, 70, 32_000), (200_000, 76, 45_000)]        # the top tag pays under the Invitational ($50k)
+# Purses sit just over the condition class at the same rating: the owner is paid a little for the risk, and a computer
+# barn (which takes the richer race half its weeks) puts real horses in. Winners Over horses never drop in.
+CLAIMERS = [(25_000, 35, 8_000), (40_000, 50, 11_000), (60_000, 58, 14_000), (90_000, 64, 18_000), (125_000, 70, 22_000),
+            (200_000, 76, 30_000), (300_000, 82, 42_000), (500_000, 88, 52_000), (1_000_000, 92, 62_000)]
 OLD_TAGS = {50_000: 25_000, 100_000: 40_000, 200_000: 60_000, 300_000: 90_000, 500_000: 125_000, 1_000_000: 200_000}
 
 
@@ -73,42 +75,43 @@ FIELD = {"mile": 10, "half": 8}   # a mile track gates ten; a half-mile's tight 
 # Entries are pooled by class and size as before, so fields stay full; each race is then run at a track whose
 # slate takes that class (the one an owner asked for, if it does). Every class is on some track's slate.
 # Purse levels average out about even between the mile and half-mile tracks, so neither size pays more per start.
-CLM_ALL = ("CLM25k", "CLM40k", "CLM60k", "CLM90k", "CLM125k", "CLM200k")
+CLM_ALL = tuple(clm_name(t) for t, _, _ in CLAIMERS)
+CLM_TOP = ("CLM300k", "CLM500k", "CLM1M")
 VENUES = [
     dict(id="hp", name="Harness Park", track="mile", purse=1.15, passing=True,
          about="The flagship mile: the Invitational, the Preferred and the big-money claimers. Stakes nights are run here.",
-         slate=WINNERS_OVER + ("Invitational", "Preferred", "Open", "3YO Open", "NW2L5", "NW$15kL5", "CLM90k", "CLM125k", "CLM200k")),
+         slate=WINNERS_OVER + ("Invitational", "Preferred", "Open", "3YO Open", "NW2L5", "NW$15kL5", "CLM90k", "CLM125k", "CLM200k") + CLM_TOP),
     dict(id="rd", name="Riverside Downs", track="mile", purse=0.95, passing=True,
          about="The proving ground: conditioned and mid-priced claiming stock on a fair, sweeping mile.",
-         slate=("Open", "2YO Open", "3YO Open", "NW1", "NW2L6", "NW$20k", "NW4L10", "NW$50k", "NW2L5", "NW$15kL5", "NW$6kL5",
+         slate=("Open", "2YO Open", "3YO Open", "NW1", "NW2L6", "NW$20k", "NW4L10", "NW$50k", "NW2L5", "NW$15kL5",
                 "CLM25k", "CLM40k", "CLM60k", "CLM90k")),
     dict(id="ml", name="Meadow Lane", track="half", purse=1.0, passing=True,
          about="The young horses' half-mile: maidens, early conditions and the 2- and 3-year-old Opens.",
          slate=("2YO Open", "3YO Open", "NW1", "NW2L6", "NW$20k", "NW$50k", "NW4L10")),
     dict(id="gh", name="Granite Hill", track="half", purse=1.1,
          about="Tight turns that favour a horse with gate speed: earnings conditions, the Open and the claiming middle.",
-         slate=("Open", "NW$20k", "NW$6kL5", "NW$15kL5", "NW2L6", "NW4L10", "NW2L5", "CLM25k", "CLM40k", "CLM60k",
-                "CLM90k", "CLM125k", "CLM200k", "Preferred", "Invitational") + WINNERS_OVER),
+         slate=("Open", "NW$20k", "NW$15kL5", "NW2L6", "NW4L10", "NW2L5", "CLM25k", "CLM40k", "CLM60k",
+                "CLM90k", "CLM125k", "CLM200k", "Preferred", "Invitational") + WINNERS_OVER + CLM_TOP),
     dict(id="bf", name="Bayview Fair", track="half", purse=0.9, fair=(30, 34),
          about="The county-fair half: maidens and cheap claimers most of the year; fair week (weeks 30-33) pays double.",
-         slate=("NW1", "NW2L6", "NW$6kL5", "CLM25k", "CLM40k", "2YO Open")),
+         slate=("NW1", "NW2L6", "CLM25k", "CLM40k", "2YO Open")),
 ]
 VENUES += [
     dict(id="cr", name="Capital Raceway", track="mile", purse=1.1, passing=True,
          about="The big-city mile under the lights: the Open, the Preferred and a strong claiming ladder.",
-         slate=("Preferred", "Open", "3YO Open", "NW2L5", "NW$15kL5", "NW$50k", "CLM60k", "CLM90k", "CLM125k", "CLM200k")),
+         slate=("Preferred", "Open", "3YO Open", "NW2L5", "NW$15kL5", "NW$50k", "CLM60k", "CLM90k", "CLM125k", "CLM200k") + CLM_TOP),
     dict(id="ls", name="Lakeshore Park", track="mile", purse=1.0, passing=True,
          about="A wide, forgiving mile by the water: where the young horses learn to finish.",
          slate=("2YO Open", "3YO Open", "NW1", "NW2L6", "NW$20k", "NW4L10", "NW$50k", "CLM40k", "CLM60k")),
     dict(id="ng", name="Northgate Raceway", track="mile", purse=0.95, passing=True,
          about="The working-class mile: conditioned veterans and the claiming middle, every week of the year.",
-         slate=("Open", "NW$6kL5", "NW$15kL5", "NW4L10", "NW2L6", "NW$20k", "CLM25k", "CLM40k", "CLM60k", "CLM90k")),
+         slate=("Open", "NW$15kL5", "NW4L10", "NW2L6", "NW$20k", "CLM25k", "CLM40k", "CLM60k", "CLM90k")),
     dict(id="sh", name="Sandhill Downs", track="half", purse=1.05, passing=True,
          about="A sandy half with a long stretch for a half-miler: the Opens and the upper claimers.",
          slate=("Open", "Preferred", "3YO Open", "2YO Open", "NW2L5", "NW$50k", "CLM60k", "CLM90k", "CLM125k")),
     dict(id="pr", name="Pine Ridge", track="half", purse=0.95,
          about="The hill-country half: maidens, early conditions and cheap claimers, with a loyal local crowd.",
-         slate=("NW1", "NW2L6", "NW$20k", "NW$6kL5", "NW4L10", "2YO Open", "CLM25k", "CLM40k")),
+         slate=("NW1", "NW2L6", "NW$20k", "NW4L10", "2YO Open", "CLM25k", "CLM40k")),
 ]
 # fair weeks around the circuit, three weeks each where purses double: Bayview's in late summer, four more through the year
 for _vid, _wk in (("gh", (12, 15)), ("sh", (20, 23)), ("pr", (40, 43)), ("ml", (45, 48))):

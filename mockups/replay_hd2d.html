@@ -692,10 +692,11 @@ function aimCamera(t, st, dt) {
   }
   else if (shot === "wide") {                                                  // high and well back off the turn, a wide lens: every horse in frame
     const c = RACE.camS(st), ss = st.map(h => h.s), span = Math.max(...ss) - Math.min(...ss);
-    p = V(c - 140, 230, 95); a = V(c - span * .3, mo, 0);   // clear of the buildings off the turn
+    const lead = Math.max(...ss);
+    p = V(c - 140, 230, 95); a = V(lead - span * .12, mo, 0);   // clear of the buildings off the turn, aimed at the front of the pack
     fov = Math.min(35, 19 + span / 50);                                           // a fifth tighter than first cut; widens as the field strings out
-    const u = Math.min(1, Math.max(0, (Math.max(...ss) - (RACE.SF + 5280 - 1700)) / 450));   // how far through the turn the leader is
-    fov *= 1 - .65 * u * (2 - u);                                                 // a push in across the turn: it starts at once and closes to about a third of the width by mid-turn
+    const u = Math.min(1, Math.max(0, (lead - (RACE.SF + 5280 - 1700)) / 450));   // how far through the turn the leader is
+    fov *= 1 - .45 * u * (2 - u);                                                 // a push in across the turn: it starts at once and closes to about half the width by mid-turn
   }
   else if (shot === "reverse") {                                               // the TV pan mirrored: same height, distance and lens, but from
     // above the infield looking out, so the field runs the other way across the frame with the crowd behind it
