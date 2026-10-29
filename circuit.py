@@ -944,19 +944,21 @@ TONIC_FEE = 0.02    # the vet's fee for giving a Post Time Tonic: a share of tha
 CARD = {}           # tonight's drawn program: {"day", "races": [{key, i, v, field (in post order), odds}]}
 
 
+RACING = ("race", "stay")
+
+
 def draw_card(day, horses, skip=()):
-    """The draw: every entry is carded, short fields are filled, splits are made and posts drawn, and the horses
-    sitting the week out rest or train. Done at the entry cutoff so the program can be read before post time;
-    race_day then runs exactly these fields. skip: horses held for tonight's stakes."""
+    """The draw for the card of `day`: every entry is carded, short fields are filled, splits are made and posts drawn.
+    Done right after the previous card runs, so the program is up all day; race_day then runs exactly these fields.
+    Each horse's plan for the night is kept on it (h.wk) and the week passes for the ones not racing once the card
+    has run (pass_week). An owner's entry is consumed here: the horse is on the program now. skip: horses held
+    for the night's stakes."""
     DAY[0] = day
     public_stats(horses)
     cards, plans = {}, {}
     for h in horses:
-        week_passes(h)
-        p = plans[h.id] = "stakes" if h.id in skip else plan(h)
-        if p != "stakes":                                     # a stake result from tonight stands
-            h.last = None
-        if p in ("race", "stay") or (isinstance(p, tuple) and p[0] in ("claim", "enter")):
+        p = plans[h.id] = h.wk = "stakes" if h.id in skip else plan(h)
+        if p in RACING or (isinstance(p, tuple) and p[0] in ("claim", "enter")):
             track = p[4] if isinstance(p, tuple) and p[0] == "enter" else \
                 getattr(h, "ship", None) or rng.choice(("mile", "half"))   # no preference: whichever is nearer
             cards.setdefault(entry(h) + (track,), []).append(h)
@@ -1015,19 +1017,8 @@ def draw_card(day, horses, skip=()):
         if others:
             cards[max(others, key=lambda k: len(cards[k]))].extend(cards.pop(key))
     for h in horses:
-        p = plans[h.id]
         if h.id in drafted:
-            continue
-        if p in ("rest", "sell"):                             # a listed horse sits while it's sold
-            rest(h)
-            h.last = "rested" if p == "rest" else "listed for sale"
-            if p == "rest" and h.owner in HUMAN and not getattr(h, "order", None) and h.freshness >= 50:
-                h.last = "not entered; rested"
-        elif isinstance(p, tuple) and p[0] == "train":
-            job = p[3] if len(p) > 3 else None
-            train(h, p[1], p[2], job)
-            h.last = {"stable": "jogged by the stable", "jog": f"jogged, {p[1].replace('_', ' ')}", "school": "schooled on its gait",
-                      "out": "turned out"}.get(job, f"trained {p[1].replace('_', ' ')}{' hard' if p[2] else ''}")
+            h.wk = "drafted"                                  # a filler: it races, no week's work for it
     races = []
     for key, entries in cards.items():
         group, sex, name, purse, tag, track = key
@@ -1041,10 +1032,42 @@ def draw_card(day, horses, skip=()):
             rng.shuffle(field)                               # the post-position draw
             for post, h in enumerate(field, 1):
                 h.post = post
+                if h.owner in HUMAN and getattr(h, "order", None) not in (None, "sell", "retire", "rest"):
+                    h.order = h.ship = None                  # the entry is used: it's on the program (tomorrow's is a new one)
             races.append({"key": key, "i": i, "v": v, "field": field, "odds": tote_odds(field), "drivers": assign_drivers(field)})
     CARD.clear()
     CARD.update(day=day, races=races)
     return CARD
+
+
+def pass_week(day, horses, raced):
+    """The week goes by for everyone once the card has run: freshness comes back, and the horses that didn't race
+    rest or do the week's work by the plan kept at the draw (h.wk), or the owner's day sheet for a youngster."""
+    DAY[0] = day
+    for h in horses:
+        week_passes(h)
+        if h.retired or h.id in raced or getattr(h, "order", None) == "stakes":
+            continue
+        p = getattr(h, "wk", None)
+        job = getattr(h, "job", None)                          # the day sheet beats the plan: this week's job for a youngster
+        if job and job[0] == day and h.age <= YOUNG:
+            p = "rest" if job[1] == "out" else ("train", "gait" if job[1] == "school" else job[2], job[1] == "train", job[1])
+        if p is None:
+            p = plan(h)                                        # a card drawn before plans were kept (the first night)
+        if p == "drafted" or p in RACING or isinstance(p, tuple) and p[0] in ("claim", "enter"):
+            continue                                           # it was carded and its race came apart: already rested
+        h.last = None
+        if p in ("rest", "sell"):                             # a listed horse sits while it's sold
+            rest(h)
+            h.last = "rested" if p == "rest" else "listed for sale"
+            if p == "rest" and h.owner in HUMAN and not getattr(h, "order", None) and h.freshness >= 50:
+                h.last = "not entered; rested"
+        elif isinstance(p, tuple) and p[0] == "train":
+            job = p[3] if len(p) > 3 else None
+            train(h, p[1], p[2], job)
+            h.last = {"stable": "jogged by the stable", "jog": f"jogged, {p[1].replace('_', ' ')}", "school": "schooled on its gait",
+                      "out": "turned out"}.get(job, f"trained {p[1].replace('_', ' ')}{' hard' if p[2] else ''}")
+        h.wk = None
 
 
 def race_day(day, horses, log):
@@ -1056,7 +1079,7 @@ def race_day(day, horses, log):
     alive = {id(h) for h in horses}
     races = CARD.get("races", [])
     CARD.clear()
-    taken_ids = {}
+    taken_ids, raced = {}, set()
     for r in races:
         (group, sex, name, purse, tag, track), i, v = r["key"], r["i"], r["v"]
         field = [h for h in r["field"] if id(h) in alive and not h.retired and getattr(h, "order", None) != "stakes"]
@@ -1082,6 +1105,7 @@ def race_day(day, horses, log):
             record_result(h, race_title(group, name), track, place, vpurse, field_est, len(field))
             h.results[-1]["race_id"] = rid
             h.results[-1]["venue"] = v["name"]
+            raced.add(h.id)
         STORIES[rid] = dict(_story.build(order, track, passing=v.get("passing", False)), id=rid, name=race_title(group, name), purse=vpurse, day=DAY[0], venue=v["name"],
                             passing=v.get("passing", False))
         STORIES[rid]["records"] = set_records(v["id"], STORIES[rid]["quarters"][1:])   # each track keeps its own records
@@ -1103,6 +1127,7 @@ def race_day(day, horses, log):
                 if claim_decision(h, CLASS_RATING[name]) and (to := claimant(h, tag)) != h.owner:
                     h.owner, h.claimed, h.order = to, h.claimed + 1, None
         log.append((group, sex, name, track, field, order[0]))
+    pass_week(day, horses, raced)                            # the card has run: the week goes by for everyone else
 
 
 # ---------------------------------------------------------------- self-checks

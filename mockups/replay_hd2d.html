@@ -116,7 +116,9 @@
 #pfc{display:block;width:min(70cqw,560px);height:auto;border:1px solid #222}.pfcap{font:700 11px 'Barlow Semi Condensed',sans-serif;letter-spacing:.3em;color:#222;text-align:center;padding-top:3px}
 .oddsup .lt2,.oddsup .lt,.oddsup .bot,.oddsup #nowPlaying{opacity:0;transition:opacity .4s}.lt2,.lt,.bot{transition:opacity .4s}
 #field .fbrand{display:flex;justify-content:center;padding:8px 0 6px;background:radial-gradient(ellipse at 50% 60%,#2a3f7a 0,#0b1530 70%);border-bottom:2px solid #e8a33a}#field .fbrand img{height:46px;width:auto;filter:drop-shadow(0 2px 4px #000a)}
-@container (max-height:460px){#field .fbrand{padding:4px 0 3px}#field .fbrand img{height:30px}}
+#field .fbrand.tk{gap:12px;align-items:center;background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 50%,#05070d));border-bottom:3px solid var(--ta)}
+#field .fbrand.tk .tkb{height:44px;width:44px;image-rendering:pixelated;filter:drop-shadow(0 2px 2px #000a)}#field .fbrand.tk .tkv{font-size:24px;line-height:1;color:#fff;text-shadow:2px 2px 0 #000}
+@container (max-height:460px){#field .fbrand{padding:4px 0 3px}#field .fbrand img{height:30px}#field .fbrand.tk .tkb{height:28px;width:28px}#field .fbrand.tk .tkv{font-size:18px}}
 @container (max-height:260px){#field .fbrand img{height:20px}}
 #intro .iw{margin:0 28px 70px auto;width:min(330px,42%);opacity:0;transition:opacity .8s;background:linear-gradient(#0d1730f0,#070b18f0);border:2px solid #2b3a55;border-top:3px solid var(--tote);box-shadow:0 8px 24px #000a;font-family:'Barlow Semi Condensed',sans-serif}#intro.on .iw{opacity:1}#intro .iw:empty{display:none}
 .iw .wh{color:var(--tote);font-weight:700;letter-spacing:.18em;font-size:12px;padding:7px 12px 5px}
@@ -790,7 +792,7 @@ function drawScreen(t, st) {
   // the screen in the middle
   const sx = 360, sw = 480;
   g.fillStyle = "#0b1730"; g.fillRect(sx, 52, sw, 150); g.strokeStyle = "#2b3a55"; g.lineWidth = 3; g.strokeRect(sx, 52, sw, 150);
-  if (t >= RACE.FIN) {
+  if (froze && t >= wireT + 1) {                                               // the board posts the winner a beat after the wire, never before the nose is on it
     const i = ord[0].i; g.textAlign = "center"; g.fillStyle = "#ffcf4a"; g.font = `bold 22px ${F}`; g.fillText("WINNER", sx + sw / 2, 84);
     g.fillStyle = RACE.PAD[i]; g.fillRect(sx + sw / 2 - 30, 94, 60, 46); g.fillStyle = RACE.DARK.includes(i + 1) ? "#111" : "#fff"; g.font = "bold 38px sans-serif"; g.fillText(i + 1, sx + sw / 2, 131);
     g.fillStyle = "#fff"; g.font = `bold 34px ${F}`; g.fillText(RACE.H[i][0].toUpperCase(), sx + sw / 2, 182);
@@ -1023,7 +1025,7 @@ function watchCard() {
 function result() {                                                                 // the official order and margins, the whole field
   const fin = RACE.H.map((h, i) => ({ i, b: h[2][6] })).sort((x, y) => x.b - y.b);
   document.getElementById("res").innerHTML = fin.map((h, k) => `<div class="rw"><b>${k + 1}</b>${RACE.pad(h.i)}<span>${RACE.H[h.i][0]}</span><span class="m">${k ? RACE.lengths(h.b - fin[k - 1].b) : RACE.fmt(RACE.FIN)}</span></div>`).join(""); }
-let froze = false, freezeLeft = 0, freeze0 = 1.8, wireZoom = null, pfShot = false;
+let froze = false, freezeLeft = 0, freeze0 = 1.8, wireZoom = null, pfShot = false, wireT = 0;
 let SLOW = 1; const SLOMO = 2.2;
 var SOUND_ON = false;   // all replay sound off until the sound effects are redone; the code is kept                                                  // seconds of race clock before the wire run in slow motion
 const bulbsEl = document.getElementById("bulbs"), pfEl = document.getElementById("pf");
@@ -1053,7 +1055,10 @@ Promise.all([cycleLoaded, topLoaded, angLoaded, driveLoaded]).then(async () => {
   document.getElementById("it").textContent = tp[0]; document.getElementById("is").textContent = tp.slice(1).join(" · ");
   const tl = RACE.tlook;                                                          // the track's own colors, type and badge on the title card
   if (tl) { const ib = document.querySelector("#intro .ib"); ib.classList.add("tk"); ib.style.setProperty("--tp", tl.p); ib.style.setProperty("--ta", tl.a);
-    ib.insertAdjacentHTML("afterbegin", `<img class="tkb" src="${tl.badge}" alt=""><div class="tkv" style="font-family:${tl.font}">${RACE.venue}</div><div class="tkm">${tl.motto}</div>`); }
+    ib.insertAdjacentHTML("afterbegin", `<img class="tkb" src="${tl.badge}" alt=""><div class="tkv" style="font-family:${tl.font}">${RACE.venue}</div><div class="tkm">${tl.motto}</div>`);
+    const fb = document.querySelector("#field .fbrand");                       // the field board wears the track's own header, not the game's
+    fb.classList.add("tk"); fb.style.setProperty("--tp", tl.p); fb.style.setProperty("--ta", tl.a);
+    fb.innerHTML = `<img class="tkb" src="${tl.badge}" alt=""><span class="tkv" style="font-family:${tl.font}">${RACE.venue}</span>`; }
   watchCard();
 });
 let last = performance.now(), ui = 0;
@@ -1084,7 +1089,7 @@ function loop(now) {
     const t = ctl.t, st = RACE.state(t), ord = [...st].sort((a, b) => b.d - a.d);
     SND.update(t, ord[0].d);
     // the winner hits the wire: flash, hold the frame, then let them run on through it; the result card follows once they've eased up
-    if (!froze && (ord[0].d >= 5280 || t >= RACE.FIN + 1)) { froze = true; freezeLeft = freeze0 = PHOTO ? 4.2 : 1.8; result(ord); }   // the instant the leader's nose is on the wire
+    if (!froze && (ord[0].d >= 5280 || t >= RACE.FIN + 1)) { froze = true; wireT = t; freezeLeft = freeze0 = PHOTO ? 4.2 : 1.8; result(ord); }   // the instant the leader's nose is on the wire
     const circle = t >= RACE.FIN + 7 && freezeLeft <= 0;                         // after the official result, the winner's circle photo
     if (circle && !wcDrawn) drawWinnersCircle();
     if (circle && wc.style.display !== "flex") { wc.classList.remove("flip"); void wc.offsetWidth; wc.classList.add("flip"); }   // turned over each time it appears

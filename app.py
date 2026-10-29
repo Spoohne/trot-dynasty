@@ -437,14 +437,13 @@ def tick():
             h.order = h.ship = None; h.drawn = False
         if getattr(h, "order", None) == "stakes":
             h.order = None
-        if h.owner in c.HUMAN:
-            h.order = h.ship = None
     G["day"] += 1; e.TODAY[0] = G["day"]
     if G["day"] % c.YEAR == 0:                                # the season's last night is run: roll the year in now, so week 1
         sk.year_tick(G["horses"], G["ai"], G["day"])          # opens with everyone a year older and the 2-year-olds in the barn
         G["horses"] = e.new_year(G["horses"], G["ai"])
         e.ROLLED[0] = G["day"]                                # (the week-1 night itself won't roll it a second time)
     c.draw_claimers(G["horses"], G["ai"])                     # next week's claiming program goes up now
+    draw_program()                                            # and tomorrow's card is drawn and posted: a whole day to read it
     events = {o: [] for o in c.HUMAN}
     alive = {h.id for h in G["horses"]}
     for hid, (_, o) in before.items():
@@ -850,17 +849,23 @@ def last_slot():
 
 
 def entries_closed():
-    """7:55 to 8 PM: the program is final while players read it."""
-    n = ny_now()
-    return n.hour == 19 and n.minute >= 55
+    """Entries never close now: an entry made today is drawn into tomorrow's card at 8 PM, when tonight's has run."""
+    return False
 
 
 def draw_program():
-    """The 7:55 draw: tonight's fields, posts and morning lines, held until post time. Tonight's stakes horses stay out."""
+    """The draw, right after a card runs: tomorrow's fields, posts and morning lines, up all day. Its stakes horses stay out."""
     day = G["day"]
     skip = {h.id for s in sk.CALENDAR if s.week == day % c.YEAR and not s.result for h in s.noms}
     c.draw_card(day, G["horses"], skip)
     save()
+
+
+def on_card(h):
+    """The race on the posted program this horse is in, or None."""
+    if c.CARD.get("day") != G["day"]:
+        return None
+    return next((r for r in c.CARD.get("races", []) if h in r["field"]), None)
 
 
 def night_checks(day0):
@@ -919,20 +924,18 @@ def race_nights():
                 if G.setdefault("last_night", slot) < slot and not HELD[0]:
                     G["last_night"] = slot
                     checked_tick()
-                elif entries_closed() and c.CARD.get("day") != G["day"]:
-                    draw_program()
         except Exception:
             traceback.print_exc()
         time.sleep(30)
 
 
 def countdown():
-    """Top bar: time to the entry cutoff, then to post time. The page's script keeps it ticking."""
+    """Top bar: time to post time, when tonight's card runs and tomorrow's is drawn. The page's script keeps it ticking."""
     n = ny_now()
-    close = n.replace(hour=19, minute=55, second=0, microsecond=0)
-    if n >= close + timedelta(minutes=5):
-        close += timedelta(days=1)
-    label, at = ("Entries close", close) if n < close else ("Race night", close + timedelta(minutes=5))
+    at = n.replace(hour=20, minute=0, second=0, microsecond=0)
+    if n >= at:
+        at += timedelta(days=1)
+    label = "Race night"
     left = int((at - n).total_seconds())
     ms = int((datetime.now(timezone.utc).timestamp() + left) * 1000)
     return (f"<small class=cd data-t={ms} data-l='{label}'>{label} in {left // 3600}h {left % 3600 // 60}m</small>"
@@ -1044,21 +1047,19 @@ def training_page():
 
 
 def race_banner():
-    """Tonight, at a glance: fit horses still unentered before the cutoff, or the posted program after the draw."""
+    """At a glance: your races on tonight's posted program, and fit horses not yet entered for tomorrow."""
+    bar = lambda msg, href: (f"<a href={href} style='display:block;margin:8px 0;padding:10px 12px;border-radius:6px;background:#e8a33a;color:#111;"
+                             f"font-weight:700;text-decoration:none'>{esc(msg)} ›</a>")
+    out = ""
     if c.CARD.get("day") == G["day"]:
         n = sum(1 for r in c.CARD["races"] if any(h.owner == ME for h in r["field"]))
-        msg, href = f"The program is up. Your races: {n}", "/program"
-    else:
-        idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None)]
-        if not idle or entries_closed():
-            return ""
-        left = int((ny_now().replace(hour=19, minute=55, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
-        some = any(getattr(h, "order", None) for h in mine())
-        what = f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered tonight" if some else "You have no horses entered tonight"
-        msg = f"{what}. Entries close in {left // 3600}h {left % 3600 // 60}m"
-        href = "/"                                           # entries are made from each horse's card
-    return (f"<a href={href} style='display:block;margin:8px 0;padding:10px 12px;border-radius:6px;background:#e8a33a;color:#111;"
-            f"font-weight:700;text-decoration:none'>{esc(msg)} ›</a>")
+        if n:
+            out += bar(f"Tonight's program is up. Your races: {n}", "/program")
+    idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
+    if idle:
+        left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
+        out += bar(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow. Entries drawn in {left // 3600}h {left % 3600 // 60}m", "/")
+    return out
 
 
 def welcome_page():
@@ -1246,9 +1247,10 @@ GUIDE = [
          "Your retired stock boards at the farm for less. Both bills come out of your cash each race night. A good horse pays its own "
          "way many times over; a slow one costs you to keep, so sell, retire or drop down the ones that aren't earning. If the bills "
          "ever run past your cash, they come out of your next purses."),
-        ("Race night", "The circuit races once a day. Each race night is a week of the season, and the season builds to the "
-         "Crown, which closes it. Entries close at 7:55 PM Eastern, the program is posted, and the "
-         "races go off at 8:00 PM. The countdown at the top of the screen tells you where you are in the day."),
+        ("Race night", "The circuit races once a day, at 8:00 PM Eastern. Each race night is a week of the season, and the season "
+         "builds to the Crown, which closes it. The way the real sport does it, you enter a day ahead: the moment tonight's card has "
+         "run, tomorrow's program is drawn from the entries and posted, so you have all day to read the form, make your claims and "
+         "scratch if you need to. The countdown at the top of the screen tells you where you are in the day."),
         ("The tracks", "The circuit's tracks come in two sizes. Mile tracks have long, sweeping turns and reward a horse that can sustain "
          "its speed. Half-mile tracks have four tight turns: gate speed and a good post count for more there, and every mile is slower. "
          "Each track has its own character, its own slate of races and its own purse level; you'll see them when you enter a horse. "
@@ -1302,9 +1304,10 @@ GUIDE = [
         ("Claiming", "In a claiming race any other barn can put in a claim on your horse before post time, and you can claim theirs. "
          "A claim is binding: if the horse races, it changes hands at the tag whatever the result, and the purse goes to the old owner. "
          "Drop a horse into a cheap claimer and it may win easily, but you may lose it."),
-        ("The program", "Before 7:55 the program shows what's been entered so far. At 7:55 the draw posts the final card: fields filled "
-         "out, race numbers, post positions by random draw, the morning line, each horse's recent form and the handicapper's pick. "
-         "Those exact fields go to the gate at 8:00. Your races are shown first."),
+        ("The program", "Tonight's program is drawn and posted at 8 PM the night before: fields filled out, race numbers, post "
+         "positions by random draw, the morning line, each horse's recent form and the handicapper's pick. Those exact fields go "
+         "to the gate at 8:00, less any scratches. Your races are shown first. A horse on the program can still be entered "
+         "for the next night."),
         ("Drivers", "Every horse goes to the gate with a driver, and every driver wears his own colors. Pick your barn's top three "
          "on the Drivers tab. Your horses get your first choice; when he's already driving one of your better horses in the same race, "
          "they get your next. Each driver has his own way of getting a horse around: some get away from the gate, some wait and "
@@ -1394,7 +1397,7 @@ def guide_page():
 # A new player's first tips teach the game in order; after that they come at random. A message from the team is shown
 # once to each player and then retired; a reminder that applies tonight comes before a tip.
 TIP_SEQUENCE = [
-    "Race night is every night at 8:00 PM Eastern. Entries close at 7:55, when the program is posted.",
+    "Race night is every night at 8:00 PM Eastern. Enter today and your horse races tomorrow night; the program is posted at 8 PM for the next day.",
     "Nothing in your barn races unless you enter it. Tap the + on a horse's card to enter it.",
     "A horse needs to be fresh to run its best. Rest it, or use a grooming slot to get it back sooner.",
     "Mile time is how fast a horse is expected to trot. Tier is the letter grade that comes with it: D up to S+.",
@@ -1404,7 +1407,7 @@ TIP_SEQUENCE = [
     "Every horse has a place it likes to race: on the lead, just off it, mid-pack, or coming from behind.",
     "Results are spoiler-free. Watch the replay first, or reveal each result when you're ready.",
     "Claiming races carry a price tag. Any barn can claim a horse in one, so be careful how cheap you go.",
-    "The program goes up at 7:55. Read the form, check the posts, and see who the handicapper likes.",
+    "The program is up all day. Read the form, check the posts, and see who the handicapper likes.",
     "Post Time Tonic is sold in the Shop. Once a horse is entered, tap its bottle to give it one for the night.",
     "Stakes are the big races of the season. Nominate early: it costs less, and the purses are the richest on the circuit.",
 ]
@@ -1441,10 +1444,9 @@ def next_card():
     if msg:
         seen.append(msg["id"])
         return ("From the barn", msg["text"])
-    if not entries_closed() and c.CARD.get("day") != G["day"]:
-        idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None)]
-        if idle:
-            return ("Reminder", f"You have {len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered tonight. Entries close at 7:55.")
+    idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
+    if idle:
+        return ("Reminder", f"You have {len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow night. Entries are drawn at 8 PM.")
     if p.get("hide_tips"):
         return None
     i = p.get("tip_i", 0)
@@ -2459,8 +2461,11 @@ def tonight(h):
     o = getattr(h, "order", None)
     if h.retired:
         return "retired"
+    if (r := on_card(h)):                                     # on the posted program; maybe entered again for the night after
+        return (f"<b>Tonight: {esc(c.race_title(r['key'][0], r['key'][2]))} at {esc(r['v']['name'])}, post {h.post}</b>"
+                + (f"<br>Tomorrow: {esc(order_text(h))}" if o else ""))
     if o:
-        return f"<b>Tonight: {esc(order_text(h))}</b>"
+        return f"<b>Tomorrow: {esc(order_text(h))}</b>"
     cr = crown_invite(h)
     if cr and cr[2] == 0:
         return f"<b>Tonight: the {esc(cr[0].name)}</b> <span class=sub>(invited)</span>"
@@ -2717,10 +2722,10 @@ def entries_page(qs=None):
     vid, kind, floor = qs.get("v", "all"), qs.get("k", "all"), int(qs.get("min", "0") or 0)
     racers = [h for h in mine() if not h.retired]
     open_ = sum(1 for h in racers if not getattr(h, "order", None) and h.freshness >= 50)
-    head = (f"<div class=card><b>{open_} fit horse{'s' if open_ != 1 else ''} not entered.</b> Find a race below, "
-            "or let the trainer enter them and change any you like."
+    head = (f"<div class=card><b>{open_} fit horse{'s' if open_ != 1 else ''} not entered for tomorrow night.</b> Find a race below, "
+            "or let the trainer enter them and change any you like. Entries are drawn into tomorrow's card at 8 PM."
             "<form method=post action=/entries style='margin-top:10px'><button class=big>Take the trainer's entries</button></form></div>"
-            if open_ else "<div class=card>Every fit horse is entered for tonight.</div>")
+            if open_ else "<div class=card>Every fit horse is entered for tomorrow night.</div>")
     link = lambda **kw: "/entries?" + "&".join(f"{k}={v}" for k, v in {"v": vid, "k": kind, "min": floor, **kw}.items())
     chips = lambda items, cur, key: "<div class=fchips>" + "".join(
         f"<a href='{link(**{key: k})}' class='{'on' if str(cur) == str(k) else ''}'>{label}</a>" for k, label in items) + "</div>"
@@ -2781,7 +2786,7 @@ def entries_page(qs=None):
     body = "".join(folds) if vid == "all" else "".join(rows)
     finder = (f"<div class=secbar>Races · {len(rows)}</div>" + (body or "<p class=sub>No races match.</p>"))
     plan = "".join(f"<div class=card><a href='/horse/{urlname(h.name)}'><b>{esc(h.name)}</b></a> <span class=sub>{h.age}yo {sex_word(h)} · {tier_label(h)}</span><div>{tonight(h)}</div></div>" for h in racers)
-    return page("Entries", head + finder + "<div class=secbar>Your horses tonight</div>" + (plan or "<p class=sub>No racers.</p>"))
+    return page("Entries", head + finder + "<div class=secbar>Your horses</div>" + (plan or "<p class=sub>No racers.</p>"))
 
 
 def unseen_night():
@@ -3023,6 +3028,8 @@ def sell_box(h):
         return f"<div class=card><div class=sub>Bought on the board: {h.name} can be sold again in {w} week{'s' if w != 1 else ''}.</div></div>"
     if P().get("frozen"):
         return "<div class=card><div class=sub>Your barn's buying and selling is paused while the stewards look at a sale. You can still race.</div></div>"
+    if on_card(h):
+        return f"<div class=card><div class=sub>{h.name} is on tonight's program. It races first; list it tomorrow.</div></div>"
     return (f"<div class=card><div class=row style='gap:10px;flex-wrap:wrap'>"
             f"<form method=post action=/order class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=o value=sell>"
             f"<button class=sec>List on the market</button></form>"
@@ -3647,7 +3654,7 @@ def program_entry(h, tag, odds, drawn, room):
             f"<div class=pgname><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>{tagl}</div>"
             f"<div class=pgped>{COAT_ABBR.get(coat, coat)} {sex_abbr(h)} {h.age} · {ped}</div>"
             + (f"<div class=pgown>Driver – {silks(drv)} <b>{esc(drv)}</b></div>" if (drv := next((r_["drivers"].get(h.id) for r_ in c.CARD.get("races", []) if h.id in r_.get("drivers", {})), None)) and drawn else "")
-            + ("" if drawn else "<div class='pgown sub'>Post and driver drawn at 7:55</div>")
+            + ("" if drawn else "<div class='pgown sub'>Post and driver drawn at 8 PM</div>")
             + f"<div class=pgown>Owner/Trainer – <b>{barn_tag(h.owner, 14)}</b>{' · Breeder – ' + esc(barn_name(breeder)) if isinstance(breeder, int) else ''}</div>"
             f"{career_box(h)}</div></div>{pp_lines(h)}{act}</div>")
 
@@ -3739,8 +3746,8 @@ def program_race(num, key, venue, field, odds, drawn, open_):
 
 
 def program_page(qs=None):
-    """Tonight's program, laid out like a real past-performance program. Before 7:55 a preview of what's entered so
-    far; at the draw the final card: race numbers, posts, morning lines, career boxes, five past performances with
+    """Tonight's program, laid out like a real past-performance program (drawn at 8 PM the night before, so it's up all
+    day; before the first draw, a preview of what's entered): race numbers, posts, morning lines, career boxes, five past performances with
     positions at each call, the handicapper's pick. Your races open first; the rest are folded and load when opened."""
     qs = qs or {}
     drawn, races = program_races()
@@ -3749,9 +3756,9 @@ def program_page(qs=None):
         return program_race_body(drawn, r[1], r[3], r[4]) if r else "<div class=pgpick>This race has changed. Reload the program.</div>"
     day = G["day"]
     head = (f"<style>{PP_CSS}</style><div class=proghead><span>Year {c.year_of(day)}, week {day % c.YEAR + 1}</span><span>"
-            + ("Final program · post time 8:00 PM" if drawn else "Preview · the draw posts at 7:55 PM") + "</span></div>")
-    note = "" if drawn else ("<p class=sub>Who's entered so far. At the 7:55 draw fields are filled out and split, and race numbers, posts and "
-                             "morning lines go up. Posts and drivers are drawn at 7:55. A claim is binding if the horse races; claims stay open until post time.</p>")
+            + ("Final program · post time 8:00 PM" if drawn else "Preview · the draw posts at 8:00 PM for tomorrow") + "</span></div>")
+    note = "" if drawn else ("<p class=sub>Who's entered so far. At the 8 PM draw fields are filled out and split, and race numbers, posts and "
+                             "morning lines go up for tomorrow night. A claim is binding if the horse races; claims stay open until post time.</p>")
     mine_ = [r for r in races if any(h.owner == ME for h in r[3])]
     tracks = sorted({r[2] for r in races if drawn and r[2]})               # the posted card, track by track, as a spectator buys it
     pick = qs.get("track", "")
@@ -4214,12 +4221,8 @@ class H(BaseHTTPRequestHandler):
             at = q.get("at", "")
             if at:
                 G["frozen"] = at
-                if entries_closed() and c.CARD.get("day") != G["day"]:
-                    draw_program()                                   # the card goes up now, as it would at 7:55
             else:
                 G.pop("frozen", None)
-                if not entries_closed() and c.CARD.get("day") == G["day"]:
-                    c.CARD.clear()                                   # an early draw: thrown away, so tonight's 7:55 takes new entries
             save()
             return self.send(admin_page(f"Clock frozen at {at}." if at else "Clock running again."))
         if p == "/admin/undo" and ME == ADMIN:
@@ -4318,12 +4321,15 @@ class H(BaseHTTPRequestHandler):
         elif p == "/scratch" and h and h.owner == ME:
             if getattr(h, "tonic", None):                       # scratched: the tonic goes back on the shelf
                 shelf()[h.tonic] += 1; h.tonic = None
-            h.order = h.ship = None
+            if (r := on_card(h)):                                # off tonight's program: it rests, and any claim on it is void
+                r["field"].remove(h); c.CLAIMS.pop(h.id, None); h.wk = "rest"; h.last = "scratched"
+            else:
+                h.order = h.ship = None
         if p == "/order" and h and h.owner == ME:
             if q["o"] == "retire":
                 e.retire(h, ME)
-            elif q["o"] == "sell" and (e.held(h) or P().get("frozen")):
-                pass                                                  # just bought, or the barn is under review: it stays
+            elif q["o"] == "sell" and (e.held(h) or P().get("frozen") or on_card(h)):
+                pass                                                  # just bought, under review, or racing tonight: it stays
             else:
                 try:
                     h.order = parse(q["o"], h)
