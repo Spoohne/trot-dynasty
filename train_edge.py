@@ -34,11 +34,15 @@ yr = c.year_of(G["day"]) - 1
 rows = {True: [], False: []}
 for h in G["horses"]:
     if h.id in crop and not h.retired:
-        fr = h.freshness; h.freshness = 70.0
-        rows[hand(h)].append((c.rating_tonight(h), (getattr(h, "seasons", {}) or {}).get(yr, [0] * 5)[4], h.shape["early_speed"]))
-        h.freshness = fr
+        fr, dev, sh = h.freshness, h.developed, h.shape
+        h.freshness = 70.0
+        now = c.rating_tonight(h)
+        h.developed, h.shape = {t: h.ceiling(t) for t in c.RACE_TRAITS}, {t: 0.0 for t in c.RACE_TRAITS}
+        made = c.rating_tonight(h)                                 # the same horse made and unshaped: what its blood alone gives
+        h.freshness, h.developed, h.shape = fr, dev, sh
+        rows[hand(h)].append((now - made, (getattr(h, "seasons", {}) or {}).get(yr, [0] * 5)[4], sh["early_speed"]))
 for k, name in ((True, "worked"), (False, "stable")):
     r = rows[k]
-    print(f"{name:7} n {len(r):4}  rating at the gate {st.mean(x[0] for x in r):5.1f}  last season purses ${st.mean(x[1] for x in r):>9,.0f}  "
+    print(f"{name:7} n {len(r):4}  gate rating vs its blood {st.mean(x[0] for x in r):+5.2f}  last season purses ${st.mean(x[1] for x in r):>9,.0f}  "
           f"early-speed shape {st.mean(x[2] for x in r):+.2f}")
 print(f"edge: {st.mean(x[0] for x in rows[True]) - st.mean(x[0] for x in rows[False]):+.1f} rating (1.5 ~ a length)")
