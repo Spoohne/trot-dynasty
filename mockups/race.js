@@ -260,11 +260,14 @@ RACE.state = t => {                                                      // ever
     return { i, d, ln: (o - 4) / 6, o, s: RACE.SF + d };
   });
 };
+RACE.camLead = st => {                                                   // the front of the field, as a smooth max: no kink when the lead changes hands
+  const top = Math.max(...st.map(h => h.d)); let e = 0;
+  for (const h of st) e += Math.exp((h.d - top) / 12);
+  return top + 12 * Math.log(e);
+};
 RACE.camS = st => {                                                      // where cameras aim: near the front, never jumping when places swap
-  const top = Math.max(...st.map(h => h.d)); let e = 0, sum = 0;
-  for (const h of st) { e += Math.exp((h.d - top) / 12); sum += h.d; }
-  const lead = top + 12 * Math.log(e);                                   // a smooth max: no kink when the lead changes hands
-  return RACE.SF + lead * .85 + (sum / st.length) * .15;                // mostly the leaders; a strung-out field still pulls it back a touch
+  const sum = st.reduce((a, h) => a + h.d, 0);
+  return RACE.SF + RACE.camLead(st) * .85 + (sum / st.length) * .15;    // mostly the leaders; a strung-out field still pulls it back a touch
 };
 // The passing lane: down the homestretch the inside rail swings 8 ft into the infield, opening a lane inside the
 // leader from the top of the stretch to just past the wire. inset(s) is how far in the rail sits at s (0 elsewhere).

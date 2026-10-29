@@ -65,8 +65,8 @@
 .lt2 .sub{background:#122a62;border:2px solid #f4d01e;border-top:0;color:#f4d01e;font-weight:700;font-size:15px;padding:2px 14px;text-transform:uppercase;box-shadow:0 3px 8px #0008}
 .lt2 .rp{color:#2a1a03;background:var(--tote);font-weight:700;font-size:10px;letter-spacing:.12em;padding:2px 6px;border-radius:3px;margin-top:3px}
 @media (max-width:640px){.lt2{right:12px}.lt2 .ven,.lt2 .sl{font-size:16px}.lt2 .rn{font-size:15px}.lt2 .rn b{font-size:17px}.lt2 .dt{display:none}.lt2 .sub{font-size:12px}}
-#wc{position:absolute;inset:0;display:none;flex-direction:column;gap:8px;align-items:center;justify-content:center;background:rgba(5,7,13,.55);z-index:6;container-type:size}
-@container (max-height:600px){#wc .frame{padding:8px 8px 6px}#wcc{max-height:36cqh}.wcb{padding-top:4px}.wcn{font-size:18px}.wcm{font-size:12px}.wco{font-size:11px}#wcx{padding:6px 22px!important}}
+#wc{position:absolute;inset:0;display:none;flex-direction:column;gap:8px;align-items:center;justify-content:safe center;overflow-y:auto;background:rgba(5,7,13,.55);z-index:6;container-type:size}
+@container (max-height:600px){#wcmq{display:none}#wc .frame{padding:8px 8px 6px}#wcc{max-height:36cqh}.wcb{padding-top:4px}.wcn{font-size:18px}.wcm{font-size:12px}.wco{font-size:11px}#wcx{padding:6px 22px!important}}
 #wc .frame{background:#f4efe3;padding:12px 12px 10px;box-shadow:0 10px 30px rgba(0,0,0,.6);transform:rotate(-1.2deg);max-width:min(86%,520px)}
 /* the official results, TV style: full order of finish beside the mutuel payoffs (simulated: there is no wagering) */
 #tv{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.72);z-index:7;font-family:'Barlow Condensed',system-ui,sans-serif;color:#e6e8ec}
@@ -705,7 +705,9 @@ function aimCamera(t, st, dt) {
     p = V(c - 18, -150, 60); a = V(c, mo + 10, 3); fov = 20;   // over the cut-down hedge on the straights
   }
   else if (shot === "flat") {                                                  // eye level beside the wire: a dead side-on look as they cross
-    const c = Math.min(RACE.camS(st), RACE.SF + 5280);                         // a camera car alongside them, stopping dead square to the wire
+    // follows the leader alone, so the lens is exactly in the wire's plane when the nose gets there: judged against the
+    // post and the painted line, a nose nearer the lens would otherwise read as past the wire a stride early
+    const c = Math.min(RACE.SF + RACE.camLead(st), RACE.SF + 5280);            // a camera car alongside them, stopping dead square to the wire
     p = V(c, 110, 7); a = V(c, mo, 4.5); fov = 16;                                // past the outer rail, in front of the stands: clear of the buildings and the hedge
   }
   else if (shot === "finish") {                                                // the original broadcast finish: the side-on pan carries them in and
@@ -732,7 +734,8 @@ function aimCamera(t, st, dt) {
     // Aimed past the middle of the field, not the leader, so the back of the pack sits clear of the graphics along the bottom
     p = V(mid - 26 - .35 * span, mo, 76 + 1.05 * span); a = V(mid + .2 * span + 6, mo, 0); fov = 36;
   }
-  else { const w = RACE.SF + 5280, c = Math.min(cs, w), back = 18 * Math.min(1, Math.max(0, (w - cs) / 120)); p = V(c - back, 150, 46);   // square to the wire as they reach it, so near and far side line up
+  else { const w = RACE.SF + 5280, u = Math.min(1, Math.max(0, (w - cs) / 120)), back = 18 * u;
+    const c = Math.min(w, cs + (RACE.SF + RACE.camLead(st) - cs) * (1 - u)); p = V(c - back, 150, 46);   // square to the wire as they reach it: over the last 120 ft it closes on the leader alone, so near and far side line up on the nose
     a = V(c, mo + 9, 3); fov = 19; }   // one pan the whole way: it stops dead on the wire                // on the roof, a touch behind the leaders
   if (["pan", "reverse", "wire", "finish", "flat"].includes(shot)) {                   // side-on: widen just enough that the leader stays in frame on any screen shape
     const lead = st.reduce((x, h) => h.s > x.s ? h : x), look = a.clone().sub(p), toLead = V(lead.s + 10, lead.o, 3).sub(p);   // +10 ft: the horse's nose
