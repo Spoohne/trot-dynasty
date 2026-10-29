@@ -15,6 +15,7 @@ import sys
 import os, time
 from datetime import datetime, timedelta, timezone
 import traceback
+import collections
 import pickle
 from itertools import count
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -861,6 +862,52 @@ def draw_program():
     save()
 
 
+def night_checks(day0):
+    """Tonight's world has to add up before it's posted: why it doesn't, or '' when it does."""
+    if G["day"] != day0 + 1:
+        return f"the clock went from {day0} to {G['day']}"
+    if (bad := [o for o, v in e.cash.items() if v < -1e-6]):
+        return f"barn {bad[0]} has negative cash"
+    owners = set(G["ai"]) | set(G["players"])
+    if (lost := [h for h in G["horses"] if h.owner not in owners]):
+        return f"{lost[0].name} is owned by nobody ({lost[0].owner})"
+    if (dup := [n for n in collections.Counter(h.id for h in G["horses"]).items() if n[1] > 1]):
+        return f"horse id {dup[0][0]} appears twice"
+    for h in G["horses"]:
+        for r in getattr(h, "results", []):
+            if r["day"] == day0 and r.get("race_id") not in c.STORIES:
+                return f"{h.name}'s result tonight has no story to replay ({r.get('race_id')})"
+    return ""
+
+
+HELD = [False]   # tonight's card was rolled back; it isn't tried again until the server restarts (a deploy with the fix)
+
+
+def checked_tick():
+    """Race night with a safety catch: run it, check the world adds up, and only then leave it posted. If the night
+    crashes or fails a check, the world goes back to before it, the night is held, and the admin gets a notice."""
+    day0, slot0 = G["day"], G.get("last_night")
+    try:
+        tick()
+        why = night_checks(day0)
+    except Exception:
+        traceback.print_exc()
+        why = traceback.format_exc().strip().splitlines()[-1]
+    if not why:
+        G.pop("held", None)
+        return True
+    print(f"race night {day0} held: {why}", flush=True)
+    snaps = sorted(os.listdir(SNAPS)) if os.path.isdir(SNAPS) else []
+    if snaps and snaps[-1] == f"night-{day0:06d}.pkl":                         # tonight's snapshot: put the world back
+        undo_night()
+    G["last_night"] = slot0                                                   # so the night runs again once the server restarts
+    G["held"] = {"day": day0, "why": why}
+    P(ADMIN).setdefault("events", []).append(f"Race night held and rolled back: {why}. Fix, deploy, and it runs again.")
+    HELD[0] = True
+    save()
+    return False
+
+
 def race_nights():
     """The circuit's clock, on its own thread: once its 8 PM has passed, tonight's card runs. A server that was down
     runs one night when it comes back; the other missed nights are skipped."""
@@ -868,9 +915,9 @@ def race_nights():
         try:
             with LOCK:
                 slot = last_slot().isoformat()
-                if G.setdefault("last_night", slot) < slot:
+                if G.setdefault("last_night", slot) < slot and not HELD[0]:
                     G["last_night"] = slot
-                    tick()
+                    checked_tick()
                 elif entries_closed() and c.CARD.get("day") != G["day"]:
                     draw_program()
         except Exception:
@@ -915,6 +962,8 @@ def page(title, body, foot=True, theme=None):
            f"<a href=/welcome class=brand><img src=/mock/brand/logo_text.png alt='Trot Dynasty'></a><div class=tright>"
            + ("<form method=post action=/advance class=inline><button name=days value=1>Post time</button></form>" if ME == ADMIN else "") + "</div></div>" + ("" if title == "Your barn" else plaque))
     under = plaque if title == "Your barn" else ""              # on the barn screen the Marquee sits under the heading
+    if G.get("held"):
+        under += "<div class=ev>Tonight's card is delayed. The results will post once the track sorts it out.</div>"
     cur = TAB_OF.get(title, "barn")
     todo = len(unworked()) if foot and cur != "train" and ME in G.get("players", {}) else 0   # youngsters still to work today
     tabs = ("<nav class=tabs>" + "".join(
