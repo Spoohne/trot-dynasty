@@ -1107,7 +1107,7 @@ def setup_page():
     srows = "".join(f"<div class=row style='justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)'><b>{esc(x.name)}</b><span class=sub>{JOB_WORD[set_of(x)[0]]}{' · ' + FOCUS_NAME[set_of(x)[1]] if set_of(x)[0] != 'out' else ''}</span></div>" for x in sets)
     body = ("<p class=sub>Nothing is entered until you confirm. Everything below stays editable afterward from the horse cards and the Training tab.</p>"
             f"<div class=card><b>Enter for tomorrow night · {len(entries)}</b><div class=sub>The trainer's picks, never a claimer.</div>{rows or '<div class=sub>Every fit horse is already entered.</div>'}</div>"
-            f"<div class=card><b>Deploy sets · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to deploy today.</div>'}</div>"
+            f"<div class=card><b>Sets to work · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to work today.</div>'}</div>"
             "<a class='btn sec' href=/entries style='display:block;text-align:center;margin-bottom:8px'>Check or change tomorrow's entries</a>"
             "<div class=row style='gap:8px'><form method=post action=/setup style='flex:1'><button class=big style='width:100%;background:var(--win);color:#06170c;box-shadow:3px 3px 0 var(--edge)'" + ("" if entries or sets else " disabled") + ">Confirm</button></form>"
             "<a class='btn sec big' href=/ style='flex:1;text-align:center'>Cancel</a></div>")
@@ -1182,12 +1182,12 @@ def training_page():
                         f"{' · <i>&#10003; done today</i>' if worked(h) else ''}</small></span>"
                         f"{sel(f'j{h.id}', (set_of(h) or ('jog', 'gait'))[0], JOB_WORD.items())}{sel(f'f{h.id}', (set_of(h) or ('jog', 'gait'))[1], FOCUS_NAME.items())}</div>" for h in ys)
         repeat_all = ("<form method=post action=/sets class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Stable Manager</b>"
-                      f"<span class='pchip{' lit' if again else ''}'>{len(again)} to deploy</span></div>"
-                      "<div class=sub>Each youngster's set: the job and focus the manager runs. Save changes, or deploy every set now.</div>"
+                      f"<span class='pchip{' lit' if again else ''}'>{len(again)} to work</span></div>"
+                      "<div class=sub>Each youngster's set: the job and focus the manager runs. Save changes, or work every set now.</div>"
                       "<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Job</span><span>Focus</span></div>"
                       + srows + "</div><div class=mact><button class=sec name=do value=save>Save sets</button>"
-                      f"<button name=do value=deploy{'' if again else ' disabled'}>Deploy sets ({len(again)})</button></div></form>") if ys else ""
-        repeat_all = ("<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Entries</b></div><div class=sub>Check or change tomorrow's entries, or preview what the manager would enter and deploy tonight.</div>"
+                      f"<button name=do value=deploy{'' if again else ' disabled'}>Work sets ({len(again)})</button></div></form>") if ys else ""
+        repeat_all = ("<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Entries</b></div><div class=sub>Check or change tomorrow's entries, or preview what the manager would enter and work tonight.</div>"
                       "<div class=mact><a class='btn sec' href=/entries>Tomorrow's entries</a><a class='btn sec' href=/setup>Set up tonight</a></div></div>") + repeat_all
     else:
         repeat_all = (f"<form method=post action=/job style='margin:0 0 8px'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
@@ -1445,7 +1445,7 @@ def race_banner():
     if has_pass(ME):                                                           # the Season Pass: one tap does the chores
         log = P().get("pass_log")
         if log and log[0] == G["day"]:
-            out += f"<div class=ev>Stable Manager{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} set{'s' if log[2] != 1 else ''} deployed.</div>"
+            out += f"<div class=ev>Stable Manager{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} set{'s' if log[2] != 1 else ''} worked.</div>"
         elif idle or unworked():
             out += ("<a class='btn big' href=/setup>Stable Manager: set up tonight</a>"
                     "<div class=sub style='margin:4px 0 8px'>Shows what the trainer would enter and which sets would run, then asks you to confirm.</div>")
