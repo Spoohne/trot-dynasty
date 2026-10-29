@@ -1303,8 +1303,9 @@ def welcome_page():
     name = P().get("stable") or "Your Stable"
     rename = ("<form method=post action=/stablename class=rename><input name=n maxlength=28 placeholder='Name your stable' aria-label='Stable name'>"
               "<button>Save</button></form>") if not P().get("stable") else ""
-    body = (f"<div class=launch><img class=lg src=/mock/brand/logo_text.png alt='Trot Dynasty'>"
-            f"<img class=tr src=/mock/brand/title_trotter.png alt=''><div class=tag>Breed · Race · Win</div>"
+    rail = "".join(f"<i style='left:{x}%'></i>" for x in range(2, 100, 7))
+    body = (f"<div class=launch><div class=sky><div class=in><img class=lg src=/mock/brand/logo_text.png alt='Trot Dynasty'>"
+            f"<img class=tr src=/mock/brand/title_trotter.png alt=''></div></div><div class=rail>{rail}</div><div class=tag>Breed · Race · Win</div>"
             f"<div class=away><small>Welcome back</small><b>{esc(name)}</b>{rename}"
             f"<em>Year {c.year_of(day)}, week {day % c.YEAR + 1} · ${e.cash[ME]:,.0f}</em></div>"
             f"{race_banner()}<a class=enter href=/>Enter the barn</a></div>")
@@ -1317,8 +1318,9 @@ def login_page(signup_, error="", local=False):
     claim = ("<label class=claim><input type=checkbox name=claim value=1 checked> Take over the existing playtest stable</label>"
              if signup_ and local and "user" not in P(0) else "")
     other = ("<p class=alt>Have an account? <a href=/login>Log in</a></p>" if signup_ else "<p class=alt>New here? <a href=/signup>Make an account</a></p>")
-    body = (f"<div class=launch><img class=lg src=/mock/brand/logo_text.png alt='Trot Dynasty'>"
-            f"<img class=tr src=/mock/brand/title_trotter.png alt=''><div class=tag>Breed · Race · Win</div>"
+    rail = "".join(f"<i style='left:{x}%'></i>" for x in range(2, 100, 7))
+    body = (f"<div class=launch><div class=sky><div class=in><img class=lg src=/mock/brand/logo_text.png alt='Trot Dynasty'>"
+            f"<img class=tr src=/mock/brand/title_trotter.png alt=''></div></div><div class=rail>{rail}</div><div class=tag>Breed · Race · Win</div>"
             f"<form method=post action={'/signup' if signup_ else '/login'} class='away auth'><small>{'Make your stable' if signup_ else 'Welcome back'}</small>"
             + (f"<p class=err>{esc(error)}</p>" if error else "")
             + "<input name=user placeholder='Name' autocomplete=username autocapitalize=off required>"
@@ -1332,9 +1334,15 @@ LAUNCH_CSS = """
 .auth{display:grid;gap:10px}.auth input[name]{width:100%;box-sizing:border-box;padding:12px}.auth .enter{width:100%;cursor:pointer}
 .err{margin:0;color:#ff8a6b;font-weight:600}.claim{font-size:14px;color:var(--ink2);display:flex;gap:8px;align-items:center}
 .alt{color:var(--ink2);margin-top:16px}.alt a{color:var(--led);text-decoration:underline}
-.launch{max-width:460px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 16px 32px;text-align:center}
-.launch .lg{width:88%;max-width:380px}.launch .tr{display:block;width:78%;max-width:320px;margin:8px auto 0;filter:drop-shadow(0 8px 6px #0008)}
-.launch .tag{font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.42em;text-transform:uppercase;color:var(--led);margin:12px 0 22px}
+.launch{position:relative;max-width:none;margin:0;padding:0 0 32px;text-align:center}
+/* the title on the track: the top bar's night panorama as a wide strip, the night fading into the page below */
+.sky{position:relative;height:min(46vh,420px);background:var(--sky) url(/mock/pixel/panorama.png) 38% bottom/auto 100% repeat-x;image-rendering:pixelated;overflow:hidden}
+.sky:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#070a1480 0,#070a1420 35%,#070a14 100%)}
+.sky .in{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:max(28px,env(safe-area-inset-top)) 16px 6px}
+.launch .lg{width:min(88%,380px);filter:drop-shadow(0 6px 0 #000)}.launch .tr{display:block;width:min(78%,320px);margin:4px auto 0;filter:drop-shadow(0 10px 8px #000c)}
+.rail{height:6px;background:#e8eef4;box-shadow:0 2px 0 #000,0 -1px 0 #000;position:relative;z-index:1}.rail i{position:absolute;top:-12px;width:3px;height:18px;background:#e8eef4;box-shadow:1px 0 0 #000}
+.launch .tag{font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.42em;text-transform:uppercase;color:var(--led);margin:14px 0 18px}
+.auth,.alt{max-width:430px;margin-left:auto;margin-right:auto}.auth{margin:0 max(16px,calc(50% - 215px))}
 .away{text-align:left;background:var(--well,#0b1120);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge);padding:14px 16px}
 .away small{font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
 .away b{display:block;font:800 26px/1.1 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.04em;margin:2px 0}
