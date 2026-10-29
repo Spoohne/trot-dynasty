@@ -220,6 +220,8 @@ RACE.simulate = () => {
       // sideways direction after holding a new wish for a moment, and small corrections are ignored.
       if (late) {
         if (Math.abs(ovWant) < .6) ovWant = 0;
+        // never tuck into the wake of a horse that beats it: it would only be held up behind it and swing out again
+        if (ovWant < 0 && !split && run.some(p => p.rank < r.rank && p.d > r.d && p.d - r.d < RACE.BODY * 3 && Math.abs(p.o - (r.o - RACE.WIDE)) < RACE.WIDE)) ovWant = 0;
         if (r.o >= 4 + 6 * 4 && ovWant > 0) ovWant = 0;                       // five wide at the most
         const dir = Math.sign(ovWant);
         if (dir && r.ldir && dir !== r.ldir && !split) { r.flipT = (r.flipT || 0) + dt; if (r.flipT < 2) ovWant = 0; else { r.ldir = dir; r.flipT = 0; } }
