@@ -835,7 +835,7 @@ TABS = (("barn", "/", "Barn", "<path d='M3 11 12 4l9 7v9H3z'/><path d='M9 20v-6h
         ("market", "/market", "Market", "<path d='M4 7h16l-1.5 11h-13z'/><path d='M9 7a3 3 0 0 1 6 0'/>"),
         ("breed", "/studs", "Breeding", "<path d='M12 20s-7-4.3-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.7-7 10-7 10z'/>"),
         ("more", "/more", "Manage", "<circle cx='5' cy='12' r='1.5'/><circle cx='12' cy='12' r='1.5'/><circle cx='19' cy='12' r='1.5'/>"))
-TAB_OF = {"Training": "train", "Compendium": "more", "Shop": "market", "Claimers": "market", "Tonic": "barn", "Stakes & Crown": "more", "Breeding": "breed", "Breed": "breed", "Entries": "more", "Sale board": "market", "Stud book": "breed", "Results": "more", "Trainers": "more", "Stakes": "more",
+TAB_OF = {"Training": "train", "Compendium": "more", "Shop": "market", "Claimers": "market", "Stable Manager": "barn", "Tonic": "barn", "Stakes & Crown": "more", "Breeding": "breed", "Breed": "breed", "Entries": "more", "Sale board": "market", "Stud book": "breed", "Results": "more", "Trainers": "more", "Stakes": "more",
           "Barn upgrades": "more", "Barn identity": "more", "More": "more", "Manage": "more", "Earnings": "more", "Leaderboards": "more", "Archive": "more"}
 
 
@@ -1080,6 +1080,33 @@ def has_pass(o):
     return bool(P(o).get("pass"))
 
 
+def setup_plan(o):
+    """What the Stable Manager would do for barn o right now, without doing it: [(horse, race title, track)] it would
+    enter, and the youngsters whose sets it would deploy."""
+    entries = []
+    for h in G["horses"]:
+        if h.owner == o and not h.retired and not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h):
+            c.trainer_of(h).plan(h)
+            group, sex, name, purse, tag = c.entry(h)
+            if not tag:
+                entries.append((h, c.race_title(group, name), getattr(h, "ship", None) or ("mile", "half")[h.id % 2]))
+    sets = [x for x in unworked(o) if set_of(x)]
+    return entries, sets
+
+
+def setup_page():
+    """The Stable Manager's preview: exactly what one tap would enter and deploy, then Confirm or Cancel."""
+    entries, sets = setup_plan(ME)
+    rows = "".join(f"<div class=row style='justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)'><b>{esc(h.name)}</b><span class=sub>{esc(title)} · {'mile' if track == 'mile' else 'half-mile'}</span></div>" for h, title, track in entries)
+    srows = "".join(f"<div class=row style='justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)'><b>{esc(x.name)}</b><span class=sub>{JOB_WORD[set_of(x)[0]]}{' · ' + FOCUS_NAME[set_of(x)[1]] if set_of(x)[0] != 'out' else ''}</span></div>" for x in sets)
+    body = ("<p class=sub>Nothing is entered until you confirm. Everything below stays editable afterward from the horse cards and the Training tab.</p>"
+            f"<div class=card><b>Enter for tomorrow night · {len(entries)}</b><div class=sub>The trainer's picks, never a claimer.</div>{rows or '<div class=sub>Every fit horse is already entered.</div>'}</div>"
+            f"<div class=card><b>Deploy sets · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to deploy today.</div>'}</div>"
+            "<div class=row style='gap:8px'><form method=post action=/setup><button class=big" + ("" if entries or sets else " disabled") + ">Confirm</button></form>"
+            "<a class='btn sec big' href=/ style='flex:1;text-align:center'>Cancel</a></div>")
+    return page("Stable Manager", body)
+
+
 def setup_tonight(o, auto=False):
     """The Stable Manager (what the Season Pass buys): the trainer's entries for every fit, unentered horse (never a
     claimer), every youngster's saved set deployed, and a note of what it did. auto: run by the night tick for a
@@ -1264,8 +1291,8 @@ def race_banner():
         if log and log[0] == G["day"]:
             out += f"<div class=ev>Stable Manager{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} set{'s' if log[2] != 1 else ''} deployed.</div>"
         elif idle or unworked():
-            out += ("<form method=post action=/setup><button class=big>Stable Manager: set up tonight</button>"
-                    "<div class=sub style='margin:-4px 0 8px'>The trainer's entries for every fit horse, never a claimer, and every youngster's set from the Training tab. All of it stays editable.</div></form>")
+            out += ("<a class='btn big' href=/setup>Stable Manager: set up tonight</a>"
+                    "<div class=sub style='margin:4px 0 8px'>Shows what the trainer would enter and which sets would run, then asks you to confirm.</div>")
     return out
 
 
@@ -4406,6 +4433,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(market_page(qs))
         if p == "/claimers":
             return self.send(claimers_page(qs))
+        if p == "/setup" and has_pass(ME):                                # the Stable Manager's preview
+            return self.send(setup_page())
         if p == "/studs":
             return self.send(breeding_page(qs))
         if p == "/studbook":
