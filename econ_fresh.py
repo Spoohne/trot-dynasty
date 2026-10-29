@@ -19,6 +19,26 @@ assert o2 is not None, err
 c.HUMAN.add(o2)
 PLAYERS = (0, o2)
 e.AI_TRADES[0] = False
+# three stand-in handicappers for the pick'em, barns that never race: chalk takes the morning-line favorite every time,
+# form the highest public rating, lucky a horse at random
+PICKERS = {}
+for nm in ("chalk", "form", "lucky"):
+    o, err = app.signup(nm, "secret1"); assert o is not None, err
+    c.HUMAN.add(o); PICKERS[nm] = o
+    for h in [x for x in G["horses"] if x.owner == o]:                   # no stable: prizes are their only income
+        e.scrap(h, o, G["horses"])
+    e.cash[o] = 0
+
+def pickers_night():
+    import random as _r
+    for s in app.stakes_tonight():
+        noms = app.nominees(s)
+        if len(noms) < 2:
+            continue
+        line = c.tote_odds(noms)
+        G.setdefault("picks", {}).setdefault(PICKERS["chalk"], {})[s.id] = min(noms, key=lambda h: line[h.id][0] / line[h.id][1]).id
+        G["picks"].setdefault(PICKERS["form"], {})[s.id] = max(noms, key=lambda h: h.est).id
+        G["picks"].setdefault(PICKERS["lucky"], {})[s.id] = _r.choice(noms).id
 print(f"world built in {time.time() - t0:.0f}s: {len(G['horses'])} horses, players {sorted(c.HUMAN)}", flush=True)
 
 def player_week(o):
@@ -48,6 +68,7 @@ for s in range(SEASONS):
     for w in range(c.YEAR):
         for o in PLAYERS:
             player_week(o)
+        pickers_night()
         app.tick()
     yr = c.year_of(G["day"]) - 1
     ai = [o for o in e.cash if o not in c.HUMAN]
@@ -69,7 +90,8 @@ for s in range(SEASONS):
            "claims": round(-sum(e.ledger.get(o, {}).get("claims", 0) for o in e.cash)), "total": round(sum(e.cash.values())),
            "losing_racers_pct": round(100 * st.mean(seas(h)[4] * 0.886 < 26_000 for h in racers if seas(h)[0] >= 8) if any(seas(h)[0] >= 8 for h in racers) else 0),
            "clm_net_median": {str(k): round(st.median(v)) for k, v in sorted(byclm.items())},
-           "wo_starts": sum(wo.values()), "house_price_p0": e.house_horse_price(0)}
+           "wo_starts": sum(wo.values()), "house_price_p0": e.house_horse_price(0),
+           "pickers": {nm: G.get("pickers", {}).get(yr, {}).get(o, [0, 0]) + [round(e.cash.get(o, 0))] for nm, o in PICKERS.items()}}
     rows.append(row)
     print(json.dumps(row), f"({time.time() - t1:.0f}s)", flush=True)
 json.dump(rows, open(os.path.join("exports", "econ_fresh.json"), "w"), indent=1)

@@ -426,6 +426,7 @@ def tick():
         sk.year_tick(G["horses"], G["ai"], day)               # new book, and every horse's season tally starts again
     sk.ai_nominate(G["horses"], G["ai"], day)
     sk.run_today(day, G["horses"])
+    settle_picks(day)
     G["horses"] = e.day(day, G["horses"], G["ai"], [])
     c.CLAIMS.clear()                                          # tonight's claims are settled (or the horse didn't run)
     for h in G["horses"]:                                     # a tonic that wasn't given (didn't race, or no cash for the vet) goes back on the shelf
@@ -439,6 +440,7 @@ def tick():
             h.order = None
     G["day"] += 1; e.TODAY[0] = G["day"]
     if G["day"] % c.YEAR == 0:                                # the season's last night is run: roll the year in now, so week 1
+        name_handicapper(c.year_of(G["day"] - 1))             # the season's best handicapper takes the title
         sk.year_tick(G["horses"], G["ai"], G["day"])          # opens with everyone a year older and the 2-year-olds in the barn
         G["horses"] = e.new_year(G["horses"], G["ai"])
         e.ROLLED[0] = G["day"]                                # (the week-1 night itself won't roll it a second time)
@@ -460,6 +462,7 @@ def tick():
     for o, ev in events.items():
         if G["day"] % c.YEAR == 0:
             ev.append("New year: the yearlings are on the board")
+        ev.extend(G.get("pick_news", {}).pop(o, []))              # how the night's picks went
         P(o)["events"] = ev
     events = P()["events"]
     wire_tick(day, world_before)
@@ -513,6 +516,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .pedt .pc.ps{background:#1f4fbf;border-color:#05070d}.pedt .pc.pd{background:#b8336a;border-color:#05070d}.pedt .pc.ps.g{background:#1f4fbf99}.pedt .pc.pd.g{background:#b8336a99}.pedt .pc.ps a,.pedt .pc.pd a{color:#fff}.pedt .pc.ps small,.pedt .pc.pd small{color:#ffffffbb}
 .tcase .ticon{width:44px;height:44px;display:block;margin:0 auto 4px;filter:drop-shadow(0 2px 3px #0009)}
 .mqe{display:inline-block;position:relative;border-radius:50%;padding:2px;background:conic-gradient(from var(--ang),var(--mqs));animation:holo 5s linear infinite;vertical-align:middle}.mqe .crest{display:block}.mqrow td{text-shadow:0 1px 0 #000,1px 0 0 #000,0 -1px 0 #000,-1px 0 0 #000,0 2px 4px #000}.mqrow td{border-top:1px solid #ffd36b55!important;border-bottom:1px solid #ffd36b55!important}.mqrow td:first-child{box-shadow:-4px 0 0 #ffd36b}.dsort th{cursor:pointer;user-select:none}.dsort td{vertical-align:middle;font-size:13px}.dsort td .sub{font-size:11px}.mqbar{margin:8px 0 0}h1+.mqbar{margin:0 0 10px}.mqsticky{position:sticky;top:env(safe-area-inset-top);z-index:5;margin:-4px -4px 12px}.mqsticky{background:#0b0e16;padding:4px 4px 0}.mqbar2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}.mqbar2 button{width:auto;padding:6px 14px;margin:0}.mqbar2 button:disabled{opacity:.4;cursor:default}.mqtabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--rule2)}.mqtabs button{flex:none;width:auto;margin:0;padding:8px 14px;background:none;border:0;border-bottom:3px solid transparent;color:var(--ink2);font-weight:700;box-shadow:none}.mqtabs button.on{color:var(--tote);border-bottom-color:var(--tote)}.mqpane{display:none;padding-top:10px}.mqpane.on{display:block}.mqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}@media(max-width:520px){.mqgrid{grid-template-columns:repeat(3,1fr)}}.mqtile{position:relative;display:flex;flex-direction:column;gap:2px;padding:4px;border:1px solid var(--rule2);cursor:pointer;font-size:12px;text-align:center}.mqtile input{position:absolute;opacity:0;pointer-events:none}.mqtile:has(input:checked){outline:2px solid var(--tote);background:#e8a33a22}.mqtile.locked .mqth{filter:grayscale(1) brightness(.55)}.mqlock{font-size:10px;color:var(--ink2);line-height:1.2}.mqnew{position:absolute;top:4px;right:4px;font:800 9px sans-serif;background:#e23d3d;color:#fff;padding:1px 4px;border-radius:6px}.mqth{display:flex;align-items:center;justify-content:center;height:52px;overflow:hidden}.mqsc{width:100%;height:100%;background:center/cover}.mqx.mqmini{min-height:0;width:100%;height:100%;padding:0;background:#1a1f2e}.pxhd{font:800 18px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--led)}.pbar{height:8px;background:var(--well);margin:6px 0 2px}.pbar i{display:block;height:100%;background:linear-gradient(90deg,#b45309,#ffd36b)}.thnum{position:absolute;top:2px;left:4px;font:800 12px 'Cinzel',serif;color:#ffe9a8;text-shadow:0 1px 2px #000}.mqth{position:relative}.bgrp{border:1px solid #3a4866;background:#ffffff05;border-radius:4px;padding:6px 10px 10px;margin:0 0 12px;min-width:0}.bgrp legend{padding:0 6px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led)}.mqtabs.slide{position:relative;scroll-snap-type:x proximity;scroll-behavior:smooth}.mqtabs.slide button{scroll-snap-align:center;padding:8px 11px;border-bottom-color:transparent!important}.mqink{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--tote);transition:transform .25s ease,width .25s ease}.mqpane.on.fromR{animation:pslideR .25s ease}.mqpane.on.fromL{animation:pslideL .25s ease}@keyframes pslideR{from{transform:translateX(24px);opacity:0}}@keyframes pslideL{from{transform:translateX(-24px);opacity:0}}@media (prefers-reduced-motion:reduce){.mqink,.mqpane.on{transition:none;animation:none!important}}.card.hc{background:linear-gradient(100deg,color-mix(in srgb,var(--tc) 34%,#1e2b46),#22304c 55%);border:2px solid #0a0f1c;border-left:5px solid var(--tc);box-shadow:inset 2px 2px 0 #4a5f8c,inset -2px -2px 0 #121a2b,0 3px 0 #05070d}.hc .bname{font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.02em;text-shadow:2px 2px 0 #000}.hc .sub{color:#c6cede}.hc .sv{color:#fff;text-shadow:1px 1px 0 #000}.hc .cond svg{filter:drop-shadow(1px 0 0 #04140a) drop-shadow(-1px 0 0 #04140a) drop-shadow(0 1px 0 #04140a) drop-shadow(0 -1px 0 #04140a) drop-shadow(0 0 4px #3fb96b88)}.hc .cond b{text-shadow:1px 1px 0 #000;font-size:15px}.hc .cond+.sub{display:block;width:100%;margin-top:4px;padding:4px 8px;background:#0b1120cc;border-left:3px solid var(--tote);color:#e6e8ec;font-weight:600}.hc .chart.starts{display:flex;flex-direction:column;gap:3px;margin-top:4px}.hc .chart.starts span{padding:4px 8px;background:#0b1120cc;border-left:3px solid #5ab7e6;color:#e6e8ec;font-weight:600}.hc .chart.starts b{color:#ffb347;text-transform:uppercase;font-size:11px;letter-spacing:.08em;margin-right:4px}body.themed .card.hc{background:linear-gradient(100deg,color-mix(in srgb,var(--tc) 34%,#1e2b46),#22304ce8 55%)}.vstrip{display:flex;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;scroll-snap-type:x proximity}.vstrip{overflow-x:auto!important}.vstrip button{flex:none;scroll-snap-align:center}.vdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--win);vertical-align:2px}.vpane{border:2px solid var(--rule);background:var(--well);padding:4px 8px;margin-top:6px}.vmeta2{font-size:13px;color:var(--ink2);padding:4px 0 6px;border-bottom:1px solid var(--rule2);display:flex;gap:8px;flex-wrap:wrap}.vmeta2 .vname{display:none}.sbarn .btag{font-size:13px}.skwk{margin:8px 0}.skwh{display:flex;justify-content:space-between;align-items:baseline;font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led);border-bottom:1px solid var(--rule);padding:4px 2px}.skwh span{font-size:12px;color:var(--ink2);letter-spacing:.04em}.skrow{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--rule);border-left:4px solid #5ab7e6;padding:6px 10px;margin-top:4px}.skrow.kfinal{border-left-color:var(--led)}.skrow.kclassic{border-left-color:#a78bfa}.skrow.kleg{border-left-color:#3fb96b}.skrow.ksignature{border-left-color:#e8a33a}.skrow.kinvitational{border-left-color:#f472b6}.skrow.kopener{border-left-color:#93c5fd}.skrow.mine{background:#e8a33a1a}.skl{display:flex;flex-direction:column;min-width:0}.skl b{font-size:15px}.skdiv{font-size:12px;color:var(--ink2)}.skyou{font-size:12px;color:var(--tote);font-weight:700}.skr{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}.sk{font-size:12px;color:var(--ink2)}.sk.nom{color:var(--win);font-weight:700}.sk.inv{color:var(--led)}.sk.won a{color:var(--ink);font-weight:700}.skpast summary{font-size:14px}.gpart{border:2px solid var(--rule);border-radius:4px;background:var(--panel);margin:6px 0}.gpart>summary{padding:10px 12px!important;border:0;display:flex;justify-content:space-between;align-items:center}.gpart[open]>summary{border-bottom:2px solid var(--rule)}.gcount{font-size:12px;color:var(--ink2);background:var(--well);padding:1px 7px;border-radius:9px;letter-spacing:0}.gbody{padding:0 12px 4px}.gbody .gtopic summary{font-family:'Barlow Semi Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);font-size:15px;padding:8px 2px}.upl{display:flex;flex-direction:column;gap:10px}.upc{display:flex;gap:10px;align-items:center;padding:10px;background:var(--panel);border:2px solid var(--um);box-shadow:inset 2px 2px 0 #ffffff10,inset -2px -2px 0 #0006,0 3px 0 #05070d}.upc img{flex:none;image-rendering:pixelated;filter:drop-shadow(0 3px 2px #000a)}.upm{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.upm b{font:800 19px 'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--um2);text-shadow:2px 2px 0 #000}.upk{display:flex;flex-wrap:wrap;gap:4px}.upk span{font-size:12px;padding:1px 6px;background:var(--well);border:1px solid var(--rule)}.upa{flex:none}.upa button{width:auto}.upst{font-weight:800;color:var(--um2);white-space:nowrap}.up0{--um:#5b4a38;--um2:#c8b89f}.up1{--um:#7a3b2a;--um2:#f2a28a}.up2{--um:#8a4a6a;--um2:#f6a8c8}.up3{--um:#8793a3;--um2:#e6ecf3}.up4{--um:#c9922e;--um2:#ffd36b}.up4.built,.up4.next{background:linear-gradient(100deg,#ffd36b22,var(--panel) 60%)}.upc.ahead{opacity:.55}.upc.ahead img{filter:grayscale(.8) brightness(.7)}.upc.next{outline:2px solid var(--tote);outline-offset:2px}.etiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}.etile{background:var(--panel);border:1px solid var(--rule);border-top:3px solid var(--led);padding:8px 10px;display:flex;flex-direction:column;gap:1px;min-width:0}.etl{font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}.etile b{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.etile .up{color:var(--win);font-size:12px;font-weight:700}.etile .dn{color:var(--loss);font-size:12px;font-weight:700}.echart{width:100%;height:120px;display:block;margin-top:6px;background:var(--well)}.chartax{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3)}.ebook td.money,.etable td.money{text-align:right}.ebook th{text-align:left;color:var(--led);padding-top:8px}.ebook .esub td{font-weight:700;border-top:1px solid var(--rule)}.ebook .enet td{font-weight:800;font-size:16px;border-top:2px solid var(--led)}.hmenu{display:flex;gap:3px;margin:6px 0 12px;padding:3px;background:#05070d;border:2px solid #0a0f1c;box-shadow:inset 2px 2px 0 #00000080,inset -1px -1px 0 #ffffff12,0 2px 0 #ffffff08;overflow-x:auto;scrollbar-width:none}.hmenu a,.hmenu button{flex:1 0 auto;text-align:center;white-space:nowrap;padding:8px 6px;margin:0;width:auto;border:0;border-radius:2px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#a4acb9;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008;transition:color .15s,background .15s}.hmenu a:hover,.hmenu button:hover{color:#e6e8ec}.hmenu a.on,.hmenu button.on{color:#2a1a03;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);text-shadow:0 1px 0 #ffe9a8;box-shadow:inset 1px 1px 0 #fff3b0,inset -1px -2px 0 #8a5a12,0 2px 4px #000a}.bidf{display:flex;flex-direction:column;gap:3px;margin-top:4px;text-align:left}.bidf input[type=number]{width:100%;font-size:15px;padding:5px 6px}.bidok{font-size:11px;display:flex;gap:4px;align-items:center;color:var(--ink2)}.bidf button{width:100%}.sortrow{display:flex;align-items:center;gap:6px;margin:-4px 0 10px}.sortrow a{font-size:13px;font-weight:700;padding:3px 9px;border:1px solid var(--rule);color:var(--ink2)}.sortrow a.on{background:var(--tote);color:var(--tote-ink);border-color:var(--tote)}.pgh.tk{background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 55%,#05070d));border-bottom:4px solid var(--ta)}.tkb{flex:none;align-self:center;image-rendering:pixelated;filter:drop-shadow(0 2px 2px #000a)}.tkn{font-size:20px;line-height:1.1;letter-spacing:.02em;text-shadow:2px 2px 0 #000}.vstrip button img{vertical-align:-4px;margin-right:4px}.vstrip button{border-bottom:3px solid var(--tp)!important}.vband{display:flex;gap:10px;align-items:center;margin:-4px -8px 4px;padding:8px 10px;background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 55%,#05070d));border-bottom:3px solid var(--ta);color:#fff}.vband b{display:block;font-size:22px;line-height:1;text-shadow:2px 2px 0 #000}.vband span{font-size:12px;opacity:.85}/* the stud book: nearly every stallion there is S+, so the holo stays but holds still */.calm .tSp:before,.calm .tSp:after,.calm .tier.Sp,.calm .sqt.tSp,.calm .badge.tSp,.calm .troph{animation:none!important}.mi{position:relative;margin:6px 0;padding:10px 34px 10px 12px;border:2px solid #0a0f1c!important;border-left:4px solid var(--tote)!important;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008,0 2px 0 #05070d;color:var(--ink);text-decoration:none}.mi:after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);font:800 26px 'Barlow Condensed',sans-serif;color:var(--tote)}.mi:hover,.mi:active{background:linear-gradient(#22304c,#18223a);border-color:#e8a33a!important}.mi:active{transform:translateY(1px)}.mi .sub{font-size:13px}.mi.off:after{content:none}.r10{flex-wrap:wrap}.r10v{flex-basis:100%;font-size:13px;font-weight:700;color:var(--tote);text-decoration:none;padding:2px 0 0 46px}.billrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink2);padding:6px 10px;margin:4px 0 8px;background:var(--well);border:1px solid var(--rule);border-left:3px solid var(--loss)}.billrow b{color:var(--ink)}.billrow a{margin-left:auto;color:var(--tote);font-weight:700}.billrow.wayup{border-left-color:var(--tote)}.ts .bname{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ts .bname .age{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:400;color:var(--ink2)}.sheet{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.sheet button{width:100%;margin:0;padding:8px 2px;font-size:13px;letter-spacing:.04em}.sheet button[disabled]{opacity:.35;box-shadow:none;transform:none}.sheet .foc{grid-column:1/-1;display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink2);flex-wrap:wrap}.sheet .foc label{color:var(--ink);background:var(--well);border:2px solid var(--rule);padding:1px 8px;cursor:pointer}.sheet .foc label:has(input:checked){border-color:var(--tote);color:var(--tote)}.sheet .foc input{position:absolute;opacity:0;width:0;height:0}.didnote{font-size:13px;color:var(--ink2);margin-top:6px}.didnote b{color:var(--win)}.echart.tall{height:auto}.ct{font:600 10.5px 'Barlow Semi Condensed',sans-serif;fill:var(--ink2);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0}.ct.now{fill:var(--led);font-weight:700;font-size:12px}.ct.ctw{fill:#3fb96b}.ct.ctl{fill:#e0704f}.chartax b.won{color:#3fb96b}.chartax b.lost{color:#e0704f}.tabs a{position:relative}.tabs a .tbadge{position:absolute;top:3px;right:8px;background:var(--tote);color:var(--tote-ink);font-size:10px;font-weight:800;line-height:1;padding:2px 4px;border-radius:8px;border:2px solid var(--edge);min-width:8px;text-align:center}.tabs a.on .tbadge{display:none}.tabs{gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:#05070d!important;box-shadow:0 -2px 0 var(--rule),0 -4px 0 var(--edge)}.tabs a{flex:0 1 100px;border:2px solid #0a0f1c;border-radius:3px;color:#a4acb9;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008,0 2px 0 #000;transition:background .15s,color .15s}.tabs a:active{transform:translateY(1px);box-shadow:inset 1px 1px 0 #0008}.tabs a.on{color:#2a1a03!important;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);text-shadow:0 1px 0 #ffe9a8;box-shadow:inset 1px 1px 0 #fff3b0,inset -1px -2px 0 #8a5a12,0 2px 4px #000a}.stallct{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:1.05em;margin-left:4px;letter-spacing:0}.st-grn{color:#4ade80;text-shadow:0 0 6px #4ade8066}.st-yel{color:#facc15;text-shadow:0 0 6px #facc1566}.st-red{color:#f87171;text-shadow:0 0 6px #f8717166}.vseal{vertical-align:-3px;margin-left:4px;flex:none}.mqnl{display:flex;align-items:center;gap:4px;max-width:100%;min-width:0}.mqnl .mqn{min-width:0}.lgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px}.lpick{width:auto;margin:0;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--btn2);box-shadow:none;font-size:12px}.lpick.on{outline:2px solid var(--tote)}.pxchip{font:800 10px 'Cinzel',serif;padding:0 4px;border:1px solid var(--led);border-radius:3px;color:var(--led);vertical-align:1px}.mqdot{width:18px;height:18px;border-radius:50%}.mqaa{font-size:26px}.mqtile[hidden]{display:none}.mqpg .pg{cursor:pointer}.mqshim{font-size:28px;color:#fff;text-shadow:0 0 6px #fff,0 0 14px #ffd36b}.pager{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:14px 0}.pager .pg,.card .pager a.pg{flex:0 0 auto;display:inline-block;padding:4px 6px;width:auto;min-width:22px;margin:0}.pg{min-width:30px;padding:6px 8px;text-align:center;border:1px solid var(--rule2);text-decoration:none;color:inherit}.pg.on{background:var(--tote);color:#2a1a03;font-weight:800}span.pg:not(.on){opacity:.35}.crest{vertical-align:middle;flex:none}.btag{color:inherit;text-decoration:none;white-space:nowrap}.btitle{font-size:11px;color:var(--tote);letter-spacing:.04em}.pchip{font-size:10px;padding:1px 5px;border:1px solid var(--tote);border-radius:3px;color:var(--tote)}td.own{font-size:13px;max-width:140px;overflow:hidden;text-overflow:ellipsis}.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-bottom:8px}.cpick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:var(--card,#0002);border:1px solid var(--rule2);text-align:center;font-size:13px}.swr{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.sw{width:26px;height:26px;border:2px solid #05070d;display:inline-block}.sw input{opacity:0;width:100%;height:100%;margin:0}.sw:has(input:checked){outline:3px solid var(--tote)}.silk{display:inline-block;vertical-align:-2px;border:1px solid #05070d;border-radius:2px}.drow{display:flex;align-items:center;gap:10px;margin:6px 0}.drow b{width:18px}.drow select{flex:1}.drv{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--rule2)}.drvm{flex:1;min-width:0}.drvr{display:flex;flex-direction:column;align-items:flex-end;font-size:13px}.dstand{width:100%}.dstand td,.dstand th{padding:3px 4px;text-align:left}
+.pk .pkrow{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--rule2);cursor:pointer}.pk .pkrow.on b{color:var(--tote)}.pk .pkrow .sub{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pk input{accent-color:var(--tote);margin:0}
 .fullorder{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:16px;background:#05070dcc}.fobox{width:min(440px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:2px solid var(--rule);border-top:3px solid var(--tote);padding:10px 12px}.foh{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}.foh span{color:var(--ink2);font-size:13px}.forow{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)}.forow.fome{background:#e8a33a22}.fopl{width:34px;flex:none}.fon{flex:1;min-width:0;display:flex;flex-direction:column}.fon small{color:var(--ink2);font-size:12px}.foo{width:44px;text-align:right;color:var(--ink2)}.fom{width:46px;text-align:right}.fohead{font-size:11px;color:var(--ink3);text-transform:uppercase;border-top:0}.mut{margin-top:10px;padding-top:8px;border-top:2px solid var(--rule)}.muh{display:flex;gap:6px;font-size:11px;color:var(--ink3);text-transform:uppercase;padding-bottom:4px}.muh span:first-child{flex:1;color:var(--tote);font-weight:700;letter-spacing:.1em}.murow{display:flex;align-items:center;gap:6px;padding:4px 0}.mun{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.muv{width:58px;text-align:right;font-variant-numeric:tabular-nums}.muex{display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--rule2);font-size:14px}
 .fotap{text-align:center;color:var(--ink3);font-size:12px;margin-top:10px}.fullbtn{margin-left:6px}
 .stat.otc{box-shadow:0 0 0 1px #fde68a,0 0 8px #f0abfcaa}.sv.otc{color:#fde68a;white-space:nowrap}
@@ -1046,6 +1050,82 @@ def training_page():
     return page("Training", body)
 
 
+PICK_PRIZE = 2_500   # the handicapper's game: a correct stake pick earns this flat prize, small next to any purse (set by the chalk measurement)
+
+
+def stakes_tonight():
+    """Stakes on tonight's card that haven't run: the pick'em's slate."""
+    return [s for s in sk.CALENDAR if s.week == G["day"] % c.YEAR and s.result is None]
+
+
+def nominees(s):
+    """Who can be picked in a stake: its live nominees, or for the Crown the ten in line for an invitation."""
+    if s.kind == "final":
+        pool = [h for h in G["horses"] if s.eligible(h) and sk.season_earnings(h, G["day"]) > 0]
+        return sorted(pool, key=lambda h: -sk.season_earnings(h, G["day"]))[:sk.FIELD]
+    return [h for h in s.noms if s.eligible(h)]
+
+
+def pick_news(o, msg):
+    """A pick's outcome, queued for the night's notices (the tick writes those after the stakes run)."""
+    G.setdefault("pick_news", {}).setdefault(o, []).append(msg)
+
+
+def settle_picks(day):
+    """After the stakes run: a correct pick pays the prize and counts for the season; every pick is told how it went."""
+    yr = c.year_of(day)
+    for s in sk.CALENDAR:
+        if s.week != day % c.YEAR or s.result is None:
+            continue
+        for o, picks in G.get("picks", {}).items():
+            hid = picks.pop(s.id, None)
+            if hid is None or o not in c.HUMAN or not s.result:         # no pick, or a walkover: nothing to settle
+                continue
+            tally = G.setdefault("pickers", {}).setdefault(yr, {}).setdefault(o, [0, 0])
+            tally[1] += 1
+            h = next((x for x in s.result if x.id == hid), None)
+            if h is not None and s.result[0] is h:
+                tally[0] += 1; e.book(o, "picks", PICK_PRIZE)
+                pick_news(o, f"Handicapper: your pick {h.name} won the {s.name}. Prize ${PICK_PRIZE:,}")
+            else:
+                ran = f"ran {s.result.index(h) + 1}{'th' if s.result.index(h) + 1 > 3 else ('st', 'nd', 'rd')[s.result.index(h)]}" if h else "didn't start"
+                name = h.name if h else next((x.name for x in G["horses"] if x.id == hid), "your pick")
+                pick_news(o, f"Handicapper: {name} {ran} in the {s.name}; {s.result[0].name} won it")
+
+
+def name_handicapper(year):
+    """At the Crown: the season's best handicapper by winners picked, with at least five picks made."""
+    tally = G.get("pickers", {}).get(year, {})
+    best = max((o for o in tally if tally[o][1] >= 5), key=lambda o: (tally[o][0], -tally[o][1]), default=None)
+    if best is not None:
+        P(best).setdefault("hcap", []).append(year)
+        pick_news(best, f"Handicapper of the Year: {tally[best][0]} winners from {tally[best][1]} picks. The title is yours.")
+
+
+def picks_section():
+    """The handicapper's game on the Stakes page: tonight's stakes with a pick per stake, and the season's table."""
+    day, wk = G["day"], G["day"] % c.YEAR
+    mine = G.setdefault("picks", {}).setdefault(ME, {})
+    cards = ""
+    for s in stakes_tonight():
+        noms = nominees(s)
+        if len(noms) < 2:
+            continue
+        line = c.tote_odds(noms)
+        rows = "".join(f"<label class='pkrow{' on' if mine.get(s.id) == h.id else ''}'><input type=radio name=h value={h.id}{' checked' if mine.get(s.id) == h.id else ''} onchange='this.form.submit()'>"
+                       f"<b>{esc(h.name)}</b><span class=sub>{barn_tag(h.owner, 14)}</span><span class=money>{'%d-%d' % line[h.id]}</span></label>"
+                       for h in sorted(noms, key=lambda h: line[h.id][0] / line[h.id][1]))
+        cards += (f"<form method=post action=/pick class='card pk'><input type=hidden name=s value={s.id}><div class=row style='justify-content:space-between'>"
+                  f"<b>{esc(s.name)}</b><span class=sub>${s.purse:,.0f} · tonight</span></div>{rows}</form>")
+    yr = c.year_of(day); tally = G.get("pickers", {}).get(yr, {})
+    table = "".join(f"<tr{brow(o)}><td>{k + 1}</td><td class=sbarn>{barn_tag(o)}{' &#127942;' * len(P(o).get('hcap', []))}</td><td>{t[0]}</td><td>{t[1]}</td><td>{100 * t[0] // t[1] if t[1] else 0}%</td></tr>"
+                    for k, (o, t) in enumerate(sorted(tally.items(), key=lambda x: (-x[1][0], x[1][1]))))
+    return ("<h2 id=picks>The handicapper's game</h2>"
+            f"<p class=sub>Pick the winner of each stake before it runs; a winner pays a ${PICK_PRIZE:,} prize, and the season's best handicapper is named at the Crown. Free to play; picks lock at post time.</p>"
+            + (cards or "<p class=sub>No stakes tonight. The next ones are below.</p>")
+            + (f"<div class=card><b>Year {yr} handicappers</b><table><tr><th>#</th><th>Barn</th><th>Winners</th><th>Picks</th><th>Rate</th></tr>{table}</table></div>" if table else ""))
+
+
 def race_banner():
     """At a glance: your races on tonight's posted program, and fit horses not yet entered for tomorrow."""
     bar = lambda msg, href: (f"<a href={href} style='display:block;margin:8px 0;padding:10px 12px;border-radius:6px;background:#e8a33a;color:#111;"
@@ -1059,6 +1139,9 @@ def race_banner():
     if idle:
         left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
         out += bar(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow. Entries drawn in {left // 3600}h {left % 3600 // 60}m", "/")
+    open_picks = [s for s in stakes_tonight() if s.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s)) >= 2]
+    if open_picks:
+        out += bar(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''} tonight: make your picks", "/stakes#picks")
     return out
 
 
@@ -1344,6 +1427,10 @@ GUIDE = [
          "your barn a few weeks before it can be sold on. You can also buy an unraced 3-year-old from the house, sight unseen: most are "
          "ordinary, a few are something special. The <b>Shop</b> sells Post Time Tonic, with more to come. Sell your own horses on "
          "the board, or to the house, which pays on the record: more for a proven earner, a floor for the rest."),
+        ("The handicapper's game", "Every stake on the calendar is also a contest for the barns: pick its winner from the nominees "
+         "before it runs, one pick a stake, free. A winner earns a small prize from the track, the same for every stake, and the "
+         "season's best handicapper is named at the Crown. It's a prize for reading the form, not a wager: nothing is staked and "
+         "nothing can be lost."),
         ("Fair play", "Nothing you can buy for real money wins a race, buys a horse, or makes one grow faster: horses are earned on the "
          "track, in the ring and in the breeding shed, at the same price for everyone. Each person runs one barn. The stewards review "
          "sales that look wrong, such as horses passed between the same two barns for far under their worth, and a barn under review "
@@ -3542,6 +3629,7 @@ def stakes_page(qs=None):
         for y in shown)
     body = ("<p class=sub>The Crown closes the season: the ten top earners in each division are invited to its championship, "
             "and the winner is that year's champion. One title per division per year.</p>"
+            + picks_section() +
             "<h2>Crown standings</h2>" + stand +
             "<h2>This season's stakes</h2>" + rows + "<h2 id=champs>Champions</h2>" + (honour or "<p class=sub>The first Crowns are run in weeks 50 to 52.</p>"))
     return page("Stakes & Crown", body)
@@ -4227,6 +4315,12 @@ class H(BaseHTTPRequestHandler):
             return self.send(admin_page(f"Clock frozen at {at}." if at else "Clock running again."))
         if p == "/admin/undo" and ME == ADMIN:
             return self.send(admin_page("Last race night undone." if undo_night() else "Nothing to undo."))
+        if p == "/pick":                                                  # the handicapper's game: one pick per stake, changeable until it runs
+            s = next((s for s in stakes_tonight() if s.id == q.get("s")), None)
+            hid = int(q["h"]) if str(q.get("h", "")).isdigit() else None
+            if s and any(h.id == hid for h in nominees(s)):
+                G.setdefault("picks", {}).setdefault(ME, {})[s.id] = hid; save()
+            return self.send("", 303, "/stakes#picks")
         if p == "/admin/review" and ME == ADMIN:                        # the stewards' call on a flagged pair
             a, b, do = (int(q.get(k, -1)) if str(q.get(k, "")).isdigit() else -1 for k in ("a", "b")), q.get("do")
             a, b = a
