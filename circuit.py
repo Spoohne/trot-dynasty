@@ -253,8 +253,9 @@ SHAPE_CAP = 1.0          # how far training can push one trait above (or below) 
 SHAPED = ["early_speed", "late_speed", "stamina", "gait"]   # durability isn't trained into a horse
 FOAL_DISCOUNT = 15       # shortcut: a 2YO rates ~15 under its parents' public est; upgrade when the public sees maturity
 
-for attr in ("starts", "wins", "places", "shows", "earnings", "costs", "owner", "claimed", "ran_claimer", "retired"):
+for attr in ("starts", "wins", "places", "shows", "earnings", "costs", "owner", "claimed", "ran_claimer", "retired", "handled"):
     setattr(Horse, attr, 0)
+Horse.job = None         # the day sheet's stamp: (day, job, focus) once the owner has worked the youngster this week
 BREEDING_UNTIL = 20      # retired stock leaves the game at this age
 
 
@@ -342,11 +343,18 @@ def drain(h):
     return max(0.6, min(1.4, 1 - 0.05 * h.potential["durability"]))
 
 
+DEV_W = 0.12             # how much of the gap between developed and ceiling shows at the gate: a green 2YO (2 under
+                         # everywhere) is ~6 rating, four lengths, short of its ceiling until work and racing close it
+JOBS = {   # the owner's day sheet for a youngster: development step, shaping step, freshness cost. "stable" is the idle week
+    "stable": (0.14, 0.0, 4), "jog": (0.2, 0.06, 4), "school": (0.2, 0.09, 8), "train": (0.5, 0.15, 15)}
+YOUNG = 3                # the day sheet covers yearlings through this age; older horses are kept sound, not made
+
+
 def current(self, track="mile"):
-    """What the horse races with today: its full genetic ceiling for its age (every horse is assumed trained
-    perfectly; trainers don't differ), dulled when tired. Being idle never hurts a horse.
-    shortcut: training/shaping is off for now; restore developed/shape/edge here when the training mechanic returns."""
-    s = {t: self.ceiling(t) for t in RACE_TRAITS}
+    """What the horse races with today: its genetic ceiling for its age, short by a share of what training hasn't
+    developed yet, plus the shape its owner's hands have given it, dulled when tired. Being idle never hurts a horse."""
+    shape = getattr(self, "shape", {})
+    s = {t: self.ceiling(t) - DEV_W * max(0, self.ceiling(t) - self.developed[t]) + shape.get(t, 0.0) for t in RACE_TRAITS}
     if self.freshness < 50:
         for t in s:
             s[t] -= (50 - self.freshness) / 8
@@ -361,19 +369,22 @@ def plasticity(h):
     return {2: 2.0, 3: 1.5}.get(h.age, 0.5 if h.age >= 7 else 1.0)
 
 
-def train(h, focus, hard):
+def train(h, focus, hard, job=None):
+    """A week's work. job names the day sheet's job (see JOBS); without one, hard/light is the old trainer's week."""
     tr = trainer_of(h)
-    gain = (0.5 if hard else 0.2) * (0.5 if tr.quirk == "slow to fit" else 1)
+    job = job or ("train" if hard else "jog")
+    gain, shaping, cost = JOBS[job]
+    gain *= 0.5 if tr.quirk == "slow to fit" else 1
     for t in RACE_TRAITS:
         step = gain if t == focus else gain / 5
         h.developed[t] = min(h.ceiling(t), h.developed[t] + step)
-    # shaping: the focus comes up, the rest give a little. Genetics fix the total, the trainer the shape.
+    # shaping: the focus comes up, the rest give a little. Genetics fix the total, the owner's hands the shape.
     boost = 2 if tr.perk == "good with 2YOs" and h.age <= 3 else 1
-    d = min((0.15 if hard else 0.06) * plasticity(h) * boost, SHAPE_CAP - h.shape[focus])
+    d = min(shaping * plasticity(h) * boost, SHAPE_CAP - h.shape[focus])
     if d > 0 and focus in SHAPED:
         for t in SHAPED:
             h.shape[t] = max(-SHAPE_CAP, h.shape[t] + (d if t == focus else -d / (len(SHAPED) - 1)))
-    h.freshness = max(0, h.freshness - (15 if hard else 8) * drain(h))
+    h.freshness = max(0, h.freshness - cost * drain(h))
 
 
 def rest(h):
@@ -664,11 +675,17 @@ def plan(h):
     if getattr(h, "order", None) == "retire":
         retire(h)
         return "retired"
-    if getattr(h, "order", None):
+    if getattr(h, "order", None) and h.order != "rest":
         return h.order
+    job = getattr(h, "job", None)                              # the owner's day sheet: this week's job for a youngster
+    if job and job[0] == DAY[0] and h.age <= YOUNG:
+        return "rest" if job[1] == "out" else ("train", "gait" if job[1] == "school" else job[2], job[1] == "train", job[1])
     p = trainer_of(h).plan(h)
     if h.owner in HUMAN and p == "race":
-        return "rest"                                          # fresh, fit, and not entered
+        p = "rest"                                             # fresh, fit, and not entered
+    if p == "rest" and h.age <= YOUNG and h.freshness >= 35:   # the stable jogs an idle youngster: development, no shaping
+        gap = {t: h.ceiling(t) - h.developed[t] for t in RACE_TRAITS}
+        return ("train", max(gap, key=gap.get), False, "stable")
     return p
 
 
@@ -1004,8 +1021,10 @@ def draw_card(day, horses, skip=()):
             if p == "rest" and h.owner in HUMAN and not getattr(h, "order", None) and h.freshness >= 50:
                 h.last = "not entered; rested"
         elif isinstance(p, tuple) and p[0] == "train":
-            train(h, p[1], p[2])
-            h.last = f"trained {p[1]}{' hard' if p[2] else ''}"
+            job = p[3] if len(p) > 3 else None
+            train(h, p[1], p[2], job)
+            h.last = {"stable": "jogged by the stable", "jog": f"jogged, {p[1].replace('_', ' ')}", "school": "schooled on its gait",
+                      "out": "turned out"}.get(job, f"trained {p[1].replace('_', ' ')}{' hard' if p[2] else ''}")
     races = []
     for key, entries in cards.items():
         group, sex, name, purse, tag, track = key
@@ -1217,7 +1236,27 @@ if __name__ == "__main__":
         else: train(y, p[1], p[2])
     gap1 = sum(y.ceiling(t) - y.developed[t] for t in RACE_TRAITS)
     print(f"2YO gap to ceiling: start {gap0:4.1f}  after 26 weeks {gap1:4.1f}")
-    # (training is off: every horse races at its ceiling (see current), so the developed gap no longer matters)
+    assert gap1 < gap0 / 2, "the stable's jogging closes most of a green 2YO's gap in a season"
+    # The day sheet: an owner's job is the week's order, a stable week develops without shaping, and the green gap shows at the gate.
+    y = founder(); y.age = 2; init_public(y)
+    y.developed = {t: y.ceiling(t) - 2.0 for t in RACE_TRAITS}
+    y.freshness = 70.0; green = rating_tonight(y)
+    y.developed = {t: y.ceiling(t) for t in RACE_TRAITS}
+    print(f"a green 2YO races {rating_tonight(y) - green:.1f} rating under its made self")
+    assert 4 < rating_tonight(y) - green < 8, "a green 2YO is a few lengths short, not a class"
+    y.owner = 0; HUMAN.add(0); y.freshness = 70.0
+    assert plan(y)[3] == "stable", "an idle youngster gets the stable's jog"
+    y.job = (DAY[0], "school", "stamina")
+    assert plan(y) == ("train", "gait", False, "school"), "School is gait work whatever the focus"
+    y.job = (DAY[0], "train", "early_speed"); y.shape = {t: 0.0 for t in RACE_TRAITS}
+    train(y, *plan(y)[1:]); sh = y.shape["early_speed"]
+    y.shape = {t: 0.0 for t in RACE_TRAITS}; train(y, "early_speed", False, "stable")
+    assert sh > 0 and y.shape["early_speed"] == 0, "only the owner's hand shapes a horse"
+    y.job = (DAY[0] - 1, "train", "early_speed")
+    assert plan(y)[3] == "stable", "a stale stamp is last week's job"
+    y.age = YOUNG + 1; y.job = (DAY[0], "train", "early_speed")
+    assert plan(y) == "rest", "the sheet ends at three: older horses are kept, not made"
+    HUMAN.discard(0)
 
     # Shaping: 10 hard weeks on gate speed move a 2YO's shape by ~+1 there and down elsewhere,
     # the total stays near zero, and a shape cannot exceed the cap.

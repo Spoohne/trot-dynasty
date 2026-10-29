@@ -33,7 +33,7 @@ BARN_FULL = 10           # above this an AI barn sells its weakest, so there are
 LEVELS = [  # name, stable stalls (racers), can breed, price, breeding-barn head (retired stock)
     ("starter", 5, False, 0, 0),
     ("working barn", 10, False, 60_000, 0),
-    ("breeding shed", 10, True, 90_000, 4),
+    ("breeder's license", 10, True, 90_000, 4),
     ("farm", 20, True, 200_000, 10),
     ("estate", 40, True, 500_000, 20),
 ]
@@ -173,6 +173,12 @@ def start_from_history(horses, owner, racers=3):
         h.owner = owner
         if not h.retired:
             c.assign(h, c.BARN_TRAINER.get(owner, c.HOUSE)) or c.assign(h, c.HOUSE)
+    # two yearlings from the house's band, papers paid: the raising side from the first day, out of the middle of the crop
+    band = sorted((f for f in nursery if f.age == 1 and f.owner not in human), key=lambda f: f.est)
+    mid = band[len(band) // 4: len(band) - len(band) // 4]
+    for f in rng.sample(mid, min(2, len(mid))):
+        f.owner, f.unreg = owner, False
+        picks.append(f)
     settle(horses)
     cash[owner] = money
     ledger[owner] = {}
@@ -507,10 +513,33 @@ def on_the_way(owner):
     return sum(f.owner == owner for f in nursery)
 
 
+HANDLED_FULL = 40        # yearling sessions that bring it to the races a full point further along: most of the year, not every day
+
+
 def grow(f, d):
-    """A youngster's stats this week: from well short of its 2-year-old self at birth up to it on its second birthday."""
+    """A youngster's stats this week: from well short of its 2-year-old self at birth up to it on its second birthday,
+    two under its ceiling, or a point closer for a yearling its owner worked through the year."""
     g = min(1.0, (f.age + d % c.YEAR / c.YEAR) / 2)
-    f.developed = {t: f.ceiling(t, 2) - 2.0 - 3.0 * (1 - g) for t in sim.RACE_TRAITS}
+    hand = min(1.0, getattr(f, "handled", 0) / HANDLED_FULL)
+    f.developed = {t: f.ceiling(t, 2) - 2.0 + hand - 3.0 * (1 - g) for t in sim.RACE_TRAITS}
+
+
+def handle(f, owner, day, job, focus):
+    """A yearling's day on the sheet: one session a week, counted toward its start at 2, and shaped by your focus.
+    Turning out is a day off: counted for the stamp, nothing more."""
+    if f not in nursery or f.owner != owner or f.age != 1 or job not in c.JOBS and job != "out" or (getattr(f, "job", None) or (None,))[0] == day:
+        return False
+    f.job = (day, job, focus)
+    if job == "out":
+        return True
+    f.handled = getattr(f, "handled", 0) + 1
+    focus = "gait" if job == "school" else focus
+    d = min(c.JOBS[job][1] * 2.5, c.SHAPE_CAP - f.shape[focus])         # a yearling is the most moldable it will ever be
+    if d > 0 and focus in c.SHAPED:
+        for t in c.SHAPED:
+            f.shape[t] = max(-c.SHAPE_CAP, f.shape[t] + (d if t == focus else -d / (len(c.SHAPED) - 1)))
+    grow(f, day)
+    return True
 
 
 def nursery_year(horses):
@@ -629,7 +658,7 @@ def why_not_breed(mare, owner, horses):
     if any(m is mare for m, _ in bookings):
         return "already booked this season"
     if not can_breed(owner):
-        return "your barn needs the breeding shed first (Barn upgrades)"
+        return "your barn needs the Breeder's License first (Barn upgrades)"
     if barn_size.get(owner, 0) + on_the_way(owner) >= stalls(owner):
         return "no free stall for the foal: sell, scrap or upgrade the barn first"
     return None
@@ -890,7 +919,7 @@ if __name__ == "__main__":
     assert buy(next(iter(listings.values()))[0], 0) is None, "a full starter barn can't buy"
     assert all(s.retired for s in studs(horses)) and studs(horses), "only retired horses stand at stud"
     cash[0] += 150_000 + house_price(studs(horses)[-1])        # the levels, and one cover at the house price
-    assert upgrade(0) == "working barn" and upgrade(0) == "breeding shed" and stalls(0) == 10
+    assert upgrade(0) == "working barn" and upgrade(0) == "breeder's license" and stalls(0) == 10
     assert book_mare(mare, studs(horses)[-1], 0, horses) is None, "a racing mare can't be bred"
     assert retire(mare, 0), "the shed gives the breeding barn its first head"
     assert book_mare(mare, studs(horses)[-1], 0, horses), "a retired mare in a barn with a shed can"
@@ -967,6 +996,18 @@ if __name__ == "__main__":
         p * (1 - c.DRIVER - st.mean(t.cut for t in c.ROSTER)) - c.YEAR * UPKEEP for p in (400_000, 300_000)) * (1 + 1 + .88 + .76 + .64), -3)
     star.seasons[9][4] = star.seasons[8][4] = 20_000
     assert house_offer(star) == SCRAP, "a record that didn't cover its board gets the floor"
+    # A yearling on the day sheet: handled through the year it comes to the races a point further along, shaped by its owner.
+    yl = c.foal(sire_, dam_); yl.age, yl.owner = 1, 0; nursery.append(yl); grow(yl, 0)
+    was = dict(yl.developed)
+    assert handle(yl, 0, 7, "train", "early_speed") and not handle(yl, 0, 7, "jog", "gait"), "one session a week"
+    assert yl.shape["early_speed"] > 0 and yl.developed["gait"] > was["gait"], "a session shapes and brings it along"
+    for d in range(8, 8 + HANDLED_FULL):
+        handle(yl, 0, d, "jog", "stamina")
+    grow(yl, 0)
+    assert all(abs(yl.developed[t] - (yl.ceiling(t, 2) - 1.0 - 3.0 * (1 - 0.5))) < 1e-9 for t in sim.RACE_TRAITS), "a full year's handling: one under, not two"
+    yl.age = 2
+    assert not handle(yl, 0, 99, "jog", "stamina"), "the nursery sheet is for yearlings"
+    nursery.remove(yl)
     star.seasons[9][4] = star.seasons[8][4] = 400_000
     assert abs(value(star) - house_offer(star) * 1.5) < 1, "the board asks half again what the house pays for a proven earner"
     got[1][0].starts = 1
