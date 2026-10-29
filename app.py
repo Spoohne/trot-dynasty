@@ -3438,12 +3438,12 @@ def claimers_page(qs=None):
         out += f"<div class=pgm>{strip}{entry}</div>"
     pager = ""
     if n > 1:
-        lnk = lambda k, t: f"<a class=pg href='{link(p=k)}'>{t}</a>" if 1 <= k <= n and k != pg else f"<span class='pg{' on' if k == pg else ''}'>{t}</span>"
+        lnk = lambda k, t: f"<a class=pg href='{link(p=k)}#list'>{t}</a>" if 1 <= k <= n and k != pg else f"<span class='pg{' on' if k == pg else ''}'>{t}</span>"   # lands on the entries, not the page top
         pager = f"<div class=pager>{lnk(pg - 1, '&laquo;')}{''.join(lnk(k, k) for k in range(1, n + 1))}{lnk(pg + 1, '&raquo;')}</div>"
     note = (f"<p class=sub>Every horse in a claiming race tonight, each as its program entry. A claim is binding if the horse races, whatever the result; claims stay open until post time. "
             f"You can claim {max(0, room)} more tonight.</p>")
     body = (f"<style>{PP_CSS}</style><style>.pgm{{margin:10px 0}}.pgm .pgh{{cursor:default}}</style>" + market_tabs("claimers") + note + head
-            + f"<p class=sub>{len(rows)} claimer{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>"
+            + f"<p class=sub id=list style='scroll-margin-top:8px'>{len(rows)} claimer{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>"
             + (out or "<p class=sub>No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 8 PM") + ".</p>") + pager)
     return page("Claimers", body)
 
