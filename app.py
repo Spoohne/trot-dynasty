@@ -483,7 +483,7 @@ CSS = """
 --tote:#e8a33a;--tote-ink:#2a1a03;--win:#3fb96b;--loss:#e0704f;
 --p1:#d8322f;--p2:#1f4fbf;--p3:#f3f3f3;--p4:#1f8f3f;--p5:#1a1a1a;--p6:#f2d233;--p7:#e88fb0;--p8:#9a9a9a;--p9:#6b3fa0;--p10:#7fc4e8;--p11:#9acd32;--p12:#7a4a26}
 body{font-family:'Barlow Semi Condensed',system-ui,sans-serif;margin:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.35}
-.w{max-width:420px;margin:0 auto;padding:12px 14px 90px}
+.w{max-width:420px;margin:0 auto;padding:12px 14px calc(104px + env(safe-area-inset-bottom,0px))}   /* clear of the tab bar and the phone's home indicator */
 a{color:var(--ink);text-decoration:none} h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.01em} h2{font-size:17px;margin:14px 0 6px}
 .top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--ink2);gap:10px;border-bottom:1px solid var(--rule);padding-bottom:8px}
 .tabs{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;background:#0d1015;border-top:1px solid var(--rule);padding:4px 0 calc(4px + env(safe-area-inset-bottom))}
