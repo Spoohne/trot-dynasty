@@ -1412,9 +1412,8 @@ def welcome_page():
     name = P().get("stable") or "Your Stable"
     rename = ("<form method=post action=/stablename class=rename><input name=n maxlength=28 placeholder='Name your stable' aria-label='Stable name'>"
               "<button>Save</button></form>") if not P().get("stable") else ""
-    rail = "".join(f"<i style='left:{x}%'></i>" for x in range(2, 100, 7))
     body = (f"<div class=launch><div class=sky><div class=in><img class=lg src=/mock/brand/logo_text.png alt='Trot Dynasty'>"
-            f"<img class=tr src=/mock/brand/title_trotter.png alt=''></div></div><div class=rail>{rail}</div><div class=tag>Breed · Race · Win</div>"
+            f"<img class=tr src=/mock/brand/title_trotter.png alt=''></div></div><div class=tag>Breed · Race · Win</div>"
             f"<div class=away><small>Welcome back</small><b>{esc(name)}</b>{rename}"
             f"<em>Year {c.year_of(day)}, week {day % c.YEAR + 1} · ${e.cash[ME]:,.0f}</em></div>"
             f"{race_banner()}<a class=enter href=/>Enter the barn</a></div>")
@@ -1427,9 +1426,8 @@ def login_page(signup_, error="", local=False):
     claim = ("<label class=claim><input type=checkbox name=claim value=1 checked> Take over the existing playtest stable</label>"
              if signup_ and local and "user" not in P(0) else "")
     other = ("<p class=alt>Have an account? <a href=/login>Log in</a></p>" if signup_ else "<p class=alt>New here? <a href=/signup>Make an account</a></p>")
-    rail = "".join(f"<i style='left:{x}%'></i>" for x in range(2, 100, 7))
     body = (f"<div class=launch><div class=sky><div class=in><img class=lg src=/mock/brand/logo_text.png alt='Trot Dynasty'>"
-            f"<img class=tr src=/mock/brand/title_trotter.png alt=''></div></div><div class=rail>{rail}</div><div class=tag>Breed · Race · Win</div>"
+            f"<img class=tr src=/mock/brand/title_trotter.png alt=''></div></div><div class=tag>Breed · Race · Win</div>"
             f"<form method=post action={'/signup' if signup_ else '/login'} class='away auth'><small>{'Make your stable' if signup_ else 'Welcome back'}</small>"
             + (f"<p class=err>{esc(error)}</p>" if error else "")
             + "<input name=user placeholder='Name' autocomplete=username autocapitalize=off required>"
@@ -1448,9 +1446,8 @@ LAUNCH_CSS = """
 .sky{position:relative;min-height:240px;background:var(--sky) url(/mock/pixel/panorama.png) 38% bottom/auto 100% repeat-x;image-rendering:pixelated}   /* sized by the title and trotter: nothing clips */
 .sky:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#070a1480 0,#070a1420 35%,#070a14 100%)}
 .sky .in{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:max(28px,env(safe-area-inset-top)) 16px 0}
-.launch .lg{width:min(72%,340px);filter:drop-shadow(0 6px 0 #000)}.launch .tr{display:block;width:min(66%,300px);margin:4px auto -6px;filter:drop-shadow(0 10px 8px #000c)}   /* the trotter's hooves meet the rail */
+.launch .lg{width:min(72%,340px);filter:drop-shadow(0 6px 0 #000)}.launch .tr{display:block;width:min(66%,300px);margin:4px auto 0;filter:drop-shadow(0 10px 8px #000c)}
 @media (min-width:700px){.launch .lg{width:min(88%,380px)}.launch .tr{width:min(78%,320px)}}
-.rail{height:6px;background:#e8eef4;box-shadow:0 2px 0 #000,0 -1px 0 #000;position:relative;z-index:1}.rail i{position:absolute;top:-12px;width:3px;height:18px;background:#e8eef4;box-shadow:1px 0 0 #000}
 .launch .tag{font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.42em;text-transform:uppercase;color:var(--led);margin:14px 0 18px}
 .auth,.alt{max-width:430px;margin-left:auto;margin-right:auto}.auth{margin:0 max(16px,calc(50% - 215px))}
 .away{text-align:left;background:var(--well,#0b1120);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge);padding:14px 16px}
