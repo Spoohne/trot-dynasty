@@ -247,7 +247,8 @@ if (RACE_ID) document.getElementById("flat").href = "/replay2d/" + encodeURIComp
 const RW = 960, RH = 540;
 const cv = document.getElementById("cv");
 const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true });   // so a frame can be copied out (video export)
-const fit = () => { const w = cv.clientWidth || RW, h = cv.clientHeight || RH; renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)); renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+const DPR = +new URLSearchParams(location.search).get("dpr") || Math.min(2, devicePixelRatio || 1);   // ?dpr=1 to test a phone at lower resolution
+const fit = () => { const w = cv.clientWidth || RW, h = cv.clientHeight || RH; renderer.setPixelRatio(DPR); renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
 addEventListener("resize", () => fit()); document.addEventListener("fullscreenchange", () => fit());
 // iPhones fire resize before the new layout settles (rotation, fullscreen): watch the canvas itself, so the picture is
 // never drawn at the old shape and stretched into the new one
@@ -1052,8 +1053,12 @@ Promise.all([cycleLoaded, topLoaded, angLoaded, driveLoaded]).then(async () => {
   watchCard();
 });
 let last = performance.now(), ui = 0;
+// ?fps: a frame counter in the corner, for checking the replay on a phone
+const fpsEl = new URLSearchParams(location.search).has("fps") ? document.body.appendChild(Object.assign(document.createElement("div"), { style: "position:fixed;left:6px;bottom:6px;z-index:9999;background:#000c;color:#0f0;font:bold 14px monospace;padding:3px 6px" })) : null;
+let fpsN = 0, fpsT = performance.now(), fpsMin = 99;
 function loop(now) {
   const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;
+  if (fpsEl) { fpsN++; if (now - fpsT >= 1000) { const f = Math.round(fpsN * 1000 / (now - fpsT)); fpsMin = Math.min(fpsMin, f); fpsEl.textContent = `${f} fps  min ${fpsMin}  dpr ${DPR}  ${cv.width}x${cv.height}`; fpsN = 0; fpsT = now; } }
   if (ready && window.CARD_UP) { renderer.render(scene, cam); requestAnimationFrame(loop); return; }   // a tip card is up: hold the intro behind it
   if (ready) {
     const inIntro = introT < INTRO && ctl.t === 0;
