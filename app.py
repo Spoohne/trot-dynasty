@@ -4382,8 +4382,8 @@ class H(BaseHTTPRequestHandler):
                 ref = find_horse(name)
                 if not ref:
                     return self.send(admin_page(f"No horse called {name}."))
-                pool = [x for x in G["horses"] if x.owner in G["ai"] and not x.retired and c.age_group(x) == c.age_group(ref) and x.id not in e.listings and x.id not in c.CLAIMS and not on_card(x)]
-                h = min(pool, key=lambda x: (abs(x.est - ref.est), -x.starts), default=None)
+                pool = [x for x in G["horses"] if x.owner in G["ai"] and not x.retired and x.id not in e.listings and x.id not in c.CLAIMS and not on_card(x)]
+                h = min(pool, key=lambda x: (round(abs(x.est - ref.est)), c.age_group(x) != c.age_group(ref), -x.starts), default=None)   # nearest rating, same age if it can
             else:
                 h = find_horse(name)
                 if h and h.owner in c.HUMAN:
