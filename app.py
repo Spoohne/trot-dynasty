@@ -841,7 +841,7 @@ TABS = (("barn", "/", "Barn", "<path d='M3 11 12 4l9 7v9H3z'/><path d='M9 20v-6h
         ("market", "/market", "Market", "<path d='M4 7h16l-1.5 11h-13z'/><path d='M9 7a3 3 0 0 1 6 0'/>"),
         ("breed", "/studs", "Breeding", "<path d='M12 20s-7-4.3-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.7-7 10-7 10z'/>"),
         ("more", "/more", "Manage", "<circle cx='5' cy='12' r='1.5'/><circle cx='12' cy='12' r='1.5'/><circle cx='19' cy='12' r='1.5'/>"))
-TAB_OF = {"Training": "train", "Compendium": "more", "Shop": "market", "Claimers": "market", "Stable Manager": "barn", "Tonic": "barn", "Stakes & Crown": "more", "Breeding": "breed", "Breed": "breed", "Entries": "more", "Sale board": "market", "Stud book": "breed", "Results": "more", "Trainers": "more", "Stakes": "more",
+TAB_OF = {"Training": "train", "Compendium": "more", "Shop": "market", "Claimers": "market", "Sponsor a stake": "market", "Stable Manager": "barn", "Tonic": "barn", "Stakes & Crown": "more", "Breeding": "breed", "Breed": "breed", "Entries": "more", "Sale board": "market", "Stud book": "breed", "Results": "more", "Trainers": "more", "Stakes": "more",
           "Barn upgrades": "more", "Barn identity": "more", "More": "more", "Manage": "more", "Earnings": "more", "Leaderboards": "more", "Archive": "more"}
 
 
@@ -1336,23 +1336,67 @@ def name_handicapper(year):
         pick_news(best, f"Handicapper of the Year: {tally[best][0]} winners from {tally[best][1]} picks. The title is yours.")
 
 
+KIND_WORD = {"classic": "Classic", "memorial": "Memorial", "trophy": "Trophy", "final": "The Crown", "leg": "Sire Stakes leg",
+             "opener": "Season opener", "invitational": "Invitational", "signature": "Signature stake"}
+
+
 def sponsor_section():
-    """Sponsor a stake: the season-start auction in Markers, open for the first weeks of the season."""
+    """On the Stakes page: a line to the Sponsor a stake page while the auction is open, with your standing."""
     auc = G.get("sponsor_auction", {})
     if not auc:
         return ""
+    lead = sum(1 for a in auc.values() if a["leader"] == ME)
+    return (f"<a class='btn big' href=/sponsor>Sponsor a stake · {len(auc)} open</a>"
+            f"<div class=sub style='margin:4px 0 12px'>The season's stakes are up for sponsorship in Markers.{f' You lead {lead}.' if lead else ''}</div>")
+
+
+def sponsor_page(qs=None):
+    """Sponsor a stake, its own page: the season-start auction in Markers, filtered by division and kind, sorted
+    by purse, week or current bid, twelve to a page, with a view of your own bids."""
+    qs = qs or {}
+    auc = G.get("sponsor_auction", {})
+    div, kind, mine_, sort = qs.get("d", "all"), qs.get("k", "all"), qs.get("m") == "1", qs.get("s", "purse")
+    link = lambda **kw: "/sponsor?" + "&".join(f"{k}={v}" for k, v in {"d": div, "k": kind, "m": int(mine_), "s": sort, **kw}.items())
+    chips = lambda items, cur, key: "<div class=fchips>" + "".join(
+        f"<a href='{link(**{key: k, 'p': 1})}' class='{'on' if str(cur) == str(k) else ''}'>{label}</a>" for k, label in items) + "</div>"
     day = G["day"]; left = SPONSOR_WEEKS - day % c.YEAR
-    rows = ""
-    for s in sorted((x for x in sk.CALENDAR if x.id in auc), key=lambda x: -x.purse):
-        a = auc[s.id]; nxt = a["price"] if a["leader"] is None else a["price"] + sponsor_step(a["price"])
+    rows = [x for x in sk.CALENDAR if x.id in auc]
+    if div != "all":
+        rows = [x for x in rows if sk.DIVISION[(x.group, x.sex)] == div]
+    if kind != "all":
+        rows = [x for x in rows if getattr(x, "kind", "trophy") == kind]
+    if mine_:
+        rows = [x for x in rows if auc[x.id]["leader"] == ME]
+    keyf = {"purse": lambda x: -x.purse, "week": lambda x: x.week, "bid": lambda x: -auc[x.id]["price"], "name": lambda x: x.name}[sort if sort in ("purse", "week", "bid", "name") else "purse"]
+    rows.sort(key=keyf)
+    PER = 12; n = max(1, -(-len(rows) // PER)); pg = max(1, min(n, int(qs.get("p", 1)) if str(qs.get("p", "")).isdigit() else 1))
+    lead = [x for x in sk.CALENDAR if x.id in auc and auc[x.id]["leader"] == ME]
+    head = (f"<p class=sub>Your barn's name and colors on a stake for the season, in Markers, to the highest bid when the auction closes"
+            f"{f' in {left} night' + ('s' if left != 1 else '') if left > 0 else ' tonight'}. An outbid is refunded on the spot. A sponsored stake runs richer for every barn in it; "
+            "the sponsor's horse races it on the same terms as any. The Crown is never for sale.</p>"
+            f"<div class='card' style='display:flex;justify-content:space-between;align-items:center;gap:8px'><span>You hold {mk_tag(markers())}</span>"
+            f"<span class=sub>Leading {len(lead)} · {sum(auc[x.id]['price'] for x in lead):,} Markers in bids</span></div>"
+            + chips([("purse", "By purse"), ("week", "By week"), ("bid", "By current bid"), ("name", "By name")], sort, "s")
+            + chips([("all", "All divisions")] + [(d, d) for d in sk.DIVISION.values()], div, "d")
+            + chips([("all", "All kinds")] + [(k, w) for k, w in KIND_WORD.items() if k != "final"], kind, "k")
+            + chips([(0, "Every stake"), (1, "My bids")], int(mine_), "m"))
+    out = ""
+    for x in rows[(pg - 1) * PER: pg * PER]:
+        a = auc[x.id]; nxt = a["price"] if a["leader"] is None else a["price"] + sponsor_step(a["price"])
         who = "no bids yet" if a["leader"] is None else ("you lead" if a["leader"] == ME else f"{esc(barn_name(a['leader']))} leads")
         can = a["leader"] != ME and markers() >= nxt and not P().get("frozen")
-        rows += (f"<div class='skrow k{getattr(s, 'kind', 'trophy')}'><div class=skl><b>{esc(s.name)}</b><span class=skdiv>{sk.DIVISION[(s.group, s.sex)]} · week {s.week + 1} · ${s.purse:,.0f}</span></div>"
-                 f"<div class=skr><b class=mk>{MK_ICON(16)}{a['price']:,}</b><span class=sub>{who}</span>"
-                 f"<form method=post action=/sponsor class=inline><input type=hidden name=s value={s.id}><button class=sec style='padding:4px 10px'{'' if can else ' disabled'}>Bid {nxt:,}</button></form></div></div>")
-    return ("<h2 id=sponsor>Sponsor a stake</h2>"
-            f"<p class=sub>Your barn's name and colors on a stake for the season, in Markers, highest bid when the auction closes{f' in {left} night' + ('s' if left != 1 else '') if left > 0 else ' tonight'}. "
-            f"An outbid is refunded. A sponsored stake runs richer for every barn in it. You hold {mk_tag(markers())}.</p>" + rows)
+        out += (f"<div class='skrow k{getattr(x, 'kind', 'trophy')}{' mine' if a['leader'] == ME else ''}'><div class=skl><b>{esc(x.name)}</b>"
+                f"<span class=skdiv>{KIND_WORD.get(getattr(x, 'kind', 'trophy'), 'Stakes')} · {sk.DIVISION[(x.group, x.sex)]} · Harness Park · week {x.week + 1} · ${x.purse:,.0f}</span></div>"
+                f"<div class=skr><b class=mk>{MK_ICON(16)}{a['price']:,}</b><span class=sub>{who}</span>"
+                f"<form method=post action=/sponsor class=inline><input type=hidden name=s value={x.id}><input type=hidden name=back value='{esc(link(p=pg))}'>"
+                f"<button class=sec style='padding:4px 10px'{'' if can else ' disabled'}>Bid {nxt:,}</button></form></div></div>")
+    pager = ""
+    if n > 1:
+        lnk = lambda k, t: f"<a class=pg href='{link(p=k)}#list'>{t}</a>" if 1 <= k <= n and k != pg else f"<span class='pg{' on' if k == pg else ''}'>{t}</span>"
+        pager = f"<div class=pager>{lnk(pg - 1, '&laquo;')}{''.join(lnk(k, k) for k in range(1, n + 1))}{lnk(pg + 1, '&raquo;')}</div>"
+    body = (market_tabs("sponsor") + head + f"<p class=sub id=list style='scroll-margin-top:8px'>{len(rows)} stake{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>"
+            + (out or ("<p class=sub>No stakes match.</p>" if auc else "<p class=sub>The auction opens at the start of each season and runs for its first weeks.</p>")) + pager)
+    return page("Sponsor a stake", body)
 
 
 def picks_section():
@@ -3587,7 +3631,7 @@ def bottle(kind, size=22, empty=None):
 
 def market_tabs(on):
     return ("<div class=hmenu>" + "".join(f"<a href='{h_}' class='{'on' if on == k else ''}'>{l_}</a>"
-                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("shop", "/shop", "Shop"))) + "</div>")
+                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("sponsor", "/sponsor", "Sponsor"), ("shop", "/shop", "Shop"))) + "</div>")
 
 
 def claimers_page(qs=None):
@@ -3663,11 +3707,12 @@ def shop_page(msg=""):
         f"<button{' disabled' if e.cash.get(ME, 0) < TONIC_PRICE[k] else ''}>${TONIC_PRICE[k]:,}</button></form></div>"
         for k, l_, _, what in TONICS)
     streak, log = P().get("streak", 0), P().get("mk_log", [])[-6:][::-1]
-    packs = "".join(f"<div class='card pack'><b>{mk_tag(n, 20)}</b><span class=sub>${usd:.2f}</span><span class=sub>coming soon</span></div>" for n, usd in ((50, 4.99), (120, 9.99), (300, 19.99)))
+    packs = "".join(f"<div class='card pack'><b>{mk_tag(n, 20)}</b><span class=sub>${usd:.2f}</span><span class=sub>coming soon</span></div>" for n, usd in ((20, 4.99), (50, 9.99), (120, 19.99)))
     loglines = "".join(f"<div class=row style='justify-content:space-between;font-size:13px'><span class=sub>Yr {c.year_of(d)} wk {d % c.YEAR + 1} · {esc(why)}</span><b style='color:{'var(--mk)' if n > 0 else 'var(--loss)'}'>{n:+,}</b></div>" for d, n, why in log)
     mk = (f"<div class='card' id=markers><div class=row style='gap:12px'>{MK_ICON(40)}<div style='flex:1'><b>Markers</b> <span class=mk style='margin-left:6px'>{markers():,}</span>"
           "<div class=sub>The track's own chits. Spent on sponsorships and the barn's look, never on a horse, and never turned into cash. A few come free for showing up.</div></div></div>"
-          f"<div class=packs>{packs}</div>"
+          + (f"<a class='btn sec' href=/sponsor style='display:block;text-align:center;margin-top:8px'>Sponsor a stake · {len(G.get('sponsor_auction', {}))} open</a>" if G.get("sponsor_auction") else "")
+          + f"<div class=packs>{packs}</div>"
           f"<div class=row style='gap:10px;margin-top:8px'>{MK_ICON(28)}<div style='flex:1'><b>Daily check-in</b><div class=sub>Day {streak % 7 or 7} of 7 · {MK_CHECKIN} Marker a day, {MK_SEVENTH} on the seventh</div></div></div>"
           + (f"<div style='margin-top:8px'>{loglines}</div>" if loglines else "") + "</div>")
     body = (market_tabs("shop") + (f"<div class=card><b>{esc(msg)}</b></div>" if msg else "")
@@ -4571,6 +4616,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(market_page(qs))
         if p == "/claimers":
             return self.send(claimers_page(qs))
+        if p == "/sponsor":
+            return self.send(sponsor_page(qs))
         if p == "/setup" and has_pass(ME):                                # the Stable Manager's preview
             return self.send(setup_page())
         if p == "/studs":
@@ -4751,7 +4798,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(admin_page("Last race night undone." if undo_night() else "Nothing to undo."))
         if p == "/sponsor":                                               # a bid in the sponsorship auction
             sponsor_bid(ME, q.get("s", "")); save()
-            return self.send("", 303, "/stakes#sponsor")
+            back = q.get("back", "")
+            return self.send("", 303, (back if back.startswith("/sponsor") else "/sponsor") + "#list")
         if p == "/admin/sponsor" and ME == ADMIN:                         # dev: open the auction now, or close it now
             if q.get("do") == "open":
                 open_sponsor_auction()
