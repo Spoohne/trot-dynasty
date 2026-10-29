@@ -12,7 +12,7 @@ if ($WithSave) {
     if ($local) { throw "The game is still running on this PC. Stop it first, so the save you carry across is final." }
 }
 
-$exclude = @("--exclude=./exports", "--exclude=./snapshots", "--exclude=./.claude", "--exclude=__pycache__",
+$exclude = @("--exclude=./exports", "--exclude=./snapshots", "--exclude=./.claude", "--exclude=./.git", "--exclude=__pycache__",
              "--exclude=*.bak*", "--exclude=./save.before-*.pkl", "--exclude=./save.pkl")
 if ($WithSave) { $exclude = $exclude | Where-Object { $_ -ne "--exclude=./save.pkl" } }
 # every deploy is a commit, so what's on the server is always a commit you can go back to
