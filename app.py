@@ -4035,13 +4035,17 @@ class H(BaseHTTPRequestHandler):
         q = {k: v[0] for k, v in raw.items()}
         q["shelf_all"] = raw.get("shelf", [])                                 # the one multi-pick field: the Marquee's trophy shelf
         if p == "/login":
-            ip, now = self.ip(), time.time()
-            tries = [t for t in FAILED.get(ip, []) if now - t < 900]
-            if len(tries) >= 8:                                    # eight misses in 15 minutes: wait it out
+            now = time.time()
+            keys = (self.ip(), "u:" + q.get("user", "").strip().lower())    # by address, and by the name under attack
+            tries = {k: [t for t in FAILED.get(k, []) if now - t < 900] for k in keys}
+            if any(len(v) >= 8 for v in tries.values()):           # eight misses in 15 minutes, from one address or at one name: wait it out
                 return self.send(login_page(False, error="Too many tries. Wait a few minutes and try again."))
             o = login(q.get("user", ""), q.get("pw", ""))
             if o is None:
-                FAILED[ip] = tries + [now]
+                for k in keys:
+                    FAILED[k] = tries[k] + [now]
+                if len(FAILED) > 5000:                             # forget stale addresses rather than grow forever
+                    FAILED.clear()
             return self.start_session(o) if o is not None else self.send(login_page(False, error="Name or password doesn't match."))
         if p == "/signup":
             local = self.local()
