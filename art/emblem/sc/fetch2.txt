@@ -1,0 +1,14 @@
+shape_banner_a https://api.spritecook.ai/v1/assets/96f46363-9343-47a0-a3fb-20e0bbd04ea5/signed-content/pixel?sig=1t9tvjB2HmFU4-fXANvxDllpSh-CxFGcEdoUkEQh4tk&exp=1793209366
+shape_banner_b https://api.spritecook.ai/v1/assets/da00ffa6-b721-4b9c-b2d9-8ee0227ef76c/signed-content/pixel?sig=QOLlM7qRG623WCUWOwyBe_L2NvLg5m-50PFAKUy6SN8&exp=1793209366
+dev_shoe_a https://api.spritecook.ai/v1/assets/6596fdf7-b1cf-49e4-8fc3-22a7c3b3cea4/signed-content/pixel?sig=CFZjbOXm4tfKNcYbDb9p_D_gkd5s0eWt2ead7KIFNPs&exp=1793209387
+dev_shoe_b https://api.spritecook.ai/v1/assets/4ff8dde1-59f7-42b4-a875-ed7d5b9f75f9/signed-content/pixel?sig=RGLKBGbHE6K0nd9y0lJqb6lR9bs5GA-bFxNUi9J8tUo&exp=1793209387
+dev_diamond_a https://api.spritecook.ai/v1/assets/d40a6564-f475-44de-9184-7495473e82b6/signed-content/pixel?sig=OzsFcs5YZjKDRHmkLBvscJ1XnS4ANjh7IQj3kGQnKp4&exp=1793209378
+dev_diamond_b https://api.spritecook.ai/v1/assets/12f9037f-12ac-4795-9c0d-57b280f56c5f/signed-content/pixel?sig=jkL3BcdmVpsrQ5mLHXpbfg0MIK_neUCwKdLcH8qjYd4&exp=1793209378
+dev_bolt_a https://api.spritecook.ai/v1/assets/1912799a-ca0d-41f0-94eb-63783793eb58/signed-content/pixel?sig=8L3rlkhmsUFgW2J-eNnjjLJzImWxeYLt_F7cN8kSFg4&exp=1793209393
+dev_bolt_b https://api.spritecook.ai/v1/assets/e5a48bea-9eae-4365-8b4c-cf3fb05fa849/signed-content/pixel?sig=2wIzz1RGybP1F-y3LY1tNXvyQ9r6iCl98dx62RFixNA&exp=1793209393
+dev_heart_a https://api.spritecook.ai/v1/assets/5fe8dbf0-d770-41c0-8e65-79a4b34c6188/signed-content/pixel?sig=NcA7J7ctDjxlmf3zzuyf4tKouixvaNAnu-SUhVClwEw&exp=1793209393
+dev_heart_b https://api.spritecook.ai/v1/assets/4fe1fe53-bec9-4c98-a9c1-dd288b650ae3/signed-content/pixel?sig=jWjP1QvAMDX_G8gvfgDPSQintA_5ClDYkBQLuJZtADU&exp=1793209393
+dev_moon_a https://api.spritecook.ai/v1/assets/8c4e3a42-6b2e-47ff-9d56-16f960cd1f04/signed-content/pixel?sig=689GNgxrP2GP4NefIqlj0cx3_ScrJaqaxcvrNKHaJwM&exp=1793209400
+dev_moon_b https://api.spritecook.ai/v1/assets/81afd7d7-f7b2-483a-8a09-3ff4af72d3fb/signed-content/pixel?sig=J3WCXOfuJezyM27Zvj3k1a2O9R_FWJKUOuL6i-Ll6MU&exp=1793209400
+dev_clover_a https://api.spritecook.ai/v1/assets/7cafe71e-8ce5-4332-a92c-825ce04e0373/signed-content/pixel?sig=w3GlW0CTXMdvap8Fc2y0609-GIBd2zoLRgd0fmqDfPI&exp=1793209408
+dev_clover_b https://api.spritecook.ai/v1/assets/c04b51b0-5c0c-4a2c-bdc7-9d155c36b648/signed-content/pixel?sig=rVrUdasvfrLy3WO67X2-MJldVQFhx00C_pQetKQEomI&exp=1793209408

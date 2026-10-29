@@ -1,0 +1,147 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toon Track Mockup</title>
+<style>
+html,body{margin:0;height:100%;background:#1a1030;overflow:hidden;font:600 13px system-ui,sans-serif}
+canvas{display:block;width:100%;height:100%}
+.ui{position:fixed;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.ui button{background:#fff8;border:2px solid #222;border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+.ui button.on{background:#ffd34d}
+.tag{position:fixed;right:12px;bottom:12px;color:#fff;background:#0008;padding:6px 10px;border-radius:6px}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div class="ui" id="ui"></div>
+<div class="tag">Mockup: stylized 3D world, same 16-bit horses</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { SSAOPass } from "three/addons/postprocessing/SSAOPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+const HERO = new URLSearchParams(location.search).get("look") !== "toon";   // hero: lit stylized-realism (default); ?look=toon: cel + ink
+const cv = document.getElementById("cv");
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+if (HERO) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .85; }
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(30, 16 / 9, 2, 8000);
+const fit = () => { renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); };
+addEventListener("resize", fit); fit();
+
+// ---- the look: 3-step toon ramp, inked outlines (inverted hull), golden-hour gradient sky
+const ramp = (() => { const d = new Uint8Array([90, 170, 255]); const t = new THREE.DataTexture(d, 3, 1, THREE.RedFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
+// hero look: soft PBR with a painted noise grain on every surface, so flats read as hand-textured
+const grain = (() => { const c = document.createElement("canvas"); c.width = c.height = 256; const g = c.getContext("2d"); const d = g.createImageData(256, 256);
+  for (let i = 0; i < d.data.length; i += 4) { const v = 215 + Math.random() * 40; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } g.putImageData(d, 0, 0);
+  g.filter = "blur(2px)"; g.drawImage(c, 0, 0); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 6); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+const toon = c => HERO ? new THREE.MeshStandardMaterial({ color: c, roughness: .78, metalness: 0, map: grain, envMapIntensity: .6 }) : new THREE.MeshToonMaterial({ color: c, gradientMap: ramp });
+const DET = HERO ? 3 : 0;                                                       // rounder foliage in the hero look
+const INK = new THREE.MeshBasicMaterial({ color: "#1d1430", side: THREE.BackSide });
+const add = (geo, color, ink = 1.6, o = scene) => {
+  geo.computeBoundingBox(); const c = geo.boundingBox.getCenter(new THREE.Vector3()); geo.translate(-c.x, -c.y, -c.z);   // hull scales about the mesh centre
+  const m = new THREE.Mesh(geo, toon(color)); m.position.copy(c); m.castShadow = m.receiveShadow = true; o.add(m);
+  if (ink && !HERO) { const h = new THREE.Mesh(geo, INK); geo.computeBoundingSphere(); const r = geo.boundingSphere.radius; h.scale.setScalar(1 + ink / Math.max(r, 1)); m.add(h); }
+  return m;
+};
+{ const g = new THREE.SphereGeometry(5000, 32, 16), c = [], top = new THREE.Color("#3b5fc9"), mid = new THREE.Color("#ff9e6b"), low = new THREE.Color("#ffd98a");
+  const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 5000; const col = y > .15 ? mid.clone().lerp(top, Math.min(1, (y - .15) / .5)) : low.clone().lerp(mid, Math.max(0, (y + .05) / .2)); c.push(col.r, col.g, col.b); }
+  g.setAttribute("color", new THREE.Float32BufferAttribute(c, 3)); scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false }))); }
+scene.fog = HERO ? new THREE.Fog("#f2b48c", 2200, 6000) : new THREE.Fog("#ffb98a", 1400, 4200);
+scene.add(new THREE.HemisphereLight("#ffe7c4", "#4a3a6a", HERO ? .45 : 1.1));
+if (HERO) { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture;
+  const rim = new THREE.DirectionalLight("#9fc4ff", .9); rim.position.set(500, 300, -600); scene.add(rim); }
+const sun = new THREE.DirectionalLight("#ffe2b0", HERO ? 3.6 : 2.2); sun.position.set(-600, 500, 300); sun.castShadow = true;
+Object.assign(sun.shadow.camera, { left: -1300, right: 1300, top: 900, bottom: -900, far: 2500 }); sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -.0005; scene.add(sun);
+// clouds: puffy ink-outlined balls
+for (let i = 0; i < 14; i++) { const cl = new THREE.Group(); for (let k = 0; k < 4; k++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(60 + 40 * Math.random(), 1), new THREE.MeshBasicMaterial({ color: "#fff3e6", fog: false })); b.position.set(k * 70, Math.random() * 30, Math.random() * 40); cl.add(b); }
+  const a = Math.random() * 6.28; cl.position.set(Math.cos(a) * 3500, 500 + Math.random() * 500, Math.sin(a) * 3500); scene.add(cl); }
+
+// ---- the oval (feet): two straights, two turns
+const L = 900, R = 300, LEN = 2 * L + 2 * Math.PI * R;
+const pt = (s, o) => { s = ((s % LEN) + LEN) % LEN; const r = R + o;
+  if (s < L) return [L / 2 - s, r, Math.PI];                                    // home stretch, running -x, grandstand at +z
+  s -= L; if (s < Math.PI * R) { const a = s / R; return [-L / 2 - Math.sin(a) * r, Math.cos(a) * r, Math.PI + a]; }
+  s -= Math.PI * R; if (s < L) return [-L / 2 + s, -r, 0];
+  s -= L; const a = s / R; return [L / 2 + Math.sin(a) * r, -Math.cos(a) * r, a]; };
+const ring = (o0, o1, y, color, ink = 0) => { const sh = [], N = 240; for (let i = 0; i <= N; i++) { const [x, z] = pt(i / N * LEN, o1); sh.push(new THREE.Vector2(x, -z)); }
+  const hole = []; for (let i = N; i >= 0; i--) { const [x, z] = pt(i / N * LEN, o0); hole.push(new THREE.Vector2(x, -z)); }
+  const s = new THREE.Shape(sh); s.holes.push(new THREE.Path(hole)); const g = new THREE.ShapeGeometry(s, 4).rotateX(-Math.PI / 2); g.translate(0, y, 0); const m = add(g, color, ink); m.castShadow = false; return m; };
+add(new THREE.PlaneGeometry(9000, 9000).rotateX(-Math.PI / 2), "#7cc35a", 0).castShadow = false;
+ring(-10, 90, .3, "#d9a066");                                                   // the clay
+ring(-10, -4, .5, "#5fae49");                                                   // grass verge
+// rails: chunky white tubes on posts
+const rail = o => { const pts = []; for (let i = 0; i <= 400; i++) { const [x, z] = pt(i / 400 * LEN, o); pts.push(new THREE.Vector3(x, 4, z)); }
+  add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 600, .8, 6, true), "#ffffff", 0);
+  for (let s = 0; s < LEN; s += 40) { const [x, z] = pt(s, o); add(new THREE.CylinderGeometry(.5, .5, 4, 6).translate(x, 2, z), "#ffffff", 0); } };
+rail(-2); rail(88);
+// infield: a pond, a rolling hedge, lollipop trees
+const pond = add(new THREE.CircleGeometry(160, 40).rotateX(-Math.PI / 2).scale(2.4, 1, 1).translate(0, .6, 0), "#4fb8e8", 0); pond.receiveShadow = true;
+if (HERO) pond.material = new THREE.MeshStandardMaterial({ color: "#2f8fc4", roughness: .08, metalness: .3, envMapIntensity: 1.4 });
+for (let i = 0; i < 70; i++) { const [x, z] = pt(i / 70 * LEN, -40); add(new THREE.SphereGeometry(10, HERO ? 20 : 8, HERO ? 14 : 6).scale(1.3, .9, 1).translate(x, 6, z), "#3e8f3a", .9); }
+const tree = (x, z, s = 1) => { add(new THREE.CylinderGeometry(2 * s, 3 * s, 22 * s, 6).translate(x, 11 * s, z), "#7a4a2c", .8);
+  const leaf = ["#4caf50", "#66bb3a", "#2f9e5b"][Math.floor(Math.random() * 3)];
+  if (!HERO) return add(new THREE.IcosahedronGeometry(16 * s, 0).translate(x, 34 * s, z), leaf, 1.2);
+  for (let k = 0; k < 6; k++) { const a = k * 1.05, rr = k ? 9 * s : 0;                                // clumped canopy: one crown plus a ring of puffs
+    add(new THREE.IcosahedronGeometry((k ? 9 : 13) * s, 2).translate(x + Math.cos(a) * rr, (k ? 30 : 38) * s + Math.random() * 4 * s, z + Math.sin(a) * rr), leaf, 0); } };
+for (let i = 0; i < 40; i++) { const x = (Math.random() - .5) * 1300, z = (Math.random() - .5) * 460; if ((x / 400) ** 2 + (z / 175) ** 2 > 1) tree(x, z, .8 + Math.random() * .6); }   // not in the pond
+for (let i = 0; i < 90; i++) { const a = Math.random() * 6.28, d = 1400 + Math.random() * 1200; tree(Math.cos(a) * d, Math.sin(a) * d * .8 - (Math.sin(a) > 0 ? 0 : 0), 1.4 + Math.random()); }
+// tote board on the infield
+{ const g = new THREE.Group(); g.position.set(0, 0, 150); scene.add(g);
+  add(new THREE.BoxGeometry(120, 40, 6).translate(0, 36, 0), "#2b2350", 1.2, g); add(new THREE.BoxGeometry(110, 30, 1).translate(0, 36, 3.6), "#ffd34d", 0, g);
+  for (const x of [-40, 40]) add(new THREE.BoxGeometry(5, 18, 5).translate(x, 9, 0), "#6c6c8a", .8, g); }
+// grandstand: stepped seats, a swoopy roof, colored crowd blobs
+{ const g = new THREE.Group(); g.position.set(0, 0, R + 150); scene.add(g);
+  for (let k = 0; k < 8; k++) { add(new THREE.BoxGeometry(700, 6, 14).translate(0, 3 + k * 6, k * 14), k % 2 ? "#e9e1ff" : "#cfc4f2", 0, g);
+    for (let i = 0; i < 60; i++) if (Math.random() < .7) add(new THREE.SphereGeometry(2.6, 6, 4).translate(-340 + i * 11.5 + Math.random() * 4, 9 + k * 6, k * 14), ["#ff6b6b", "#ffd34d", "#4fc3f7", "#ba68c8", "#fff"][Math.floor(Math.random() * 5)], 0, g); }
+  add(new THREE.BoxGeometry(720, 4, 150).translate(0, 90, 50), "#e85d75", 2, g);
+  for (const x of [-340, -170, 0, 170, 340]) add(new THREE.CylinderGeometry(3, 3, 88, 8).translate(x, 44, 110), "#ffffff", .8, g);
+  add(new THREE.BoxGeometry(740, 60, 20).translate(0, 30, 125), "#9c8ad8", 1.5, g); }
+// light towers
+for (const [x, z] of [[-600, 420], [600, 420], [-600, -420], [600, -420]]) { add(new THREE.CylinderGeometry(3, 4, 140, 8).translate(x, 70, z), "#c8c8d8", 1); add(new THREE.BoxGeometry(30, 14, 6).translate(x, 146, z), "#ffe9a8", 1.2); }
+// finish post
+{ const [x, z] = pt(L * .8, 92); add(new THREE.CylinderGeometry(2, 2, 40, 8).translate(x, 20, z), "#ff4040", 1); }
+
+// ---- the horses: the existing 16-bit pacing cycle, unlit and pixel-crisp, as cards in the 3D world
+const FW = 208, FH = 101, FR = 12, LEN_FT = 14.5, H_FT = LEN_FT * FH / FW;
+const SILK = ["#d32f2f", "#1565c0", "#f9a825", "#2e7d32", "#6a1b9a", "#ef6c00", "#00838f", "#ad1457"];
+const dye = (img, hex) => { const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, t = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  for (let i = 0; i < p.length; i += 4) { const r = p[i], gg = p[i + 1], b = p[i + 2]; if (p[i + 3] && b > r + 40 && b > gg + 20) { const l = Math.min(1.3, (r + gg + b) / 3 / 70); p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l; } }
+  g.putImageData(d, 0, 0); return c; };
+const img = await new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = "/mock/pixel/fe12_cycle.png"; });
+const geo = new THREE.PlaneGeometry(LEN_FT, H_FT).translate(0, H_FT / 2, 0);
+const blob = new THREE.Mesh(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: "#3a2a1a", transparent: true, opacity: .35, depthWrite: false }));
+const runners = SILK.map((s, i) => { const t = new THREE.CanvasTexture(dye(img, s)); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; t.repeat.set(1 / FR, 1);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .5, side: THREE.DoubleSide, toneMapped: false })); scene.add(m);
+  const sh = blob.clone(); sh.scale.set(7, 1, 2.6); scene.add(sh);
+  return { m, t, sh, lane: 6 + (i % 4) * 7, gap: Math.floor(i / 2) * 18 + (i % 2) * 6, sp: 52 + Math.random() * 2 }; });
+
+// ---- cameras
+const SHOTS = { "TV": (c, x, z, h) => { cam.fov = 18; cam.position.set(x - 10, 70, z + 210); cam.lookAt(x - 10, 4, z); },
+  "Low rail": (c, x, z, h) => { cam.fov = 34; cam.position.set(x - Math.cos(h) * 55, 7, z + 60); cam.lookAt(x, 6, z); },
+  "Blimp": (c, x, z, h) => { cam.fov = 40; cam.position.set(x + 260, 520, z + 520); cam.lookAt(x, 0, z); },
+  "Wide": () => { cam.fov = 30; cam.position.set(0, 900, 2000); cam.lookAt(0, 0, 0); } };
+let shot = "TV"; const ui = document.getElementById("ui");
+for (const k of Object.keys(SHOTS)) { const b = document.createElement("button"); b.textContent = k; b.onclick = () => { shot = k; [...ui.children].forEach(x => x.classList.toggle("on", x === b)); }; if (k === shot) b.classList.add("on"); ui.appendChild(b); }
+
+let composer = null;
+if (HERO) { composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, cam));
+  const ao = new SSAOPass(scene, cam, innerWidth, innerHeight); ao.kernelRadius = 10; ao.minDistance = .001; ao.maxDistance = .05; composer.addPass(ao);
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .35, .6, .85)); composer.addPass(new OutputPass());
+  addEventListener("resize", () => composer.setSize(innerWidth, innerHeight)); }
+{ const b = document.createElement("button"); b.textContent = HERO ? "Look: hero" : "Look: toon"; b.onclick = () => location.search = HERO ? "?look=toon" : ""; ui.appendChild(b); }
+let lead = 60; const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(.05, clock.getDelta()); lead += 52 * dt;
+  let cx = 0, cz = 0;
+  runners.forEach((r, i) => { const d = lead - r.gap + Math.sin(clock.elapsedTime * .3 + i) * 3, [x, z, h] = pt(d, r.lane);
+    r.m.position.set(x, .4, z); r.m.rotation.y = -h; r.sh.position.set(x, .45, z); r.sh.rotation.y = -h;
+    r.t.offset.x = (Math.floor(d / 17 * FR + i * 3) % FR) / FR; if (i < 4) { cx += x / 4; cz += z / 4; } });
+  const [, , h] = pt(lead, 20); SHOTS[shot](cam, cx, cz, h); cam.updateProjectionMatrix();
+  composer ? composer.render() : renderer.render(scene, cam);
+});
+</script></body></html>

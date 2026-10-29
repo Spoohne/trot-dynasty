@@ -1,0 +1,10 @@
+starter_a https://api.spritecook.ai/v1/assets/7f489a06-f044-4932-bf40-dbb92eeede42/signed-content/pixel?sig=mnVKaFgiu92F2cn7LcgBPOlaMez7mfKFEwZkQuWcG8A&exp=1793215420
+starter_b https://api.spritecook.ai/v1/assets/ead6c66e-6241-45aa-a392-f918c9583667/signed-content/pixel?sig=3TDO4c6MFUwCWT7ohOoScNhrcAEOBlFLUs2FntI6tR0&exp=1793215420
+working_a https://api.spritecook.ai/v1/assets/4855f1a6-30c3-45e0-a386-0b6a954b14d1/signed-content/pixel?sig=iVi2T1wHfr0-7M1W6IrclpPBPFdra_zEmNwlJon1jt0&exp=1793215420
+working_b https://api.spritecook.ai/v1/assets/da594098-4e13-49ca-8ff0-4d87bf376a9c/signed-content/pixel?sig=PHWvuyQWPAOuVVIIl6QsxbyNLqoURbo20mPIn5xXmFo&exp=1793215420
+shed_a https://api.spritecook.ai/v1/assets/a8e031d6-491d-46ed-a320-315a3a6fe61b/signed-content/pixel?sig=ndjhyBoLAYdJZGtkybUUuQJOWylbJOXToLM6WFoOn0Y&exp=1793215433
+shed_b https://api.spritecook.ai/v1/assets/1c662ee6-3e69-4349-8e43-59388f0bc4a9/signed-content/pixel?sig=B9x02oaCMMQ4_BSg_DRrE-iDGAdGZSyNeMx6ZfBdAu8&exp=1793215433
+farm_a https://api.spritecook.ai/v1/assets/8fc83927-524e-402f-b51d-f945d5f627fb/signed-content/pixel?sig=0DRGznTfUlQkc5l_1Oenll31iEA9uqBfmyfQq_QHSGs&exp=1793215411
+farm_b https://api.spritecook.ai/v1/assets/fd579d91-f8b4-45f8-9ad6-684636fca909/signed-content/pixel?sig=PTsexOE0_jITV87-SDI30nqIyoAdSIsAHmil4sGkG5g&exp=1793215411
+estate_a https://api.spritecook.ai/v1/assets/135119a8-e899-4a05-a30c-1609424e333b/signed-content/pixel?sig=Km18wFyT8jd1xaZuF0XBUlwkEzU3r2WBPMxHSaK1bcw&exp=1793215420
+estate_b https://api.spritecook.ai/v1/assets/2701724f-3f44-4910-a102-4e894d36e0d1/signed-content/pixel?sig=WFqvBZG1aZCv86t-E6s_9aIjQBLLzxapXgsLk6bfgp4&exp=1793215420

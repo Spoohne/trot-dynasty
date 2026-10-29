@@ -1,0 +1,196 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>Grand Final Program</title><link href='https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap' rel=stylesheet><style>
+:root{--bg:#05070d;--panel:#0d1220;--edge:#26324a;--ink:#e8ecf4;--dim:#8b96ad;--amber:#ffb347;--amberD:#a86a1c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'VT323',monospace;font-size:20px}
+.wrap{max-width:900px;margin:0 auto;padding:14px}
+.mast{position:relative;height:220px;overflow:hidden;border:4px solid var(--edge);box-shadow:0 0 0 4px #000;
+  background:#0b1430 url(/mock/pixel/panorama.png) 38% bottom/auto 100% repeat-x;image-rendering:pixelated}
+.mast:after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(5,7,13,.15),rgba(5,7,13,.25) 40%,rgba(5,7,13,.95))}
+.mast .t{position:absolute;left:18px;right:18px;bottom:14px;z-index:1}
+.k{font-family:'Press Start 2P';font-size:10px;color:var(--amber);letter-spacing:2px}
+h1{font-family:'Press Start 2P';font-size:22px;margin:10px 0 8px;line-height:1.45;text-shadow:3px 3px 0 #000}
+.sub{color:var(--dim);font-size:22px}
+.purse{position:absolute;right:18px;top:16px;z-index:1;text-align:right;background:rgba(5,7,13,.7);padding:6px 10px;border:3px solid #000}
+.purse b{display:block;font-size:46px;color:var(--amber);text-shadow:0 0 8px rgba(255,179,71,.7),3px 3px 0 #000;line-height:1;font-weight:400}
+.note{color:var(--dim);margin:16px 4px;font-size:19px;line-height:1.25}.note b{color:var(--ink);font-weight:400}
+.entry{display:grid;grid-template-columns:56px 156px 1fr 110px;align-items:center;margin-bottom:14px;border:4px solid var(--edge);
+  box-shadow:0 0 0 4px #000;background:linear-gradient(90deg,#0d1220,#121c30)}
+.pp{align-self:stretch;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P';font-size:20px;border-right:4px solid #000}
+.horse{width:156px;image-rendering:pixelated;margin:6px 0 2px}
+.info{padding:8px 12px;min-width:0}
+h2{font-family:'Press Start 2P';font-size:13px;margin:0 0 6px;line-height:1.4;text-shadow:2px 2px 0 #000}
+.meta{color:var(--dim);font-size:18px}
+.prime{display:flex;align-items:center;gap:8px;margin:4px 0 6px;font-size:17px;color:var(--dim);flex-wrap:wrap}
+.arr{display:inline-flex;gap:3px}.arr i{width:17px;height:12px;background:#1d2738;clip-path:polygon(0 0,62% 0,100% 50%,62% 100%,0 100%,38% 50%)}
+.arr i.on{background:var(--amber)}.prime em{font-style:normal;color:var(--ink)}
+.stats{display:grid;grid-template-columns:auto auto 1fr auto auto 1fr;gap:3px 8px;align-items:center;font-size:17px}
+.stats label{color:var(--dim)}.stats b{font-weight:400;min-width:36px}
+.bar{display:inline-flex;gap:2px}.bar i{width:7px;height:11px;background:#1a2232}
+.bar.hi i.f{background:#58d36a}.bar.md i.f{background:#5aa8ff}.bar.lo i.f{background:#e05a4f}
+.led{align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:4px solid #000;
+  background:#0a0702 radial-gradient(rgba(255,179,71,.09) 1px,transparent 1.6px) 0 0/4px 4px}
+.ml{font-size:48px;line-height:1;color:var(--amber);text-shadow:0 0 6px rgba(255,179,71,.85),0 0 16px rgba(255,140,0,.35)}
+.pc{font-size:16px;color:var(--amberD)}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 4px 30px;color:var(--dim)}
+.btn{font-family:'Press Start 2P';font-size:11px;background:var(--amber);color:#2a1a03;text-decoration:none;padding:14px 16px;border:4px solid #000;box-shadow:4px 4px 0 #000}
+@media (max-width:640px){.entry{grid-template-columns:44px 1fr 84px}.horse{display:none}.ml{font-size:36px}.stats{grid-template-columns:auto auto 1fr}h1{font-size:15px}.purse b{font-size:34px}}
+</style></head><body><div class=wrap><header class=mast><div class=purse><span class=k>PURSE</span><b>$1,000,000</b></div><div class=t><div class=k>RACE 10 · STAKES FINAL · ONE MILE PACE</div><h1>GRAND FINAL<br>FOR 3-YEAR-OLDS</h1><div class=sub>The ten best of the crop</div></div></header><p class=note>Morning line from 4,000 simulated runnings of this field. Bars run from below breed average to the top of the crop. Favorite: <b>Thunder Ridge</b> at 6-5.</p><section class=entry>
+ <div class=pp data-p=1>1</div>
+ <canvas class=horse id=h1 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Thunder Ridge</h2>
+  <div class=meta>FILLY · CHESTNUT · AGE 3 · RTG 7.6</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=off></i><i class=on></i></span><em>DROPS OUT, CLOSES</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i></span><b>+3.8</b><label>LATE</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i></span><b>+3.7</b>
+   <label>STAMINA</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+1.0</b><label>GAIT</label><span class='bar lo'><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>-0.2</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>6-5</div><div class=pc>37% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=2>2</div>
+ <canvas class=horse id=h2 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Midnight Express</h2>
+  <div class=meta>FILLY · BLACK · AGE 3 · RTG 7.5</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=on></i><i class=off></i></span><em>MID-PACK, MOVES LATE</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i></span><b>+5.1</b><label>LATE</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+0.3</b>
+   <label>STAMINA</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.0</b><label>GAIT</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.2</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>50-1</div><div class=pc>1% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=3>3</div>
+ <canvas class=horse id=h3 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Royal Command</h2>
+  <div class=meta>COLT · BROWN · AGE 3 · RTG 8.2</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=off></i><i class=on></i></span><em>DROPS OUT, CLOSES</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i></span><b>+4.7</b><label>LATE</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.0</b>
+   <label>STAMINA</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+1.3</b><label>GAIT</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+1.7</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>8-1</div><div class=pc>9% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=4>4</div>
+ <canvas class=horse id=h4 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Steel Resolve</h2>
+  <div class=meta>FILLY · CHESTNUT · AGE 3 · RTG 6.3</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=on></i><i class=off></i></span><em>MID-PACK, MOVES LATE</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i></span><b>+6.2</b><label>LATE</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+0.7</b>
+   <label>STAMINA</label><span class='bar lo'><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>-0.4</b><label>GAIT</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+0.3</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>99-1</div><div class=pc>1% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=5>5</div>
+ <canvas class=horse id=h5 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Bold Horizon</h2>
+  <div class=meta>COLT · BLACK · AGE 3 · RTG 7.9</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=on></i><i class=off></i></span><em>MID-PACK, MOVES LATE</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i></span><b>+4.1</b><label>LATE</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.0</b>
+   <label>STAMINA</label><span class='bar lo'><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>-0.1</b><label>GAIT</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i></span><b>+3.8</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>99-1</div><div class=pc>0% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=6>6</div>
+ <canvas class=horse id=h6 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Iron Duchess</h2>
+  <div class=meta>COLT · BAY · AGE 3 · RTG 7.0</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=off></i><i class=on></i></span><em>DROPS OUT, CLOSES</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.6</b><label>LATE</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.5</b>
+   <label>STAMINA</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.2</b><label>GAIT</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+1.3</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>30-1</div><div class=pc>3% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=7>7</div>
+ <canvas class=horse id=h7 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Captain Velocity</h2>
+  <div class=meta>COLT · BAY · AGE 3 · RTG 6.2</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=off></i><i class=on></i></span><em>DROPS OUT, CLOSES</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar lo'><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>-0.1</b><label>LATE</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i></span><b>+8.1</b>
+   <label>STAMINA</label><span class='bar lo'><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>-1.2</b><label>GAIT</label><span class='bar lo'><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>-0.1</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>9-5</div><div class=pc>29% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=8>8</div>
+ <canvas class=horse id=h8 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Silver Tempest</h2>
+  <div class=meta>COLT · BROWN · AGE 3 · RTG 8.5</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=off></i><i class=on></i></span><em>DROPS OUT, CLOSES</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i></span><b>+4.9</b><label>LATE</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+1.8</b>
+   <label>STAMINA</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+0.9</b><label>GAIT</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+2.5</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>20-1</div><div class=pc>3% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=9>9</div>
+ <canvas class=horse id=h9 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Northern Majesty</h2>
+  <div class=meta>COLT · CHESTNUT · AGE 3 · RTG 8.7</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=on></i><i class=off></i><i class=off></i></span><em>SITS JUST OFF IT</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i></span><b>+4.4</b><label>LATE</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i></span><b>+4.8</b>
+   <label>STAMINA</label><span class='bar lo'><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>-0.8</b><label>GAIT</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+1.7</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>9-2</div><div class=pc>16% WIN</div></div>
+</section><section class=entry>
+ <div class=pp data-p=10>10</div>
+ <canvas class=horse id=h10 width=208 height=101></canvas>
+ <div class=info>
+  <h2>Wildfire Hanover</h2>
+  <div class=meta>FILLY · CHESTNUT · AGE 3 · RTG 7.8</div>
+  <div class=prime><span>PRIME</span><span class=arr><i class=off></i><i class=off></i><i class=on></i><i class=off></i></span><em>MID-PACK, MOVES LATE</em></div>
+  <div class=stats>
+   <label>EARLY</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i></span><b>+4.8</b><label>LATE</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+1.1</b>
+   <label>STAMINA</label><span class='bar md'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+0.7</b><label>GAIT</label><span class='bar hi'><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=f></i><i class=e></i><i class=e></i><i class=e></i><i class=e></i></span><b>+3.2</b>
+  </div>
+ </div>
+ <div class=led><div class=ml>99-1</div><div class=pc>0% WIN</div></div>
+</section><div class=foot><span>ODDS ARE A PROJECTION, NOT A RESULT</span><a class=btn href='/replay/3yo-final-2026'>WATCH THE RACE ▶</a></div></div><script src='/mock/race.js'></script><script>const FIELD = [{"name": "Thunder Ridge", "coat": "chestnut", "post": 1}, {"name": "Midnight Express", "coat": "black", "post": 2}, {"name": "Royal Command", "coat": "brown", "post": 3}, {"name": "Steel Resolve", "coat": "chestnut", "post": 4}, {"name": "Bold Horizon", "coat": "black", "post": 5}, {"name": "Iron Duchess", "coat": "bay", "post": 6}, {"name": "Captain Velocity", "coat": "bay", "post": 7}, {"name": "Silver Tempest", "coat": "brown", "post": 8}, {"name": "Northern Majesty", "coat": "chestnut", "post": 9}, {"name": "Wildfire Hanover", "coat": "chestnut", "post": 10}];
+const COAT = { brown: [.62, .5, .45], black: [.26, .24, .24], chestnut: [1.25, .82, .55] };
+RACE.H = FIELD.map(f => [f.name]); RACE.silks();
+const img = new Image(); img.src = "/mock/pixel/fe12_cycle.png";
+img.onload = () => {
+  const sheets = FIELD.map((f, i) => {
+    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height), p = d.data, silk = [1, 3, 5].map(k => parseInt(RACE.SILK[i].slice(k, k + 2), 16)), k = COAT[f.coat];
+    for (let j = 0; j < p.length; j += 4) {
+      if (!p[j + 3]) continue; const r = p[j], gg = p[j + 1], b = p[j + 2];
+      if (b > r + 40 && b > gg + 20) { const l = Math.min(1.3, (r + gg + b) / 3 / 70); p[j] = silk[0] * l; p[j + 1] = silk[1] * l; p[j + 2] = silk[2] * l; continue; }
+      const warm = r > gg + 12 && r > b + 25;
+      if (f.coat === "grey") { const v = (r + gg + b) / 3; if (warm) { const w = Math.min(235, 70 + v * 1.25); p[j] = w; p[j + 1] = w; p[j + 2] = w + 6; } else if (v < 60 && Math.abs(r - b) < 18) { const w = 40 + v * 1.4; p[j] = w; p[j + 1] = w; p[j + 2] = w + 4; } }
+      else if (k && warm) { p[j] = Math.min(255, r * k[0]); p[j + 1] = Math.min(255, gg * k[1]); p[j + 2] = Math.min(255, b * k[2]); }
+    }
+    g.putImageData(d, 0, 0);
+    const dark = RACE.DARK.includes(i + 1);
+    g.font = "bold 16px monospace"; g.textAlign = "center"; g.textBaseline = "middle";
+    for (let fr = 0; fr < 12; fr++) { g.fillStyle = RACE.PAD[i]; g.fillRect(fr * 208 + 105, 25, 18, 21); g.fillStyle = dark ? "#111" : "#fff"; g.fillText(i + 1, fr * 208 + 114, 36); }
+    const pp = document.querySelector(`.pp[data-p="${f.post}"]`); pp.style.background = RACE.PAD[i]; pp.style.color = dark ? "#111" : "#fff";
+    return c;
+  });
+  const t0 = performance.now();
+  (function tick(now) {
+    FIELD.forEach((f, i) => { const g = document.getElementById("h" + f.post).getContext("2d"); g.imageSmoothingEnabled = false; g.clearRect(0, 0, 208, 101);
+      g.drawImage(sheets[i], (Math.floor((now - t0) / 1000 * 18 + i * 3) % 12) * 208, 0, 208, 101, 0, 0, 208, 101); });
+    requestAnimationFrame(tick);
+  })(t0);
+};
+</script></body></html>

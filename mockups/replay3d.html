@@ -1,0 +1,257 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Replay · 3D</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/mock/hud.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body><div class="wrap">
+<div class="top"><h1>Replay mockup</h1><span><a href="/mock/replay_pixel.html">16-bit</a><a href="/mock/replay_sprite.html">Sprite version</a><a href="/mock/replay_rig.html">Cut-out version</a><a class="on" href="/mock/replay3d.html">3D version</a></span></div>
+<div class="stage" id="stage">
+  <div class="lt"><span class="tag">Replay</span><span class="ti"><span id="clk">0:00.0</span><span id="rt"></span></span></div>
+  <div class="views"><button data-v="tv" class="sel">TV</button><button data-v="broadcast">Broadcast</button><button data-v="overhead">Overhead</button><button data-v="driver">Driver</button><button id="pix" class="sel" title="16-bit finish on or off">Pixel</button></div>
+  <div class="bot"><div id="cap"></div><div class="strip"><div id="ord"></div><div id="fr"></div></div></div>
+</div>
+<div class="ctl"><button id="pp">❚❚</button><input type="range" id="sc" min="0" step="0.1" value="0" aria-label="Scrub"><button data-s="1" class="sel">1×</button><button data-s="2">2×</button><button data-s="5">5×</button></div>
+<p class="note" id="note">Loading the horse model…</p>
+</div>
+<script src="/mock/race.js"></script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const FT = 0.3048, stage = document.getElementById("stage");
+document.getElementById("rt").textContent = RACE.title;
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#0b1430");
+scene.fog = new THREE.Fog("#0b1430", 260, 1400);
+{ // sky: a dome shading from navy at the horizon to near-black overhead, with a scatter of stars
+  const c = document.createElement("canvas"); c.width = 64; c.height = 256; const g = c.getContext("2d");
+  const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, "#04060e"); gr.addColorStop(.55, "#0b1430"); gr.addColorStop(1, "#16254a"); g.fillStyle = gr; g.fillRect(0, 0, 64, 256);
+  for (let i = 0; i < 90; i++) { g.fillStyle = `rgba(255,255,255,${.4 + Math.random() * .6})`; g.fillRect(Math.random() * 64 | 0, Math.random() * 150 | 0, 1, 1); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.repeat.set(24, 1);
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(1300, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide, fog: false }));
+  scene.add(sky);
+  // the grounds: the 16-bit panorama wrapped round the track at a distance, grandstand on the homestretch side
+  new THREE.TextureLoader().load("/mock/pixel/panorama.png", tex => {
+    tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.LinearFilter;
+    tex.wrapS = THREE.RepeatWrapping; tex.repeat.x = -1; tex.offset.x = 1;                 // seen from inside, so flip it
+    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(720, 720, 86, 96, 1, true), new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false, transparent: true }));
+    cyl.position.y = 36; cyl.rotation.y = -Math.PI / 6; scene.add(cyl);
+  });
+}
+const cam = new THREE.PerspectiveCamera(28, 16 / 9, 0.5, 2000);
+function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+addEventListener("resize", size); size();
+
+// ---- the 16-bit finish. The scene renders to a 480x270 target; a second pass snaps every color to a
+// small palette with an ordered dither and inks a dark outline wherever depth jumps, then the whole
+// thing is scaled up without smoothing. Toggle it off to see the raw 3D underneath.
+const PIX = { w: 480, h: 270, on: true, levels: 12 };
+const rt = new THREE.WebGLRenderTarget(PIX.w, PIX.h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthTexture: new THREE.DepthTexture(PIX.w, PIX.h) });
+const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quadScene = new THREE.Scene();
+const pixMat = new THREE.ShaderMaterial({
+  uniforms: { tDiffuse: { value: rt.texture }, tDepth: { value: rt.depthTexture }, texel: { value: new THREE.Vector2(1 / PIX.w, 1 / PIX.h) }, res: { value: new THREE.Vector2(PIX.w, PIX.h) },
+              near: { value: cam.near }, far: { value: cam.far }, levels: { value: PIX.levels } },
+  vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
+  fragmentShader: `
+    uniform sampler2D tDiffuse, tDepth; uniform vec2 texel, res; uniform float near, far, levels; varying vec2 vUv;
+    float lin(vec2 uv){ float z = texture2D(tDepth, uv).r * 2.0 - 1.0; return (2.0 * near * far) / (far + near - z * (far - near)); }
+    float bayer(vec2 p){ vec2 q = floor(mod(p, 2.0)), r = floor(mod(floor(p / 2.0), 2.0));
+      float a = 3.0 * q.y + 2.0 * q.x - 4.0 * q.x * q.y, b = 3.0 * r.y + 2.0 * r.x - 4.0 * r.x * r.y; return (4.0 * a + b) / 16.0 - 0.5; }
+    void main(){
+      vec3 c = texture2D(tDiffuse, vUv).rgb;
+      float d = lin(vUv), e = 0.0;
+      e = max(e, abs(lin(vUv + vec2(texel.x, 0.0)) - d)); e = max(e, abs(lin(vUv - vec2(texel.x, 0.0)) - d));
+      e = max(e, abs(lin(vUv + vec2(0.0, texel.y)) - d)); e = max(e, abs(lin(vUv - vec2(0.0, texel.y)) - d));
+      if (e > 0.035 * d + 0.12) c *= 0.3;                                  // ink line where one thing stands in front of another
+      c = pow(c, vec3(0.9));                                               // a little lift before quantising
+      float dth = bayer(vUv * res) * 0.18;                                 // just enough to break banding on the dirt
+      c = floor(c * levels + 0.5 + dth) / levels;
+      gl_FragColor = vec4(c, 1.0);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`
+});
+quadScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), pixMat));
+document.getElementById("pix").onclick = e => { PIX.on = !PIX.on; e.target.classList.toggle("sel", PIX.on); };
+
+const P = (s, o, y = 0) => { const p = RACE.pt(s, o); return new THREE.Vector3(p[0] * FT, y, p[1] * FT); };
+
+// ---- lights: a night card under the lights
+scene.add(new THREE.HemisphereLight("#7d8db8", "#2a1d12", 0.55));
+const key = new THREE.DirectionalLight("#fff1dc", 2.2);
+key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
+Object.assign(key.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 1, far: 260 });
+key.shadow.bias = -0.0004;
+scene.add(key, key.target);
+
+// ---- ground, infield, racing surface
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.MeshStandardMaterial({ color: "#07090a", roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -0.05; ground.receiveShadow = true; scene.add(ground);
+function ring(o1, o2) {
+  const shape = new THREE.Shape(), hole = new THREE.Path();
+  for (let s = 0; s <= RACE.L; s += 10) { const a = RACE.pt(s, o2), b = RACE.pt(s, o1); s ? shape.lineTo(a[0] * FT, -a[1] * FT) : shape.moveTo(a[0] * FT, -a[1] * FT); s ? hole.lineTo(b[0] * FT, -b[1] * FT) : hole.moveTo(b[0] * FT, -b[1] * FT); }
+  if (o1 !== null) shape.holes.push(hole);
+  const g = new THREE.ShapeGeometry(shape, 1); g.rotateX(-Math.PI / 2); return g;
+}
+function noiseTex(base, spread, n = 256) {
+  const c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d");
+  x.fillStyle = base; x.fillRect(0, 0, n, n);
+  for (let i = 0; i < 9000; i++) { x.fillStyle = `rgba(${spread},${Math.random() * .03})`; x.fillRect(Math.random() * n, Math.random() * n, 1.5, 1.5); }
+  for (let y = 0; y < n; y += 3) { x.fillStyle = `rgba(0,0,0,${Math.random() * .025})`; x.fillRect(0, y, n, 1); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(60, 60); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const track = new THREE.Mesh(ring(-2, 86), new THREE.MeshStandardMaterial({ map: noiseTex("#6b4a33", "255,220,180"), roughness: .95 }));
+track.receiveShadow = true; scene.add(track);
+const infield = new THREE.Mesh(ring(-2, -2000).clone(), new THREE.MeshStandardMaterial({ color: "#0d2416", roughness: 1 }));
+{ // infield: the inside of the rail, as its own shape
+  const sh = new THREE.Shape(); for (let s = 0; s <= RACE.L; s += 10) { const a = RACE.pt(s, -3); s ? sh.lineTo(a[0] * FT, -a[1] * FT) : sh.moveTo(a[0] * FT, -a[1] * FT); }
+  const g = new THREE.ShapeGeometry(sh, 1); g.rotateX(-Math.PI / 2); infield.geometry = g; infield.position.y = 0.01; infield.receiveShadow = true; scene.add(infield);
+}
+function rail(o, h, col, r = .06) {
+  const pts = []; for (let s = 0; s < RACE.L; s += 12) pts.push(P(s, o, h));
+  const m = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 900, r, 6, true),
+    new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: .35, roughness: .4 }));
+  m.castShadow = true; scene.add(m);
+}
+rail(-2, 1.0, "#eef2f6"); rail(-2, .55, "#eef2f6", .04); rail(88, 1.1, "#c8ced6");
+{ // rail posts
+  const g = new THREE.CylinderGeometry(.05, .05, 1, 6), m = new THREE.MeshStandardMaterial({ color: "#dfe4ea" });
+  const n = Math.floor(RACE.L / 8), inst = new THREE.InstancedMesh(g, m, n), d = new THREE.Object3D();
+  for (let i = 0; i < n; i++) { d.position.copy(P(i * 8, -2, .5)); d.updateMatrix(); inst.setMatrixAt(i, d.matrix); }
+  scene.add(inst);
+}
+// poles at the quarters, and the wire
+[[1320, "#d8322f"], [2640, "#1f8f3f"], [3960, "#1f4fbf"]].forEach(([d, c]) => {
+  const p = new THREE.Mesh(new THREE.CylinderGeometry(.12, .12, 4, 8), new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .5 }));
+  p.position.copy(P(RACE.SF + d, -6, 2)); scene.add(p);
+});
+{
+  const a = P(RACE.SF, -2, .02), b = P(RACE.SF, 86, .02), len = a.distanceTo(b);
+  const wire = new THREE.Mesh(new THREE.PlaneGeometry(len, .35), new THREE.MeshBasicMaterial({ color: "#ffffff" }));
+  wire.rotation.x = -Math.PI / 2; wire.position.copy(a.clone().add(b).multiplyScalar(.5)); wire.rotation.z = -Math.atan2(b.z - a.z, b.x - a.x); scene.add(wire);
+  for (const o of [-10, 96]) { const post = new THREE.Mesh(new THREE.CylinderGeometry(.15, .15, 8, 8), new THREE.MeshStandardMaterial({ color: "#fff", emissive: "#fff", emissiveIntensity: .6 })); post.position.copy(P(RACE.SF, o, 4)); scene.add(post); }
+}
+// light towers ringing the track, each with a warm pool on the dirt
+{
+  const pole = new THREE.CylinderGeometry(.35, .5, 30, 8), pm = new THREE.MeshStandardMaterial({ color: "#20252d" });
+  const head = new THREE.BoxGeometry(5, 2, 1), hm = new THREE.MeshStandardMaterial({ color: "#fff6e0", emissive: "#fff1d0", emissiveIntensity: 3 });
+  for (let s = 0; s < RACE.L; s += 1040) {                       // five towers: each light costs every pixel
+    const at = P(s, 150, 15); const p = new THREE.Mesh(pole, pm); p.position.copy(at); scene.add(p);
+    const h = new THREE.Mesh(head, hm); h.position.copy(P(s, 150, 31)); h.lookAt(P(s, 40, 0)); scene.add(h);
+    const l = new THREE.PointLight("#ffe7c4", 1500, 360, 1.6); l.position.copy(P(s, 120, 28)); scene.add(l);
+  }
+}
+// grandstand along the homestretch, windows lit
+{
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 128; const x = c.getContext("2d");
+  x.fillStyle = "#0c0f15"; x.fillRect(0, 0, 1024, 128);
+  for (let r = 0; r < 6; r++) for (let i = 0; i < 120; i++) { x.fillStyle = Math.random() < .7 ? `rgba(255,214,150,${.4 + Math.random() * .5})` : "rgba(80,110,160,.35)"; x.fillRect(i * 8.5 + 2, 14 + r * 18, 5, 8); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const mats = [0, 0, 0, 0, 1, 0].map(i => i ? new THREE.MeshStandardMaterial({ map: t, emissiveMap: t, emissive: "#ffffff", emissiveIntensity: 1 }) : new THREE.MeshStandardMaterial({ color: "#0b0e13" }));
+  const stand = new THREE.Mesh(new THREE.BoxGeometry(300, 22, 30), mats);
+  const mid = P(RACE.S / 2 - 120, 360, 11); stand.position.copy(mid); scene.add(stand);
+}
+
+// ---- runners: the horse model in harness, a sulky, a driver in the post's colors
+const runners = [];
+const loader = new GLTFLoader();
+loader.load("https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Horse.glb", gltf => {
+  const src = gltf.scene, clip = gltf.animations[0];
+  const box = new THREE.Box3().setFromObject(src), sz = box.getSize(new THREE.Vector3());
+  const along = sz.x > sz.z ? "x" : "z", scale = 1.7 / sz.y;              // sized by height: 1.7 m at the ears
+  RACE.H.forEach((h, i) => {
+    const g = new THREE.Group();
+    const horse = src.clone(true);
+    horse.scale.setScalar(scale);
+    if (along === "z") horse.rotation.y = Math.PI / 2;            // model runs along z: turn it to face +x
+    horse.traverse(m => { if (m.isMesh) { m.castShadow = true; m.material = m.material.clone(); m.material.color = new THREE.Color(h[1]).multiplyScalar(1.6); m.material.roughness = .55; } });
+    horse.position.y = -box.min.y * scale;                           // hooves on the dirt
+    g.add(horse);
+    const mixer = new THREE.AnimationMixer(horse); const act = mixer.clipAction(clip); act.play(); mixer.setTime(i * .13);
+    // sulky
+    const metal = new THREE.MeshStandardMaterial({ color: "#c9d1db", metalness: .8, roughness: .3 });
+    for (const z of [-.62, .62]) {
+      const w = new THREE.Mesh(new THREE.TorusGeometry(.34, .025, 8, 32), new THREE.MeshStandardMaterial({ color: "#20242b", metalness: .4, roughness: .5 }));
+      w.position.set(-1.45, .34, z); w.castShadow = true; g.add(w);
+      const disc = new THREE.Mesh(new THREE.CircleGeometry(.32, 24), new THREE.MeshStandardMaterial({ color: "#1a1d22", side: THREE.DoubleSide, transparent: true, opacity: .7 }));
+      disc.position.copy(w.position); g.add(disc);
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, 2.3, 6), metal);
+      shaft.position.set(-.35, .72, z * .6); shaft.rotation.z = Math.PI / 2 - .12; g.add(shaft);
+    }
+    const axle = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, 1.3, 6), metal); axle.rotation.x = Math.PI / 2; axle.position.set(-1.45, .34, 0); g.add(axle);
+    const silk = new THREE.MeshStandardMaterial({ color: RACE.PAD[i], roughness: .6 });
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.24, .5, 4, 10), silk); body.position.set(-1.75, .98, 0); body.rotation.z = .55; body.castShadow = true; g.add(body);
+    const helm = new THREE.Mesh(new THREE.SphereGeometry(.16, 16, 12), new THREE.MeshStandardMaterial({ color: i === RACE.ME ? "#e8a33a" : "#f2f4f7", roughness: .3 })); helm.position.set(-1.5, 1.42, 0); g.add(helm);
+    const legs = new THREE.Mesh(new THREE.CapsuleGeometry(.1, .9, 4, 8), new THREE.MeshStandardMaterial({ color: "#e9ecef" })); legs.position.set(-1.0, .78, 0); legs.rotation.z = 1.25; g.add(legs);
+    // number cloth on both sides
+    const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d");
+    x.fillStyle = RACE.PAD[i]; x.fillRect(0, 0, 64, 64); x.fillStyle = RACE.DARK.includes(i + 1) ? "#111" : "#fff"; x.font = "bold 44px system-ui"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(i + 1, 32, 35);
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+    for (const z of [-.34, .34]) { const cl = new THREE.Mesh(new THREE.PlaneGeometry(.42, .42), new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide })); cl.position.set(-.15, 1.12, z * 1.15); g.add(cl); }
+    scene.add(g);
+    runners.push({ g, mixer, driver: [body, helm, legs] });
+  });
+  // the animated pose is smaller and higher than the model's rest pose: measure it, then size and seat every horse
+  const g0 = runners[0].g, h0 = g0.children[0]; runners[0].mixer.update(.01); g0.updateMatrixWorld(true);
+  const pb = new THREE.Box3().setFromObject(h0, true).applyMatrix4(g0.matrixWorld.clone().invert());
+  const k = 2.6 / (pb.max.x - pb.min.x), y0 = h0.position.y;
+  runners.forEach(r => { const h = r.g.children[0]; h.scale.multiplyScalar(k); h.position.y = -k * (pb.min.y - y0); h.position.x = 1.2 - k * pb.max.x; });
+  window.__dbg = { runners, THREE, cam, camLook };
+  document.getElementById("note").textContent = "3D with a 16-bit finish: the scene renders at 480x270, colors snap to a small palette with an ordered dither, depth edges get an ink line, and it scales up crisp. TV cuts like a broadcast: gate car, pan, tower at the half, long lens up the stretch, side-on at the wire. The horse is still three.js's sample galloping horse, a stand-in for a rigged pacer.";
+}, undefined, () => { document.getElementById("note").textContent = "Couldn't load the horse model from the CDN."; });
+
+// ---- cameras. "tv" runs a director that cuts the way a race broadcast does: the gate car looking
+// back at the field, the pan from outside the rail, a tower at the half, a long lens up the stretch,
+// side-on at the wire. The other buttons hold one camera.
+const SHOTS = [[0, "gate"], [8, "broadcast"], [50, "tower"], [56, "broadcast"], [100, "stretch"], [108.5, "wire"]];
+const shotAt = t => [...SHOTS].reverse().find(sh => t >= sh[0])[1];
+let view = "tv", lastShot = "";
+document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { view = b.dataset.v; document.querySelectorAll("[data-v]").forEach(x => x.classList.toggle("sel", x === b)); snap = true; });
+let snap = true;
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
+const ctl = RACE.controls(() => { snap = true; });
+window.__ctl = ctl; window.__shotAt = shotAt; window.__PIX = PIX;      // module scope: exposed for the browser console
+let last = performance.now(), ui = 0;
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now; ctl.tick(dt);
+  const t = ctl.t, st = RACE.state(t), ord = [...st].sort((a, b) => b.d - a.d);
+  st.forEach((h, k) => {
+    const r = runners[k]; if (!r) return;
+    const p = P(h.s, h.o), q = P(h.s + 2, h.o);
+    r.g.position.copy(p); r.g.rotation.y = Math.atan2(-(q.z - p.z), q.x - p.x);
+    r.mixer.update(dt * (ctl.play ? ctl.speed : 0) * 1.1);           // legs keep time with the replay speed
+    r.driver.forEach(m => m.visible = !(lastShot === "driver" && k === RACE.ME));
+  });
+  const cs = RACE.camS(st), center = P(cs, 20, 1.2);
+  key.position.copy(center).add(new THREE.Vector3(-30, 60, 25)); key.target.position.copy(center);
+  let pos, look;
+  const shot = view === "tv" ? shotAt(t) : view, lead = ord[0];
+  if (shot !== lastShot) { snap = true; lastShot = shot; }
+  if (shot === "gate") {                                                 // on the gate car as it pulls away, looking back at the field
+    const car = lead.s + 34 + 6 * Math.pow(t, 1.3);
+    pos = P(car, 45, 2.6); look = P(lead.s - 6, 40, 1.3); cam.fov = 52;
+  } else if (shot === "tower") { pos = P(RACE.SF + 2680, 32, 9); look = P(lead.s - 4, 24, 1.3); cam.fov = 13; }
+  else if (shot === "stretch") { pos = P(RACE.SF + 5280 + 130, 36, 12); look = P(lead.s - 4, 24, 1.3); cam.fov = 9; }
+  else if (shot === "wire") { pos = P(RACE.SF + 5280 - 40, 150, 6); look = P(RACE.SF + 5280 - 6, 25, 1.6); cam.fov = 18; }
+  else if (shot === "broadcast") { pos = P(cs - 25, 170, 7); look = P(cs, 25, 2.2); cam.fov = 16; }
+  else if (shot === "overhead") { pos = P(cs - 12, 70, 34); look = P(cs + 4, 24, 0); cam.fov = 42; }
+  else { const me = st[RACE.ME]; pos = P(me.s - 10.5, me.o, 2.05); look = P(me.s + 60, me.o * .7, 1.1); cam.fov = 68; }
+  if (window.__cam) { const me = st[window.__cam.i]; pos = P(me.s + window.__cam.ds, me.o + window.__cam.o, window.__cam.y); look = P(me.s, me.o, 1); cam.fov = 35; }
+  cam.updateProjectionMatrix();
+  const k = snap || shot === "driver" || shot === "gate" ? 1 : 1 - Math.exp(-dt * 5);   // same easing at any frame rate; the car and the driver cams are rigid
+  camPos.lerp(pos, k); camLook.lerp(look, k); snap = false;
+  cam.position.copy(camPos); cam.lookAt(camLook);
+  if (PIX.on) { renderer.setRenderTarget(rt); renderer.render(scene, cam); renderer.setRenderTarget(null); renderer.render(quadScene, quadCam); }
+  else renderer.render(scene, cam);
+  if (now - ui > 90) { RACE.hud(t, ord); ui = now; }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>

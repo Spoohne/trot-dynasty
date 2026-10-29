@@ -1,0 +1,6 @@
+A2 https://api.spritecook.ai/v1/assets/43069354-b3e7-49e5-ba48-48cf5c806ebc/signed-content/pixel?sig=2cSaqz8XmNh1R5LsuYFSxIIXVOfS3efhXnEWBZqPmXU&exp=1793212082
+A3 https://api.spritecook.ai/v1/assets/6ef78924-9059-437e-98d7-42fd71f10337/signed-content/pixel?sig=WwnStYBRBYxa8MnM22OVEameWU36Srji1PGtahNP76Q&exp=1793212082
+E2 https://api.spritecook.ai/v1/assets/110b0e46-1442-42e6-a5e5-c1e0e7cfe729/signed-content/pixel?sig=X7j_1TdDDbiqxz6M-ymFf5Quyd-bYk77QddfUxmhASM&exp=1793212112
+E3 https://api.spritecook.ai/v1/assets/70ba13ec-b59a-483c-9fa7-d49d24a00700/signed-content/pixel?sig=gWXhMb1kege7Pka-AFsR6wPfiU8NPzsX_iymxnAtmxw&exp=1793212112
+W2 https://api.spritecook.ai/v1/assets/7dbc7c87-f5c1-41ad-ac71-1e16c58ce4f6/signed-content/pixel?sig=VBknS6_Y7G5_8P0P_AUZ6rq4mNX6v3akfOVAzisi4RA&exp=1793212135
+W3 https://api.spritecook.ai/v1/assets/d1e31bdd-07bd-4301-b509-700f630f36a1/signed-content/pixel?sig=XHeFHk_d8xah29YrkTNk3vepS45Or0d-FFWzxm_K8gw&exp=1793212135

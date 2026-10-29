@@ -1,0 +1,55 @@
+/* Broadcast graphics shared by the replay mockups: dark glass panels, tote amber accent. */
+:root{--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--glass:rgba(9,12,17,.78);--rule:rgba(255,255,255,.08)}
+*{box-sizing:border-box}
+body{margin:0;background:#05070a;color:var(--ink);font-family:'Barlow Semi Condensed',system-ui,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:baseline;margin:2px 2px 10px}
+.top h1{font-size:18px;margin:0;font-weight:600}.top a{color:var(--ink2);font-size:14px;text-decoration:none;margin-left:14px}.top a.on{color:var(--tote)}
+.stage{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#05070a;border:1px solid #1c222c}
+.stage canvas{display:block;width:100%;height:100%}
+.lt{position:absolute;left:14px;top:14px;display:flex;align-items:stretch;border-radius:6px;overflow:hidden;background:var(--glass);backdrop-filter:blur(6px)}
+.lt .tag{background:var(--tote);color:#2a1a03;font-weight:700;font-size:13px;padding:6px 9px;display:flex;align-items:center}
+.lt .ti{padding:5px 12px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:12px}
+#clk{font-variant-numeric:tabular-nums;font-size:20px;font-weight:700;min-width:62px}
+.views{position:absolute;right:14px;top:14px;display:flex;border-radius:8px;overflow:hidden;background:var(--glass);backdrop-filter:blur(6px)}
+.views button{background:none;border:0;color:var(--ink2);font:600 13px inherit;padding:8px 12px;cursor:pointer}
+.views button.sel{color:#2a1a03;background:var(--tote)}
+.views button:disabled{color:#454c58;cursor:not-allowed}
+.bot{position:absolute;left:14px;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px}
+#cap{align-self:flex-start;background:var(--glass);border-left:3px solid var(--tote);padding:7px 11px;font-size:15px;backdrop-filter:blur(6px)}
+.strip{display:flex;gap:10px;align-items:center;background:var(--glass);border-radius:8px;padding:6px 10px;backdrop-filter:blur(6px)}
+#ord{display:flex;gap:6px;flex:1}
+.oc{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:26px}.oc small{font-size:11px;color:var(--ink2);height:13px;font-variant-numeric:tabular-nums}
+.oc.me .pad{box-shadow:0 0 0 2px var(--tote)}
+.pad{border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+#fr{display:flex;gap:10px;font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink3)}
+#fr span{display:flex;flex-direction:column;align-items:center}#fr small{font-size:10px}#fr .on{color:var(--ink)}#fr .fast{color:#4cd07a}#fr .slow{color:#e8574a}
+.ctl{display:flex;align-items:center;gap:8px;margin-top:12px}
+.ctl button{background:#141920;color:var(--ink);border:1px solid #262d38;border-radius:8px;height:36px;min-width:44px;font:600 14px inherit;cursor:pointer}
+.ctl button.sel{background:var(--tote);color:#2a1a03;border-color:var(--tote)}
+.ctl input{flex:1;accent-color:var(--tote)}
+.note{color:var(--ink3);font-size:13px;margin:10px 2px 0;line-height:1.45}
+@media (max-width:640px){#fr{display:none}.lt .ti{font-size:12px}.views button{padding:7px 8px;font-size:12px}}
+/* Phones: a replay is watched sideways, full screen, like a race video. Upright, the page asks you
+   to turn the phone; sideways, the stage takes the whole screen and the broadcast graphics shrink. */
+#fs{font-size:18px}
+#turn{display:none}
+@media (orientation:portrait) and (max-width:640px){
+  #turn{display:flex;position:fixed;inset:0;z-index:50;background:#05070a;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+  #turn .ph{width:46px;height:78px;border:3px solid var(--ink2);border-radius:9px;animation:tilt 2.4s ease-in-out infinite}
+  #turn p{margin:0;color:var(--ink2);font-size:16px;max-width:260px}
+  #turn button{background:var(--tote);color:#2a1a03;border:0;border-radius:10px;font:700 16px inherit;padding:12px 22px;cursor:pointer}
+  @keyframes tilt{0%,30%{transform:rotate(0)}55%,100%{transform:rotate(-90deg)}}
+}
+@media (orientation:landscape) and (max-height:500px), (display-mode:fullscreen){
+  .wrap{max-width:none;padding:0}
+  .top,.note,.ctl.cam{display:none}
+  .stage{border:0;border-radius:0;height:calc(100dvh - 44px);width:auto;max-width:100vw;margin:0 auto}
+  .ctl{margin:4px 8px;height:36px}
+  .lt{left:8px;top:8px}.views{display:none}
+  #clk{font-size:16px}.lt .ti{font-size:12px;padding:3px 8px}.lt .tag{font-size:11px;padding:4px 7px}
+  .bot{left:8px;right:8px;bottom:6px;gap:4px}#cap{font-size:12px;padding:4px 8px}
+  .strip{padding:3px 6px}.oc{min-width:20px}.oc small{font-size:9px;height:11px}.pad{transform:scale(.8)}
+}
+.stage:fullscreen{height:100vh;width:100vw;max-width:none;border:0;border-radius:0}
+.stage:fullscreen canvas{object-fit:contain}

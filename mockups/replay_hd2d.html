@@ -1,0 +1,1110 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Replay · HD-2D</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/mock/hud.css">
+<style>
+#cv{display:block;width:100%;height:100%}
+.stage{container-type:size}
+#photo{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none}
+#photo .card{background:rgba(9,12,17,.86);border-top:3px solid var(--tote);padding:14px 18px;min-width:240px}
+#photo h3{margin:0 0 8px;font-size:13px;color:var(--tote);font-weight:700}
+#photo .rw{display:flex;align-items:center;gap:10px;font-size:16px;padding:3px 0}#photo .rw b{width:16px}#photo .rw span.m{margin-left:auto;color:var(--ink2);font-variant-numeric:tabular-nums}
+#field{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);width:min(420px,88%);opacity:0;transition:opacity .6s,transform .6s;pointer-events:none;
+  background:linear-gradient(#0d1730f2,#070b18f2);border:2px solid #2b3a55;box-shadow:0 0 0 2px #05070d,0 12px 40px #000c;z-index:3}
+#field.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#field .fh{display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;background:linear-gradient(90deg,#e8a33a,#c47a17);color:#140c00;font-weight:800;letter-spacing:.16em;font-size:13px}
+#field .fh span+span{letter-spacing:.04em;font-weight:700;font-size:12px}
+#frows .fr{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:5px 12px;border-top:1px solid #1b2539;font-size:16px;font-weight:600;opacity:0;transform:translateX(-12px);transition:opacity .35s,transform .35s}
+#field.on .fr{opacity:1;transform:none}
+#frows .fr:nth-child(odd){background:#ffffff06}#frows .fr.me .fn{color:var(--tote)}
+#frows .pd{width:30px;height:24px;display:grid;place-items:center;font-weight:800;font-size:15px;box-shadow:inset 0 -2px 0 #0004}
+#frows .fo{font-variant-numeric:tabular-nums;color:#ffb347;font-weight:800;font-size:18px;text-shadow:0 0 6px rgba(255,179,71,.5);min-width:44px;text-align:right}
+#intro{position:absolute;inset:0;display:none;align-items:flex-end;justify-content:flex-start;cursor:pointer;background:linear-gradient(transparent 55%,rgba(5,7,13,.75))}
+#intro .ib{margin:0 0 70px 28px;opacity:0;transition:opacity .8s}#intro.on .ib{opacity:1}
+#intro .ik{color:var(--tote);font-weight:700;letter-spacing:.18em;font-size:13px}#intro .it{font-size:34px;font-weight:700;text-shadow:0 2px 8px #000}
+#intro .is{color:var(--ink2);font-size:16px}#intro .ib.tk{padding:14px 18px;background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 50%,#05070d));border:3px solid var(--ta);box-shadow:0 0 0 3px #05070d,0 8px 20px #000c}
+#intro .tkb{width:72px;height:72px;float:left;margin-right:14px;image-rendering:pixelated;filter:drop-shadow(0 3px 2px #000a)}#intro .tkv{font-size:28px;line-height:1;color:#fff;text-shadow:3px 3px 0 #000}#intro .tkm{font-size:13px;color:#ffffffcc;margin-bottom:4px}
+#intro .ib.tk .ik{color:var(--ta)}#intro .skip{color:var(--ink3);font-size:12px;margin-top:8px}
+/* the bottom order bar, after the broadcast one: four boxes across */
+#ord{gap:8px}.strip{background:none;backdrop-filter:none;padding:0}
+.t4{flex:1;display:flex;height:40px;font-family:"Barlow Semi Condensed",sans-serif;box-shadow:0 3px 8px #0008;min-width:0}
+.t4 b{width:44px;flex:none;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;border-radius:3px 0 0 3px;text-shadow:0 1px 0 #0004;box-shadow:inset 0 -6px 10px #0003}
+.t4 span{flex:1;display:flex;flex-direction:column;min-width:0}
+.t4 i{font-style:normal;background:#0d1d45;color:#fff;font-weight:700;font-size:17px;line-height:22px;padding:0 8px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t4 em{font-style:normal;background:#f4d01e;color:#14306e;font-weight:700;font-size:13px;line-height:18px;padding:0 8px;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.t4.me i{color:#f4d01e}
+#fr{background:var(--glass);border-radius:6px;padding:4px 8px}
+#rest{display:flex;gap:3px;align-items:center;font:700 11px 'Barlow Semi Condensed',sans-serif;color:#cfd6e4}#rest:empty{display:none}
+#rest .rl{margin-right:4px;letter-spacing:.1em;text-shadow:0 1px 2px #000}
+#rest b{min-width:18px;height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:2px;box-shadow:0 1px 3px #0008}
+#rest b.me{outline:2px solid #f4d01e;outline-offset:1px}#rest .you{color:#f4d01e;margin-left:6px;text-shadow:0 1px 2px #000}
+@container (max-width:900px){#ord{gap:3px}.t4{height:30px}.t4 b{width:20px;font-size:15px}.t4 i{font-size:11px;line-height:16px;padding:0 4px}.t4 em{font-size:9px;line-height:14px;padding:0 4px}#fr{display:flex!important;padding:2px 5px;gap:5px;font-size:11px}#fr small{font-size:8px}}
+/* the track's title, bottom right as the race starts */
+#nowPlaying{position:absolute;right:14px;bottom:70px;z-index:3;display:flex;flex-direction:column;align-items:flex-end;padding:6px 12px;
+  background:var(--glass);backdrop-filter:blur(6px);border-right:3px solid var(--tote);font-family:"Barlow Semi Condensed",sans-serif;
+  opacity:0;transform:translateY(6px);transition:opacity 1s,transform 1s;pointer-events:none}
+#nowPlaying.on{opacity:1;transform:none}#nowPlaying span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+#nowPlaying b{font-size:18px;color:var(--ink)}
+/* the sound button opens a volume slider under it */
+.views{overflow:visible;position:absolute}#volPop{display:none;position:absolute;right:calc(100% - 44px);top:calc(100% + 6px);background:var(--glass);backdrop-filter:blur(6px);
+  border-radius:8px;padding:8px 10px;align-items:center;gap:8px;z-index:5;white-space:nowrap}#volPop.on{display:flex}#vol{width:130px;accent-color:var(--tote)}
+#volPct{font:600 13px "Barlow Semi Condensed",sans-serif;min-width:34px;text-align:right;color:var(--ink)}
+/* broadcast top bar: navy carbon-fibre bar with a gold rim, track name and race plate, the race's name on a tab below */
+.lt2{position:absolute;left:12px;right:calc(150px + 14%);top:10px;z-index:2;transform:scale(.8);transform-origin:left top;font-family:"Barlow Semi Condensed",sans-serif;pointer-events:none}
+.lt2 .lb{display:flex;align-items:stretch;height:34px;border:2px solid #f4d01e;border-radius:4px 16px 16px 4px;overflow:hidden;
+  background:repeating-linear-gradient(45deg,#14306e 0 2px,#102658 2px 4px),#122a62;box-shadow:0 2px 0 #b8900a,0 4px 10px #0009}
+.lt2 .ven{color:#f4d01e;font-weight:700;font-size:23px;letter-spacing:.01em;padding:0 4px 0 12px;display:flex;align-items:center;text-transform:uppercase;text-shadow:0 1px 0 #000}
+.lt2 .sl{color:#f4d01e;font-weight:700;font-size:23px;display:flex;align-items:center;letter-spacing:-.15em;padding-right:6px}
+.lt2 .rn{background:linear-gradient(#ffe24a,#e8bd10);color:#14306e;font-weight:700;font-size:21px;display:flex;align-items:center;gap:14px;padding:0 18px 0 14px;
+  clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.lt2 .rn b{font-size:24px}
+.lt2 .dt{margin-left:auto;color:#fff;font-weight:600;font-size:11px;line-height:1.05;text-align:right;padding:0 14px;display:flex;flex-direction:column;justify-content:center}
+.lt2 .ls{display:flex;align-items:flex-start;gap:14px;margin-top:3px}
+.lt2 #clk{color:#fff;font-weight:600;font-size:17px;min-width:56px;padding:2px 0 0 4px;text-shadow:0 1px 3px #000;font-variant-numeric:tabular-nums}
+.lt2 .sub{background:#122a62;border:2px solid #f4d01e;border-top:0;color:#f4d01e;font-weight:700;font-size:15px;padding:2px 14px;text-transform:uppercase;box-shadow:0 3px 8px #0008}
+.lt2 .rp{color:#2a1a03;background:var(--tote);font-weight:700;font-size:10px;letter-spacing:.12em;padding:2px 6px;border-radius:3px;margin-top:3px}
+@media (max-width:640px){.lt2{right:12px}.lt2 .ven,.lt2 .sl{font-size:16px}.lt2 .rn{font-size:15px}.lt2 .rn b{font-size:17px}.lt2 .dt{display:none}.lt2 .sub{font-size:12px}}
+#wc{position:absolute;inset:0;display:none;flex-direction:column;gap:8px;align-items:center;justify-content:center;background:rgba(5,7,13,.55);z-index:6;container-type:size}
+@container (max-height:600px){#wc .frame{padding:8px 8px 6px}#wcc{max-height:36cqh}.wcb{padding-top:4px}.wcn{font-size:18px}.wcm{font-size:12px}.wco{font-size:11px}#wcx{padding:6px 22px!important}}
+#wc .frame{background:#f4efe3;padding:12px 12px 10px;box-shadow:0 10px 30px rgba(0,0,0,.6);transform:rotate(-1.2deg);max-width:min(86%,520px)}
+/* the official results, TV style: full order of finish beside the mutuel payoffs (simulated: there is no wagering) */
+#tv{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.72);z-index:7;font-family:'Barlow Condensed',system-ui,sans-serif;color:#e6e8ec}
+#tv.on{display:flex;animation:tvin .45s cubic-bezier(.2,.9,.3,1.2)}@keyframes tvin{from{transform:scaleY(.04);opacity:0}}
+#tv .tvp{width:min(94%,860px);max-height:94%;display:flex;flex-direction:column;background:linear-gradient(#111a2e,#0a0f1c);border:3px solid #e8a33a;box-shadow:0 0 0 3px #05070d,0 10px 40px #000c}
+#tv .tvh{display:flex;align-items:center;gap:12px;padding:6px 14px;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);color:#2a1a03}
+#tv .tvh b{font-size:clamp(18px,4.2cqh,30px);font-weight:800;letter-spacing:.12em}#tv .tvh span{margin-left:auto;font-weight:700;font-size:clamp(12px,2.6cqh,17px);text-align:right}
+#tv .tvb{display:flex;gap:12px;padding:10px 14px;min-height:0;overflow-y:auto;overflow-x:hidden}
+#tv table{border-collapse:collapse;width:100%;font-size:clamp(13px,3cqh,19px)}#tv td,#tv th{padding:3px 6px;white-space:nowrap}
+#tv th{font-weight:800;font-size:.72em;letter-spacing:.1em;color:#ffb347;text-align:left;border-bottom:2px solid #e8a33a66}
+#tv .tvo{flex:1.25;min-width:0}#tv .tvo td:nth-child(3){overflow:hidden;text-overflow:ellipsis;max-width:0;width:100%;font-weight:700}
+#tv .tvo tr.me td{background:#e8a33a26}#tv .pos{color:#ffd36b;font-weight:800}
+#tv .pd{display:inline-block;min-width:1.5em;text-align:center;font-weight:800;border:1px solid #0008}
+#tv .tvm td:first-child{overflow:hidden;text-overflow:ellipsis;max-width:0;width:100%}#tv .tvm td,#tv .tvm th{padding:3px 4px}#tv .tvm{flex:1;min-width:0;background:#05070d99;border:1px solid #2a3a5c;padding:4px 6px}#tv .tvm td:nth-child(n+2){text-align:right;font-variant-numeric:tabular-nums;color:#7dffa0;font-weight:700}
+#tv .tvm .ex td{border-top:1px solid #2a3a5c}#tv .tvm .ex td:first-child{color:#c6cede;max-width:none;width:auto}
+#tv .tvf{display:flex;align-items:center;gap:10px;padding:6px 14px 10px;font-size:12px;color:#8b95a7}#tv .tvf a{margin-left:auto}
+#tv .tvf a,#tv .tvf button{padding:8px 18px;border-radius:6px;border:0;background:#e8a33a;color:#111;font:700 15px system-ui;text-decoration:none;cursor:pointer}#tv .tvf button{background:#22304c;color:#e6e8ec}
+#wc .frame{position:relative;flex-shrink:0}#wc .wct{position:relative;padding-right:76px}#wc .wcem{position:absolute;right:-8px;bottom:0;width:64px;height:64px;filter:drop-shadow(0 2px 2px #0006)}#wcmq{width:min(86%,520px);flex-shrink:0}#wcmq:empty{display:none}#wcmq .mqx{min-height:64px}
+/* the photo is turned over: it narrows to its edge showing a plain card back, then widens showing the photo */
+#wc.flip .frame{animation:wcflip .8s cubic-bezier(.3,.6,.3,1) both}
+#wc .frame:after{content:"";position:absolute;inset:0;background:#1b2a4a repeating-linear-gradient(45deg,#ffffff12 0 6px,transparent 6px 12px);
+  border:6px solid #f4efe3;opacity:0;pointer-events:none}
+#wc.flip .frame:after{animation:wcback .8s steps(1,end) both}
+@keyframes wcflip{0%{transform:scaleX(1) rotate(-1.2deg)}45%{transform:scaleX(.02) rotate(-1.2deg)}55%{transform:scaleX(.02) rotate(-1.2deg)}
+  80%{transform:scaleX(1.05) rotate(-1.2deg)}100%{transform:scaleX(1) rotate(-1.2deg)}}
+@keyframes wcback{0%{opacity:1}50%{opacity:0}100%{opacity:0}}
+#stamp{position:absolute;bottom:10px;right:18px;display:none;padding:8px 14px;border:4px double #c8202a;border-radius:6px;color:#c8202a;background:rgba(244,239,227,.18);
+  font-weight:800;text-transform:uppercase;letter-spacing:.08em;text-align:center;line-height:1.05;transform:rotate(-11deg);opacity:.92;
+  text-shadow:0 0 1px #c8202a;-webkit-mask:repeating-linear-gradient(35deg,#000 0 3px,#000c 3px 4px)}
+#stamp b{display:block;font-size:20px}#stamp span{font-size:26px;letter-spacing:.04em}
+#stamp.on{display:block;animation:slam .35s cubic-bezier(.2,1.6,.4,1) .9s both}
+@keyframes slam{from{transform:rotate(-11deg) scale(2.6);opacity:0}to{transform:rotate(-11deg) scale(1);opacity:.92}}
+#wcc{display:block;width:auto;max-width:100%;height:auto;max-height:44cqh;margin:0 auto;image-rendering:pixelated;border:2px solid #222}
+.wcb{display:flex;gap:12px;align-items:center;color:#1a1a1a;padding:8px 4px 0}.emb{width:46px;flex:none}
+.wck{font-size:11px;letter-spacing:.2em;font-weight:700;color:#8a5a12}.wcn{font-size:24px;font-weight:700;line-height:1.1}
+.wcm{font-size:14px}.wco{font-size:12px;color:#555;margin-top:2px}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#bulbs{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}#bulbs i{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff 0 18%,#fffbe8cc 30%,#fff6d020 60%,transparent 70%);transform:translate(-50%,-50%) scale(.2);animation:bulb .22s ease-out forwards}@keyframes bulb{30%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1.3);opacity:0}}
+
+@container (max-height:460px){#field{width:min(340px,64%)}#field .fh{padding:4px 10px;font-size:11px}#field .fh span+span{font-size:10px}#frows .fr{padding:1px 10px;gap:8px;font-size:13px;grid-template-columns:24px 1fr auto}#frows .pd{width:24px;height:17px;font-size:12px}#frows .fo{font-size:14px;min-width:34px}}
+@container (max-height:260px){#field{width:min(300px,80%)}#field .fh{padding:2px 8px;font-size:10px}#frows .fr{padding:0 8px;font-size:11px;line-height:15px}#frows .pd{height:13px;font-size:10px;width:22px}#frows .fo{font-size:11px}}
+#pf{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:4}
+#pf .pfsign{position:absolute;top:14%;right:4%;font:800 22px 'Barlow Semi Condensed',sans-serif;letter-spacing:.2em;color:#ffb347;background:#120c02e6;border:2px solid #ffb347;padding:4px 12px;box-shadow:0 0 14px #ffb34788;animation:pfblink .55s steps(1,end) infinite}
+@keyframes pfblink{50%{color:#4a3110;border-color:#4a3110;box-shadow:none}}
+.pfstrip{background:#f2efe6;padding:6px 6px 4px;box-shadow:0 10px 30px #000c;transform:rotate(.6deg);opacity:0;transition:opacity .35s}#pf.on .pfstrip{opacity:1}
+#pfc{display:block;width:min(70cqw,560px);height:auto;border:1px solid #222}.pfcap{font:700 11px 'Barlow Semi Condensed',sans-serif;letter-spacing:.3em;color:#222;text-align:center;padding-top:3px}
+.oddsup .lt2,.oddsup .lt,.oddsup .bot,.oddsup #nowPlaying{opacity:0;transition:opacity .4s}.lt2,.lt,.bot{transition:opacity .4s}
+#field .fbrand{display:flex;justify-content:center;padding:8px 0 6px;background:radial-gradient(ellipse at 50% 60%,#2a3f7a 0,#0b1530 70%);border-bottom:2px solid #e8a33a}#field .fbrand img{height:46px;width:auto;filter:drop-shadow(0 2px 4px #000a)}
+@container (max-height:460px){#field .fbrand{padding:4px 0 3px}#field .fbrand img{height:30px}}
+@container (max-height:260px){#field .fbrand img{height:20px}}
+#intro .iw{margin:0 28px 70px auto;width:min(330px,42%);opacity:0;transition:opacity .8s;background:linear-gradient(#0d1730f0,#070b18f0);border:2px solid #2b3a55;border-top:3px solid var(--tote);box-shadow:0 8px 24px #000a;font-family:'Barlow Semi Condensed',sans-serif}#intro.on .iw{opacity:1}#intro .iw:empty{display:none}
+.iw .wh{color:var(--tote);font-weight:700;letter-spacing:.18em;font-size:12px;padding:7px 12px 5px}
+.iw .wr{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:5px 12px;border-top:1px solid #1b2539}
+.iw .wr b{height:22px;display:grid;place-items:center;font-weight:800;font-size:14px}.iw .wn{font-weight:700;font-size:16px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iw .wn small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--ink2);text-transform:uppercase}.iw .wo{color:#ffb347;font-weight:800;font-size:16px}
+.iw .wr.me .wn{color:#f4d01e}.iw .wb{padding:7px 12px 2px;font-weight:800;font-size:15px;color:#f4d01e;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iw .vs{text-align:center;font-weight:800;color:var(--tote);letter-spacing:.3em;font-size:13px;padding:3px 0;border-top:1px solid #1b2539}
+@container (max-height:460px){#intro .iw{margin:0 12px 46px auto}.iw .wh{font-size:10px;padding:4px 8px 3px}.iw .wr{padding:2px 8px;gap:6px;grid-template-columns:22px 1fr auto}.iw .wr b{height:16px;font-size:11px}.iw .wn{font-size:12px}.iw .wn small{font-size:9px}.iw .wo{font-size:12px}.iw .wb{font-size:11px;padding:4px 8px 0}.iw .vs{font-size:10px;padding:1px 0}}
+#mm{position:absolute;top:10px;right:10px;width:124px;height:72px;opacity:.92;z-index:3;background:#0b1530d9;border:2px solid #2b3a55;border-radius:8px;box-shadow:0 4px 12px #0008;pointer-events:none}.oddsup #mm{opacity:0}
+@container (max-height:460px){#mm{top:6px;right:6px;width:84px;height:50px}}
+.views{top:90px!important}   /* the minimap has the corner; the camera buttons sit under it */
+#sndBtn{display:none}   /* replays are silent for now */
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<link rel="stylesheet" href="/mock/brand/marquee/marquee.css?v=14"></head><body><div class="wrap">
+<div class="top"><h1>Replay</h1><span><a class="on" href="#">HD-2D</a><a id="flat" href="/mock/replay_pixel.html">2D</a></span></div>
+<div class="stage" id="stage">
+  <canvas id="cv"></canvas>
+  <div id="flash"></div><div id="bulbs"></div><div id="pf"><div class="pfsign">PHOTO</div><div class="pfstrip"><canvas id="pfc"></canvas><div class="pfcap">PHOTO FINISH</div></div></div>
+  <div class="lt2"><div class="lb"><span class="ven" id="ven"></span><span class="sl">//</span><span class="rn">RACE<b id="rno">1</b></span><span class="dt" id="rdt"></span></div>
+    <div class="ls"><span id="clk">0:00.0</span><span class="sub" id="rt"></span><span class="rp">REPLAY</span></div></div>
+  <canvas id="mm" aria-label="Where everyone is on the track"></canvas><div class="views"><button id="sndBtn" title="Sound">🔊</button><div id="volPop"><input id="vol" type="range" min="0" max="100" step="1" aria-label="Sound volume"><span id="volPct"></span></div><button data-v="tv" class="sel">TV</button><button data-v="blimp">Blimp</button></div>
+  <div id="nowPlaying"><span>♪ Now playing</span><b></b></div>
+  <div class="bot"><div id="cap"></div><div class="strip"><div id="ord"></div><div id="fr"></div></div><div id="rest"></div></div>
+  <div id="field"><div class="fbrand"><img src="/mock/brand/logo_text.png" alt="Trot Dynasty"></div><div class="fh"><span>THE FIELD</span><span id="fhs"></span></div><div id="frows"></div></div>
+  <div id="intro"><div class="ib"><div class="ik" id="ik"></div><div class="it" id="it"></div><div class="is" id="is"></div><div class="skip">tap to skip</div></div><div class="iw" id="iw"></div></div>
+  <div id="wc"><div id="wcmq"></div><div class="frame"><canvas id="wcc" width="640" height="300"></canvas><div id="stamp"><b>New Course Record!</b><span id="stt"></span></div>
+    <div class="wcb">
+      <div class="wct"><img class="wcem" id="wcem" alt="" hidden><div class="wck">WINNER&#39;S CIRCLE</div><div class="wcn" id="wcn"></div><div class="wcm" id="wcm"></div><div class="wco" id="wco">Owner &middot; <b>Your Barn Name</b> &nbsp;&middot;&nbsp; Trainer &middot; <b>Trainer Name</b> &nbsp;&middot;&nbsp; Driver &middot; <b>Driver Name</b></div></div></div></div><a id="wcx" href="/" onclick="if(history.length>1){history.back();return false}" style="padding:10px 28px;border-radius:8px;background:#e8a33a;color:#111;font:700 16px system-ui;text-decoration:none">Done</a></div>
+  <div id="tv"><div class="tvp"><div class="tvh"><b>OFFICIAL</b><span id="tvt"></span></div><div class="tvb"><div class="tvo"><table id="tvo"></table></div><div class="tvm"><table id="tvm"></table></div></div>
+    <div class="tvf"><span>Payoffs are simulated for show. There is no wagering.</span><button id="tvback">Winner&#39;s circle</button><a href="/" onclick="if(history.length>1){history.back();return false}">Done</a></div></div></div>
+  <div id="photo"><div class="card"><h3>Official · photo finish</h3><div id="res"></div></div></div>
+</div>
+<div id="turn"><div class="ph"></div><p>Turn your phone sideways to watch the race.</p><button id="go">Watch full screen</button></div>
+<div class="ctl"><button id="pp">❚❚</button><input type="range" id="sc" min="0" step="0.1" value="0" aria-label="Scrub"><button data-s="1" class="sel">1×</button><button data-s="2">2×</button><button data-s="5">5×</button><button id="fs" title="Full screen" aria-label="Full screen">⛶</button></div>
+<p class="note">HD-2D: the track, rails, infield and sky are a real 3D world built from SpriteCook art (the top-down track strip laid round the oval, the night panorama as the sky); the runners are the SpriteCook pacing sprite standing in it, turned to face the lens. Rendered at full screen resolution: pixel-crisp up close, mipmapped in the distance. Positions come from the shared motion sim in race.js.</p>
+</div>
+<script src="/mock/race.js"></script>
+<script type="module">
+import * as THREE from "three";
+const INJ = "__RACE_ID__", RACE_ID = INJ.startsWith("__") ? new URLSearchParams(location.search).get("race") : INJ, MY_NAME = "H2395";   // the server fills INJ in on /replay/<id>
+function goFull() {
+  const st = document.getElementById("stage");
+  (st.requestFullscreen ? st.requestFullscreen() : Promise.reject()).then(() => screen.orientation?.lock?.("landscape")).catch(() => {});
+}
+document.getElementById("fs").onclick = goFull;
+document.getElementById("go").onclick = goFull;
+// the running order as broadcast shows it: the first four, each a big saddle-cloth number block with the horse's
+// name on a navy bar and its odds and margin on a yellow one (the game has no drivers yet)
+function top4(ord) {
+  const lead = ord[0].d;
+  document.getElementById("ord").innerHTML = ord.slice(0, 4).map((h, k) => { const H = RACE.H[h.i], dark = RACE.DARK.includes(h.i + 1);
+    const m = k ? RACE.lengths((lead - h.d) / RACE.LEN) : "", sub = [H.odds, m && m + " back"].filter(Boolean).join(" · ") || "leader";
+    return `<div class="t4${MY_NAME && H[0] === MY_NAME ? " me" : ""}"><b style="background:${RACE.PAD[h.i]};color:${dark ? "#111" : "#fff"}">${h.i + 1}</b><span><i>${H[0]}</i><em>${sub}</em></span></div>`; }).join("");
+  // the rest of the field, in running order, as saddle cloths; your horse ringed, with where it's running
+  const rest = ord.slice(4), mine = MY_NAME ? ord.findIndex(h => RACE.H[h.i][0] === MY_NAME) : -1;   // only when one of yours is in it
+  const nth = n => n + ([, "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] || "th");
+  document.getElementById("rest").innerHTML = rest.length ? `<span class="rl">THEN</span>` + rest.map(h => `<b class="${MY_NAME && RACE.H[h.i][0] === MY_NAME ? "me" : ""}" style="background:${RACE.PAD[h.i]};color:${RACE.DARK.includes(h.i + 1) ? "#111" : "#fff"}">${h.i + 1}</b>`).join("")
+    + (mine >= 4 ? `<span class="you">YOU ${nth(mine + 1)}</span>` : "") : "";
+}
+// ---- the race's sound bed: a recording of the field running that murmurs, swells down the stretch and roars at the wire; the starter's bell as the gate folds.
+// Browsers only allow sound after a tap, so it wakes on the first one.
+const SND = (() => {
+  let ac = null, master, vol = .44, rang = false, lastT = 0;   // 44%: the baseline mix
+  try { const v = localStorage.getItem("replayVol2"); if (v !== null) vol = +v; } catch (e) {}   // this viewer's last setting
+  const pop = document.getElementById("volPop"), slider = document.getElementById("vol"), pct = document.getElementById("volPct");
+  const btn = document.getElementById("sndBtn");
+  const wake = () => {
+    if (!SOUND_ON) return;                                                       // replays are silent for now
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+      master = ac.createGain(); master.gain.value = vol; master.connect(ac.destination);
+    }
+    if (ac.state === "suspended") ac.resume();
+  };
+  const show = () => { slider.value = Math.round(vol * 100); pct.textContent = Math.round(vol * 100) + "%"; btn.textContent = vol ? "🔊" : "🔇"; };
+  btn.onclick = e => { e.stopPropagation(); wake(); pop.classList.toggle("on"); };
+  pop.onclick = e => e.stopPropagation();
+  slider.oninput = () => { vol = slider.value / 100; show(); if (master) master.gain.setTargetAtTime(vol, ac.currentTime, .03);
+    try { localStorage.setItem("replayVol2", vol); } catch (e) {} };
+  addEventListener("click", () => pop.classList.remove("on"));                  // a click anywhere else closes it
+  show();
+  addEventListener("pointerdown", wake, { once: true });
+  const bell = () => { const t0 = ac.currentTime;                                 // the starter's bell: two bright partials ringing down
+    for (const [hz, a] of [[880, .18], [2210, .07], [3520, .04]]) { const o = ac.createOscillator(), v = ac.createGain(); o.frequency.value = hz;
+      v.gain.setValueAtTime(a, t0); v.gain.exponentialRampToValueAtTime(.0001, t0 + 1.6); o.connect(v).connect(master); o.start(t0); o.stop(t0 + 1.7); } };
+  // the running horses: a real recording laid under the race from the gate, following the replay clock
+  const bed = new Audio("/mock/sfx/race_bed.mp3?v=3"); bed.preload = "auto"; bed.loop = true; bed.preservesPitch = false;
+  // the soundtrack: plays from the first tap through the flyover, race and winner's circle at its own tempo (it
+  // doesn't follow the replay speed), pausing with the replay; the slider sets it with the rest
+  // the playlist: each replay plays the next track in turn (this viewer's own rotation). To add a song, drop the mp3 in
+  // mockups/sfx/music/ and add a line here
+  const TRACKS = [
+    ["galloping-groove.mp3", "Galloping Groove"],
+    ["galloping-shuffle.mp3", "Galloping Shuffle"],
+  ];
+  let turn = 0; try { turn = (+localStorage.getItem("replayTrack") || 0) % TRACKS.length; localStorage.setItem("replayTrack", turn + 1); } catch (e) {}
+  const [file, title] = TRACKS[turn];
+  const music = new Audio(`/mock/sfx/music/${file}`); music.preload = "auto"; music.loop = true; const MUSIC = .03, MUSIC_ON = false;   // the soundtrack sits at a fixed 3%; off for now (race sounds stay)
+  const nowPlaying = document.getElementById("nowPlaying"); nowPlaying.querySelector("b").textContent = title;
+  let shown = false;
+  const update = (t, leadD) => {
+    if (!SOUND_ON) { if (!bed.paused) bed.pause(); if (!music.paused) music.pause(); return; }
+    if (!ac) return;
+    const run = vol > 0 && ctl.play && t > 0 && t < RACE.FIN + 8;
+    if (run) { bed.playbackRate = Math.max(.5, ctl.speed * SLOW);
+      if (bed.duration && Math.abs(bed.currentTime - t % bed.duration) > .4) bed.currentTime = t % bed.duration;   // resync after a scrub
+      bed.volume = Math.min(1, t / 1.5, Math.max(0, (RACE.FIN + 8 - t) / 6)) * vol;   // in off the gate, out as they pull up
+      if (bed.paused) bed.play().catch(() => {}); }
+    else if (!bed.paused) bed.pause();
+    music.volume = MUSIC;                                               // fixed: the slider sets the race sounds, not the music
+    if (MUSIC_ON && !shown && t > 0 && vol > 0) { shown = true; nowPlaying.classList.add("on"); setTimeout(() => nowPlaying.classList.remove("on"), 5000); }   // the title as the race starts, gone after 5 s
+    if (t === 0) shown = false;
+    if (MUSIC_ON && ctl.play) { if (music.paused) music.play().catch(() => {}); } else if (!music.paused) music.pause();
+    if (t < lastT - .5) rang = false; lastT = t;                                  // scrubbed back: the bell can ring again
+    if (!rang && t > 0 && t < 2 && vol > 0 && ctl.play) { bell(); rang = true; }
+  };
+  return { wake, update };
+})();
+const topBar = () => { const tp = RACE.title.split(" · "), m = /^(\d+)-.*-(\d+)$/.exec(RACE_ID || "");
+  document.getElementById("ven").textContent = RACE.venue || "Harness Park"; document.getElementById("rno").textContent = m ? +m[2] + 1 : 4;
+  document.getElementById("rt").textContent = [tp[0], tp[tp.length - 1]].join(" · ");
+  document.getElementById("rdt").innerHTML = m ? `Day<br>${m[1]}` : ""; };
+topBar();
+if (RACE_ID) document.getElementById("flat").href = "/replay2d/" + encodeURIComponent(RACE_ID);
+
+// ---- renderer: full screen resolution with antialiasing. The art stays pixel-crisp up close (nearest
+// magnification) and steady in the distance (mipmapped minification), so nothing crawls or stairsteps.
+const RW = 960, RH = 540;
+const cv = document.getElementById("cv");
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true });   // so a frame can be copied out (video export)
+const fit = () => { const w = cv.clientWidth || RW, h = cv.clientHeight || RH; renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)); renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+addEventListener("resize", () => fit()); document.addEventListener("fullscreenchange", () => fit());
+// iPhones fire resize before the new layout settles (rotation, fullscreen): watch the canvas itself, so the picture is
+// never drawn at the old shape and stretched into the new one
+if (window.ResizeObserver) new ResizeObserver(() => fit()).observe(cv);
+addEventListener("orientationchange", () => setTimeout(fit, 300));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#0b1430");
+scene.fog = new THREE.Fog("#0b1430", 900, 2600);
+const cam = new THREE.PerspectiveCamera(24, RW / RH, 2, 6000);
+fit();
+const ANISO = renderer.capabilities.getMaxAnisotropy();
+// art set: ?art=wc swaps in the watercolor pieces listed in ART_SET (anything not restyled yet keeps the pixel art),
+// and drops nearest-neighbour filtering, which only suits pixel art
+const ART = new URLSearchParams(location.search).get("art"), PAINTED = ART === "wc";
+const ART_SETS = { wc: ["top/track_tile.png", "infield/grass.png", "infield/hedge_c.png", "infield/tree_a.png", "infield/tree_b.png", "venue/stand.png", "infield/tote.png", "fe12_cycle.png"],
+  "3d": ["infield/tote.png", "infield/odds.png", "infield/hedge_c.png", "infield/gazebo.png", "infield/fountain_jet.png", "infield/tree_a.png", "infield/tree_b.png", "venue/stand_grand.png", "venue/club.png", "venue/barn.png"] };   // 3d: stylized-3D renders of the scenery; horses stay pixel
+const ART_SET = new Set(ART_SETS[ART] || []);
+const P = src => ART && ART_SET.has(src.slice("/mock/pixel/".length)) ? src.replace("/mock/pixel/", `/mock/art_${ART}/`) : src;
+const sharp = t => { if (PAINTED || (t.image && /\/art_/.test(t.image.src || ""))) return crisp(t); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; return t; };   // sprites: every pixel kept, near or far
+const crisp = t => { t.magFilter = PAINTED || (t.image && /\/art_/.test(t.image.src || "")) ? THREE.LinearFilter : THREE.NearestFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = ANISO; t.colorSpace = THREE.SRGBColorSpace; return t; };
+const tex = (src, fn) => new THREE.TextureLoader().load(src, t => { crisp(t); t.needsUpdate = true; fn && fn(t); });
+// on a straight (no turn within 60 ft either way): where the infield broadcast camera can work
+const straightAt = d => { const a = V(d - 60, 0), b = V(d, 0), c = V(d + 60, 0); return Math.abs(Math.atan2(c.z - b.z, c.x - b.x) - Math.atan2(b.z - a.z, b.x - a.x)) < .002; };
+const TRACK_W = 86;                                                          // dirt, inner fence to outer fence, ft
+const V = (s, o, y = 0) => { const [x, z] = RACE.pt(s, o); return new THREE.Vector3(x, y, z); };   // track coords (feet) to world
+
+// ---- the ground: dark grass everywhere, then the SpriteCook top-down track strip laid round the oval.
+// The strip runs infield (top) to grandstand roof (bottom); 5.42 px to the foot, inner rail 340 px down.
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(8000, 8000), new THREE.MeshBasicMaterial({ color: "#8a9a8a", map: tex(P("/mock/pixel/infield/grass.png"), t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(200, 200); }) }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -.2; scene.add(ground);
+let track = null;
+function buildTrack() {
+  // cut at the inside edge of the dirt (row 371): the painted rail, grass verge and light bases above it are dropped
+  // for the real infield, so the rail lane is on dirt right to the fence. Dirt runs to row 836 (86 ft out).
+  const PPF = 5.42, TW = 1792, TH = 1152, CUT = 371, o0 = 0, o1 = (TH - CUT) / PPF, v0 = 1 - CUT / TH, tileFt = TW / PPF, step = 6;
+  const pos = [], uv = [], idx = [], col = [], L = RACE.L;
+  // lit from the grandstand: the outside of the dirt (nearest the stands and their lights) brighter, the inside rail dimmer
+  const LIT_IN = .72, LIT_OUT = 1.12;
+  for (let s = 0, k = 0; s <= L + .01; s += step, k++) {
+    for (const [o, v] of [[o0 - RACE.inset(s), v0], [o1, 0]]) { const p = V(s, o); pos.push(p.x, 0, p.z); uv.push(s / tileFt, v); const c = o === o0 ? LIT_IN : LIT_OUT; col.push(c, c, c); }
+    if (k) { const a = (k - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx);
+  const t = tex(P("/mock/pixel/top/track_tile.png"), t => { t.wrapS = THREE.RepeatWrapping; });
+  if (track) scene.remove(track);
+  track = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, color: 0xb0b0b0, vertexColors: true })); scene.add(track);   // a touch darker for night
+}
+buildTrack();
+
+// ---- the sky: the SpriteCook night panorama on a huge cylinder round the track
+{ const R = 2400, t = tex(P("/mock/pixel/panorama.png")), h = 2 * Math.PI * R * 175 / 3072;
+  const sky = new THREE.Mesh(new THREE.CylinderGeometry(R, R, h, 96, 1, true), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide, fog: false }));
+  sky.position.y = h / 2 - h * .5; scene.add(sky); }   // sunk so only its sky and treeline show: the real buildings stand by the track now
+
+// ---- quarter poles and the wire, as real posts
+function post(d, col, hgt = 12) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(.8, hgt, .8), new THREE.MeshBasicMaterial({ color: col }));
+  m.position.copy(V(RACE.SF + d, -3 - RACE.inset(RACE.SF + d), hgt / 2)); scene.add(m); return m;
+}
+let poles = [];
+function buildPoles() {
+  poles.forEach(p => scene.remove(p));
+  poles = [[1320, "#d8322f"], [2640, "#1f8f3f"], [3960, "#1f4fbf"], [5280, "#ffffff"]].map(([d, c]) => post(d, c, d === 5280 ? 22 : 12));
+  const a = V(RACE.SF + 5280, -RACE.inset(RACE.SF + 5280), .05), b = V(RACE.SF + 5280, TRACK_W, .05);   // the wire painted across the surface
+  const g = new THREE.BufferGeometry().setFromPoints([a, b]);
+  const line = new THREE.Line(g, new THREE.LineBasicMaterial({ color: "#ffffff" })); scene.add(line); poles.push(line);
+}
+buildPoles();
+
+// ---- the inside and outside rails, standing up: a white top rail on posts every 8 ft
+let rails = [];
+function buildRails() {
+  rails.forEach(r => scene.remove(r)); rails = [];
+  const white = new THREE.MeshBasicMaterial({ color: "#e8eef4" }), grey = new THREE.MeshBasicMaterial({ color: "#aeb8c2" });
+  for (const o of [-.6, TRACK_W + .6]) {
+    const io = s => o < 0 ? o - RACE.inset(s) : o;                         // the inside rail swings in for the passing lane
+    const pts = []; for (let s = 0; s <= RACE.L + 1; s += 10) pts.push(V(s, io(s), 3.2));
+    const top = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 600, .28, 4, true), white);
+    const n = Math.floor(RACE.L / 8), posts = new THREE.InstancedMesh(new THREE.BoxGeometry(.4, 3.2, .4).translate(0, 1.6, 0), grey, n), m = new THREE.Matrix4();
+    for (let k = 0; k < n; k++) { m.setPosition(V(k * 8, io(k * 8))); posts.setMatrixAt(k, m); }
+    scene.add(top, posts); rails.push(top, posts);
+  }
+}
+buildRails();
+
+// ---- the infield: a SpriteCook mown lawn inside the rail, the tote board facing the stands, sponsor boards
+// along both straights, and light towers all round, each with a glowing lamp head and a real pool of light
+// thrown on the ground. Everything here is in track feet, so it fits whatever the oval's size.
+let infield = [], towers = [];
+const cardTex = {};
+const card = (src, wFt, hook) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, alphaTest: .5, side: THREE.DoubleSide }));
+  (cardTex[src] = cardTex[src] || new Promise(r => new THREE.TextureLoader().load(src, t => { sharp(t); r(t); }))).then(t => {
+    m.material.map = t; m.material.needsUpdate = true; const h = wFt * t.image.height / t.image.width;
+    m.geometry = new THREE.PlaneGeometry(wFt, h).translate(0, h / 2, 0); hook && hook(m, h); });
+  return m; };
+// a fixed object seen from anywhere: two copies of the drawing crossed at right angles, the way sprite games do trees
+const cross = (src, wFt) => { const g = new THREE.Group(); const a = card(src, wFt), b = card(src, wFt); b.rotation.y = Math.PI / 2; g.add(a, b); return g; };
+const poolTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d"), r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  r.addColorStop(0, "rgba(255,236,190,.16)"); r.addColorStop(.5, "rgba(255,226,170,.07)"); r.addColorStop(1, "rgba(255,220,160,0)"); g.fillStyle = r; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
+const glowTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, "rgba(255,255,240,1)"); r.addColorStop(.25, "rgba(255,245,210,.6)"); r.addColorStop(1, "rgba(255,240,200,0)"); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+let sponsorBoards = [];   // they face the outside cameras; the infield angle hides them (it would see their backs, in its way)
+function buildInfield() {
+  sponsorBoards = [];
+  infield.forEach(m => scene.remove(m)); infield = []; towers = [];
+  const add = m => { scene.add(m); infield.push(m); return m; };
+  // the lawn: the oval inside the rail, textured in world feet (one tile every 40 ft, stripes running along the straights)
+  const shape = new THREE.Shape(); for (let s = 0; s < RACE.L; s += 8) { const [x, z] = RACE.pt(s, -.6); s ? shape.lineTo(x, -z) : shape.moveTo(x, -z); }
+  const g = new THREE.ShapeGeometry(shape, 1).rotateX(-Math.PI / 2);
+  const lawn = tex(P("/mock/pixel/infield/grass.png"), t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1 / 40, 1 / 40); });
+  add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: lawn }))).position.y = -.05;
+  const { S, R } = RACE;
+  // tote board in the middle, facing the grandstand (+z is the homestretch side)
+  add(card(P("/mock/pixel/infield/tote.png"), 130)).position.set(0, 0, R - 190);
+  // sponsor boards along both straights, 28 ft inside the rail, facing out to the cameras
+  const signs = [0, 1, 2, 3].map(i => P(`/mock/pixel/infield/sign${i}.png`));
+  for (let k = 0, x = -S / 2 + 60; x < S / 2 - 40; x += 190, k++) {
+    if (Math.abs(x) < 150) continue;                                            // the odds board has the middle
+    sponsorBoards.push(add(card(signs[k % 4], 34))); sponsorBoards.at(-1).position.set(x, 0, R - 28);   // on the ground: the drawing has its own planter
+    const b = add(card(signs[(k + 2) % 4], 34)); sponsorBoards.push(b); b.position.set(-x, 0, -(R - 28)); b.rotation.y = Math.PI;
+  }
+  // a clipped hedge wall right round the inside of the rail: closes off the infield so the eye stops at it
+  { const pts = [], uv = [], idx = [], H = 14, o = -10, tileFt = 30; let k = 0;   // tall enough to close off the infield on its own, tiles widened to keep the leaves in proportion
+    for (let d = 0; d <= RACE.L + .1; d += 6, k++) { const p = V(d, o); const hh = straightAt(d) ? 5 : H; /* cut down along the straights so the infield camera sees over it */ pts.push(p.x, 0, p.z, p.x, hh, p.z); uv.push(d / tileFt, 0, d / tileFt, 1); if (k) { const a = (k - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } }
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+    const t = tex(P("/mock/pixel/infield/hedge_c.png"), t => { t.wrapS = THREE.RepeatWrapping; });
+    add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, transparent: true, alphaTest: .5 }))); }
+  // the long odds board above the hedge on each straight, on dark posts, facing the track
+  for (const side of [1, -1]) {
+    const b = add(card(P("/mock/pixel/infield/odds.png"), 85, (m, h) => m.position.y = 12)); b.position.set(0, 0, side * (R - 42)); if (side < 0) b.rotation.y = Math.PI;
+    for (const x of [-36, 36]) { const post = add(new THREE.Mesh(new THREE.BoxGeometry(1, 12, 1).translate(0, 6, 0), new THREE.MeshBasicMaterial({ color: "#1b1f26" }))); post.position.set(x, 0, side * (R - 42.6)); }
+  }
+  // the middle: a lake with its fountain and the winner's-circle gazebo by the tote board; open lawn otherwise,
+  // as a real infield is
+  // the pond is painted straight down so it lies true on the ground from any height; its jet is a sprite that always
+  // turns to face the camera, so it stands up as a column of water from every angle of the flyover
+  const LAKE = [1250, 620], LZ = -60;   // centre pulled back so the tote board and gazebo stay on the lawn in front   // the lake fills most of the middle, as at the big mile tracks
+  // the lake is built, not a blown-up sprite: a soft natural shoreline, a thin dark bank, and calm night water
+  // that only darkens toward the edges and catches a few long streaks of floodlight
+  const shore = pad => { const sh = new THREE.Shape();
+    for (let k = 0; k <= 96; k++) { const a = k / 96 * Math.PI * 2, f = 1 + .05 * Math.sin(3 * a + 1) + .03 * Math.sin(5 * a + 2);
+      const x = Math.cos(a) * (LAKE[0] / 2 + pad) * f, z = LZ + Math.sin(a) * (LAKE[1] / 2 + pad) * f; k ? sh.lineTo(x, -z) : sh.moveTo(x, -z); }
+    return new THREE.ShapeGeometry(sh, 1).rotateX(-Math.PI / 2); };
+  add(new THREE.Mesh(shore(9), new THREE.MeshBasicMaterial({ color: "#3a4436" }))).position.y = .06;
+  const wc = document.createElement("canvas"); wc.width = 512; wc.height = 256; { const g = wc.getContext("2d");
+    const r = g.createRadialGradient(256, 128, 20, 256, 128, 280); r.addColorStop(0, "#1e3d63"); r.addColorStop(.7, "#142c4a"); r.addColorStop(1, "#0b1a2e");
+    g.setTransform(1, 0, 0, .5, 0, 64); g.fillStyle = r; g.fillRect(0, -128, 512, 512); g.setTransform(1, 0, 0, 1, 0, 0);
+    for (const [y, x, w] of [[70, 150, 120], [96, 300, 90], [150, 210, 140], [182, 340, 70]]) {          // floodlight reflections
+      const s = g.createLinearGradient(x - w / 2, 0, x + w / 2, 0); s.addColorStop(0, "rgba(255,226,160,0)"); s.addColorStop(.5, "rgba(255,226,160,.13)"); s.addColorStop(1, "rgba(255,226,160,0)");
+      g.fillStyle = s; g.fillRect(x - w / 2, y, w, 2); } }
+  const wt = new THREE.CanvasTexture(wc); wt.colorSpace = THREE.SRGBColorSpace; wt.repeat.set(1 / (LAKE[0] * 1.1), 1 / (LAKE[1] * 1.1)); wt.offset.set(.5, .5 + LZ / (LAKE[1] * 1.1));
+  const pond = add(new THREE.Mesh(shore(0), new THREE.MeshBasicMaterial({ map: wt }))); pond.position.y = .1;
+  const jet = add(new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, alphaTest: .3, depthWrite: false })));
+  jet.center.set(.5, 0); jet.scale.set(70, 124, 1); jet.position.set(0, .5, LZ);
+  tex(P("/mock/pixel/infield/fountain_jet.png"), t => { jet.material.map = t; jet.material.needsUpdate = true; });
+  add(card(P("/mock/pixel/infield/gazebo.png"), 70)).position.set(-190, 0, R - 175);
+}
+buildInfield();
+
+// ---- the buildings, where they really are: a grandstand along the outside of the homestretch behind the
+// apron, centred just before the wire, and the clubhouse beside it toward the first turn. Both face the track.
+let venue = [];
+function buildVenue() {
+  venue.forEach(m => scene.remove(m)); venue = [];
+  // each building is its drawn front plus a real body behind it: walls lit with rows of windows down the sides and
+  // back, and a roof, so from any angle but dead-on it reads as a building, not a cut-out. body: share of the drawing's
+  // height the walls rise to (the rest is flags and towers), and how deep it runs back from the front
+  const wallTex = (() => { const c = document.createElement("canvas"); c.width = 64; c.height = 32; const g = c.getContext("2d");   // concrete with floor lines and a sparse row of lit windows
+    g.fillStyle = "#1a2232"; g.fillRect(0, 0, 64, 32); g.fillStyle = "#121925"; g.fillRect(0, 14, 64, 3); g.fillRect(0, 30, 64, 2);
+    for (let x = 4; x < 64; x += 16) { g.fillStyle = x % 32 ? "#c8944a" : "#4a4030"; g.fillRect(x, 20, 6, 5); }
+    return sharp(new THREE.CanvasTexture(c)); })();
+  const body = (front, w, share, depth) => (m, h) => {
+    // a stadium's section, not a block: full height at the front, the seating rake's underside sloping down to a
+    // low concourse at the back. Side profile in (depth, height), pushed out across the building's width
+    const H = h * share, prof = new THREE.Shape([[0, 0], [depth, 0], [depth, H * .38], [depth * .35, H], [0, H]].map(([u, v]) => new THREE.Vector2(u, v)));
+    const g = new THREE.ExtrudeGeometry(prof, { depth: w * .98, bevelEnabled: false }); g.translate(0, 0, -w * .49); g.rotateY(-Math.PI / 2);
+    const side = wallTex.clone(); side.wrapS = side.wrapT = THREE.RepeatWrapping; side.repeat.set(1 / 32, 1 / 16); side.needsUpdate = true;
+    const box = new THREE.Mesh(g, [new THREE.MeshBasicMaterial({ map: side }), new THREE.MeshBasicMaterial({ color: "#232c3c" })]);   // ends with windows; roof, back and floor plain
+    box.position.set(front.position.x, 0, front.position.z + 1); scene.add(box); venue.push(box);
+  };
+  const stand = card(P("/mock/pixel/venue/stand_grand.png"), 480, (m, h) => buildStand(m, h)), club = card(P("/mock/pixel/venue/club.png"), 210, (m, h) => buildClub(m, h));
+  const buildStand = (m, h) => body(stand, 480, .74, 190)(m, h), buildClub = (m, h) => body(club, 210, .8, 110)(m, h);
+  const sx = RACE.pt(RACE.SF - 120, 0)[0], cx = RACE.pt(RACE.SF - 470, 0)[0], z = RACE.R + TRACK_W + 84;   // 170 ft out: just behind the broadcast camera, which sits 150 ft out on the apron
+  stand.position.set(sx, 0, z); club.position.set(cx, 0, z + 25);
+  stand.rotation.y = club.rotation.y = Math.PI;                                   // the drawings face the infield
+  scene.add(stand, club); venue.push(stand, club);
+}
+buildVenue();
+
+// ---- the surroundings: a full car park behind the grandstand, the stable area along the backstretch, and
+// belts of trees closing the whole venue in, so the track sits in a place rather than in empty space
+let around = [];
+function buildSurroundings() {
+  around.forEach(m => scene.remove(m)); around = [];
+  const add = m => { scene.add(m); around.push(m); return m; };
+  const { S, R } = RACE, hash = (i, j) => { const v = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return v - Math.floor(v); };
+  // car park: asphalt tile 72 x 61.5 ft (48 x 41 px at 1.5 ft a pixel), bays 9 ft wide in two rows per tile
+  const TW = 72, TH = 61.5, x0 = -S / 2 - 250, x1 = S / 2 + 350, z0 = R + 200, z1 = R + 200 + TH * 6;
+  const lot = add(new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z1 - z0).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ map: tex(P("/mock/pixel/venue/lot.png"), t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set((x1 - x0) / TW, (z1 - z0) / TH); }) })));
+  lot.position.set((x0 + x1) / 2, .04, (z0 + z1) / 2);
+  const carGeo = {}, carMat = k => new THREE.MeshBasicMaterial({ map: tex(P(`/mock/pixel/venue/car${k}.png`)), transparent: true, alphaTest: .5 });
+  const mats = [0, 1, 2, 3, 4, 5, 6, 7].map(carMat), geo = new THREE.PlaneGeometry(7, 15).rotateX(-Math.PI / 2);
+  for (let tz = 0; tz < 6; tz++) for (let bx = 0; bx < (x1 - x0) / 9 - 1; bx++) for (const row of [0, 1]) {
+    if (hash(bx * 7 + row, tz) > .72) continue;                             // about seven bays in ten taken
+    const c = add(new THREE.Mesh(geo, mats[Math.floor(hash(bx, tz * 3 + row) * 8)]));
+    c.position.set(x0 + 4.5 + bx * 9, .08, z0 + tz * TH + (row ? TH - 9.5 : 9.5)); if (row) c.rotation.y = Math.PI;
+  }
+  // stable area: two rows of barns along the outside of the backstretch, facing the track
+  for (let r = 0; r < 2; r++) for (let k = 0; k < 9; k++) {
+    const b = add(card(P("/mock/pixel/venue/barn.png"), 95)); b.position.set(-S / 2 + 60 + k * 118, 0, -(R + TRACK_W + 150 + r * 90));
+  }
+  // tree belts: round the outside of both turns, behind the barns, and behind the car park
+  const tree = (x, z, i) => { const t = add(cross(P(`/mock/pixel/infield/tree_${hash(i, 9) > .5 ? "a" : "b"}.png`), 34 + hash(i, 11) * 22)); t.position.set(x, 0, z); t.rotation.y = hash(i, 13) * Math.PI; };
+  let n = 0;
+  for (const end of [-1, 1]) for (let k = 0; k < 60; k++) {
+    const a = (k / 59 - .5) * Math.PI * 1.05, r = R + TRACK_W + 70 + hash(k, end) * 160;
+    tree(end * (S / 2 + Math.cos(a) * r), Math.sin(a) * r, n++);
+  }
+  for (let k = 0; k < 70; k++) tree(-S / 2 - 200 + k * 34 + hash(k, 2) * 20, -(R + TRACK_W + 360 + hash(k, 3) * 80), n++);
+  for (let k = 0; k < 70; k++) tree(-S / 2 - 250 + k * 34 + hash(k, 4) * 20, z1 + 30 + hash(k, 5) * 70, n++);
+}
+buildSurroundings();
+
+// ---- the runners: the SpriteCook side-view pacing cycle (12 frames), silks re-dyed to each pad color
+// with the number painted on the pad, on a flat card that stands on its hooves and turns to the lens.
+const RIG = new URLSearchParams(location.search).has("rig");
+const STRIDE_FT = RIG ? 51 : 17, FR = 12, FW = RIG ? 230 : PAINTED ? 416 : 208, FH = RIG ? 136 : PAINTED ? 213 : 101, PAD = RIG ? [136, 43, 15, 21] : PAINTED ? [210, 58, 34, 40] : [105, 25, 18, 21], LEN_FT = 14.5, POSES = 24;
+const H_FT = LEN_FT * FH / FW, NOSE = .99;
+// Coat colors from the bay art: the warm body pixels are re-toned, and black points, mane, harness and silks
+// are left alone (a grey's dark points are lifted too). One canvas per sheet per coat, made once.
+const COAT = { bay: null, brown: [.62, .5, .45, 1], black: [.26, .24, .24, 1], chestnut: [1.25, .82, .55, 1], grey: "grey" };
+const coatCache = new Map();
+function coat(img, kind) {
+  if (!COAT[kind]) return img;
+  const key = img.src + kind; if (coatCache.has(key)) return coatCache.get(key);
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, k = COAT[kind];
+  for (let i = 0; i < p.length; i += 4) {
+    if (!p[i + 3]) continue;
+    const r = p[i], gg = p[i + 1], b = p[i + 2], warm = r > gg + 12 && r > b + 25 && !(b > r + 40);
+    if (k === "grey") {
+      const l = (r + gg + b) / 3;
+      if (warm) { const v = Math.min(235, 70 + l * 1.25); p[i] = v; p[i + 1] = v; p[i + 2] = v + 6; }
+      else if (l < 60 && Math.abs(r - b) < 18) { const v = 40 + l * 1.4; p[i] = v; p[i + 1] = v; p[i + 2] = v + 4; }
+    } else if (warm) { p[i] = Math.min(255, r * k[0]); p[i + 1] = Math.min(255, gg * k[1] * (kind === "chestnut" ? 1.05 : 1)); p[i + 2] = Math.min(255, b * k[2]); }
+  }
+  g.putImageData(d, 0, 0); c.src = key; coatCache.set(key, c); return c;
+}
+// The saddle cloth and its number, drawn in the sprite's own pixels: a hand-made 3x5 pixel font doubled
+// to 6x10, a one-pixel darker hem round the cloth and a lighter fold along its top, so it reads as cloth
+// on the horse rather than type floating over it.
+const DIGITS = { "0": "111101101101111", "1": "010110010010111", "2": "111001111100111", "3": "111001111001111", "4": "101101111001001",
+  "5": "111100111001111", "6": "111100111101111", "7": "111001010010010", "8": "111101111101111", "9": "111101111001111" };
+const tone = (hex, k) => "#" + [1, 3, 5].map(i => Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(i, i + 2), 16) * k))).toString(16).padStart(2, "0")).join("");
+function saddleCloth(g, x, y, w, h, pad, num, dark) {
+  x = Math.round(x); y = Math.round(y);
+  g.fillStyle = pad; g.fillRect(x, y, w, h);
+  g.fillStyle = tone(pad, .62); g.fillRect(x, y + h - 1, w, 1); g.fillRect(x, y, 1, h); g.fillRect(x + w - 1, y, 1, h);   // hem
+  g.fillStyle = tone(pad, 1.18); g.fillRect(x + 1, y, w - 2, 1);                                                      // fold catching the light
+  const s = String(num), S = w < 12 ? 1 : 2, gw = 3 * S, gap = S, tw = s.length * gw + (s.length - 1) * gap;
+  let cx = x + Math.round((w - tw) / 2); const cy = y + Math.round((h - 5 * S) / 2);
+  for (const ch of s) {
+    const bits = DIGITS[ch];
+    for (let k = 0; k < 15; k++) if (bits[k] === "1") {
+      const px = cx + (k % 3) * S, py = cy + Math.floor(k / 3) * S;
+      g.fillStyle = dark ? "rgba(255,255,255,.35)" : "rgba(0,0,0,.35)"; g.fillRect(px + 1, py + 1, S, S);           // a one-pixel drop shadow
+      g.fillStyle = dark ? "#111" : "#fff"; g.fillRect(px, py, S, S);
+    }
+    cx += gw + gap;
+  }
+}
+// grit: knock the flat front light off the rig. Light from above and behind the camera's left, shade falling
+// down and to the hooves, highlights pulled in, and a fixed per-pixel grain so it reads as worn paint, not plastic
+function grit(c, fw) {
+  const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height;
+  for (let i = 0; i < p.length; i += 4) {
+    if (!p[i + 3]) continue;
+    const x = (i / 4) % W, y = (i / 4 / W) | 0, fx = (x % fw) / fw, n = ((x * 73856093 ^ y * 19349663) >>> 0) % 1000 / 1000;
+    const k = (1.04 - .22 * (y / H) ** 1.3 - .06 * (1 - fx)) * (.9 + .17 * n);
+    for (let j = 0; j < 3; j++) { let v = p[i + j]; v = v > 170 ? 170 + (v - 170) * .7 : v; p[i + j] = Math.min(255, v * k); }
+  }
+  g.putImageData(d, 0, 0); return c;
+}
+// silks: the sprite's blue pixels, recolored. hex is "jacket" or "jacket|trim": the driver's helmet in his trim color,
+// everything else (jacket, and the harness and wheels the sprite draws in the same blue) in his jacket color
+function paintSilks(p, w, hex) {
+  const [a, b] = hex.split("|"), rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), ta = rgb(a), tb = b ? rgb(b) : ta;
+  const isSilk = i => p[i + 3] && p[i + 2] > p[i] + 40 && p[i + 2] > p[i + 1] + 20;
+  let y0 = 1e9, y1 = -1;
+  if (b) for (let i = 0; i < p.length; i += 4) if (isSilk(i)) { const y = (i / 4 / w) | 0; y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const cut = y0 + .13 * (y1 - y0);                                               // the helmet: the very top of the silks
+  for (let i = 0; i < p.length; i += 4) {
+    if (!isSilk(i)) continue;
+    const l = Math.min(1.3, (p[i] + p[i + 1] + p[i + 2]) / 3 / 70), t = b && ((i / 4 / w) | 0) < cut ? tb : ta;
+    p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l;
+  }
+}
+function dye(img, hex, num, dark, pad, fw = FW, rect = PAD, cloth = null) {   // cloth: [x, y, w, h] of a saddle cloth to paint whole in the pad color                                           // hex: silks; pad: the saddle-cloth color
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
+  paintSilks(p, c.width, hex);
+  if (cloth) { const pc = [1, 3, 5].map(k => parseInt(pad.slice(k, k + 2), 16));
+    for (let f = 0; f < FR; f++) for (let y = cloth[1]; y < cloth[1] + cloth[3]; y++) for (let x = f * fw + cloth[0]; x < f * fw + cloth[0] + cloth[2]; x++) {
+      const q = (y * c.width + x) * 4, l = (p[q] + p[q + 1] + p[q + 2]) / 3;
+      if (p[q + 3] && l > 150 && Math.max(p[q], p[q + 1], p[q + 2]) - Math.min(p[q], p[q + 1], p[q + 2]) < 40) { const k = l / 235; p[q] = pc[0] * k; p[q + 1] = pc[1] * k; p[q + 2] = pc[2] * k; } } }
+  g.putImageData(d, 0, 0);
+  for (let f = 0; f < FR; f++) saddleCloth(g, f * fw + rect[0], rect[1], rect[2], rect[3], pad, num, dark);
+  return c;
+}
+const cardGeo = new THREE.PlaneGeometry(LEN_FT, H_FT).translate(LEN_FT * (.5 - NOSE), H_FT / 2, 0);   // origin at the nose, on the ground
+// the whip, for the drive to the wire: pivoting at the driver's hand (the white glove in the side stride, pixel 35,37),
+// a short stick held up and back that flicks forward with the horse's stride. Wrist action, the way the rules have it.
+const HAND = [(35 / FW - NOSE) * LEN_FT, (1 - 37 / FH) * H_FT];
+// a long, thin, flexible shaft in canvas tan: drawn as a fine line of short segments, so it bows under its own weight and
+// its tip lags behind the hand and then whips through
+const WHIP_N = 12, WHIP_L = 5.2;
+const whipMat = new THREE.LineBasicMaterial({ vertexColors: true, depthWrite: false });
+// drawn in hard-edged bands like a hand-pixeled sprite (each segment one flat color, no blending): a dark leather grip at the
+// hand, a shaft banded light and dark tan, a pale cracker at the tip
+const WHIP_COLS = (() => { const c = new THREE.Color(), out = [];
+  for (let j = 0; j < WHIP_N; j++) {
+    c.set(j < 2 ? "#3b2410" : j === WHIP_N - 1 ? "#f3ead2" : j % 2 ? "#9c7a45" : "#d8bf8c");
+    out.push(c.r, c.g, c.b, c.r, c.g, c.b); }
+  return new Float32Array(out); })();
+function bendWhip(w, ang, bend) {                                               // ang: the butt's tilt off upright (back is +), bend: curl toward the tip
+  const p = w.geometry.attributes.position; let x = 0, y = 0;
+  for (let j = 0; j < WHIP_N; j++) {                                            // each segment its own pair of points, so its color stays flat
+    p.setXYZ(2 * j, x, y, 0);
+    const u = (j + 1) / WHIP_N, a = ang + bend * u * u, step = WHIP_L / WHIP_N;
+    x -= Math.sin(a) * step; y += Math.cos(a) * step;
+    p.setXYZ(2 * j + 1, x, y, 0);
+  }
+  p.needsUpdate = true;
+}
+const shadowGeo = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
+const shadowTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, "rgba(0,0,0,.55)"); r.addColorStop(.6, "rgba(0,0,0,.3)"); r.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();   // a soft pool, darkest under the belly
+let runners = [], cycleImg = null, topImg = null;
+// front and rear three-quarter strides (SpriteCook frame-engine), drawn at the side cycle's scale
+const PXFT = LEN_FT / FW, ANG = { front: { src: P("/mock/pixel/angles/front12.png"), fw: 86, fh: 110 }, rear: { src: P("/mock/pixel/angles/rear12.png"), fw: 111, fh: 110 },
+  head: { src: P("/mock/pixel/angles/head12.png"), fw: 85, fh: 110 }, away: { src: P("/mock/pixel/angles/away12.png"), fw: 78, fh: 110 } };
+const angLoaded = Promise.all(Object.values(ANG).map(a => new Promise(r => { const i = new Image(); i.onload = () => { a.img = i; a.geo = new THREE.PlaneGeometry(a.fw * PXFT, a.fh * PXFT).translate(0, a.fh * PXFT / 2, 0); r(); }; i.src = a.src; })));
+function dyeOnly(img, hex) {                                                    // the silks in the driver's colors (pad color for older stories)
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
+  paintSilks(p, c.width, hex);
+  g.putImageData(d, 0, 0); return c;
+}
+const nearest = t => { sharp(t); t.repeat.set(1 / FR, 1); return t; };
+const topLoaded = new Promise(r => { const i = new Image(); i.onload = () => { topImg = i; r(); }; i.src = P("/mock/pixel/top/cycle12_h.png"); });
+const TFW = 191, TFH = 81, TOP_LEN = 15;                                       // the SpriteCook top-down stride, for cameras looking down
+function dyeRed(img, hex, base = img) {                                        // its silks and pad are red; base: the uncolored art, so a recolored coat is never mistaken for silks
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, t = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  const o = base === img ? p : (() => { const k = document.createElement("canvas"); k.width = base.width; k.height = base.height; const kg = k.getContext("2d"); kg.drawImage(base, 0, 0); return kg.getImageData(0, 0, k.width, k.height).data; })();
+  for (let i = 0; i < p.length; i += 4) { const r = o[i], gg = o[i + 1], b = o[i + 2]; if (p[i + 3] && r > gg + 70 && r > b + 70) { const l = Math.min(1.25, r / 200); p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l; } }
+  g.putImageData(d, 0, 0); return c;
+}
+const flatGeo = new THREE.PlaneGeometry(TOP_LEN, TOP_LEN * TFH / TFW).rotateX(-Math.PI / 2).translate(-TOP_LEN / 2, .3, 0);   // lying on the dirt, nose at the origin, drawn to the profile's proportions (no squash)
+// the stretch drive: same rig, driver leaning back and working the lines (SpriteCook frame-engine, 12 frames)
+const DFW = 251, DPAD = [118, 26, 18, 21];
+const driveGeo = new THREE.PlaneGeometry(LEN_FT * DFW / FW, H_FT).translate(LEN_FT * DFW / FW * (.5 - NOSE), H_FT / 2, 0);
+let driveImg = null; const driveLoaded = new Promise(r => { const i = new Image(); i.onload = () => { driveImg = i; r(); }; i.src = P("/mock/pixel/drive/drive12.png"); });
+const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => { cycleImg = i; r(); }; i.src = RIG ? P("/mock/pixel/rig_cycle.png") : P("/mock/pixel/fe12_cycle.png"); });
+function buildRunners() {
+  runners.forEach(r => { scene.remove(r.drive); scene.remove(r.card); scene.remove(r.shadow); scene.remove(r.flat); Object.values(r.ang).forEach(a => scene.remove(a.m)); });
+  runners = RACE.H.map((h, i) => {
+    const t = new THREE.CanvasTexture(grit(dye(coat(cycleImg, h.coat), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null), FW));
+    sharp(t); t.repeat.set(1 / FR, 1);
+    const card = new THREE.Mesh(cardGeo, new THREE.MeshBasicMaterial({ map: t, color: 0xece6dc, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false }));
+    const shadow = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
+    shadow.scale.set(5, 1, 4.2); scene.add(card); scene.add(shadow);
+    const whip = new THREE.LineSegments(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(WHIP_N * 6), 3))
+      .setAttribute("color", new THREE.Float32BufferAttribute(WHIP_COLS, 3)), whipMat);
+    whip.position.set(HAND[0], HAND[1], .05); whip.renderOrder = 2; whip.visible = false; whip.frustumCulled = false; card.add(whip);
+    const ft = sharp(new THREE.CanvasTexture(dyeRed(coat(topImg, h.coat), RACE.SILK[i], topImg))); ft.repeat.set(1 / FR, 1);
+    const flat = new THREE.Mesh(flatGeo, new THREE.MeshBasicMaterial({ map: ft, transparent: true, alphaTest: .5 })); scene.add(flat);
+    const ang = {};
+    for (const [k, a] of Object.entries(ANG)) {
+      const at = nearest(new THREE.CanvasTexture(dyeOnly(coat(a.img, h.coat), RACE.SILK[i])));
+      const m = new THREE.Mesh(a.geo, new THREE.MeshBasicMaterial({ map: at, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false })); scene.add(m);
+      ang[k] = { m, t: at };
+    }
+    const dt2 = new THREE.CanvasTexture(dye(coat(driveImg, h.coat), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], DFW, DPAD, [97, 24, 61, 27])); sharp(dt2); dt2.repeat.set(1 / FR, 1);
+    const drive = new THREE.Mesh(driveGeo, new THREE.MeshBasicMaterial({ map: dt2, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false })); scene.add(drive);
+    return { card, shadow, t, flat, ft, ang, drive, dt2, whip };
+  });
+}
+
+// ---- the gate car: the SpriteCook truck as a card, with real 3D wings that fold forward along it
+const truckTex = tex(P("/mock/pixel/gatecar_b.png"));
+const TRUCK_L = 24, truck = new THREE.Mesh(new THREE.PlaneGeometry(TRUCK_L, TRUCK_L * 208 / 354).translate(0, TRUCK_L * 208 / 354 / 2, 0), new THREE.MeshBasicMaterial({ map: truckTex, transparent: true, alphaTest: .5, side: THREE.DoubleSide }));
+scene.add(truck);
+const wingMat = new THREE.MeshBasicMaterial({ color: "#e8eef4" }), meshMat = new THREE.MeshBasicMaterial({ color: "#2a3a55", transparent: true, opacity: .75, side: THREE.DoubleSide });
+// a gate wing: the SpriteCook wing panel (white tube frame, navy mesh), repeated along its length; scaled in x
+// to the wing's length, so the texture repeat is set per wing to keep each panel the same size
+const WING_H = 5;
+function wing() {
+  const t = tex(P("/mock/pixel/wing_c.png"), t => { t.wrapS = THREE.RepeatWrapping; });   // its own copy: each wing repeats it differently
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1, WING_H).translate(.5, WING_H / 2 + .4, 0), new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .5, side: THREE.DoubleSide }));
+  scene.add(m); return m;
+}
+const wings = [wing(), wing()];
+
+// ---- cameras: the pan from the grandstand roof, a blimp, and the wire; TV cuts between them
+let view = "tv";
+document.querySelectorAll(".views [data-v]").forEach(b => b.onclick = () => { view = b.dataset.v; document.querySelectorAll(".views [data-v]").forEach(o => o.classList.toggle("sel", o === b)); });   // camera buttons only: the sound button has its own
+const camPos = new THREE.Vector3(), camAim = new THREE.Vector3(); let camSnap = true, lastShot = "";
+// the scenery far from the wire (backstretch barns, trees, distant towers): hidden while the low wire shot is up,
+// which would otherwise draw all of it for a sliver of background. The sky, ground, track and rails stay.
+let farList = null;
+const farOff = on => { const w = V(RACE.SF + 5280, 0);
+  farList = farList || scene.children.filter(o => o.position.length() > 1 && o.position.distanceTo(w) > 1300);
+  farList.forEach(o => o.visible = !on); };
+function shotAt(t) {
+  if (view !== "tv") return t >= RACE.FIN - 3.5 && view === "pan" ? "wire" : view;
+  if (t >= RACE.FIN - SLOMO) return "flat";                                    // the run-in: low and square to the wire, in slow motion
+  if (t > RACE.CT[3] - 5 && t < RACE.CT[3] + 5) return "blimp";               // over the field at the half
+  { const lead = Math.max(...RACE.state(t).map(h => h.s)), wire = RACE.SF + 5280;   // the infield angle, for variety: down the backstretch, and down the
+    if (t > RACE.CT[2] && t < RACE.CT[3] - 5 && straightAt(lead) && straightAt(lead - 120)) return "reverse";   // stretch before the sprint to the wire
+    if (lead > wire - 1700 && lead <= wire - 900) return "wide";                // the final turn: pull back and go wide, the whole field sorting out
+    if (lead > wire - 900 && lead < wire - 160) return "reverse";
+    if (lead >= wire - 160) return "finish"; }                                   // the long lens on the wire
+  return "pan";
+}
+function aimCamera(t, st, dt) {
+  const shot = shotAt(t); if (shot !== lastShot) { camSnap = true; lastShot = shot; sponsorBoards.forEach(b => b.visible = shot !== "reverse" && shot !== "flat");
+    farOff(shot === "flat"); }   // the low wire shot looks across the whole infield: leave the distant scenery out (phones)
+  if (false) { }
+  const cs = RACE.camS(st), mo = st.reduce((a, h) => a + h.o, 0) / st.length;
+  let p, a, fov;
+  if (shot === "wire") {                                                         // the side-on pan carries them in and stops dead on the line
+    const c = Math.min(RACE.camS(st), RACE.SF + 5280);
+    p = V(c - 18, 150, 46); a = V(c, mo + 9, 3); fov = 19;   // aimed a touch nearer the lens: more horses and dirt, less infield
+  }
+  else if (shot === "wide") {                                                  // high and well back off the turn, a wide lens: every horse in frame
+    const c = RACE.camS(st), ss = st.map(h => h.s), span = Math.max(...ss) - Math.min(...ss);
+    p = V(c - 140, 230, 95); a = V(c - span * .3, mo, 0);   // clear of the buildings off the turn
+    fov = Math.min(35, 19 + span / 50);                                           // a fifth tighter than first cut; widens as the field strings out
+    const u = Math.min(1, Math.max(0, (Math.max(...ss) - (RACE.SF + 5280 - 1700)) / 450));   // how far through the turn the leader is
+    fov *= 1 - .65 * u * (2 - u);                                                 // a push in across the turn: it starts at once and closes to about a third of the width by mid-turn
+  }
+  else if (shot === "reverse") {                                               // the TV pan mirrored: same height, distance and lens, but from
+    // above the infield looking out, so the field runs the other way across the frame with the crowd behind it
+    const c = RACE.camS(st);
+    p = V(c - 18, -150, 60); a = V(c, mo + 10, 3); fov = 20;   // over the cut-down hedge on the straights
+  }
+  else if (shot === "flat") {                                                  // eye level beside the wire: a dead side-on look as they cross
+    const c = Math.min(RACE.camS(st), RACE.SF + 5280);                         // a camera car alongside them, stopping dead square to the wire
+    p = V(c, 110, 7); a = V(c, mo, 4.5); fov = 16;                                // past the outer rail, in front of the stands: clear of the buildings and the hedge
+  }
+  else if (shot === "finish") {                                                // the original broadcast finish: the side-on pan carries them in and
+    const c = Math.min(RACE.camS(st), RACE.SF + 5280);                        // stops dead on the line, framed as it first was
+    p = V(c - 18, 150, 46); a = V(c, mo, 3); fov = 22;
+  }
+  else if (shot === "stretch") {                                               // outside the rail, a little ahead: they run across the frame and toward the lens
+    const top4 = [...st].sort((x, y) => y.s - x.s).slice(0, 4), lead = top4[0].s, fourth = top4[3].s;   // the first four: that's the race now
+    const tmo = top4.reduce((q, h) => q + h.o, 0) / 4;
+    p = V(lead + 120, 112, 22); a = V(lead - 14, tmo, 4); fov = Math.max(16, Math.min(26, (lead - fourth + 40) / 4));   // well ahead of the leaders, looking back at the first four
+  }
+  else if (shot === "headon") {                                                // a fixed tower past the wire, outside the rail: the field charges at it
+    // the tower stands just past where the leaders will be when the shot ends: past the wire for the stretch
+    // button, or on the backstretch ahead of the three-quarter pole when TV cuts to it there
+    const lead = Math.max(...st.map(h => h.s)), back = t < RACE.CT[4];
+    const at = back ? Math.max(...RACE.state(RACE.CT[4] - 4).map(h => h.s)) + 60 : RACE.SF + 5280 + 60;
+    p = V(at, 100, 30); a = V(lead - 12, mo, 4);                                // high enough that the near rail sits under the horses' feet
+    fov = Math.max(1.5, Math.min(30, 2 * Math.atan(16 / p.distanceTo(a)) * 180 / Math.PI));   // frame about 55 ft of track across   // a long lens on them far out, widening as they come
+  }
+  else if (shot === "blimp") {                                                  // the blimp: straight overhead on the pack
+    // framed on the whole field: only a straggler more than 110 ft back is left out of the shot
+    const ss = st.map(h => h.s), hi = Math.max(...ss), lo = Math.max(Math.min(...ss), hi - 110), span = hi - lo, mid = (lo + hi) / 2;
+    // high above and a little behind the pack, pitched forward onto it so the direction of travel points UP the screen.
+    // Aimed past the middle of the field, not the leader, so the back of the pack sits clear of the graphics along the bottom
+    p = V(mid - 26 - .35 * span, mo, 76 + 1.05 * span); a = V(mid + .2 * span + 6, mo, 0); fov = 36;
+  }
+  else { const w = RACE.SF + 5280, c = Math.min(cs, w), back = 18 * Math.min(1, Math.max(0, (w - cs) / 120)); p = V(c - back, 150, 46);   // square to the wire as they reach it, so near and far side line up
+    a = V(c, mo + 9, 3); fov = 19; }   // one pan the whole way: it stops dead on the wire                // on the roof, a touch behind the leaders
+  if (["pan", "reverse", "wire", "finish", "flat"].includes(shot)) {                   // side-on: widen just enough that the leader stays in frame on any screen shape
+    const lead = st.reduce((x, h) => h.s > x.s ? h : x), look = a.clone().sub(p), toLead = V(lead.s + 10, lead.o, 3).sub(p);   // +10 ft: the horse's nose
+    const small = cv.clientHeight < 460;                                        // a phone: overlays cover more of the frame, so give more room
+    const half = look.angleTo(toLead) + (small ? .09 : .04), need = 2 * Math.atan(Math.tan(half) / cam.aspect) * 180 / Math.PI;
+    fov = Math.min(44, need > fov ? need : fov); }
+  const k = camSnap ? 1 : 1 - Math.exp(-dt * 3); camSnap = false;
+  camPos.lerp(p, k); camAim.lerp(a, k); cam.fov += (fov - cam.fov) * k; cam.updateProjectionMatrix();
+  cam.position.copy(camPos); cam.lookAt(camAim);
+}
+
+// ---- place everything for time t
+const gateLag = h => Math.max(0, 1 - Math.max(0, h.d) / 220) * h.i * 1.6;     // outside posts leave the gate a beat later
+let gaitT = 0;
+// the minimap: the oval from above, homestretch at the bottom, the wire marked, a dot per horse in its saddle-cloth color,
+// yours ringed in gold, the leader drawn on top
+const mmEl = document.getElementById("mm"), mmG = mmEl.getContext("2d");
+let mmBox = null;
+// the infield tote complex, as at the big mile tracks: a long low board on the lawn between the lake and the rail,
+// square across from the wire. The track's name lit across the top, a video screen in the middle showing the race live
+// (the order and the clock, then the winner), amber tote panels either side: win/place/show odds and every post's price.
+let screen = null;
+const scrCv = document.createElement("canvas"); scrCv.width = 1200; scrCv.height = 210;
+const scrTex = new THREE.CanvasTexture(scrCv), scrLogo = new Image(); scrLogo.src = P("/mock/brand/logo_text.png");
+function buildScreen() {
+  if (screen) scene.remove(screen);
+  const W = 112, H = W * .175, UP = 2, g = new THREE.Group(), dark = new THREE.MeshBasicMaterial({ color: "#10141c" });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(W + 3, H + 3, 4), dark); body.position.y = UP + H / 2; g.add(body);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: scrTex, fog: false }));
+  face.position.set(0, UP + H / 2, 2.1); g.add(face);
+  const w = V(RACE.SF + 5280, 0); g.position.set(w.x - 78, 0, 255);           // on the lawn, the lake behind it, across from the wire
+  g.lookAt(w.x - 78, 0, 1e4);
+  scene.add(g); screen = g;
+}
+let scrT = 0;
+function drawScreen(t, st) {
+  if (!screen || performance.now() - scrT < 200) return; scrT = performance.now();
+  const g = scrCv.getContext("2d"), W = 1200, H = 210, F = "'Barlow Semi Condensed',sans-serif";
+  g.fillStyle = "#07090e"; g.fillRect(0, 0, W, H);
+  // the sign across the top
+  g.fillStyle = "#0d1a3a"; g.fillRect(0, 0, W, 44);
+  g.fillStyle = "#f4f0e2"; g.font = `bold 34px ${F}`; g.textAlign = "center"; g.fillText((RACE.venue || "Harness Park").toUpperCase(), W / 2, 34);
+  if (scrLogo.complete) { const h = 36, w = h * scrLogo.width / scrLogo.height; g.drawImage(scrLogo, 10, 4, w, h); g.drawImage(scrLogo, W - 10 - w, 4, w, h); }
+  const ord = st.map((h, i) => ({ h, i })).sort((a, b) => b.h.d - a.h.d), amber = "#ffb020";
+  const price = i => RACE.H[i].odds || "";
+  // left tote panel: win, place, show
+  g.textAlign = "left"; g.font = `bold 20px ${F}`; g.fillStyle = "#8a93a3"; g.fillText("WIN · PLACE · SHOW", 18, 70);
+  ord.slice(0, 3).forEach(({ i }, k) => { const y = 104 + k * 36;
+    g.fillStyle = amber; g.font = `bold 30px monospace`; g.fillText(String(i + 1).padStart(2, " "), 18, y);
+    g.fillText(price(i).padStart(5, " "), 80, y); });
+  // the screen in the middle
+  const sx = 360, sw = 480;
+  g.fillStyle = "#0b1730"; g.fillRect(sx, 52, sw, 150); g.strokeStyle = "#2b3a55"; g.lineWidth = 3; g.strokeRect(sx, 52, sw, 150);
+  if (t >= RACE.FIN) {
+    const i = ord[0].i; g.textAlign = "center"; g.fillStyle = "#ffcf4a"; g.font = `bold 22px ${F}`; g.fillText("WINNER", sx + sw / 2, 84);
+    g.fillStyle = RACE.PAD[i]; g.fillRect(sx + sw / 2 - 30, 94, 60, 46); g.fillStyle = RACE.DARK.includes(i + 1) ? "#111" : "#fff"; g.font = "bold 38px sans-serif"; g.fillText(i + 1, sx + sw / 2, 131);
+    g.fillStyle = "#fff"; g.font = `bold 34px ${F}`; g.fillText(RACE.H[i][0].toUpperCase(), sx + sw / 2, 182);
+  } else {
+    g.textAlign = "right"; g.fillStyle = "#ffcf4a"; g.font = `bold 26px ${F}`; g.fillText(RACE.fmt(t), sx + sw - 12, 80);
+    ord.slice(0, 4).forEach(({ i }, k) => { const y = 62 + k * 35;
+      g.fillStyle = RACE.PAD[i]; g.fillRect(sx + 12, y, 40, 30);
+      g.fillStyle = RACE.DARK.includes(i + 1) ? "#111" : "#fff"; g.font = "bold 24px sans-serif"; g.textAlign = "center"; g.fillText(i + 1, sx + 32, y + 25);
+      g.fillStyle = "#fff"; g.font = `bold 26px ${F}`; g.textAlign = "left"; g.fillText(RACE.H[i][0].toUpperCase(), sx + 62, y + 25); });
+  }
+  // right tote panel: every post's price
+  g.textAlign = "left"; g.font = `bold 20px ${F}`; g.fillStyle = "#8a93a3"; g.fillText("ODDS", 870, 70);
+  RACE.H.forEach((h, i) => { const col = i % 2, row = i >> 1, x = 870 + col * 165, y = 100 + row * 26;
+    if (row > 4) return;
+    g.fillStyle = "#8a93a3"; g.font = `bold 22px monospace`; g.fillText(String(i + 1).padStart(2, " "), x, y);
+    g.fillStyle = amber; g.fillText(price(i).padStart(6, " "), x + 40, y); });
+  scrTex.needsUpdate = true;
+}
+function drawMap(st) {
+  const dpr = Math.min(2, devicePixelRatio || 1), W = mmEl.clientWidth, H = mmEl.clientHeight;
+  if (!W) return;
+  if (mmEl.width !== W * dpr) { mmEl.width = W * dpr; mmEl.height = H * dpr; mmBox = null; }
+  const g = mmG; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  if (!mmBox) { let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
+    for (let s = 0; s < RACE.L; s += 40) { const [x, z] = RACE.pt(s, TRACK_W); x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+    const k = Math.min((W - 14) / (x1 - x0), (H - 12) / (z1 - z0)); mmBox = { k, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2 }; }
+  const m = (s, o) => { const [x, z] = RACE.pt(s, o); return [W / 2 + (x - mmBox.cx) * mmBox.k, H / 2 + (z - mmBox.cz) * mmBox.k]; };
+  g.lineWidth = Math.max(6, TRACK_W * mmBox.k * 1.6); g.strokeStyle = "#7a5432"; g.lineJoin = "round"; g.beginPath();   // the dirt
+  for (let s = 0; s <= RACE.L + 40; s += 40) { const [x, y] = m(s, TRACK_W / 2); s ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.closePath(); g.stroke();
+  const [a, b] = [m(RACE.SF, 0), m(RACE.SF, TRACK_W)]; g.strokeStyle = "#fff"; g.lineWidth = 2; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();   // the wire
+  const order = st.map((h, i) => ({ h, i })).sort((p, q) => p.h.d - q.h.d);                      // trailers first: the leader on top
+  for (const { h, i } of order) {
+    const [x, y] = m(h.s, h.o), mine = MY_NAME && RACE.H[i][0] === MY_NAME;
+    g.beginPath(); g.arc(x, y, (mine ? 3.6 : 2.8) * Math.min(1, W / 124 + .2), 0, 7); g.fillStyle = RACE.PAD[i]; g.fill();
+    g.lineWidth = mine ? 2 : 1; g.strokeStyle = mine ? "#f4d01e" : "#05070d"; g.stroke();
+  }
+}
+function place(t, st, dt) {
+  const next = RACE.state(t + .2);
+  st.forEach((h, i) => {
+    const r = runners[i]; if (!r) return;
+    const p = V(h.s - gateLag(h), h.o), q = V(next[i].s - gateLag(next[i]), next[i].o), dir = q.sub(p);
+    if (dir.lengthSq() < .01) { const a = V(h.s, h.o), b = V(h.s + 4, h.o); dir.copy(b.sub(a)); }
+    dir.y = 0; dir.normalize();
+    // steer from a smoothed heading, so a few inches of drift never swings the sprite about
+    if (!r.dir || camSnap) r.dir = dir.clone(); else r.dir.lerp(dir, 1 - Math.exp(-dt * 3)).normalize();
+    dir.copy(r.dir);
+    r.card.position.copy(p);
+    const toCam = new THREE.Vector3().subVectors(cam.position, p); toCam.y = 0;
+    const yaw = Math.atan2(-dir.z, dir.x), nz = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), elev = Math.atan2(cam.position.y - p.y, toCam.length());
+    r.card.rotation.order = "YXZ";                                                  // lean the card back toward a high lens (blimp) by most of its elevation, so the horse keeps its body instead of going edge-on
+    r.card.rotation.set(-Math.sign(nz.dot(toCam)) * Math.min(elev, 1.25), yaw, 0);                         // side view: the card lies along its line of travel, so perspective tilts it with the track
+    const right = new THREE.Vector3(toCam.z, 0, -toCam.x);                         // the card's own +x
+    const across = dir.dot(right) / right.length();                                  // how much it's crossing the screen, and which way
+    if (r.flip === undefined || Math.abs(across) > .2) r.flip = across < 0;          // only flip once it's clearly crossing the other way
+    // seen from its other side the card shows mirrored, which is the horse facing the other way: no flip needed
+    const stride = Math.floor((h.d - gateLag(h)) / STRIDE_FT * FR + i * 3), frame = ((stride % FR) + FR) % FR;   // legs geared to the ground: one cycle per stride travelled
+    r.t.offset.x = frame / FR; r.dt2.offset.x = frame / FR;
+    const lead = st.reduce((m, x) => Math.max(m, x.d), 0);
+    const urging = t > RACE.FIN - 10 && t < RACE.FIN + .3 && lead - h.d < RACE.LEN * 4 && cam.position.distanceTo(p) < 700;   // driving for the line
+    r.whip.visible = urging;
+    if (urging) { const sf = (h.d - gateLag(h)) / STRIDE_FT * FR + i * 7, ph = ((sf % 30) + 30) % 30 / 30;   // smooth, from the stride itself
+      const snap = ph < .3 ? Math.sin(ph / .3 * Math.PI) ** 1.5 : 0;             // one stroke every two and a half strides, then held up and back
+      const ang = 1.0 - 2.7 * snap, vel = ang - (r.whipA ?? ang); r.whipA = ang;   // up and back over the shoulder, then down and forward to the horse's quarters
+      r.whipBend = (r.whipBend || 0) * .8 - vel * 1.6;                            // the tip lags the hand and then whips through
+      bendWhip(r.whip, ang, .25 + r.whipBend + .06 * Math.sin(sf * .5 + i)); }   // a natural droop, and a little sway with the horse
+    r.shadow.position.copy(p).addScaledVector(dir, -LEN_FT * .35);                                // under the horse's body,
+    r.shadow.position.add(V(h.s, h.o - 1).sub(V(h.s, h.o)).multiplyScalar(2.2)); r.shadow.position.y = .05;   // cast toward the infield: the lights are the grandstand's
+    r.shadow.rotation.y = Math.atan2(-dir.z, dir.x);
+    // looking steeply down, a standing card reads as cardboard: show the top-down sprite lying on the track instead
+    const down = cam.position.y / Math.max(1, Math.hypot(cam.position.x - p.x, cam.position.z - p.z)) > .9;
+    // Eight directions: head-on, front three-quarter, side, rear three-quarter, going away, and the
+    // three-quarters and side mirrored. The horse shows the one whose band holds its true angle to the
+    // lens, and only changes once it is 6 degrees past the edge, so nothing flickers on a boundary.
+    const toN = toCam.clone().normalize(), ang = Math.acos(Math.max(-1, Math.min(1, dir.dot(toN)))) * 180 / Math.PI;   // 0 = coming straight at it
+    // the side card lies along the track and perspective handles it from 50 to 130 degrees, so it takes
+    // that whole band; the three-quarters cover the oblique angles and head-on/away the near end-on ones
+    const BAND = { head: [0, 28], side: [28, 152], away: [152, 181] };   // the three-quarter drawings are retired: the side card, laid along the track, carries the oblique angles
+    let view = r.view in BAND ? r.view : "side";
+    if (down) view = "flat";
+    else if (ang < BAND[view][0] - 6 || ang > BAND[view][1] + 6) view = Object.keys(BAND).find(k => ang >= BAND[k][0] && ang < BAND[k][1]);
+    r.view = view;
+    r.drive.visible = false;                                                      // the stretch-drive stride is shelved (art kept in pixel/drive)
+    r.card.visible = view === "side"; r.shadow.visible = !down; r.flat.visible = down;
+    for (const [k, a] of Object.entries(r.ang)) {
+      a.m.visible = view === k; if (view !== k) continue;
+      a.m.position.copy(p).addScaledVector(dir, -LEN_FT * .45);                    // stand it over the middle of horse and sulky
+      a.m.rotation.set(0, Math.atan2(toCam.x, toCam.z), 0);
+      a.m.scale.x = k === "head" || k === "away" || r.flip ? 1 : -1;               // both three-quarters are drawn heading screen-left: mirror when it heads right
+      a.t.offset.x = frame / FR;
+    }
+    r.flat.position.copy(p); r.flat.rotation.y = Math.atan2(-dir.z, dir.x);
+    r.ft.offset.x = frame / FR;
+  });
+  // gate car: starts in the middle of the track with its wings spread rail to rail just ahead of the noses,
+  // swings them forward until they lie flush along each side of the truck (full length, hinged at its sides),
+  // then pulls away and drifts to the outside. Nothing is hidden: it simply drives off out of shot.
+  const CO0 = TRACK_W / 2, HALF = 3.5, on = t < 20; truck.visible = on; wings.forEach(w => w.visible = on);
+  if (on) {
+    // where the truck is at time u: holds station ahead of the noses while the wings fold, then accelerates
+    // away hard, easing over toward the outside rail as it goes
+    const at = u => { const go = Math.max(0, u - 1.6), drift = Math.min(1, go / 3.5), sm = drift * drift * (3 - 2 * drift);
+      return [RACE.D(u) + 13 + 1.5 * u * u + 9 * go * go, CO0 + (TRACK_W - 14 - CO0) * sm]; };
+    const [gd, co] = at(t), [gd2, co2] = at(t + .15);
+    const fold = Math.min(1, t / 1.6), e = fold * fold * (3 - 2 * fold);
+    const tp = V(RACE.SF + gd, co); truck.position.copy(tp);
+    const fwd = V(RACE.SF + gd2, co2).sub(tp); fwd.y = 0; fwd.normalize();            // pointed where it's actually going, so it steers out rather than crabbing
+    const heading = Math.atan2(-fwd.z, fwd.x), side = V(RACE.SF + gd, co + 1).sub(tp).normalize();   // side: toward the outside rail
+    truck.rotation.set(0, heading, 0); truck.scale.x = 1;
+    [[-1, CO0 - 1 - HALF], [1, TRACK_W - 1 - CO0 - HALF]].forEach(([sd, L], k) => {
+      const w = wings[k]; w.position.copy(tp).addScaledVector(fwd, -TRUCK_L / 2 + 1).addScaledVector(side, sd * HALF); w.scale.set(L, 1, 1); w.material.map.repeat.set(L / 24, 1);
+      w.rotation.set(0, heading - sd * (Math.PI / 2) * (1 - e), 0);                  // straight across at the off, flush along the truck's side once folded
+    });
+  }
+}
+
+// ---- the opening: a drone sweep over the venue that comes down onto the field at the gate
+const INTRO = 9;
+let introT = 0;
+const introEl = document.getElementById("intro"), fieldEl = document.getElementById("field");
+introEl.onclick = () => { introT = INTRO; SND.wake(); };
+function introCam(u) {
+  // u 0..1: high over the far turn, round the infield past the tote and the trees, then down onto the gate
+  const e = u * u * (3 - 2 * u), ang = -2.5 + 2.3 * e, R0 = 820 - 120 * e;   // low over the trees, the way a drone would come in
+  const p = new THREE.Vector3(Math.cos(ang) * R0, 290 - 150 * e, Math.sin(ang) * R0 * .8);
+  const a = new THREE.Vector3(0, 0, 0).lerp(V(RACE.SF, TRACK_W / 2), e);
+  return [p, a];
+}
+// ---- the winner's circle: a framed photo of the winner at the gazebo, with the barn's emblem and name
+const wc = document.getElementById("wc"); let wcDrawn = false;
+const gazeboImg = new Image(); gazeboImg.src = P("/mock/pixel/infield/gazebo.png");
+const panoImg = new Image(); panoImg.src = P("/mock/pixel/panorama.png");
+const grassImg = new Image(); grassImg.src = P("/mock/pixel/infield/grass.png");
+// ---- the winner's circle: the winner's portrait in a blanket of roses, beside the barn's emblem (a placeholder for now)
+// ---- the winner's circle: the winner, in its own coat, under the rose arch (art in pixel/wc: circle, horse, blanket)
+const wcScene = new Image(); wcScene.src = P("/mock/pixel/wc/circle.png");
+const wcHorse = new Image(); wcHorse.src = P("/mock/pixel/wc/horse.png");
+const wcBlanket = new Image(); wcBlanket.src = P("/mock/pixel/wc/blanket.png");
+function drawWinnersCircle() {
+  const win = RACE.H.map((h, i) => ({ h, i })).sort((a, b) => a.h[2][6] - b.h[2][6])[0], h = win.h;
+  const c = document.getElementById("wcc"), g = c.getContext("2d"); g.imageSmoothingEnabled = false;
+  const paint = () => {
+    g.fillStyle = "#0b1430"; g.fillRect(0, 0, 640, 300);
+    if (wcScene.complete) g.drawImage(wcScene, 0, 20, 320, 150, 0, 0, 640, 300);                    // the scene at 2x, the sky trimmed
+    if (wcHorse.complete && wcBlanket.complete) {
+      const W = 182 * 1.45, H = 182 * 1.45, x = 100, y = 300 - H + 6;          // standing under the arch
+      g.fillStyle = "rgba(0,0,0,.4)"; g.beginPath(); g.ellipse(x + W * .5, 292, W * .42, 9, 0, 0, 7); g.fill();
+      g.drawImage(coat(wcHorse, h.coat), x, y, W, H);                                                   // the winner's own coat
+      g.drawImage(wcBlanket, x, y, W, H);                                                               // the roses stay red
+    }
+    // the photographer's date stamp, on a dark plate so it reads over the lit dirt
+    const stamp = new Date().toLocaleDateString(); g.font = "bold 14px monospace";
+    const tw = g.measureText(stamp).width, sx = 630 - tw - 16, sy = 270;
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(sx + 3, sy + 3, tw + 16, 24);                       // drop shadow
+    g.fillStyle = "rgba(10,12,22,.82)"; g.fillRect(sx, sy, tw + 16, 24);
+    g.strokeStyle = "rgba(232,163,58,.8)"; g.lineWidth = 1; g.strokeRect(sx + .5, sy + .5, tw + 15, 23);
+    g.fillStyle = "#ffb347"; g.fillText(stamp, sx + 8, sy + 17);
+  };
+  const em = document.getElementById("wcem"); em.hidden = !h.emblem; if (h.emblem) em.src = h.emblem;   // the barn's emblem, bottom right of the caption
+  document.getElementById("wcmq").innerHTML = h.marquee || "";                       // a Marquee barn's banner hangs over the photo
+  paint();
+  for (const im of [wcScene, wcHorse, wcBlanket]) if (!im.complete) im.addEventListener("load", paint);
+  const parts = RACE.title.split(" · ");
+  document.getElementById("wcn").textContent = h[0];
+  document.getElementById("wco").innerHTML = h.owner ? `Owner &middot; <b></b>` : "";
+  if (h.owner) document.querySelector("#wco b").textContent = h.owner;
+  document.getElementById("wcm").textContent = `wins the ${parts[0]} in ${RACE.fmt(RACE.FIN)} · ${parts[parts.length - 1]}`;
+  const rec = RACE.REC && RACE.FIN < RACE.REC[3];                                   // under the course record going in
+  document.getElementById("stamp").classList.toggle("on", !!rec); document.getElementById("stt").textContent = RACE.fmt(RACE.FIN);
+  wcDrawn = true;
+}
+
+// ---- the official results card: order of finish, margins, and the mutuel payoffs priced off the tote (simulated)
+const tv = document.getElementById("tv"); let tvDrawn = false, tvHeld = false, circleAt = 0;
+document.getElementById("tvback").onclick = () => { tvHeld = true; tv.classList.remove("on"); };
+function drawResults() {
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const ord = RACE.H.map((h, i) => ({ h, i })).sort((a, b) => a.h[2][6] - b.h[2][6]), t1 = ord[0].h[2][6];
+  const dec = o => { const m = /^(\d+)-(\d+)$/.exec(o || ""); return m ? m[1] / m[2] : 9; };
+  const money = v => "$" + (Math.max(2.1, Math.floor(v * 10) / 10)).toFixed(2);
+  const marg = (d, k) => { if (!k) return RACE.fmt(RACE.FIN); const L = d / .2;                    // about a length to a fifth of a second
+    return L < .25 ? "nose" : L < .5 ? "head" : L < .75 ? "neck" : (Math.round(L * 4) / 4).toString().replace(".25", "¼").replace(".5", "½").replace(".75", "¾").replace(/^0/, "") + (L < 1.5 ? " length" : " lengths"); };
+  const pad = i => `<span class="pd" style="background:${RACE.PAD[i]};color:${RACE.DARK.includes(i + 1) ? "#111" : "#fff"}">${i + 1}</span>`;
+  const ordn = k => ["1st", "2nd", "3rd"][k] || (k + 1) + "th";
+  document.getElementById("tvt").textContent = RACE.title;
+  document.getElementById("tvo").innerHTML = "<tr><th>FIN</th><th>#</th><th>HORSE</th><th>ODDS</th><th>MARGIN</th></tr>" + ord.map(({ h, i }, k) =>
+    `<tr${MY_NAME && h[0] === MY_NAME ? ' class="me"' : ""}><td class="pos">${ordn(k)}</td><td>${pad(i)}</td><td>${esc(h[0])}</td><td>${esc(h.odds || "")}</td>`
+    + `<td>${marg(h[2][6] - (k ? ord[k - 1].h[2][6] : 0), k)}</td></tr>`).join("");
+  const w = ord.map(x => 1 + dec(x.h.odds)), pick = (k, n) => ord.slice(0, n).map(x => x.i + 1).join("-");
+  let m = "<tr><th>$2 MUTUELS</th><th>WIN</th><th>PLACE</th><th>SHOW</th></tr>";
+  ord.slice(0, 3).forEach(({ h, i }, k) => {
+    const win = 2 * w[k], pl = 2 + (win - 2) * .42, sh = 2 + (win - 2) * .24;
+    m += `<tr><td>${pad(i)} ${esc(h[0])}</td><td>${k === 0 ? money(win) : ""}</td><td>${k <= 1 ? money(pl) : ""}</td><td>${money(sh)}</td></tr>`;
+  });
+  const ex = [["$2 Exacta", 2, 2 * w[0] * w[1] * .72], ["$1 Trifecta", 3, w[0] * w[1] * (w[2] || 1) * .6], ["$0.10 Superfecta", 4, .1 * w[0] * w[1] * (w[2] || 1) * (w[3] || 1) * .5]];
+  for (const [name, n, v] of ex) if (ord.length >= n) m += `<tr class="ex"><td colspan="3">${name} ${pick(0, n)}</td><td>${money(v)}</td></tr>`;
+  document.getElementById("tvm").innerHTML = m;
+  tvDrawn = true;
+}
+
+// ---- photo finish, HUD, loop
+const photo = document.getElementById("photo"), flash = document.getElementById("flash");
+// the intro's right-hand card: the ones to watch (favorite, handicapper's pick, yours), or, when two or more player
+// barns meet, the head-to-head between them
+function watchCard() {
+  const el = document.getElementById("iw"), H = RACE.H, esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const price = o => { const m = /^(\d+)-(\d+)$/.exec(o || ""); return m ? m[1] / m[2] : 999; };
+  const row = (i, label) => { const h = H[i], dark = RACE.DARK.includes(i + 1);
+    return `<div class="wr${MY_NAME && h[0] === MY_NAME ? " me" : ""}"><b style="background:${RACE.PAD[i]};color:${dark ? "#111" : "#fff"}">${i + 1}</b>`
+      + `<span class="wn">${esc(h[0])}${label ? `<small>${label}</small>` : ""}</span><span class="wo">${esc(h.odds || "")}</span></div>`; };
+  const barns = {};
+  H.forEach((h, i) => { if (h.player) (barns[h.stable || h.owner] = barns[h.stable || h.owner] || []).push(i); });
+  const names = Object.keys(barns);
+  if (names.length >= 2) {
+    const shown = names.slice(0, 4);
+    el.innerHTML = `<div class="wh">${names.length === 2 ? "HEAD TO HEAD" : "PLAYERS IN THIS RACE"}</div>`
+      + shown.map(n => `<div class="wb">${esc(n)}</div>` + barns[n].map(i => row(i, "")).join("")).join(`<div class="vs">VS</div>`)
+      + (names.length > 4 ? `<div class="vs">+${names.length - 4} MORE</div>` : "");
+    return;
+  }
+  const fav = H.reduce((b, h, i) => price(h.odds) < price(H[b].odds) ? i : b, 0);
+  const picks = [[fav, "Favorite"]];
+  const pick = H.findIndex(h => h[0] === RACE.PICK);
+  if (pick >= 0) pick === fav ? picks[0][1] = "Favorite · handicapper's pick" : picks.push([pick, "Handicapper's pick"]);
+  const mine = MY_NAME ? H.findIndex(h => h[0] === MY_NAME) : -1;
+  if (mine >= 0) { const at = picks.find(p => p[0] === mine); at ? at[1] += " · yours" : picks.push([mine, "Your horse"]); }
+  el.innerHTML = `<div class="wh">ONES TO WATCH</div>` + picks.map(([i, l]) => row(i, l)).join("");
+}
+function result() {                                                                 // the official order and margins, the whole field
+  const fin = RACE.H.map((h, i) => ({ i, b: h[2][6] })).sort((x, y) => x.b - y.b);
+  document.getElementById("res").innerHTML = fin.map((h, k) => `<div class="rw"><b>${k + 1}</b>${RACE.pad(h.i)}<span>${RACE.H[h.i][0]}</span><span class="m">${k ? RACE.lengths(h.b - fin[k - 1].b) : RACE.fmt(RACE.FIN)}</span></div>`).join(""); }
+let froze = false, freezeLeft = 0, freeze0 = 1.8, wireZoom = null, pfShot = false;
+let SLOW = 1; const SLOMO = 2.2;
+var SOUND_ON = false;   // all replay sound off until the sound effects are redone; the code is kept                                                  // seconds of race clock before the wire run in slow motion
+const bulbsEl = document.getElementById("bulbs"), pfEl = document.getElementById("pf");
+let PHOTO = false;                                                                 // the top two inside half a length: the stewards call for the photo
+function photoStrip() {                                                             // the frame on the wire, in the finish camera's black and white
+  const src = renderer.domElement, w = src.width, h = src.height, cw = Math.round(w * .62), ch = Math.round(h * .5);
+  const wire = V(RACE.SF + 5280, 0, 3).project(cam), wx = (wire.x + 1) / 2 * w;
+  const x0 = Math.max(0, Math.min(w - cw, wx - cw * .55)), y0 = Math.round(h * .3);
+  const c = document.getElementById("pfc"); c.width = cw; c.height = ch; const g = c.getContext("2d");
+  g.filter = "grayscale(1) contrast(1.5) brightness(1.1)"; g.drawImage(src, x0, y0, cw, ch, 0, 0, cw, ch); g.filter = "none";
+  g.fillStyle = "#fff"; g.fillRect(Math.round(wx - x0) - 1, 0, 2, ch);           // the wire
+  pfEl.classList.add("on"); }
+const bulb = () => { const b = document.createElement("i"), sz = 10 + Math.random() * 22;   // a camera flash somewhere across the infield
+  b.style.cssText = `left:${4 + Math.random() * 92}%;top:${22 + Math.random() * 30}%;width:${sz}px;height:${sz}px`;
+  bulbsEl.appendChild(b); setTimeout(() => b.remove(), 260); };
+const ctl = RACE.controls(() => { froze = Math.max(...RACE.state(ctl.t).map(h => h.d)) >= 5280; camSnap = true; introT = INTRO; wireZoom = null; freezeLeft = 0; });   // a scrub lets go of the held wire shot
+let ready = false;
+Promise.all([cycleLoaded, topLoaded, angLoaded, driveLoaded]).then(async () => {
+  if (RACE_ID && await RACE.load(RACE_ID, MY_NAME)) { ctl.refit(); topBar(); buildTrack(); buildPoles(); buildRails(); buildInfield(); buildVenue(); buildSurroundings(); buildScreen(); }
+  buildRunners(); ready = true;
+  { const fin = RACE.H.map(h => h[2][6]).sort((a, b) => a - b); PHOTO = fin.length > 1 && fin[1] - fin[0] < .5; }   // margins in lengths
+  document.getElementById("fhs").textContent = RACE.title.split(" · ")[0];
+  document.getElementById("frows").innerHTML = RACE.H.map((h, i) =>
+    `<div class="fr${i === RACE.ME && RACE.real ? " me" : ""}" style="transition-delay:${.08 * i}s"><span class="pd" style="background:${RACE.PAD[i]};color:${RACE.DARK.includes(i + 1) ? "#111" : "#fff"}">${i + 1}</span>`
+    + `<span class="fn">${h[0]}</span><span class="fo">${h.odds || ""}</span></div>`).join("");
+  const tp = RACE.title.split(" · "); document.getElementById("ik").textContent = "TONIGHT\u2019S FEATURE";
+  document.getElementById("it").textContent = tp[0]; document.getElementById("is").textContent = tp.slice(1).join(" · ");
+  const tl = RACE.tlook;                                                          // the track's own colors, type and badge on the title card
+  if (tl) { const ib = document.querySelector("#intro .ib"); ib.classList.add("tk"); ib.style.setProperty("--tp", tl.p); ib.style.setProperty("--ta", tl.a);
+    ib.insertAdjacentHTML("afterbegin", `<img class="tkb" src="${tl.badge}" alt=""><div class="tkv" style="font-family:${tl.font}">${RACE.venue}</div><div class="tkm">${tl.motto}</div>`); }
+  watchCard();
+});
+let last = performance.now(), ui = 0;
+function loop(now) {
+  const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;
+  if (ready && window.CARD_UP) { renderer.render(scene, cam); requestAnimationFrame(loop); return; }   // a tip card is up: hold the intro behind it
+  if (ready) {
+    const inIntro = introT < INTRO && ctl.t === 0;
+    const odds = inIntro && introT > .6 && introT < 5.4;                       // the field and its prices first, on their own
+    introEl.style.display = inIntro ? "flex" : "none"; introEl.classList.toggle("on", inIntro && introT > 6 && introT < INTRO - .2);   // then the race and track for a few seconds
+    fieldEl.classList.toggle("on", odds);
+    cv.parentElement.classList.toggle("oddsup", inIntro && introT < 6);        // nothing else on screen while the prices are up
+    if (inIntro) {                                                              // the race waits at the gate while the drone flies
+      introT += dt; const [p, a] = introCam(Math.min(1, introT / INTRO));
+      if (introT >= INTRO) camSnap = true;
+      cam.fov = 30; cam.updateProjectionMatrix(); cam.position.copy(p); cam.lookAt(a); camPos.copy(p); camAim.copy(a);
+      place(0, RACE.state(0), dt); SND.update(0, 0); renderer.render(scene, cam); requestAnimationFrame(loop); return;
+    }
+    SLOW = view === "tv" && !froze && ctl.t >= RACE.FIN - SLOMO ? .3 : 1;       // the last strides to the wire at a third speed
+    if (freezeLeft > 0) { freezeLeft -= dt; flash.style.opacity = Math.max(0, freezeLeft - (freeze0 - .7)); } else ctl.tick(dt * SLOW);
+    pfEl.style.display = freezeLeft > 0 && PHOTO ? "flex" : "none"; if (freezeLeft <= 0) { pfEl.classList.remove("on"); pfShot = false; }
+    if (ctl.play && freezeLeft <= 0 && ctl.t < RACE.END) gaitT += dt * SLOW;
+    if (ctl.play && ctl.t > RACE.FIN - SLOMO && ctl.t < RACE.FIN + 1.5 && Math.random() < dt * (freezeLeft > 0 ? 22 : 12)) bulb();   // the photographers' flashes across the infield
+    const t = ctl.t, st = RACE.state(t), ord = [...st].sort((a, b) => b.d - a.d);
+    SND.update(t, ord[0].d);
+    // the winner hits the wire: flash, hold the frame, then let them run on through it; the result card follows once they've eased up
+    if (!froze && (ord[0].d >= 5280 || t >= RACE.FIN + 1)) { froze = true; freezeLeft = freeze0 = PHOTO ? 4.2 : 1.8; result(ord); }   // the instant the leader's nose is on the wire
+    const circle = t >= RACE.FIN + 7 && freezeLeft <= 0;                         // after the official result, the winner's circle photo
+    if (circle && !wcDrawn) drawWinnersCircle();
+    if (circle && wc.style.display !== "flex") { wc.classList.remove("flip"); void wc.offsetWidth; wc.classList.add("flip"); }   // turned over each time it appears
+    wc.style.display = circle ? "flex" : "none";
+    circleAt = circle ? circleAt || performance.now() : 0;                       // seven seconds in the winner's circle, then the official results
+    const official = circle && performance.now() - circleAt > 7000;
+    if (official && !tvDrawn) drawResults();
+    tv.classList.toggle("on", official && !tvHeld);
+    if (!circle) tvHeld = false;                                                 // a rewind brings the card back next time
+    photo.style.display = "none";                                                // the held wire shot goes straight to the winner's circle
+    if (freezeLeft <= 0 && !wireZoom) aimCamera(t, st, ctl.play ? dt : .016);   // the photo, and the held wire shot: the camera stays put
+    else {                                                        // the flash: punch in on the leader's nose at the wire
+      const u = Math.min(1, (freeze0 - freezeLeft) / .35), e = 1 - (1 - u) ** 3;   // a fast ease-out over the first third of a second
+      if (!wireZoom) wireZoom = { fov: cam.fov, aim: camAim.clone(), pos: cam.position.clone(), to: V(RACE.SF + 5280, ord[0].o, 3) };
+      cam.fov = wireZoom.fov * (1 - .35 * e); cam.updateProjectionMatrix();
+      cam.lookAt(wireZoom.aim.clone().lerp(wireZoom.to, .6 * e));
+    }
+    if (freezeLeft <= 0 && wireZoom && t < RACE.FIN + 7) {          // hold the zoomed frame still on the wire: the whole field
+      cam.position.copy(wireZoom.pos); cam.fov = wireZoom.fov * .65; cam.updateProjectionMatrix();   // runs through it, then
+      cam.lookAt(wireZoom.aim.clone().lerp(wireZoom.to, .6));     // the winner's circle photo comes up
+    } else if (freezeLeft <= 0 && wireZoom) { wireZoom = null; }
+    place(t, st, ctl.play ? dt : .016);
+    drawMap(st); drawScreen(t, st);
+    if (now - ui > 90) { RACE.hud(t, ord); top4(ord); ui = now; }
+  }
+  if (cv.clientWidth && Math.abs(cv.clientWidth / cv.clientHeight - cam.aspect) > .01) fit();   // belt and braces: never a stretched frame
+  renderer.render(scene, cam);
+  if (ready && PHOTO && freezeLeft > 0 && !pfShot && freeze0 - freezeLeft > .45) { pfShot = true; photoStrip(); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+window.dbg = { RACE, ctl, cam, get runners() { return runners; }, set view(v) { view = v; } };
+</script></body></html>

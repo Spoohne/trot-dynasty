@@ -1,0 +1,5 @@
+Q https://api.spritecook.ai/v1/assets/9e788ff6-02d8-439e-a637-92d437b54858/signed-content/pixel?sig=xlIUv2yKa622BuFE8P806MdScQc4mEt9tutDZlxZPMI&exp=1793211964
+R https://api.spritecook.ai/v1/assets/49cf8d9b-423d-4cb6-a50f-d82981c855ef/signed-content/pixel?sig=Am5jnXj7zwcgEkJB3vyhATTeb0Df1MPZKSLvFtuqOvQ&exp=1793211972
+S https://api.spritecook.ai/v1/assets/a19eec15-05f1-46cd-98e3-d524f567c357/signed-content/pixel?sig=HoZeIzDhAr-wl4s2EhKyp3WU4GWk_VNsilO_0GN315k&exp=1793211962
+T https://api.spritecook.ai/v1/assets/a6c588ab-3965-4f82-b220-199c8892d423/signed-content/pixel?sig=P_0vhngKPcpAgbp4YVWAe7bRrFiDrMSCAk4WfW8EjrE&exp=1793211966
+U https://api.spritecook.ai/v1/assets/dffdd0f0-dc8a-4cfc-a96d-1794b6d9135b/signed-content/pixel?sig=xwA3Kh-NjztaxDUbme0yCD6-AxH88obNazBVeq5A4n4&exp=1793211977

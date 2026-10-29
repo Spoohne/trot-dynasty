@@ -1,0 +1,74 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gait lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#11141a;color:#e6e8ec;font-family:'Barlow Semi Condensed',system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:18px;margin:0 0 4px;font-weight:600} p{color:#a4acb9;font-size:14px;margin:0 0 12px}
+.ctl{display:flex;gap:16px;align-items:center;font-size:14px;margin-bottom:14px;flex-wrap:wrap}
+.ctl label{display:flex;gap:6px;align-items:center}.ctl input[type=range]{width:160px;accent-color:#e8a33a}
+.row{display:grid;grid-template-columns:150px 1fr 1fr 1fr;gap:10px;align-items:center;margin:8px 0;padding:8px;background:#1a1f28;border-radius:8px}
+.row b{font-size:14px;font-weight:600}.row small{display:block;color:#6f7886;font-size:12px}
+canvas{display:block;width:100%;image-rendering:pixelated;background:#7a5639;border-radius:4px}
+.hd{display:grid;grid-template-columns:150px 1fr 1fr 1fr;gap:10px;font-size:12px;color:#6f7886;padding:0 8px}
+</style></head><body><div class="wrap">
+<h1>Gait lab</h1>
+<p>Every stride cycle we own, looping, at three on-screen sizes. The horse runs on the spot over scrolling dirt so the legs can be judged against the ground. Pick the one that reads right, then we build around it.</p>
+<div class="ctl">
+  <label>Poses per second <input type="range" id="fps" min="6" max="24" step="1" value="12"><span id="fpsv">12</span></label>
+  <label><input type="checkbox" id="scroll" checked> scroll the ground</label>
+  <label><input type="checkbox" id="bob"> mark the saddle pad</label>
+</div>
+<div class="hd"><span></span><span>Mid shot · horse about 56 px wide</span><span>Close · about 92 px</span><span>Current replay · full sprite</span></div>
+<div id="rows"></div>
+</div>
+<script>
+// name, sheet, frame count, ground line within a frame (fraction of height), note
+const CYCLES = [
+  ["Frame-engine, fast stride, 12 frames", "/mock/pixel/fe12_cycle.png", 12, .99, "same horse as the frame-engine cycle, re-animated with the long fast stride"],
+  ["Frame-engine, fast stride, 8 frames", "/mock/pixel/fe8_cycle.png", 8, .99, "same, 8 frames"],
+  ["Restyled racing posture", "/mock/pixel/small/final_cycle.png", 8, .98, "the small racing posture, repainted in the first cycle's colors, head further forward"],
+  ["Small racing posture", "/mock/pixel/small/race_cycle.png", 8, .98, "native 112 px, neck forward, animated with a long fast stride"],
+  ["Native small sprite", "/mock/pixel/small/cycle.png", 8, .98, "drawn at 112 px by SpriteCook, animated by SpriteCook"],
+  ["Frame-engine cycle", "/mock/pixel/fe_cycle.png", 8, .99, "the one with the better body, pinned at the pad"],
+  ["Muybridge legs", "/mock/pixel/mb_cycle.png", 6, .95, "photographed 1887 legs under the SpriteCook body"],
+  ["First pacing cycle", "/mock/pixel/pace_cycle.png", 11, .98, "the original upright pose, levelled"],
+  ["Racing pose, 8 of 12", "/mock/pixel/race_clean.png", 8, .98, "tangled frames dropped"],
+];
+const SIZES = [56, 92, 0];                           // target horse width in screen pixels; 0 = native
+const rows = document.getElementById("rows"), fpsEl = document.getElementById("fps"), fpsV = document.getElementById("fpsv");
+const scrollEl = document.getElementById("scroll"), bobEl = document.getElementById("bob");
+const cells = [];
+for (const [name, src, n, ground, note] of CYCLES) {
+  const img = new Image(); img.src = src;
+  const row = document.createElement("div"); row.className = "row";
+  row.innerHTML = `<div><b>${name}</b><small>${note}</small><small>${n} frames</small></div>`;
+  for (const target of SIZES) {
+    const c = document.createElement("canvas"); c.width = 300; c.height = 120; row.appendChild(c);
+    cells.push({ img, n, ground, target, c, g: c.getContext("2d") });
+  }
+  rows.appendChild(row);
+}
+let t0 = performance.now(), dist = 0, last = t0;
+function frame(now) {
+  const dt = (now - last) / 1000; last = now; const fps = +fpsEl.value; fpsV.textContent = fps;
+  if (scrollEl.checked) dist += dt * 44;                               // ft/s, a 1:52 mile
+  for (const k of cells) {
+    const { img, n, ground, target, c, g } = k; if (!img.complete || !img.width) continue;
+    const fw = img.width / n, fh = img.height;
+    const scale = target ? target / (fw * .76) : (c.width / fw > 1 ? 1 : c.width / fw);   // the horse is about 76% of the frame width
+    const dw = Math.round(fw * scale), dh = Math.round(fh * scale);
+    const groundY = Math.round(c.height * .78);
+    g.imageSmoothingEnabled = false; g.fillStyle = "#7a5639"; g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = "#5e4029"; for (let i = 0; i < 24; i++) { const x = ((i * 37 - dist * 9 * scale) % (c.width + 20) + c.width + 20) % (c.width + 20) - 10; g.fillRect(x, groundY + 3 + (i % 3) * 7, 6 * scale + 2, 2); }
+    g.fillStyle = "#e8eef4"; g.fillRect(0, groundY + 1, c.width, 2);
+    const f = Math.floor((now - t0) / 1000 * fps) % n;
+    const x = Math.round((c.width - dw) / 2), y = Math.round(groundY - dh * ground);
+    g.drawImage(img, f * fw, 0, fw, fh, x, y, dw, dh);
+    if (bobEl.checked) { g.fillStyle = "rgba(232,163,58,.9)"; g.fillRect(0, y + Math.round(dh * .25), c.width, 1); }
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>

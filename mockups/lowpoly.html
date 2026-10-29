@@ -1,0 +1,251 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Low-poly test</title>
+<style>
+html,body{margin:0;height:100%;background:#0a1236;overflow:hidden;font:600 14px system-ui,sans-serif}
+#ui{position:fixed;top:12px;right:12px;display:flex;gap:6px}
+#ui button{background:#1a2550;color:#dfe6ff;border:0;padding:6px 12px;border-radius:4px;cursor:pointer}
+#ui button.sel{background:#e8a33a;color:#111}
+</style></head><body>
+<div id="ui"><button data-v="tv" class="sel">TV</button><button data-v="blimp">Blimp</button><button data-v="close">Close</button><button data-v="side">Side</button><button id="slow">Slow</button></div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+// Low-poly, flat-shaded test: one straight of track at night and a field of five rigs, all built from plain
+// colored faces (no textures but the saddle numbers). Units are feet; the field runs toward +x, camera on +z.
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { clone as cloneSkinned } from "three/addons/utils/SkeletonUtils.js";
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color("#0b1640"); scene.fog = new THREE.Fog("#0b1640", 250, 900);
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 1, 3000);
+addEventListener("resize", () => { renderer.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); });
+
+const M = c => new THREE.MeshLambertMaterial({ color: c, flatShading: true });
+scene.add(new THREE.HemisphereLight("#5b6fb0", "#3a2a1c", 1.1));
+const sun = new THREE.DirectionalLight("#fff1d8", 2.2);                       // the floodlights, from high on the near side
+sun.position.set(-60, 120, 90); sun.castShadow = true;
+Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 50, bottom: -50, near: 10, far: 400 }); sun.shadow.mapSize.set(2048, 2048);
+scene.add(sun, sun.target);
+
+// faceted ground: a jittered grid, one color per triangle so the facets read
+function facetPlane(w, d, sx, sz, cols, jit) {
+  const g = new THREE.PlaneGeometry(w, d, sx, sz).rotateX(-Math.PI / 2).toNonIndexed(), p = g.attributes.position, c = [];
+  for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), h = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; p.setY(i, (h - Math.floor(h) - .5) * jit); }
+  for (let i = 0; i < p.count; i += 3) { const k = new THREE.Color(cols[(i / 3 * 7919) % cols.length]); for (let j = 0; j < 3; j++) c.push(k.r, k.g, k.b); }
+  g.setAttribute("color", new THREE.Float32BufferAttribute(c, 3)); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })); m.receiveShadow = true; return m;
+}
+const dirt = facetPlane(2400, 44, 300, 8, ["#8a5f3c", "#93673f", "#81583a", "#9a6c44", "#87603e"], .25); dirt.position.z = 6; scene.add(dirt);
+const grass = facetPlane(2400, 400, 120, 20, ["#2f6b2c", "#357530", "#2b6229", "#3a7d33"], .6); grass.position.set(0, -.1, -216); scene.add(grass);
+const apron = facetPlane(2400, 200, 300, 24, ["#7e5636", "#8a5f3c", "#76502f", "#93673f"], .3); apron.position.set(0, -.15, 127); scene.add(apron);
+// the rail behind the field: white top rail on posts
+{ const rail = new THREE.Mesh(new THREE.BoxGeometry(2400, .35, .35), M("#e8ecf2")); rail.position.set(0, 3.2, -16); scene.add(rail);
+  const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(.35, 3.2, .35).translate(0, 1.6, 0), M("#cfd6e0"), 300), m4 = new THREE.Matrix4();
+  for (let i = 0; i < 300; i++) { m4.setPosition(-1200 + i * 8, 0, -16); posts.setMatrixAt(i, m4); } scene.add(posts); }
+// light towers and a grandstand block far across the infield, as simple shapes
+for (const x of [-500, -150, 200, 550]) {
+  const t = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.6, 90, 5).translate(0, 45, 0), M("#59627a")); t.position.set(x, 0, -260);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(14, 8, 2), new THREE.MeshBasicMaterial({ color: "#fffbe8" })); head.position.set(x, 92, -260);
+  scene.add(t, head);
+}
+{ const stand = new THREE.Mesh(new THREE.BoxGeometry(500, 40, 60).translate(0, 20, 0), M("#262d44")); stand.position.set(-420, 0, -380);
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(520, 3, 80), M("#3a4466")); roof.position.set(-420, 44, -375); scene.add(stand, roof); }
+
+// ---- the rig
+const COAT = ["#4a2a1a", "#5a3420", "#2a1d17", "#6b3c22", "#3b2418"];
+function numberTex(n, col) {
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  g.fillStyle = col; g.fillRect(0, 0, 64, 64); g.fillStyle = "#fff"; g.font = "bold 46px system-ui"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(n, 32, 35);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function mesh(geo, mat, parent, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; }
+// loft: rings of an ellipse swept along a path in the side (xy) plane, each ring square to the path. Few sides and
+// flat shading give the faceted, sculpted look. secs: [x, y, half-height, half-width, drop]; drop deepens the
+// underside only, for a chest or belly deeper than the back is high
+function loft(secs, sides = 7) {
+  const pos = [], idx = [], n = secs.length;
+  secs.forEach(([x, y, h, w, drop = 0], k) => {
+    const a = secs[Math.max(0, k - 1)], b = secs[Math.min(n - 1, k + 1)], tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1;
+    const nx = -ty / l, ny = tx / l;
+    for (let i = 0; i < sides; i++) {
+      const t = i / sides * Math.PI * 2, c = Math.cos(t), sn = Math.sin(t), hh = c < 0 ? h + drop : h;
+      pos.push(x + nx * c * hh, y + ny * c * hh, sn * w);
+    }
+  });
+  for (let k = 0; k < n - 1; k++) for (let i = 0; i < sides; i++) {
+    const a = k * sides + i, b = k * sides + (i + 1) % sides, c = a + sides, d = b + sides; idx.push(a, b, c, b, d, c);
+  }
+  const cap = (k, flip) => { const c0 = pos.length / 3, [x, y] = secs[k]; pos.push(x, y, 0);
+    for (let i = 0; i < sides; i++) { const a = k * sides + i, b = k * sides + (i + 1) % sides; flip ? idx.push(c0, a, b) : idx.push(c0, b, a); } };
+  cap(0, false); cap(n - 1, true);
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
+  const ng = g.toNonIndexed(); ng.computeVertexNormals(); return ng;
+}
+// a limb: a chain of tapered segments, each hung from its joint. segs: [length, top radius, bottom radius, material]
+function limb(parent, x, y, z, segs) {
+  const joints = []; let at = new THREE.Group(); at.position.set(x, y, z); parent.add(at);
+  segs.forEach(([len, r0, r1, mat], k) => {
+    joints.push(at);
+    mesh(new THREE.CylinderGeometry(r0, r1, len, 6).translate(0, -len / 2, 0), mat, at);
+    if (k < segs.length - 1) { const j = new THREE.Group(); j.position.y = -len; at.add(j); at = j; }
+  });
+  return joints;
+}
+function rig(num, silk) {
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+  const coat = M(COAT[num % COAT.length]), dark = M("#16100c"), hoof = M("#0c0c0e"), silkM = M(silk), white = M("#eceff3"), tack = M("#121214");
+  // trunk and neck as one sculpted piece: tail root, quarters, back, barrel, chest, then the neck stretched out
+  mesh(loft([[-3.2, 4.55, .35, .35], [-2.9, 4.6, .85, .8], [-2.3, 4.55, 1.15, 1.0, .1], [-1.4, 4.45, 1.1, .98, .2], [-.4, 4.4, 1.05, 1.0, .35],
+             [.7, 4.4, 1.1, .98, .4], [1.7, 4.45, 1.05, .9, .45], [2.4, 4.55, .95, .78, .35], [3.0, 4.95, .78, .55, .15],
+             [3.6, 5.45, .58, .42], [4.15, 5.9, .45, .34], [4.45, 6.1, .4, .3]], 8), coat, body);
+  // head: from the poll down and forward to the muzzle, carried low and stretched
+  mesh(loft([[4.35, 6.2, .38, .3], [4.8, 6.0, .4, .3], [5.35, 5.6, .32, .26], [5.8, 5.25, .24, .2], [5.95, 5.12, .14, .15]], 6), coat, body);
+  for (const s of [1, -1]) mesh(new THREE.ConeGeometry(.1, .4, 4), coat, body, 4.4, 6.5, s * .17).rotation.z = -.4;   // ears
+  mesh(loft([[2.75, 5.35, .12, .1], [3.5, 5.95, .22, .09], [4.3, 6.45, .14, .08]], 4), dark, body);       // mane along the crest
+  const tail = mesh(loft([[0, 0, .25, .2], [-.6, -.5, .32, .22], [-1.1, -1.3, .26, .18], [-1.3, -2.2, .1, .1]], 5), dark, body, -3.1, 4.6, 0);
+  // harness: girth, breast collar, the pad with the number on each side, and the saddle on top in silks
+  mesh(new THREE.CylinderGeometry(1.13, 1.13, .3, 8).rotateX(Math.PI / 2), tack, body, 1.15, 4.12, 0).scale.set(1, 1.1, .97);
+  mesh(new THREE.BoxGeometry(.18, .18, 1.7), tack, body, 3.0, 4.5, 0);
+  for (const s of [1, -1]) {
+    const pad = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.35), new THREE.MeshLambertMaterial({ map: numberTex(num, silk) }));
+    pad.position.set(.05, 4.35, s * 1.03); if (s < 0) pad.rotation.y = Math.PI; body.add(pad);
+  }
+  mesh(new THREE.BoxGeometry(1.2, .35, 1.3), silkM, body, .25, 5.4, 0);
+  // legs: forearm, cannon, pastern, hoof in front; gaskin, cannon, pastern, hoof behind
+  const fore = [[1.65, .36, .2, coat], [1.35, .13, .12, dark], [.45, .12, .14, dark], [.22, .17, .2, hoof]];
+  const hind = [[1.55, .42, .2, coat], [1.55, .14, .12, dark], [.45, .12, .14, dark], [.22, .17, .2, hoof]];
+  const legs = {
+    LF: limb(body, 2.0, 3.65, .5, fore), RF: limb(body, 2.0, 3.65, -.5, fore),
+    LH: limb(body, -2.35, 3.75, .55, hind), RH: limb(body, -2.35, 3.75, -.55, hind),
+  };
+  // sulky: dark disc wheels with a colored rim, arched shafts in the silks color, a seat with a back
+  const sulky = new THREE.Group(); sulky.position.x = -7.4; root.add(sulky);
+  const wheels = [];
+  for (const s of [1, -1]) {
+    const w = new THREE.Group(); w.position.set(0, 1.2, s * 2.05); sulky.add(w); wheels.push(w);
+    mesh(new THREE.CylinderGeometry(1.15, 1.15, .12, 14).rotateX(Math.PI / 2), M("#15171c"), w);
+    mesh(new THREE.TorusGeometry(1.12, .07, 4, 14), silkM, w, 0, 0, s * .07);
+    mesh(new THREE.BoxGeometry(.08, 2.1, .02), M("#3a3f4a"), w, 0, 0, s * .08);
+    const shaft = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-.4, 1.2, s * 2.0), new THREE.Vector3(.4, 2.7, s * 1.7), new THREE.Vector3(3.5, 3.1, s * 1.25), new THREE.Vector3(9.2, 4.0, s * 1.12)]), 12, .08, 4), silkM);
+    sulky.add(shaft);
+  }
+  mesh(new THREE.BoxGeometry(.12, .12, 4.1), silkM, sulky, 0, 1.2, 0);                                       // axle
+  mesh(new THREE.BoxGeometry(1.0, .2, 1.2), M("#1b1d24"), sulky, -.35, 2.45, 0);                             // seat
+  mesh(new THREE.BoxGeometry(.15, .9, 1.1), M("#1b1d24"), sulky, -.85, 2.9, 0).rotation.z = .35;             // seat back
+  // the driver: sitting back, legs out along the shafts to the stirrups, hands up holding the lines
+  const dr = new THREE.Group(); dr.position.set(-.35, 2.55, 0); sulky.add(dr);
+  mesh(loft([[0, 0, .42, .45], [-.25, .8, .45, .48], [-.45, 1.5, .38, .42], [-.5, 1.7, .2, .2]], 6), silkM, dr);   // torso
+  mesh(new THREE.CylinderGeometry(.13, .15, .25, 6), M("#d9b394"), dr, -.5, 1.85, 0);                        // neck
+  mesh(new THREE.SphereGeometry(.36, 7, 5), silkM, dr, -.48, 2.15, 0);                                        // helmet
+  mesh(new THREE.BoxGeometry(.42, .08, .5), silkM, dr, -.2, 2.03, 0);                                         // peak
+  mesh(new THREE.BoxGeometry(.06, .16, .46), M("#111"), dr, -.14, 2.1, 0);                                    // goggles
+  for (const s of [1, -1]) {
+    mesh(loft([[0, 0, .2, .2], [1.4, .3, .17, .17], [2.5, .65, .12, .13]], 5), white, dr, 0, .1, s * .3);    // white pants
+    mesh(new THREE.BoxGeometry(.45, .2, .2), M("#111"), dr, 2.65, .75, s * .3);                                // boots
+    mesh(loft([[-.2, 1.35, .14, .14], [.35, .95, .12, .12], [1.0, 1.15, .1, .1]], 5), silkM, dr, 0, 0, s * .45);   // arms
+    // the lines, hand to bit, held straight
+    const a = new THREE.Vector3(-4.0 + 2.7, 4.3, s * .45), b = new THREE.Vector3(5.6, 5.1, s * .2), l = a.distanceTo(b);
+    const line = new THREE.Mesh(new THREE.BoxGeometry(l, .045, .045), tack); line.position.copy(a).lerp(b, .5);
+    line.rotation.set(0, Math.atan2(-(b.z - a.z), b.x - a.x), Math.atan2(b.y - a.y, Math.hypot(b.x - a.x, b.z - a.z)), "YZX"); root.add(line);
+  }
+  root.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  scene.add(root);
+  return { root, body, legs, wheels, tail, sulky, silk, phase: Math.random() * 6 };
+}
+
+// The trot, two-beat: diagonal pairs land together (near fore with off hind). Each leg spends half the stride on
+// the ground sweeping back straight, and half in the air, where the knee (the hock behind) folds and the hoof
+// curls up, then the leg opens out and reaches forward to land.
+// the bought gallop measures 12.7 ft a stride at its own pace; geared at 16 ft it keeps a racing tempo, slipping a little
+const CLIP_STRIDE = +(new URLSearchParams(location.search).get("stride") || 21);   // ft a stride covers: gallop ~21; a racing trot ~17   // a racing gallop covers ~21 ft a stride: the legs cycle at a real cadence, not a frantic one
+const STRIDE = 17, smooth = x => x * x * (3 - 2 * x);
+function legPose(j, a, fore) {
+  const ph = ((a / (Math.PI * 2)) % 1 + 1) % 1, swing = ph >= .5, u = swing ? (ph - .5) * 2 : ph * 2;
+  const reach = fore ? [.42, -.38] : [.3, -.42];                                         // hoof angle at landing and at lift-off
+  const sweep = swing ? reach[1] + (reach[0] - reach[1]) * smooth(u) : reach[0] + (reach[1] - reach[0]) * u;
+  const fold = swing ? Math.sin(Math.PI * Math.min(1, u * 1.25)) : 0;                    // folds early in the swing, open again to reach
+  const give = swing ? 0 : Math.sin(Math.PI * u);                                         // the fetlock sinks under load mid-stance
+  if (fore) {
+    j[0].rotation.z = sweep + .35 * fold;                                                 // the forearm lifts forward
+    j[1].rotation.z = -2.0 * fold;                                                        // the knee folds the cannon back and up
+    j[2].rotation.z = -.9 * fold + .25 * give;
+    j[3].rotation.z = -.3 * fold;
+  } else {
+    j[0].rotation.z = sweep - .15 + .45 * fold;                                           // the gaskin swings forward under the body
+    j[1].rotation.z = .25 + 1.25 * fold;                                                  // the hock flexes, bringing the cannon up under
+    j[2].rotation.z = -.2 - .8 * fold + .2 * give;
+    j[3].rotation.z = -.25 * fold;
+  }
+}
+function gait(r, dist) {
+  const f = dist / STRIDE * Math.PI * 2 + r.phase, L = r.legs;
+  legPose(L.LF, f, true); legPose(L.RH, f + .15, false); legPose(L.RF, f + Math.PI, true); legPose(L.LH, f + Math.PI + .15, false);
+  r.body.position.y = .1 * Math.cos(2 * f + .6); r.body.rotation.z = .02 * Math.sin(2 * f);           // two lifts a stride, one per diagonal
+  r.tail.rotation.z = .08 * Math.sin(2 * f);
+  r.wheels.forEach(w => w.rotation.z = -dist / 1.15);
+  if (r.mixer) { r.mixer.setTime((((dist / CLIP_STRIDE + r.phase) % 1) + 1) % 1 * r.dur); r.body.position.y = 0; r.body.rotation.z = 0; }   // the clip carries the bob
+}
+
+const SILK = ["#7b2bbf", "#f2c418", "#1e9e3a", "#d8262a", "#1e50ff"];
+// ?solo: one bare horse, no sulky, no number pads, for judging the gait on its own
+const SOLO = new URLSearchParams(location.search).has("solo");
+const field = (SOLO ? SILK.slice(4) : SILK).map((c, i) => Object.assign(rig(i + 1, c), { lane: SOLO ? 0 : (i % 2 ? -6.5 : 2), gap: -i * 9 + (i % 2) * 4, pace: 48 + i * .15 }));
+if (SOLO) field.forEach(r => { r.sulky.visible = false; r.root.children.forEach(c => { if (c.isMesh && c !== r.shadow) c.visible = false; }); });   // the coded lines too
+let speed = 1; document.getElementById("slow").onclick = e => { speed = speed <= .2 ? 1 : .2; e.target.classList.toggle("sel", speed <= .2); };   // Slow is 0.2x
+
+// The bought horse (Renderhub "Horse for Game"), faceted in Blender, galloping; its clip time comes from the distance
+// covered so the legs stay geared to the ground. Its saddle cloth takes the runner's color and the number pads ride
+// on a spine bone. Then the Blender sulky and driver replace the coded ones, recolored per runner, wheels spinning.
+const lam = (c, extra = {}) => new THREE.MeshLambertMaterial({ color: c, flatShading: true, ...extra });
+const loader = new GLTFLoader();
+// The Meshy horse (goal-style, textured, faceted) on the bought skeleton's trot, and the Meshy sulky and driver,
+// pre-fitted in Blender so it loads straight into the horse's frame. Both are textured, so for now every runner
+// wears the same red; per-runner silks and spinning wheels come back once the sulky is split into parts.
+const texLam = o => { const m = o.material; o.material = new THREE.MeshLambertMaterial({ map: m.map || null, color: m.map ? 0xffffff : m.color, vertexColors: !m.map && !!o.geometry.attributes.color, flatShading: true }); };
+// ?glb=name.glb loads a rigged horse from mockups/ (e.g. an AutoRig export) in place of ours; ?clip=N picks its animation
+const GLB = new URLSearchParams(location.search).get("glb"), CLIP = +(new URLSearchParams(location.search).get("clip") || 0);
+loader.load(GLB ? "/mock/" + GLB : SOLO ? "/mock/horse_wrap_gallop.glb" : "/mock/horse_meshy_gallop.glb", g => {
+  for (const r of field) {
+    r.body.children.forEach(c => { if (!c.isMesh || c.geometry.type !== "PlaneGeometry") c.visible = false; });
+    const h = cloneSkinned(g.scene); h.position.x = 2.3; r.body.add(h);
+    h.traverse(o => { if (!o.isMesh) return; o.castShadow = true; o.frustumCulled = false; texLam(o); });
+    if (GLB) { h.position.x = 5.9; console.log("clips:", g.animations.map((a, i) => i + " " + a.name + " " + a.duration.toFixed(2) + "s").join(" | ")); }   // baked in Blender: feet, nose at x=0
+    const anim = g.animations[Math.min(CLIP, g.animations.length - 1)];
+    r.mixer = new THREE.AnimationMixer(h); r.clip = r.mixer.clipAction(anim); r.clip.play(); r.dur = anim.duration;
+    r.mixer.setTime(0); r.root.updateMatrixWorld(true);
+    const spine = h.getObjectByName("HorseSpine4");
+    r.body.children.filter(c => c.isMesh && c.geometry.type === "PlaneGeometry").forEach(pad => { if (SOLO || !spine) { pad.visible = false; return; }
+      pad.position.set(1.4, 4.1, Math.sign(pad.position.z) * .9); pad.scale.setScalar(1.1); r.body.updateMatrixWorld(true); spine.attach(pad);
+    });
+  }
+});
+if (!SOLO) loader.load("/mock/sulky_meshy_fit.glb", g => {
+  for (const r of field) {
+    r.sulky.children.forEach(c => c.visible = false); r.sulky.position.x = 2.3;
+    const s = g.scene.clone(true); r.sulky.add(s);
+    s.traverse(o => { if (!o.isMesh) return; o.castShadow = true; texLam(o); });
+    r.wheels = [];
+  }
+});
+let view = "tv";
+document.querySelectorAll("#ui button").forEach(b => b.onclick = () => { view = b.dataset.v; document.querySelectorAll("#ui button").forEach(x => x.classList.toggle("sel", x === b)); });
+const clock = new THREE.Clock(); let t = 0;
+const camPos = new THREE.Vector3(), camAim = new THREE.Vector3();
+renderer.setAnimationLoop(() => {
+  t += Math.min(.05, clock.getDelta()) * speed;
+  let lead = -1e9;
+  for (const r of field) {
+    const d = t * r.pace + r.gap; r.root.position.set(((d + 1000) % 2000) - 1000, 0, r.lane); gait(r, d); lead = Math.max(lead, r.root.position.x);
+  }
+  const mid = lead - 16;
+  const [p, a, fov] = view === "tv" ? [[mid - 6, 16, 120], [mid, 4, -2], 26] : view === "blimp" ? [[mid - 30, 115, 95], [mid, 0, -4], 34] : view === "side" ? [[lead + 1.5, 4.2, 26], [lead + 1.5, 3.4, 0], 32] : [[lead - 3, 5, 22], [lead - 5, 4, 0], 40];
+  camPos.set(...p); camAim.set(...a);
+  cam.position.lerp(camPos, cam.position.lengthSq() ? .15 : 1); cam.lookAt(camAim); cam.fov = fov; cam.updateProjectionMatrix();
+  sun.position.set(mid - 60, 120, 90); sun.target.position.set(mid, 0, 0);
+  renderer.render(scene, cam);
+});
+</script></body></html>

@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Rig debug</title></head>
+<body style="margin:0;background:#2a2f38">
+<canvas id="c" width="780" height="560" style="display:block"></canvas>
+<script src="/mock/race.js"></script><script src="/mock/rig.js"></script>
+<script>
+// one runner, large, for tuning the hitch and the gait: ?d=distance run
+const c = document.getElementById("c"), x = c.getContext("2d");
+RIG.load().then(() => {
+  const d = +(new URLSearchParams(location.search).get("d") || 0);
+  x.fillStyle = "#5a3d29"; x.fillRect(0, 500, 780, 60);
+  RIG.draw(x, { i: 2, d }, 560, 500, 70, 0);
+});
+</script></body></html>

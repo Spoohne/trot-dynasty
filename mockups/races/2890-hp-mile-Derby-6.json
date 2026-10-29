@@ -1,0 +1,368 @@
+{
+ "id": "2890-hp-mile-Derby-6",
+ "name": "Founders Derby",
+ "purse": 600000,
+ "day": 2890,
+ "venue": "Harness Park",
+ "passing": false,
+ "hero": "Penny Strike",
+ "records": null,
+ "track": "mile",
+ "final": 112.4,
+ "calls": [
+  0,
+  12.5,
+  27.4,
+  56.2,
+  84.8,
+  100.0,
+  112.4
+ ],
+ "quarters": [
+  0,
+  27.4,
+  56.2,
+  84.8,
+  112.4
+ ],
+ "horses": [
+  {
+   "name": "Penny Strike",
+   "post": 6,
+   "odds": "80-1",
+   "coat": "chestnut",
+   "marking": "none",
+   "early": -0.6,
+   "stamina": 1.3,
+   "trip": "post 6, broke slowly, last to the quarter, through on the rail",
+   "behind": [
+    0.0,
+    4.0,
+    18.0,
+    18.0,
+    16.0,
+    9.0,
+    0.0
+   ],
+   "lane": [
+    5.0,
+    2.6,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "place": 1,
+   "time": 112.4
+  },
+  {
+   "name": "Royal Epoch",
+   "post": 4,
+   "odds": "5-2",
+   "coat": "bay",
+   "marking": "none",
+   "early": 1.1,
+   "stamina": 0.6,
+   "trip": "post 4, sat in the pocket, led in the stretch",
+   "behind": [
+    0.0,
+    0.6,
+    2.0,
+    2.0,
+    2.0,
+    0.0,
+    0.75
+   ],
+   "lane": [
+    3.0,
+    1.4,
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    2.0
+   ],
+   "place": 2,
+   "time": 112.6
+  },
+  {
+   "name": "Silver Zenith",
+   "post": 8,
+   "odds": "9-2",
+   "coat": "bay",
+   "marking": "none",
+   "early": 0.2,
+   "stamina": 0.9,
+   "trip": "post 8, parked first-over, kept on",
+   "behind": [
+    0.0,
+    1.2,
+    10.0,
+    4.0,
+    2.5,
+    3.0,
+    1.5
+   ],
+   "lane": [
+    7.0,
+    3.2,
+    0.0,
+    1.0,
+    1.0,
+    3.0,
+    3.0
+   ],
+   "place": 3,
+   "time": 112.6
+  },
+  {
+   "name": "Dusty Crown",
+   "post": 3,
+   "odds": "12-1",
+   "coat": "brown",
+   "marking": "none",
+   "early": 0.5,
+   "stamina": 0.2,
+   "trip": "post 3, sat in behind, one pace",
+   "behind": [
+    0.0,
+    1.2,
+    4.0,
+    4.0,
+    4.0,
+    2.5,
+    2.25
+   ],
+   "lane": [
+    2.0,
+    0.9,
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    2.0
+   ],
+   "place": 4,
+   "time": 112.8
+  },
+  {
+   "name": "Gold Rally",
+   "post": 5,
+   "odds": "15-1",
+   "coat": "bay",
+   "marking": "none",
+   "early": -0.2,
+   "stamina": 0.4,
+   "trip": "post 5, sat mid-pack, moved after the half",
+   "behind": [
+    0.0,
+    1.8,
+    8.0,
+    8.0,
+    8.0,
+    4.0,
+    3.0
+   ],
+   "lane": [
+    4.0,
+    1.8,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "place": 5,
+   "time": 112.8
+  },
+  {
+   "name": "Iron Monarch",
+   "post": 1,
+   "odds": "6-1",
+   "coat": "black",
+   "marking": "none",
+   "early": 1.4,
+   "stamina": -0.3,
+   "trip": "post 1, on the lead, tired and drifted out",
+   "behind": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.5,
+    5.0
+   ],
+   "lane": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "place": 6,
+   "time": 113.2
+  },
+  {
+   "name": "Lucky Harbor",
+   "post": 7,
+   "odds": "20-1",
+   "coat": "grey",
+   "marking": "none",
+   "early": -0.1,
+   "stamina": 0.5,
+   "trip": "post 7, sat mid-pack, moved after the half",
+   "behind": [
+    0.0,
+    1.8,
+    12.0,
+    6.0,
+    4.5,
+    6.0,
+    5.5
+   ],
+   "lane": [
+    6.0,
+    2.7,
+    0.0,
+    1.0,
+    1.0,
+    3.0,
+    3.0
+   ],
+   "place": 7,
+   "time": 113.2
+  },
+  {
+   "name": "Brave Sparrow",
+   "post": 9,
+   "odds": "30-1",
+   "coat": "chestnut",
+   "marking": "none",
+   "early": -0.4,
+   "stamina": 0.1,
+   "trip": "post 9, sat in behind, came from off the pace",
+   "behind": [
+    0.0,
+    2.4,
+    16.0,
+    12.0,
+    12.0,
+    7.0,
+    7.0
+   ],
+   "lane": [
+    8.0,
+    3.6,
+    0.0,
+    0.0,
+    0.0,
+    4.0,
+    4.0
+   ],
+   "place": 8,
+   "time": 113.6
+  },
+  {
+   "name": "Steel Ember",
+   "post": 10,
+   "odds": "40-1",
+   "coat": "brown",
+   "marking": "none",
+   "early": -0.5,
+   "stamina": -0.2,
+   "trip": "post 10, sat in behind",
+   "behind": [
+    0.0,
+    3.0,
+    14.0,
+    10.0,
+    10.0,
+    8.0,
+    9.0
+   ],
+   "lane": [
+    9.0,
+    4.1,
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    2.0
+   ],
+   "place": 9,
+   "time": 113.8
+  },
+  {
+   "name": "Copper Bluff",
+   "post": 2,
+   "odds": "25-1",
+   "coat": "bay",
+   "marking": "none",
+   "early": 0.6,
+   "stamina": -0.6,
+   "trip": "post 2, sat in behind, faded",
+   "behind": [
+    0.0,
+    0.6,
+    6.0,
+    6.0,
+    6.0,
+    10.5,
+    11.0
+   ],
+   "lane": [
+    1.0,
+    0.4,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "place": 10,
+   "time": 114.2
+  }
+ ],
+ "captions": [
+  [
+   0.0,
+   "They're away"
+  ],
+  [
+   3.0,
+   "Penny Strike is slow away: last of ten"
+  ],
+  [
+   12.5,
+   "Iron Monarch leaves for the lead"
+  ],
+  [
+   50.0,
+   "Silver Zenith pulls first-over"
+  ],
+  [
+   56.2,
+   "Half in :56.2, Iron Monarch in front, Penny Strike still last"
+  ],
+  [
+   84.8,
+   "Three-quarters in 1:24.8"
+  ],
+  [
+   93.0,
+   "They fan wide turning for home: Royal Epoch takes over"
+  ],
+  [
+   101.0,
+   "The rail opens up... PENNY STRIKE!"
+  ],
+  [
+   112.4,
+   "Penny Strike, at 80-1, wins the Founders Derby!"
+  ]
+ ]
+}

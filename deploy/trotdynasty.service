@@ -1,0 +1,17 @@
+[Unit]
+Description=Trot Dynasty game server
+After=network.target
+
+[Service]
+User=trot
+WorkingDirectory=/opt/trotdynasty/game
+# only reachable through Caddy (HTTPS); cookies marked secure
+Environment=TD_BIND=127.0.0.1 TD_SECURE=1 PYTHONUNBUFFERED=1
+ExecStart=/opt/trotdynasty/venv/bin/python app.py
+Restart=always
+RestartSec=3
+# give an in-progress save time to finish on a stop
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

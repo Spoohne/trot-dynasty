@@ -1,0 +1,12 @@
+bf_a https://api.spritecook.ai/v1/assets/cbe39b09-42f4-487d-8d19-f4fa1d80e79f/signed-content/pixel?sig=2eS4y-DkRCHZU0vd-v4wFcHK3SasJ8pDvhILL3Q-bGY&exp=1793218308
+bf_b https://api.spritecook.ai/v1/assets/35c6a9fb-10b8-4789-b72a-4e1566d361ca/signed-content/pixel?sig=_EpTwaW3yu_yGjVZSblF9WCSfrgEtH-2Jl1byyJ2J3Y&exp=1793218308
+cr_a https://api.spritecook.ai/v1/assets/cfdc11a9-a44c-4bf8-b1d7-7672f9f39153/signed-content/pixel?sig=DQCEfp1eesEIyoz5VovqG6OATXo_KvH8WOVgJTxNsDc&exp=1793218349
+cr_b https://api.spritecook.ai/v1/assets/a4347858-4e00-46e1-af87-17733446b13a/signed-content/pixel?sig=oQbUaf59JctvHMbmtngEty-jOLKuRFvEnaQBjZkxRSw&exp=1793218349
+ls_a https://api.spritecook.ai/v1/assets/9b1d849c-1473-4491-ac7c-a4240a0d5ea8/signed-content/pixel?sig=Sl4ECKSb3cM22hMeRPLZKkfBErpGL5oZZ01_o-KlvMM&exp=1793218358
+ls_b https://api.spritecook.ai/v1/assets/77d5b98f-0196-4db3-a30f-0f00be3dbd73/signed-content/pixel?sig=bTwo0gEQQvydCumjfu3XJt_wtnHFCe5FziBI_nImAmY&exp=1793218358
+ng_a https://api.spritecook.ai/v1/assets/c478f175-af0d-4f70-9156-6bfc003727d8/signed-content/pixel?sig=SEyf_gRfp-ypbT_pZ8QFiioCrqEXJ77Py3wEmjtSc6c&exp=1793218358
+ng_b https://api.spritecook.ai/v1/assets/0629cce9-6ef6-4f23-b1c2-6b04c46394e5/signed-content/pixel?sig=7PP0Zso6cBgRo8fobwqSnDFd0tGbhxRz9KNqxyr59Ts&exp=1793218358
+sh_a https://api.spritecook.ai/v1/assets/8b646f59-9771-45dd-b408-b11ccb37e4fe/signed-content/pixel?sig=ikxMfhPmjL4GDLSIm7u4LeXT8YGGjeBI52RArAATHLM&exp=1793218364
+sh_b https://api.spritecook.ai/v1/assets/09de34d2-4f8c-44db-859e-19d7673ce646/signed-content/pixel?sig=-9mFSEypzdipeba_XSCJlN2qoFsVieQ77uh1ywCjaKE&exp=1793218364
+pr_a https://api.spritecook.ai/v1/assets/71511962-89af-4130-a2a8-302f243dbfa6/signed-content/pixel?sig=DcwIokJfIC6RXB7tjVoHmY_mAOVl5WQesXgzZW57xQE&exp=1793218367
+pr_b https://api.spritecook.ai/v1/assets/b6507da4-514c-4193-b1fc-a228e1e0ebc2/signed-content/pixel?sig=cj_2kha1Zw6e2Rk5ke5Gkh29Z6Rr8T7bMoXhzllK6MA&exp=1793218367

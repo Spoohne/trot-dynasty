@@ -1,0 +1,149 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Replay · cut-out</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/mock/hud.css">
+<style>
+#photo{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none}
+#photo .card{background:rgba(9,12,17,.86);border-top:3px solid var(--tote);padding:14px 18px;min-width:240px;backdrop-filter:blur(6px)}
+#photo h3{margin:0 0 8px;font-size:13px;color:var(--tote);font-weight:700;letter-spacing:.02em}
+#photo .rw{display:flex;align-items:center;gap:10px;font-size:16px;padding:3px 0}
+#photo .rw b{width:16px}#photo .rw span.m{margin-left:auto;color:var(--ink2);font-variant-numeric:tabular-nums}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+</style>
+</head><body><div class="wrap">
+<div class="top"><h1>Replay mockup</h1><span><a href="/mock/replay_pixel.html">16-bit</a><a href="/mock/replay_sprite.html">Sprite version</a><a class="on" href="/mock/replay_rig.html">Cut-out version</a><a href="/mock/replay3d.html">3D version</a></span></div>
+<div class="stage" id="stage">
+  <canvas id="cv"></canvas>
+  <div id="flash"></div>
+  <div class="lt"><span class="tag">Replay</span><span class="ti"><span id="clk">0:00.0</span><span id="rt"></span></span></div>
+  <div class="views"><button data-v="broadcast" class="sel">Broadcast</button><button data-v="overhead">Overhead</button><button data-v="driver" disabled title="A driver's-eye view needs the 3D version">Driver</button></div>
+  <div class="bot"><div id="cap"></div><div class="strip"><div id="ord"></div><div id="fr"></div></div></div>
+  <div id="photo"><div class="card"><h3>Official · photo finish</h3><div id="res"></div></div></div>
+</div>
+<div class="ctl"><button id="pp">❚❚</button><input type="range" id="sc" min="0" step="0.1" value="0" aria-label="Scrub"><button data-s="1" class="sel">1×</button><button data-s="2">2×</button><button data-s="5">5×</button></div>
+<p class="note">Cut-out mockup: one stylized horse and one sulky-with-driver, both made locally on the 3090, cut into parts (body, upper and lower legs, wheel) and animated in code. Every runner gets its own coat tint and its driver's silks in its saddle-pad color. The pacing gait is driven by ground speed. No AI is needed for new animations.</p>
+</div>
+<script src="/mock/race.js"></script>
+<script src="/mock/rig.js"></script>
+<script>
+document.getElementById("rt").textContent = RACE.title;
+const cv = document.getElementById("cv"), x = cv.getContext("2d");
+let W, H, dpr;
+function fit() { dpr = Math.min(devicePixelRatio || 1, 2); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; }
+addEventListener("resize", fit); fit();
+// the pacing cycle: 8 frames side by side, trimmed to a shared box
+const sheet = new Image(); sheet.src = "/mock/pace.png";
+const bd = new Image(); bd.src = "/mock/backdrop.jpg";
+const FR = 8, SP = { ft: 17, ground: .98, cloth: [.527, .272, .088, .15], stride: 19 };   // stride: feet covered per cycle
+let view = "broadcast";
+document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { if (b.disabled) return; view = b.dataset.v; document.querySelectorAll("[data-v]").forEach(q => q.classList.toggle("sel", q === b)); });
+const ctl = RACE.controls(() => { dust.length = 0; froze = ctl.t >= 112; });
+
+// The director's shot list. Cuts are instant, the way a TV truck switches cameras.
+// f: lens (bigger is tighter); h: camera height; hz: horizon; at: which part of the field to frame.
+const SHOTS = [
+  [0, { f: 1.1, h: 12, hz: .40, at: "pack" }],       // wide as the gate folds
+  [12, { f: 1.55, h: 8, hz: .45, at: "pack" }],      // the pan
+  [40, { f: 2.6, h: 6, hz: .47, at: "lead" }],       // tight on the leaders down the back
+  [54, { f: 1.55, h: 8, hz: .45, at: "pack" }],
+  [80, { f: 2.4, h: 6, hz: .47, at: "move" }],       // tight on the first-over move
+  [95, { f: 1.9, h: 4, hz: .52, at: "lead" }],       // low stretch-run angle
+  [108.5, { f: 1.7, h: 5, hz: .50, at: "wire" }],    // the camera on the wire
+];
+const shotAt = t => [...SHOTS].reverse().find(s => t >= s[0])[1];
+const D0 = 140, LANE = 11;                                            // lanes spread a little in depth so a parked horse doesn't sit on the rail horse
+const z = o => Math.max(30, D0 - (6 + (o - 6) / 9 * LANE));            // never at or behind the lens, even eight wide at the gate
+const dust = [];
+let froze = false, freezeLeft = 0, lastCam = null;
+
+function aim(shot, st, ord) {
+  if (shot.at === "wire") return 5280;
+  if (shot.at === "lead") return ord[0].d - 10;
+  if (shot.at === "move") return st[4].d;                              // H2408, the first-over horse
+  return RACE.camS(st) - RACE.SF - 15;
+}
+
+function broadcast(t, st, ord, dt) {
+  const shot = shotAt(t), f = W * shot.f, hz = H * shot.hz, CAMH = shot.h;
+  const camD = aim(shot, st, ord);
+  const gy = o => hz + CAMH * f / z(o), sx = (d, o) => W / 2 + (d - camD) * f / z(o);
+  const camV = lastCam === null ? 0 : (camD - lastCam) / Math.max(dt, 1e-3); lastCam = camD;
+  // the far side of the infield: a painted night panorama (made locally), scrolling slower than the track
+  const par = camD * .9, streak = 0;
+  if (bd.complete && bd.width) {
+    const h = hz / .946, w = bd.width * h / bd.height, off = ((par % w) + w) % w;  // the backstretch rail sits on the horizon
+    for (let px = -off; px < W; px += w) x.drawImage(bd, px, 0, w, h);
+  } else { x.fillStyle = "#0b1220"; x.fillRect(0, 0, W, hz); }
+  const inf = x.createLinearGradient(0, hz, 0, gy(-2)); inf.addColorStop(0, "#07100b"); inf.addColorStop(1, "#123320"); x.fillStyle = inf; x.fillRect(0, hz, W, gy(-2) - hz + 1);
+  // the racing surface, combed into harrow lines
+  const tr = x.createLinearGradient(0, gy(-2), 0, H); tr.addColorStop(0, "#553a27"); tr.addColorStop(1, "#7d5739"); x.fillStyle = tr; x.fillRect(0, gy(-2), W, H - gy(-2));
+  for (let o = 4; o < 92; o += 4) { const y = gy(o); x.strokeStyle = `rgba(0,0,0,${.04 + ((o / 4) % 3) * .02})`; x.lineWidth = 1; x.beginPath(); x.moveTo(0, y); x.lineTo(W, y); x.stroke(); }
+  // inner rail
+  const ry = gy(-2), rh = 3.4 * f / z(-2);
+  x.fillStyle = "#eef2f6"; x.fillRect(0, ry - rh, W, 2.2); x.fillRect(0, ry - rh * .5, W, 1.2);
+  for (let d = Math.floor((camD - 900) / 8) * 8; d < camD + 900; d += 8) { const px = sx(d, -2); if (px < -5 || px > W + 5) continue; x.fillStyle = "#cfd6de"; x.fillRect(px, ry - rh, 1.6, rh); }
+  // quarter poles and the wire
+  [[1320, "#d8322f"], [2640, "#1f8f3f"], [3960, "#1f4fbf"], [5280, "#ffffff"]].forEach(([d, col]) => {
+    const px = sx(d, -2); if (px < -40 || px > W + 40) return;
+    x.fillStyle = col; x.fillRect(px - 2.5, ry - rh * 4, 5, rh * 4);
+    if (d === 5280) { x.fillStyle = "rgba(255,255,255,.6)"; x.beginPath(); x.moveTo(px - 1, ry); x.lineTo(sx(d, 95) - 3, H); x.lineTo(sx(d, 95) + 3, H); x.lineTo(px + 1, ry); x.fill(); x.fillStyle = "#fff"; x.font = "700 12px system-ui"; x.fillText("Finish", px + 6, ry - rh * 4 + 10); }
+  });
+  // dust: a little kicked up behind every pair of hooves, drifting and fading
+  if (dt > 0) for (const h of st) if (Math.random() < Math.min(1, dt * 30)) dust.push({ d: h.d + 4, o: h.o + (Math.random() - .5) * 3, y: 0, life: 1, r: 1 + Math.random() * 1.5 });
+  for (let i = dust.length - 1; i >= 0; i--) { const p = dust[i]; p.life -= dt * 1.4; p.y += dt * 2; p.r += dt * 2.5; if (p.life <= 0) dust.splice(i, 1); }
+  // runners, far to near, with their dust and shadows
+  const run = st.map(h => ({ h, zz: z(h.o) })).sort((a, b) => b.zz - a.zz);
+  for (const { h, zz } of run) {
+    const s = f / zz, wpx = SP.ft * s, hpx = wpx * sheet.height / (sheet.width / FR || 1), px = sx(h.d, h.o), y0 = gy(h.o);
+    if (px < -wpx || px > W + wpx) continue;
+    for (const p of dust) { if (Math.abs(p.o - h.o) > 4.5 || p.d > h.d + 6 || p.d < h.d - 60) continue; const dz = z(p.o), dx = sx(p.d - 9, p.o); x.fillStyle = `rgba(150,110,75,${p.life * .18})`; x.beginPath(); x.ellipse(dx, gy(p.o) - p.y * f / dz * .4, p.r * f / dz, p.r * f / dz * .5, 0, 0, Math.PI * 2); x.fill(); }
+    x.fillStyle = "rgba(0,0,0,.38)"; x.beginPath(); x.ellipse(px + wpx * .06, y0 + 1, wpx * .46, wpx * .035, 0, 0, Math.PI * 2); x.fill();
+    const top = RIG.draw(x, h, px + wpx * .3, y0, s * 1.6, t);   // the rig is drawn to life size; a touch larger reads better on a phone
+    if (h.i === RACE.ME) { x.font = "700 12px system-ui"; const tw = x.measureText("H2395").width + 12, ty = top - 4; x.fillStyle = "#e8a33a"; x.beginPath(); x.roundRect(px - tw / 2 + wpx * .12, ty - 17, tw, 17, 4); x.fill(); x.fillStyle = "#2a1a03"; x.fillText("H2395", px - tw / 2 + wpx * .12 + 6, ty - 4.5); }
+  }
+  // the outside rail, close to the lens
+  const oy = gy(95), oh = 3.4 * f / z(95);
+  for (let d = Math.floor((camD - 300) / 6) * 6; d < camD + 300; d += 6) { const px = sx(d, 95); if (px < -10 || px > W + 10) continue; x.fillStyle = "rgba(210,216,224,.28)"; x.fillRect(px, oy - oh, 5 + streak * .4, oh + 40); }
+  x.fillStyle = "rgba(225,230,236,.55)"; x.fillRect(0, oy - oh, W, 5);
+  const v = x.createRadialGradient(W / 2, H * .55, H * .3, W / 2, H * .55, W * .75); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.5)"); x.fillStyle = v; x.fillRect(0, 0, W, H);
+}
+
+// Overhead: the tracker, from the blimp
+function overhead(t, st) {
+  const zz = W / 200, TILT = .62, c0 = RACE.pt(RACE.camS(st), 25), cx = c0[0], cy = c0[1];
+  const P = w => [(w[0] - cx) * zz + W / 2, (w[1] - cy) * zz * TILT + H * .5];
+  x.fillStyle = "#06080b"; x.fillRect(0, 0, W, H);
+  const band = (o1, o2, col) => { x.beginPath(); for (let s = 0; s <= RACE.L; s += 14) { const p = P(RACE.pt(s, o1)); s ? x.lineTo(...p) : x.moveTo(...p); } for (let s = RACE.L; s >= 0; s -= 14) x.lineTo(...P(RACE.pt(s, o2))); x.closePath(); x.fillStyle = col; x.fill(); };
+  band(-2, -600, "#0c1712"); band(-2, 86, "#4a3324");
+  const line = (o, col, w) => { x.beginPath(); for (let s = 0; s <= RACE.L + 14; s += 14) { const p = P(RACE.pt(s, o)); s ? x.lineTo(...p) : x.moveTo(...p); } x.strokeStyle = col; x.lineWidth = w; x.stroke(); };
+  line(-2, "#e9edf2", 2); line(86, "#aeb6c0", 1.5);
+  for (const h of st) {
+    const d = P(RACE.pt(h.s - 6, h.o)), r = Math.max(7, 2.4 * zz);
+    if (h.i === RACE.ME) { x.strokeStyle = "#e8a33a"; x.lineWidth = 2.5; x.beginPath(); x.arc(d[0], d[1], r + 3.5, 0, Math.PI * 2); x.stroke(); }
+    x.fillStyle = RACE.PAD[h.i]; x.beginPath(); x.arc(d[0], d[1], r, 0, Math.PI * 2); x.fill();
+    x.fillStyle = RACE.DARK.includes(h.i + 1) ? "#111" : "#fff"; x.font = `700 ${Math.round(r * 1.1)}px system-ui`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(h.i + 1, d[0], d[1] + .5); x.textAlign = "start"; x.textBaseline = "alphabetic";
+  }
+}
+
+// the finish: a flash and a held frame, then the official order
+const photo = document.getElementById("photo"), flash = document.getElementById("flash");
+function result(ord) {
+  const lead = ord[0].d;
+  document.getElementById("res").innerHTML = ord.slice(0, 4).map((h, k) => `<div class="rw"><b>${k + 1}</b>${RACE.pad(h.i)}<span>${RACE.H[h.i][0]}</span><span class="m">${k ? RACE.lengths((lead - h.d) / RACE.LEN) : RACE.fmt(112)}</span></div>`).join("");
+}
+let last = performance.now(), ui = 0;
+function loop(now) {
+  let dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;
+  if (freezeLeft > 0) { freezeLeft -= dt; flash.style.opacity = Math.max(0, freezeLeft - 1.1); dt = 0; }
+  else ctl.tick(dt);
+  const t = ctl.t, st = RACE.state(t), ord = [...st].sort((a, b) => b.d - a.d);
+  if (!froze && t >= 112) { froze = true; freezeLeft = 1.6; ctl.t = 112; result(ord); }
+  photo.style.display = t >= 112 && freezeLeft <= 0 ? "flex" : "none";
+  x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  view === "broadcast" ? broadcast(t, st, ord, ctl.play ? dt * ctl.speed : 0) : overhead(t, st);
+  if (now - ui > 90) { RACE.hud(t, ord); ui = now; }
+  requestAnimationFrame(loop);
+}
+RIG.load(); requestAnimationFrame(loop);
+</script></body></html>

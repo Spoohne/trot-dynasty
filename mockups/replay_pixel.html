@@ -1,0 +1,353 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Replay · 16-bit</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/mock/hud.css">
+<style>
+#cv{image-rendering:pixelated;image-rendering:crisp-edges}
+#photo{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none}
+#photo .card{background:rgba(9,12,17,.86);border-top:3px solid var(--tote);padding:14px 18px;min-width:240px}
+#photo h3{margin:0 0 8px;font-size:13px;color:var(--tote);font-weight:700}
+#photo .rw{display:flex;align-items:center;gap:10px;font-size:16px;padding:3px 0}#photo .rw b{width:16px}#photo .rw span.m{margin-left:auto;color:var(--ink2);font-variant-numeric:tabular-nums}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+</style>
+</head><body><div class="wrap">
+<div class="top"><h1>Replay mockup</h1><span><a class="on" href="/mock/replay_pixel.html">16-bit</a><a href="/mock/replay_sprite.html">Sprite version</a><a href="/mock/replay_rig.html">Cut-out version</a><a href="/mock/replay3d.html">3D version</a></span></div>
+<div class="stage" id="stage">
+  <canvas id="cv" width="960" height="540"></canvas>
+  <div id="flash"></div>
+  <div class="lt"><span class="tag">Replay</span><span class="ti"><span id="clk">0:00.0</span><span id="rt"></span></span></div>
+  <div class="views"><button data-v="broadcast" class="sel">Broadcast</button><button data-v="overhead">Overhead</button><button data-v="driver" disabled title="A driver's-eye view needs 3D">Driver</button></div>
+  <div class="bot"><div id="cap"></div><div class="strip"><div id="ord"></div><div id="fr"></div></div></div>
+  <div id="photo"><div class="card"><h3>Official · photo finish</h3><div id="res"></div></div></div>
+</div>
+<div id="turn"><div class="ph"></div><p>Turn your phone sideways to watch the race.</p><button id="go">Watch full screen</button></div>
+<div class="ctl"><button id="pp">❚❚</button><input type="range" id="sc" min="0" step="0.1" value="0" aria-label="Scrub"><button data-s="1" class="sel">1×</button><button data-s="2">2×</button><button data-s="5">5×</button><button id="fs" title="Full screen" aria-label="Full screen">⛶</button></div>
+<div class="ctl cam" style="margin-top:6px;font-size:13px;color:var(--ink2)"><span>Camera height</span><input type="range" id="depth" min="1" max="5" step="0.1" value="2.6" aria-label="Camera height" style="max-width:220px"><span id="depthv">2.6</span><span class="sub">screen drop per foot out from the rail: low is flatter, high looks down on the field</span></div>
+<p class="note">16-bit mockup. Runners are the frame-engine racing sprite with its 12-frame fast stride, drawn at the close size (about 92 px) and stepped at 24 poses a second; the body is pinned level at the saddle pad. The camera sits high outside the rail, so lanes spread down the screen. Backdrop is the 360° panorama. Each runner's silks, harness and wheel are re-dyed to its saddle-pad color in code.</p>
+</div>
+<script src="/mock/race.js"></script>
+<script>
+const RACE_ID = <!--RACE_ID-->null;                                  // the server fills this in on /replay/<id>; the mockup page keeps the scripted race
+const MY_NAME = "H2395";
+// full screen, and on phones that allow it, lock to landscape (iPhone Safari allows neither: the
+// rotate prompt and the landscape layout cover it)
+function goFull() {
+  const st = document.getElementById("stage");
+  (st.requestFullscreen ? st.requestFullscreen() : Promise.reject()).then(() => screen.orientation?.lock?.("landscape")).catch(() => {});
+}
+document.getElementById("fs").onclick = goFull;
+document.getElementById("go").onclick = goFull;
+document.getElementById("rt").textContent = RACE.title;
+const cv = document.getElementById("cv"), x = cv.getContext("2d"), W = 960, H = 540;
+x.imageSmoothingEnabled = false;
+const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+const K = 8.3;                                                          // screen pixels per foot at the close scale
+let sheet = null, bd = null, dyed = [], pads = [];
+
+// one copy of the sheet per runner: every strongly blue pixel (silks, harness, wheel) takes the pad color
+function dye(img, hex) {
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, t = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  for (let i = 0; i < p.length; i += 4) {
+    const r = p[i], gg = p[i + 1], b = p[i + 2];
+    if (p[i + 3] && b > r + 40 && b > gg + 20) { const l = Math.min(1.3, (r + gg + b) / 3 / 70); p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l; }
+  }
+  g.putImageData(d, 0, 0); return c;
+}
+// LEGS_IN_CODE: the experiment that draws the legs in code. Off: the frame-engine cycle, pinned at the saddle pad.
+const LEGS_IN_CODE = false, FR = 12, CYCLE_PAD = [105, 25, 18, 21], SPR = .58, POSES = 24;   // fe12_cycle at "close" size: horse about 92 px wide, 24 poses a second
+let frames = null, dyedFrames = [], gaitT = 0;
+Promise.all([load("/mock/pixel/race_body.png"), load("/mock/pixel/race_body_nod.png"), load("/mock/pixel/panorama.png"), load("/mock/pixel/fe12_cycle.png")]).then(([body, nod, b, fe]) => {
+  sheet = body; bd = b; dyed = RACE.PAD.map(h => [dye(body, h), dye(nod, h)]);
+  frames = fe; dyedFrames = [];
+});
+const PAD_AT = [124, 26, 17, 18];                                      // the saddle pad on the body sprite
+
+// The legs, drawn and moved in code to the real pace:
+// a lateral two-beat gait. Near fore and near hind move as one pair, far fore and far hind as the
+// other, half a stride apart. Each foot is planted a little under half the cycle, so two feet carry
+// the horse most of the time with a brief float between beats. The foot sweeps back flat along the
+// ground, then swings forward in a low arc; the knee folds forward of the leg, the hock behind it.
+const GROUND_Y = 108, STRIDE_FT = 21, DUTY = .45;
+const LEG = {
+  fore: { hip: [181, 52], up: 28, low: 28, reach: 23, lift: 9, bend: 1, lead: .03, w: [10, 6, 4] },
+  hind: { hip: [101, 52], up: 29, low: 28, reach: 21, lift: 6, bend: -1, lead: 0, w: [12, 6, 4] },
+};
+function footAt(L, p) {                                                // p: 0..1 through this leg's stride
+  const [hx] = L.hip, cx = hx + 3 * L.bend;
+  if (p < DUTY) return [cx + L.reach - 2 * L.reach * (p / DUTY), GROUND_Y];
+  const q = (p - DUTY) / (1 - DUTY), e = (1 - Math.cos(Math.PI * q)) / 2;
+  return [cx - L.reach + 2 * L.reach * e, GROUND_Y - L.lift * Math.sin(Math.PI * q)];
+}
+function knee(L, f) {                                                  // two-bone reach from the hip to the foot
+  const [hx, hy] = L.hip, dx = f[0] - hx, dy = f[1] - hy, d = Math.min(Math.hypot(dx, dy), L.up + L.low - .5);
+  const a = Math.acos(Math.max(-1, Math.min(1, (L.up * L.up + d * d - L.low * L.low) / (2 * L.up * d)))), t = Math.atan2(dy, dx) - a * L.bend;
+  return [hx + L.up * Math.cos(t), hy + L.up * Math.sin(t)];
+}
+function seg(g, a, b, w0, col, w1 = w0) {                              // a fat pixel line tapering w0 to w1, no smoothing
+  g.fillStyle = col; const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1])));
+  for (let i = 0; i <= n; i++) { const t = i / n, wd = Math.round(w0 + (w1 - w0) * t), x0 = a[0] + (b[0] - a[0]) * t, y0 = a[1] + (b[1] - a[1]) * t; g.fillRect(Math.round(x0 - wd / 2), Math.round(y0 - wd / 2), wd, wd); }
+}
+function drawLeg(g, kind, p, far) {
+  const L = LEG[kind], f = footAt(L, ((p - L.lead) % 1 + 1) % 1), k = knee(L, f), dim = far ? .58 : 1;
+  const tone = (r, gg, b) => `rgb(${r * dim | 0},${gg * dim | 0},${b * dim | 0})`;
+  const [w0, w1, w2] = L.w, fet = [f[0] - 2 * L.bend * (f[1] < GROUND_Y - 1 ? -1 : 1), f[1] - 5];   // fetlock above the hoof
+  seg(g, L.hip, k, w0 + 2, tone(40, 18, 8), w1 + 2);                     // outline
+  seg(g, k, fet, w1 + 1, tone(12, 9, 7), w2 + 1);
+  seg(g, L.hip, k, w0, tone(122, 60, 30), w1);                           // forearm / gaskin, in the coat
+  seg(g, [L.hip[0] - 1, L.hip[1]], [k[0] - 1, k[1]], Math.max(2, w0 / 3 | 0), tone(156, 82, 42), 2);   // a little light down the front
+  seg(g, k, fet, w1, tone(34, 25, 20), w2);                              // cannon: a bay's black points
+  seg(g, fet, [f[0], f[1] - 2], 3, tone(232, 232, 232));                 // pastern, the white sock
+  g.fillStyle = tone(14, 10, 8); g.fillRect(Math.round(f[0] - 3), Math.round(f[1] - 2), 6, 3);   // hoof
+  return k;
+}
+function drawRunner(g, h, px, top) {
+  const p = ((h.d / STRIDE_FT) + h.i * .37) % 1, beat = (p * 2) % 1 < .5;
+  g.save(); g.translate(px, top);
+  drawLeg(g, "hind", (p + .5) % 1, true); drawLeg(g, "fore", (p + .5) % 1, true);
+  const kh = drawLeg(g, "hind", p, false), kf = drawLeg(g, "fore", p, false);   // near legs too: the body's underline hides where they join
+  g.drawImage(dyed[h.i][beat ? 1 : 0], 0, 0);                          // the head dips one pixel on each beat
+  seg(g, [kh[0] + 2, kh[1] + 6], [kf[0] - 2, kf[1] + 4], 1, RACE.PAD[h.i]);   // hobbles: the strap that keeps a pacer's lateral pair together
+  g.fillStyle = RACE.PAD[h.i]; g.fillRect(PAD_AT[0], PAD_AT[1], PAD_AT[2], PAD_AT[3]);
+  g.fillStyle = RACE.DARK.includes(h.i + 1) ? "#111" : "#fff"; g.font = "bold 11px monospace"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(h.i + 1, PAD_AT[0] + PAD_AT[2] / 2, PAD_AT[1] + PAD_AT[3] / 2 + 1); g.textAlign = "start"; g.textBaseline = "alphabetic";
+  g.restore();
+}
+
+
+const ctl = RACE.controls(() => { froze = ctl.t >= RACE.FIN; });
+if (RACE_ID) RACE.load(RACE_ID, MY_NAME).then(ok => { if (ok) { ctl.refit(); document.getElementById("rt").textContent = RACE.title; } });
+document.getElementById("depth").oninput = e => { DYF = +e.target.value; document.getElementById("depthv").textContent = DYF.toFixed(1); };
+let froze = false, freezeLeft = 0;
+let RAIL = 200;                                                         // where the inner rail meets the dirt on screen (the camera tilt reframes it)
+// A camera high up outside the track. Depth across the track shows as screen drop: DYF px per foot
+// out from the rail. A horse is ~60 px tall on screen, a lane 6 ft, so one lane out is ~16 px lower:
+// shoulder to shoulder, the outside horse covering the rail horse's legs, as on a broadcast.
+// From that far away size barely changes with depth: DEPTH is ~4% bigger per lane.
+let DYF = 2.6, tilt = 0, dtNow = 0;
+const DEPTH = .04, TRACK_W = 90;
+const zoom = o => 1 + DEPTH * (o / 6);                                   // size factor at o ft out (per lane)
+const groundY = o => RAIL + 4 + DYF * Math.max(0, o - 4) + Math.min(o, 4) * 1.5;   // the rail lane sits right at the fence whatever the slider; depth grows from there
+const laneView = o => ({ sc: SPR * zoom(o - 4), gy: Math.round(groundY(o)) });
+const sxo = (d, camD, o) => Math.round(W / 2 + (d - camD) * K * zoom(o - 4));   // along-track position at that depth
+// the gate releases outside posts a beat later: the field leaves it in a shallow echelon, not a wall
+const gateLag = h => Math.max(0, 1 - Math.max(0, h.d) / 220) * h.i * 1.6;
+
+const gateCar = new Image(); gateCar.src = "/mock/pixel/gatecar_b.png";
+// ---- overhead: the blimp, straight down. The world is the real oval (RACE.pt, in feet), turned so
+// the field always runs left to right with the inner rail at the top; one SpriteCook top-down sprite
+// per runner, its red silks and pad re-dyed to the saddle-pad color.
+let view = "broadcast", topImg = null, topDyed = [];
+document.querySelectorAll(".views button[data-v]").forEach(b => b.onclick = () => {
+  if (b.disabled) return; view = b.dataset.v;
+  document.querySelectorAll(".views button[data-v]").forEach(o => o.classList.toggle("sel", o === b));
+});
+load("/mock/pixel/top/cycle12.png").then(i => topImg = i);
+let trackImg = null, trackTileW = 0;
+load("/mock/pixel/top/track_tile.png").then(i => {                      // the tile plus its first 64 px again, so a slice never wraps
+  const c = document.createElement("canvas"); c.width = i.width + 64; c.height = i.height;
+  const g = c.getContext("2d"); g.drawImage(i, 0, 0); g.drawImage(i, i.width, 0); trackTileW = i.width; trackImg = c;
+});   // SpriteCook top-down track strip, tiled              // SpriteCook top-down pacer, 12-frame frame-engine stride
+function dyeRed(img, hex) {                                               // the top sprite's silks and pad are red
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, t = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  for (let i = 0; i < p.length; i += 4) {
+    const r = p[i], gg = p[i + 1], b = p[i + 2];
+    if (p[i + 3] && r > gg + 70 && r > b + 70) { const l = Math.min(1.25, r / 200); p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l; }
+  }
+  g.putImageData(d, 0, 0); return c;
+}
+// dithered pixel textures for the overhead ground, built once (1 px = 1 ft, repeated)
+const ditherPat = (a, b, c, n = 8) => { const cv2 = document.createElement("canvas"); cv2.width = cv2.height = n; const g = cv2.getContext("2d");
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const v = Math.sin(i * 12.9 + j * 78.2) * 43758.5 % 1; g.fillStyle = (i + j) % 2 ? a : Math.abs(v) > .7 ? c : b; g.fillRect(i, j, 1, 1); }
+  return x.createPattern(cv2, "repeat"); };
+let topZ = 0, topC = 0;                                                   // eased zoom and aim, so the camera breathes rather than jumps
+const TOP = { pat: { grass: ditherPat("#1d5a26", "#226a2c", "#18491f"), hedge: ditherPat("#123a18", "#1b4f20", "#0d2c12", 4), dirt: ditherPat("#8a5f3d", "#94683f", "#7a5233"), apron: ditherPat("#5d6168", "#666a72", "#53575e"), crowd: ditherPat("#2c3240", "#c9a36a", "#7d8fb5", 4) }, Z: 9, LEN: 15, FW: 213, FH: 83, PAD: .48, STRIDES: 2.3 };   // px per ft; sprite nose-to-wheel in ft; frame size; saddle pad along it; strides a second          // px per ft; sprite nose-to-wheel in ft; its content box; saddle pad along it
+const heading = s => { const a = RACE.pt(s, 0), b = RACE.pt(s + 4, 0); return Math.atan2(b[1] - a[1], b[0] - a[0]); };
+function drawTop(t, st, ord) {
+  // frame the whole field: zoom so leader to last fits with room either side, aim at its middle
+  const ds = st.map(h => h.d), hi = Math.max(...ds), lo = Math.min(...ds.filter(d => d > hi - 150)) - TOP.LEN, wire = t >= RACE.FIN - 3.5;   // stragglers tailed off 150 ft don't drag the shot back
+  const wantC = RACE.SF + (wire ? Math.max(lo + (hi - lo) * .6, 5280 - 40) : lo + (hi - lo) * .6), wantZ = Math.max(3.2, Math.min(TOP.Z, W * .8 / (hi - lo + 30)));
+  const k = topZ && Math.abs(wantC - topC) < 300 ? 1 - Math.exp(-dtNow * 2) : 1;   // snap on a scrub
+  topZ += (wantZ - topZ) * k; topC += (wantC - topC) * k;
+  const Z = topZ, cs = topC;
+  const mo = st.reduce((a, h) => a + h.o, 0) / st.length + 8, [cx, cy] = RACE.pt(cs, mo), a0 = heading(cs);   // a touch outside the field: more track, less infield
+  x.fillStyle = "#123a1a"; x.fillRect(0, 0, W, H);
+  x.save(); x.translate(W / 2, H / 2); x.scale(Z, Z); x.rotate(-a0); x.translate(-cx, -cy);
+  const R = W / Z * .75 + 30, s0 = cs - R, s1 = cs + R;
+  const band = (o0, o1, fill) => {                                         // a strip of the oval between two offsets
+    x.fillStyle = fill; x.beginPath();
+    for (let s = s0; s <= s1; s += 4) x.lineTo(...RACE.pt(s, o0));
+    for (let s = s1; s >= s0; s -= 4) x.lineTo(...RACE.pt(s, o1));
+    x.fill();
+  };
+  const hash = (i, j) => { const v = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return v - Math.floor(v); };
+  const scatter = (o0, o1, step, fn) => {                                  // fixed to the track, so it streams past with the field
+    for (let s = Math.floor(s0 / step) * step; s < s1; s += step) for (let j = 0; j < 3; j++) {
+      const u = hash(s, j), v = hash(j, s), [gx, gy] = RACE.pt(s + u * step, o0 + v * (o1 - o0)); fn(gx, gy, u, v);
+    }
+  };
+  // the ground: one SpriteCook top-down track strip (infield, rails, dirt, apron, grandstand roof),
+  // tiled along the oval in thin slices so it bends round the turns. 5.42 strip px to the foot;
+  // its inner rail (o = -1) sits 340 px down.
+  if (trackImg) {
+    const PPF = 5.42, top = -1 - 340 / PPF, hFt = trackImg.height / PPF, tileFt = trackTileW / PPF, step = 3;
+    x.imageSmoothingEnabled = false;
+    for (let s = Math.floor(s0 / step) * step; s < s1; s += step) {
+      const [px, py] = RACE.pt(s, top), u = ((s % tileFt) + tileFt) % tileFt * PPF;
+      x.save(); x.translate(px, py); x.rotate(heading(s));
+      const sw = Math.ceil(step * PPF) + 1;
+      x.drawImage(trackImg, Math.floor(u), 0, sw, trackImg.height, 0, 0, sw / PPF * 1.45, hFt);   // overlap so the outside of a turn has no gaps
+      x.restore();
+    }
+  } else band(-60, 140, TOP.pat.dirt);
+  [[1320, "#d8322f"], [2640, "#1f8f3f"], [3960, "#1f4fbf"]].forEach(([d, col]) => { const [px, py] = RACE.pt(RACE.SF + d, -3); x.fillStyle = "#fff"; x.beginPath(); x.arc(px, py, 1.9, 0, 7); x.fill(); x.fillStyle = col; x.beginPath(); x.arc(px, py, 1.4, 0, 7); x.fill(); });
+  { const s = RACE.SF + 5280; for (let k = 0; k < 30; k++) { const [px, py] = RACE.pt(s, k * 3); x.fillStyle = "rgba(255,255,255,.8)"; x.fillRect(px - .4, py, .8, 1.8); } }   // the wire
+  // dust kicked up behind each runner, drifting back
+  for (const h of st) {
+    const [px, py] = RACE.pt(h.s - gateLag(h) - TOP.LEN - 1, h.o), n = Math.floor(gaitT * 30);
+    for (let k = 0; k < 4; k++) { const u = hash(h.i, n - k), back = k * 2.2 + u * 1.5, [dx, dy] = RACE.pt(h.s - gateLag(h) - TOP.LEN - 1 - back, h.o + (u - .5) * 3);
+      x.fillStyle = `rgba(190,150,105,${.35 - k * .08})`; x.fillRect(dx - .6, dy - .6, 1.2 + k * .4, 1.2 + k * .4); }
+  }
+  const ahead = RACE.state(t + .2);                                         // where each runner is headed, so a lane change steers
+  if (topImg) for (const h of [...st].sort((p, q) => p.o - q.o)) {
+    const [px, py] = RACE.pt(h.s - gateLag(h), h.o), q = ahead[h.i], [qx, qy] = RACE.pt(q.s - gateLag(q), q.o);
+    const a = Math.hypot(qx - px, qy - py) > .5 ? Math.atan2(qy - py, qx - px) : heading(h.s), k = TOP.LEN / TOP.FW, fh = TOP.FH * k;
+    if (!topDyed[h.i]) topDyed[h.i] = dyeRed(topImg, RACE.PAD[h.i]);
+    const f = Math.floor(gaitT * TOP.STRIDES * 12 + h.i * 5) % 12;
+    x.save(); x.translate(px, py); x.rotate(a);
+    x.fillStyle = "rgba(10,6,3,.4)"; x.beginPath(); x.ellipse(-TOP.LEN / 2 + .6, .9, TOP.LEN / 2.1, fh / 2.4, 0, 0, 7); x.fill();   // shadow, cast by the lights
+    x.drawImage(topDyed[h.i], f * TOP.FW, 0, TOP.FW, TOP.FH, -TOP.LEN, -fh / 2, TOP.LEN, fh);
+    const nx = -TOP.LEN * (1 - TOP.PAD);
+    x.fillStyle = RACE.DARK.includes(h.i + 1) ? "#111" : "#fff"; x.font = "bold 2.4px monospace"; x.textAlign = "center"; x.textBaseline = "middle";
+    x.save(); x.translate(nx, 0); x.rotate(-a + a0); x.fillText(h.i + 1, 0, .2); x.restore();
+    x.restore();
+  }
+  x.restore();
+  { const g = x.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, W * .7); g.addColorStop(0, "rgba(5,8,20,0)"); g.addColorStop(1, "rgba(5,8,20,.55)"); x.fillStyle = g; x.fillRect(0, 0, W, H); }   // night falls off at the edges
+  x.textAlign = "start"; x.textBaseline = "alphabetic";
+  if (topImg) { const me = st[RACE.ME], [mx, my] = RACE.pt(me.s, me.o), c = Math.cos(-a0), s2 = Math.sin(-a0);   // tag your horse, upright on screen
+    const sx2 = W / 2 + Z * ((mx - cx) * c - (my - cy) * s2) - Z * TOP.LEN * .5, sy2 = H / 2 + Z * ((mx - cx) * s2 + (my - cy) * c) - 5 * Z;
+    x.fillStyle = "#e8a33a"; x.fillRect(sx2 - 20, sy2, 40, 11); x.fillStyle = "#2a1a03"; x.font = "bold 9px monospace"; x.fillText(RACE.H[RACE.ME][0], sx2 - 17, sy2 + 8.5); }
+}
+
+function draw(t, st, ord) {
+  if (view === "overhead") return drawTop(t, st, ord);
+  const shot = t >= RACE.FIN - 3.5 ? "wire" : "pan";
+  const camD = shot === "wire" ? 5280 : RACE.camS(st) - RACE.SF - 6;
+  const sx = d => Math.round(W / 2 + (d - camD) * K);
+  x.fillStyle = "#0b1430"; x.fillRect(0, 0, W, H);
+  // tilt: aim the camera so the field's middle lane sits a little below centre, easing as lanes change
+  const meanO = st.reduce((a, h) => a + h.o, 0) / st.length;
+  const want = Math.max(-120, Math.min(200, 330 - groundY(meanO)));
+  tilt += (want - tilt) * (1 - Math.exp(-dtNow * 1.5));
+  x.save(); x.translate(0, Math.round(tilt));
+  if (bd) {
+    // One 360-degree panorama of the grounds. The camera looks across the infield, so what's behind the
+    // field depends on which way the track runs where the camera is aimed: still on the straights (bar a
+    // little parallax), sweeping on the turns. Barns face the homestretch, the grandstand the backstretch.
+    const sc = shot === "wire" ? RACE.SF + 5280 : RACE.camS(st), a = RACE.pt(sc, 0), b = RACE.pt(sc + 5, 0);
+    const heading = ((-Math.atan2(b[1] - a[1], b[0] - a[0])) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    const drift = a[0] * Math.cos(heading) * K * .05;                 // a little parallax along each straight, none mid-turn
+    const SW = bd.width * 2, xc = (((3.5 / 6 + heading / (2 * Math.PI)) * SW + drift) % SW + SW) % SW;
+    const ph = bd.height * 2;
+    for (const k of [-1, 0, 1]) x.drawImage(bd, Math.round(W / 2 - xc + k * SW), RAIL - ph + 6, SW, ph);
+  }
+  // the racing surface, seen from above the outside rail: bands get taller and warmer toward the lens
+  let yPrev = RAIL + 2;
+  for (let o = 2; o <= TRACK_W; o += 2) {
+    const y = Math.round(groundY(o)), k = o / TRACK_W;
+    x.fillStyle = `rgb(${104 + k * 40 | 0},${70 + k * 26 | 0},${44 + k * 16 | 0})`; x.fillRect(0, yPrev, W, Math.max(1, y - yPrev)); yPrev = y;
+  }
+  // harrow lines along the track, converging toward the far rail
+  for (let o = 6; o < TRACK_W; o += 6) { const y = Math.round(groundY(o)); x.fillStyle = "rgba(60,36,20,.35)"; x.fillRect(0, y, W, 1); }
+  // tyre-track grit drifting past, spaced by depth so the near dirt streams faster
+  for (let i = 0; i < 220; i++) {
+    const o = 3 + (i * 7.3) % (TRACK_W - 6), y = Math.round(groundY(o)) - 1 - (i % 3), z = zoom(o - 6);
+    const xx = ((((i * 131) - camD * K * z) % W) + W) % W;
+    x.fillStyle = i % 3 ? "rgba(70,44,26,.55)" : "rgba(175,132,92,.5)"; x.fillRect(xx | 0, y, Math.max(2, 3 * z | 0), 1);
+  }
+  // inner rail: a low white fence on the far side, posts every 8 ft
+  x.fillStyle = "#1f6b2a"; x.fillRect(0, RAIL - 2, W, 6);
+  x.fillStyle = "#e8eef4"; x.fillRect(0, RAIL - 13, W, 3); x.fillRect(0, RAIL - 6, W, 2);
+  for (let d = Math.floor((camD - 60) / 8) * 8; d < camD + 60; d += 8) { const px = sxo(d, camD, 0); if (px < -4 || px > W + 4) continue; x.fillStyle = "#c9d3dc"; x.fillRect(px, RAIL - 13, 2, 14); }
+  // quarter poles and the wire: the wire crosses the whole surface, foreshortened like the rest
+  [[1320, "#d8322f"], [2640, "#1f8f3f"], [3960, "#1f4fbf"], [5280, "#ffffff"]].forEach(([d, col]) => {
+    const px = sxo(d, camD, 0); if (px < -10 || px > W + 10) return;
+    x.fillStyle = col; x.fillRect(px - 2, RAIL - 44, 4, 44);
+    if (d === 5280) { x.strokeStyle = "rgba(255,255,255,.7)"; x.lineWidth = 2; x.beginPath(); x.moveTo(px, RAIL + 4); x.lineTo(sxo(d, camD, TRACK_W), Math.round(groundY(TRACK_W))); x.stroke(); }
+  });
+  // the gate car: wings across the track just ahead of the noses at the off, then it folds them in,
+  // speeds away and swings to the outside
+  if (t < 8 && frames && gateCar.complete) {
+    const gd = RACE.D(t) + 13 + 3 * t * t, fold = Math.min(1, t / 2), co = 30 + 45 * Math.min(1, t / 5);
+    const ft = o => frames.height * laneView(o).sc / 9;               // px per foot of height at that depth (sprite ~9 ft tall)
+    const P = (o, d = gd) => [sxo(d, camD, o), Math.round(groundY(o))];
+    // Each wing hinges at the gate frame on the truck bed and swings forward at full length
+    // goes, until it lies folded along the truck. Far wing behind the truck, near wing in front.
+    const e = fold * fold * (3 - 2 * fold), th = e * Math.PI / 2, hinge = gd - 12;
+    const wing = (dir, L0) => {
+      const L = L0, o1 = co + dir * L * Math.cos(th), d1 = hinge + L * Math.sin(th);
+      const [ax, ay] = P(co, hinge), [bx, by] = P(o1, d1), ha = 5 * ft(co), hb = 5 * ft(o1);
+      x.fillStyle = "rgba(30,44,66,.6)"; x.beginPath(); x.moveTo(ax, ay - ha * .15); x.lineTo(ax, ay - ha); x.lineTo(bx, by - hb); x.lineTo(bx, by - hb * .15); x.closePath(); x.fill();   // the mesh
+      const n = Math.max(2, Math.round(L / 5));
+      for (let k = 0; k <= n; k++) {                                     // uprights
+        const u = k / n, px = Math.round(ax + (bx - ax) * u), py = ay + (by - ay) * u, h = ha + (hb - ha) * u;
+        x.fillStyle = "#c9d3dc"; x.fillRect(px - 1, Math.round(py - h), 2, Math.round(h * .85));
+      }
+      x.strokeStyle = "#eef2f6"; for (const [lv, w] of [[1, 3], [.55, 2], [.15, 2]]) {   // top, mid and bottom rails
+        x.lineWidth = w; x.beginPath(); x.moveTo(ax, ay - ha * lv); x.lineTo(bx, by - hb * lv); x.stroke();
+      }
+    };
+    wing(-1, co - 1);
+    const [cx, cy] = P(co), cw = Math.round(32 * ft(co)), chh = Math.round(cw * gateCar.height / gateCar.width);   // drawn bigger than life so it reads beside the horses
+    x.fillStyle = "rgba(20,12,6,.45)"; x.fillRect(cx - cw * .45, cy - 2, cw * .9, 3);
+    x.imageSmoothingEnabled = false; x.drawImage(gateCar, Math.round(cx - cw / 2), Math.round(cy - chh * .97), cw, chh);
+    wing(1, TRACK_W - 3 - co);
+  }
+  // runners, far lane first; one pixel to one sprite pixel, depth by stepping down a lane
+  const run = [...st].sort((a, b) => a.o - b.o);
+  for (const h of run) {
+    if (!frames) break;
+    const { sc, gy } = laneView(h.o);
+    const fw = frames.width / FR, fh = frames.height, dw = Math.round(fw * sc), dh = Math.round(fh * sc);
+    const px = sxo(h.d - gateLag(h), camD, h.o) - Math.round(dw * .78), top = gy - dh;
+    if (px < -dw || px > W) continue;
+    x.fillStyle = "rgba(20,12,6,.45)"; x.fillRect(px + 6, gy - 2, dw - 12, Math.max(2, Math.round(3 * sc / SPR)));
+    const f = Math.floor(gaitT * POSES + h.i * 3) % FR;
+    if (!dyedFrames[h.i]) dyedFrames[h.i] = dye(frames, RACE.PAD[h.i]);
+    x.drawImage(dyedFrames[h.i], f * fw, 0, fw, fh, px, top, dw, dh);
+    const [cx, cy, cw, ch] = CYCLE_PAD.map(v => Math.round(v * sc)), fs = Math.round(9 * sc / SPR);
+    x.fillStyle = RACE.PAD[h.i]; x.fillRect(px + cx, top + cy, cw, ch);
+    x.fillStyle = RACE.DARK.includes(h.i + 1) ? "#111" : "#fff"; x.font = `bold ${fs}px monospace`; x.textAlign = "center"; x.textBaseline = "middle";
+    x.fillText(h.i + 1, px + cx + cw / 2, top + cy + ch / 2 + 1); x.textAlign = "start"; x.textBaseline = "alphabetic";
+    if (h.i === RACE.ME) { x.fillStyle = "#e8a33a"; x.fillRect(px + dw * .7 - 20, top - 13, 40, 11); x.fillStyle = "#2a1a03"; x.font = "bold 9px monospace"; x.fillText(RACE.H[RACE.ME][0], px + dw * .7 - 17, top - 4.5); }
+  }
+  x.fillStyle = "#8e6440"; x.fillRect(0, Math.round(groundY(TRACK_W)), W, H);   // dirt on down past the frame when the camera tilts up
+  // the near rail, close to the lens
+  const oy = Math.round(groundY(TRACK_W)) - 6;
+  x.fillStyle = "rgba(225,232,238,.9)"; x.fillRect(0, oy - 30, W, 5); x.fillRect(0, oy - 14, W, 3);
+  for (let d = Math.floor((camD - 40) / 6) * 6; d < camD + 40; d += 6) { const px = sxo(d, camD, TRACK_W); if (px < -8 || px > W + 8) continue; x.fillRect(px, oy - 30, 5, 36); }
+  x.restore();
+}
+
+const photo = document.getElementById("photo"), flash = document.getElementById("flash");
+function result(ord) { const lead = ord[0].d; document.getElementById("res").innerHTML = ord.slice(0, 4).map((h, k) => `<div class="rw"><b>${k + 1}</b>${RACE.pad(h.i)}<span>${RACE.H[h.i][0]}</span><span class="m">${k ? RACE.lengths((lead - h.d) / RACE.LEN) : RACE.fmt(RACE.FIN)}</span></div>`).join(""); }
+let last = performance.now(), ui = 0;
+function loop(now) {
+  let dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;
+  if (freezeLeft > 0) { freezeLeft -= dt; flash.style.opacity = Math.max(0, freezeLeft - 1.1); } else ctl.tick(dt);
+  if (ctl.play && freezeLeft <= 0 && ctl.t < RACE.END) gaitT += dt;
+  const FIN = RACE.FIN;
+  const t = ctl.t, st = RACE.state(t), ord = [...st].sort((a, b) => b.d - a.d);
+  if (!froze && t >= FIN) { froze = true; freezeLeft = 1.6; ctl.t = FIN; result(ord); }
+  photo.style.display = t >= FIN && freezeLeft <= 0 ? "flex" : "none";
+  dtNow = ctl.play ? dt : 0.016; draw(t, st, ord);
+  if (now - ui > 90) { RACE.hud(t, ord); ui = now; }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script></body></html>

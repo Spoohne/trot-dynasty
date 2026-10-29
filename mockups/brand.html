@@ -1,0 +1,157 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Trot Dynasty — brand sheet</title>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900;1,800;1,900&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel=stylesheet>
+<style>
+/* the game's own tokens (app.py SKIN) */
+:root{--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--rule2:#1b2539;--edge:#05070d;--led:#ffb347;--ledglow:rgba(255,179,71,.55);--sky:#0b1430;--well:#0b1120;--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--win:#3fb96b}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Barlow Semi Condensed',sans-serif}
+.w{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
+.lbl{font:700 12px 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:46px 0 10px;border-bottom:2px solid var(--rule2);padding-bottom:6px}
+canvas{image-rendering:auto}
+
+/* ---- wordmark ---- */
+.wm{display:inline-block;text-align:center;line-height:.82;font-family:'Barlow Condensed';font-weight:900;font-style:italic;text-transform:uppercase;transform:skewX(-4deg)}
+.wm .t{display:block;font-size:var(--s,120px);letter-spacing:.02em;
+  background:linear-gradient(#fff3d6 0 18%,#ffd27a 18% 46%,#ffb347 46% 70%,#d9801f 70%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 calc(var(--s,120px)*.035) 0 #7a3f08) drop-shadow(calc(var(--s,120px)*.045) calc(var(--s,120px)*.045) 0 var(--edge))}
+.wm .d{display:block;font-size:calc(var(--s,120px)*.62);letter-spacing:.16em;margin-top:calc(var(--s,120px)*.05);color:#fff;
+  text-shadow:0 0 calc(var(--s,120px)*.12) var(--ledglow),calc(var(--s,120px)*.03) calc(var(--s,120px)*.03) 0 var(--edge);
+  border-top:calc(var(--s,120px)*.03) solid var(--led);border-bottom:calc(var(--s,120px)*.03) solid var(--led);padding:calc(var(--s,120px)*.04) 0 calc(var(--s,120px)*.02)}
+.tag{font:700 15px 'Barlow Condensed';letter-spacing:.42em;text-transform:uppercase;color:var(--led);margin-top:14px}
+
+/* hero lockup */
+.hero{position:relative;background:radial-gradient(ellipse at 50% 110%,#1a2b52,transparent 60%),linear-gradient(var(--sky),var(--paper));border:2px solid var(--rule);box-shadow:4px 4px 0 var(--edge);padding:40px 16px 0;text-align:center;overflow:hidden}
+.hero .stars{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 12% 20%,#fff8,transparent),radial-gradient(1px 1px at 33% 9%,#fff6,transparent),radial-gradient(2px 2px at 71% 16%,#ffd27a99,transparent),radial-gradient(1px 1px at 88% 30%,#fff6,transparent),radial-gradient(1px 1px at 55% 28%,#fff5,transparent)}
+.hero .track{position:relative;height:160px;margin-top:22px;background:linear-gradient(transparent 70%,#3a2a1a 70% 72%,#6b4a2a 72%)}
+.hero .rail{position:absolute;left:0;right:0;top:62%;height:6px;background:repeating-linear-gradient(90deg,#fff 0 18px,#c9302c 18px 36px);box-shadow:0 2px 0 var(--edge)}
+.hero #heroArt{position:absolute;left:50%;bottom:-4px;height:150px;transform:translateX(-50%);animation:bob .36s ease-in-out infinite alternate;filter:drop-shadow(0 8px 6px #0008)}
+@keyframes bob{to{transform:translateX(-50%) translateY(-3px)}}
+
+/* crest */
+.crest{width:132px;height:150px;position:relative;display:grid;place-items:center}
+.crest svg{position:absolute;inset:0;width:100%;height:100%}
+.crest b{position:relative;font:900 italic 64px/1 'Barlow Condensed';color:#fff;text-shadow:3px 3px 0 var(--edge);margin-top:16px;letter-spacing:-.02em}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:center}
+.chip{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge);padding:8px 14px}
+.chip .wm{--s:30px}.chip .wm .d{display:none}
+
+/* LED headers */
+.hdrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.led{position:relative;background:#0a0702;border:2px solid #3a2a10;box-shadow:3px 3px 0 var(--edge),inset 0 0 0 2px #000;padding:12px 16px 10px 58px;overflow:hidden}
+.led:before{content:"";position:absolute;inset:0;background:radial-gradient(circle,#0000 55%,#000a 56%) 0 0/4px 4px;pointer-events:none;opacity:.6}
+.led h3{margin:0;font:900 italic 30px/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:var(--led);text-shadow:0 0 10px var(--ledglow),0 0 2px #fff6}
+.led small{position:relative;display:block;font:600 16px/1.25 'Barlow Semi Condensed';color:#e9d3b0;letter-spacing:.02em;margin-top:5px}  /* above the dot-matrix overlay so it stays crisp */
+.led i{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:34px;height:34px;image-rendering:pixelated}
+.led.g h3{color:#7dffa2;text-shadow:0 0 10px #3fb96b88}.led.g{border-color:#14361f}
+.led.p h3{color:#e2b6ff;text-shadow:0 0 10px #c084fc88}.led.p{border-color:#3a1f4f}
+.led.r h3{color:#ff8a6b;text-shadow:0 0 10px #e0704f88}.led.r{border-color:#4a1d12}
+
+/* title screen */
+.ts{display:grid;grid-template-columns:1.2fr 1fr;gap:0;border:2px solid var(--rule);box-shadow:4px 4px 0 var(--edge);background:linear-gradient(160deg,#0d1730,var(--paper) 70%)}
+@media(max-width:760px){.ts{grid-template-columns:1fr}}
+.ts .l{padding:34px 24px;display:grid;place-items:center;border-right:2px solid var(--rule2);position:relative;overflow:hidden}
+.ts .l .wm{--s:84px}
+.ts .r{padding:28px 22px;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.mb{display:flex;align-items:center;justify-content:space-between;background:var(--btn2,#18223a);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge),inset 0 2px 0 #fff2;padding:12px 16px;font:800 22px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--ink);cursor:pointer}
+.mb span{font:600 13px 'Barlow Semi Condensed';letter-spacing:.04em;color:var(--ink3);text-transform:none}
+.mb.on{background:var(--tote);color:#2a1a03;border-color:#ffd27a}.mb.on span{color:#5a3a08}
+.mb:hover:not(.on){border-color:var(--led);color:var(--led)}
+.away{background:var(--well);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge);padding:14px 16px}
+.away small{font:700 12px 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.away b{display:block;font:800 26px/1.1 'Barlow Condensed';text-transform:uppercase;letter-spacing:.04em;margin:2px 0}
+.away em{font:600 14px 'Barlow Semi Condensed';color:var(--led);font-style:normal}
+.away ul{list-style:none;margin:12px 0 0;padding:10px 0 0;border-top:2px solid var(--rule2);display:grid;gap:8px;font:600 15px 'Barlow Semi Condensed'}
+.away li i{display:inline-block;min-width:40px;font:700 13px 'Barlow Condensed';text-transform:uppercase;font-style:normal;color:var(--ink2)}
+.away li i.won{color:#7dffa2}.away li i.p{color:#e2b6ff}
+.foot{font:600 12px 'Barlow Semi Condensed';color:var(--ink3);margin-top:8px;letter-spacing:.04em}
+
+/* top-bar lockup in game chrome */
+.bar{display:flex;align-items:center;gap:14px;background:var(--panel);border-bottom:3px solid var(--led);padding:8px 14px;box-shadow:0 3px 0 var(--edge)}
+.bar .wm{--s:28px}.bar .wm .d{--s:28px}
+.bar .sp{flex:1}.bar .m{font:700 18px 'Barlow Semi Condensed';color:#7dffa2;font-variant-numeric:tabular-nums}
+.bar .wk{font:700 13px 'Barlow Condensed';letter-spacing:.1em;color:var(--ink2);text-transform:uppercase}
+
+/* loading */
+.load{background:var(--well);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge);padding:18px;display:flex;align-items:center;gap:18px}
+.load canvas{height:64px}
+.load .pb{flex:1;height:14px;background:#000;border:2px solid var(--rule);position:relative}
+.load .pb b{position:absolute;inset:0;width:62%;background:repeating-linear-gradient(90deg,var(--led) 0 8px,#d9801f 8px 10px)}
+.load p{margin:0 0 8px;font:800 italic 18px 'Barlow Condensed';letter-spacing:.12em;color:var(--led);text-transform:uppercase}
+</style></head><body><div class=w>
+
+<div class=lbl>01 · Primary lockup — title screen / splash</div>
+<div class=hero>
+  <div class=stars></div>
+  <img src="brand/logo_text.png" alt="Trot Dynasty" style="width:min(560px,85%)">
+  <div class=tag>Breed · Race · Win</div>
+  <div class=track><div class=rail></div><img id=heroArt src="brand/title_trotter.png" alt=""></div>
+</div>
+
+<div class=lbl>02 · Crest, app icon &amp; small marks</div>
+<div class=row>
+  <img src="brand/crest.png" alt="" style="width:150px">
+  <img src="brand/icon.png" alt="" style="width:110px;image-rendering:pixelated">
+  <div class=chip><div class=wm><span class=t>Trot Dynasty</span></div></div>
+  <div class=wm style="--s:44px"><span class=t>Trot</span><span class=d>Dynasty</span></div>
+</div>
+
+<div class=lbl>03 · In-game top bar</div>
+<div class=bar><div class=wm><span class=t style="font-size:28px">Trot Dynasty</span></div><span class=sp></span><span class=wk>Season 3 · Week 14</span><span class=m>$412,800</span></div>
+
+<div class=lbl>04 · Menu &amp; section headers (tote-board LED)</div>
+<div class=hdrs>
+  <div class=led><i><img src="brand/icon_0.png" alt="" style="width:34px;height:34px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 6px var(--ledglow))"></i><h3>The Stable</h3><small>14 horses · 3 in training</small></div>
+  <div class="led p"><i><img src="brand/icon_1.png" alt="" style="width:34px;height:34px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 6px var(--ledglow))"></i><h3>Breeding Barn</h3><small>Book your mares · 2 foals due</small></div>
+  <div class=led><i><img src="brand/icon_2.png" alt="" style="width:34px;height:34px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 6px var(--ledglow))"></i><h3>Race Card</h3><small>Meadowlands · Saturday</small></div>
+  <div class="led g"><i><img src="brand/icon_3.png" alt="" style="width:34px;height:34px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 6px var(--ledglow))"></i><h3>Horse Market</h3><small>38 listings · 6 new</small></div>
+  <div class=led><i><img src="brand/icon_4.png" alt="" style="width:34px;height:34px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 6px var(--ledglow))"></i><h3>Stakes &amp; Finals</h3><small>3YO Grand Final in 4 weeks</small></div>
+  <div class="led r"><i><img src="brand/icon_5.png" alt="" style="width:34px;height:34px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 6px var(--ledglow))"></i><h3>Hall of Fame</h3><small>Retired champions</small></div>
+</div>
+
+<div class=lbl>05 · Launch screen — one stable per player, no main menu</div>
+<div class=ts>
+  <div class=l><div><img src="brand/logo_text.png" alt="Trot Dynasty" style="width:100%;max-width:400px;display:block;margin:0 auto"><img src="brand/title_trotter.png" alt="" style="display:block;width:240px;margin:10px auto 4px"><div class=tag style="text-align:center">Breed · Race · Win</div></div></div>
+  <div class=r>
+    <div class=away>
+      <small>Welcome back</small>
+      <b>Spooh Hill Stables</b>
+      <em>Season 3 · Week 14</em>
+      <ul>
+        <li><i class=won>1st</i> Lexi Kody — 3YO Open at Mohawk, 1:51.2</li>
+        <li><i>4th</i> Gaines Hanover — Aged Open at Pocono</li>
+        <li><i class=p>Foal</i> Bay colt by Walner arrived</li>
+      </ul>
+    </div>
+    <div class="mb on">Enter the barn <span>Week 14</span></div>
+    <div class=foot>Your stable keeps running while you're away · v0.9</div>
+  </div>
+</div>
+
+<div class=lbl>06 · Loading / sim week</div>
+<div class=load><canvas id=loadRun width=208 height=101></canvas><div style="flex:1"><p>Simulating week 15…</p><div class=pb><b></b></div></div></div>
+
+</div>
+<script>
+// the real 12-frame trot cycle (208×101 per frame) from the replay
+const img = new Image(); img.src = "/mock/pixel/fe12_cycle.png";
+const FW = 208, FH = 101, N = 12;
+img.onload = () => {
+  // drawn at 3x with hard pixels, then the browser scales it down smoothly: soft edges, sharp detail
+  const K = 3, draw = (c, f) => { const x = c.getContext("2d"); x.imageSmoothingEnabled = false; x.clearRect(0, 0, c.width, c.height); x.drawImage(img, f * FW, 0, FW, FH, 0, 0, FW * K, FH * K); };
+  const load = document.getElementById("loadRun"); load.width = FW * K; load.height = FH * K;
+  let f = 0;
+  setInterval(() => { f = (f + 1) % N; draw(load, f); }, 55);
+};
+// 8×8 pixel icons for the LED headers
+const ICO = { horse: ["..XXX...", ".XXXXX..", "XX.XXXX.", "...XXXXX", "..XXXXX.", "..X..X..", "..X..X..", "........"],
+  heart: ["........", ".XX.XX..", "XXXXXXX.", "XXXXXXX.", ".XXXXX..", "..XXX...", "...X....", "........"],
+  card: ["XXXXXXX.", "X.....X.", "X.XXX.X.", "X.....X.", "X.XXX.X.", "X.....X.", "XXXXXXX.", "........"],
+  coin: ["..XXXX..", ".XX..XX.", "XX.XX.XX", "XX.X..XX", "XX..X.XX", ".XXXX.X.", "..XXXX..", "........"],
+  trophy: ["XXXXXXX.", "X.XXX.X.", "X.XXX.X.", ".XXXXX..", "..XXX...", "...X....", ".XXXXX..", "........"],
+  flag: ["X.......", "XXXX....", "XXXXXXX.", "XXXX....", "X.......", "X.......", "X.......", "XXX....."] };
+document.querySelectorAll("[data-ico]").forEach(el => {
+  const rows = ICO[el.dataset.ico], col = getComputedStyle(el.parentElement.querySelector("h3")).color;
+  el.innerHTML = `<svg viewBox="0 0 8 8" shape-rendering=crispEdges width=34 height=34>${rows.flatMap((r, y) => [...r].map((c, x) => c == "X" ? `<rect x=${x} y=${y} width=1 height=1 fill="${col}"/>` : "")).join("")}</svg>`;
+});
+</script></body></html>

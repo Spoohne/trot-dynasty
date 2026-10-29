@@ -1,0 +1,26 @@
+# the world: never in git (the live save is on the server; local saves are test data)
+save.pkl
+save.before-*.pkl
+snapshots/
+exports/
+*.log
+
+# editor copies and caches
+*.bak*
+__pycache__/
+.claude/
+
+# art experiments and bulk media that the game doesn't serve
+mockups/*.glb
+mockups/*.gif
+mockups/*.mp4
+mockups/*.jpg
+mockups/art_3d/
+mockups/art_wc/
+mockups/call/
+*.mp4
+grand-final-*.png
+archive.html
+
+# generated at run time
+mockups/brand/emblem/cache/

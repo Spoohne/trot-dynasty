@@ -1,0 +1,480 @@
+{
+ "assets": [
+  {
+   "name": "hero_a",
+   "asset_id": "a4fdf3b0-a539-4d40-8069-d559bfc08aa5",
+   "file": "hero/hero_a.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "base, grey, not chosen"
+  },
+  {
+   "name": "hero_b",
+   "asset_id": "2cabac63-ea36-4ec6-8786-550a93e097c5",
+   "file": "hero/hero_b.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "base, grey, chosen"
+  },
+  {
+   "name": "bay",
+   "asset_id": "0aa025e6-47b7-4b5c-8d0e-2b59608ba7dd",
+   "file": "hero/bay.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "edit of hero_b"
+  },
+  {
+   "name": "sulky_side",
+   "asset_id": "135a9fdf-259b-4baa-9723-d061bdaa02e6",
+   "file": "../mockups/sulky_side_raw.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "replay sprite, side view"
+  },
+  {
+   "name": "pace_cycle",
+   "asset_id": "988f14ea-b41e-49b7-a791-bb314375e5df",
+   "file": "../mockups/pace_sheet_raw.png",
+   "model": "pixel-engine-v1.5 detailed",
+   "note": "8-frame pacing cycle of sulky_side"
+  },
+  {
+   "name": "style_1_photoreal",
+   "asset_id": "e0ca3e8a-3862-4d65-8af9-ee3c4eac66c1",
+   "file": "styles/1_photoreal.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "full-scene style test"
+  },
+  {
+   "name": "style_2_painterly",
+   "asset_id": "37d2de45-23eb-4e3e-9405-2f3980543e66",
+   "file": "styles/2_painterly.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "full-scene style test"
+  },
+  {
+   "name": "style_3_stylized3d",
+   "asset_id": "17ba6e19-6ab4-427e-b8b1-e52dfb3e4303",
+   "file": "styles/3_stylized3d.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "full-scene style test"
+  },
+  {
+   "name": "style_4_flatvector",
+   "asset_id": "7e8ee83d-1ae0-45af-ad90-c6dc09159ec5",
+   "file": "styles/4_flatvector.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "full-scene style test"
+  },
+  {
+   "name": "style_5_lowpoly",
+   "asset_id": "020d9ed1-da33-486e-8459-cdc6cbb8632e",
+   "file": "styles/5_lowpoly.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "full-scene style test"
+  },
+  {
+   "name": "style_6_pixel16",
+   "asset_id": "cd6c7660-766b-46ba-a7f8-659d85ad039e",
+   "file": "styles/6_pixel16.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "full-scene style test"
+  },
+  {
+   "name": "style_7_pixel8",
+   "asset_id": "d87c62e6-e182-4e3e-9386-da2d63c555ae",
+   "file": "styles/7_pixel8.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "full-scene style test"
+  },
+  {
+   "name": "pixel_sulky",
+   "asset_id": "74ea5aef-c13b-47a4-85c8-0268f79ef793",
+   "file": "../mockups/pixel/sulky_b.png",
+   "model": "gpt-image-2.5-flare pixel",
+   "note": "16-bit horse+sulky, chosen"
+  },
+  {
+   "name": "pixel_sulky_alt",
+   "asset_id": "bdfa4e94-d03d-41b7-94a4-b0637f57d61d",
+   "file": "../mockups/pixel/sulky_a.png",
+   "model": "gpt-image-2.5-flare pixel",
+   "note": "not chosen"
+  },
+  {
+   "name": "pixel_pace",
+   "asset_id": "c42ac6ab-35f3-4570-bdc1-77e993c603ec",
+   "file": "../mockups/pixel/pace.png",
+   "model": "pixel animate",
+   "note": "8-frame pacing cycle"
+  },
+  {
+   "name": "pixel_backdrop",
+   "asset_id": "f109d9b2-ebad-4fe2-a369-5df583738680",
+   "file": "../mockups/pixel/backdrop_raw.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "night grandstand panorama"
+  },
+  {
+   "name": "pixel_backdrop_lowres",
+   "asset_id": "35d769e7-d6d3-4ba6-923a-61ecc3a97302",
+   "file": "../mockups/pixel/backdrop_lowres.png",
+   "model": "gpt-image-2.5-flare pixel",
+   "note": "too coarse, not used"
+  },
+  {
+   "name": "pixel_pace12",
+   "asset_id": "26459e29-1ed2-4540-9084-33ffc5354b5d",
+   "file": "../mockups/pixel/pace12.png",
+   "model": "pixel-engine-v1.5",
+   "note": "12-frame pacing cycle; replay uses pace_cycle.png = frames 0-10 levelled by fix_pace.py"
+  },
+  {
+   "name": "pano_p5_east",
+   "asset_id": "b8e55dcd-df27-4be9-9e03-e1e40ba8e8c2",
+   "file": "../mockups/pixel/pano/p5_east.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "360 panorama panel; p4 is pixel_backdrop; stitched into mockups/pixel/panorama.png"
+  },
+  {
+   "name": "pano_p6_service",
+   "asset_id": "74ef4901-d11a-4ee4-bbe4-d2c2eeb4b9c2",
+   "file": "../mockups/pixel/pano/p6_service.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "360 panorama panel; p4 is pixel_backdrop; stitched into mockups/pixel/panorama.png"
+  },
+  {
+   "name": "pano_p1_barns",
+   "asset_id": "b775eeca-eed1-45aa-8ac4-3a15211290e1",
+   "file": "../mockups/pixel/pano/p1_barns.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "360 panorama panel; p4 is pixel_backdrop; stitched into mockups/pixel/panorama.png"
+  },
+  {
+   "name": "pano_p2_paddock",
+   "asset_id": "23628acb-475b-4f41-8b81-2a33d26151b5",
+   "file": "../mockups/pixel/pano/p2_paddock.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "360 panorama panel; p4 is pixel_backdrop; stitched into mockups/pixel/panorama.png"
+  },
+  {
+   "name": "pano_p3_clubhouse",
+   "asset_id": "3c9ab057-7020-42ee-832b-fbe1b2ce3db0",
+   "file": "../mockups/pixel/pano/p3_clubhouse.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "360 panorama panel; p4 is pixel_backdrop; stitched into mockups/pixel/panorama.png"
+  },
+  {
+   "name": "pixel_sulky_racing",
+   "asset_id": "56969b85-93f6-4d09-ab10-ef7bd13c5a44",
+   "file": "../mockups/pixel/race_b.png",
+   "model": "gpt-image-2.5-flare pixel edit",
+   "note": "long, low racing posture; base of the racing cycle"
+  },
+  {
+   "name": "pixel_race12",
+   "asset_id": "812773a4-cf5b-4194-803c-098e822e2137",
+   "file": "../mockups/pixel/race12.png",
+   "model": "pixel-engine-v1.5",
+   "note": "12-frame extended racing pace; replay uses race_cycle.png (levelled)"
+  },
+  {
+   "name": "pixel_pace_v11",
+   "asset_id": "4c4f2431-c92a-4cde-a32c-a9e78da30335",
+   "file": "../mockups/pixel/v11.png",
+   "model": "pixel-engine-v1.1",
+   "note": "8-frame racing pace; bouncy, not used"
+  },
+  {
+   "name": "pixel_sulky_racing_x3_upload",
+   "asset_id": "d29d57c2-e014-4ffd-b523-1362fefbf383",
+   "file": "../mockups/pixel/race_b_x3.png",
+   "model": "upload",
+   "note": "3x nearest upscale of pixel_sulky_racing, for frame-engine"
+  },
+  {
+   "name": "pixel_pace_frame_engine",
+   "asset_id": "5a2a71a6-d553-4943-a19c-544087ecbd2b",
+   "file": "../mockups/pixel/fe.png",
+   "model": "frame-engine-v1.1 detailed",
+   "note": "8-frame racing pace, shrunk back to the pixel grid; replay uses fe_cycle.png (levelled)"
+  },
+  {
+   "name": "muybridge_pose1_upload",
+   "asset_id": "3d206801-c222-4160-aff3-3fa0252f0d32",
+   "file": "../art/reference/pose_1.png",
+   "model": "upload",
+   "note": "Muybridge plate 594 frame 2 (public domain)"
+  },
+  {
+   "name": "pose_test_A",
+   "asset_id": "ea3ed3f4-ca2f-4785-9a55-5e994e1b9f73",
+   "file": "../mockups/pixel/poses/test_A.png",
+   "model": "gpt-image-2.5-flare pixel",
+   "note": "edit of the photo; pose not copied"
+  },
+  {
+   "name": "pose_test_B",
+   "asset_id": "43932f97-a547-4c20-af34-8d313c862bd8",
+   "file": "../mockups/pixel/poses/test_B.png",
+   "model": "gpt-image-2.5-flare pixel",
+   "note": "photo as reference; pose not copied"
+  },
+  {
+   "name": "small_sulky_a",
+   "asset_id": "b6272248-d8b2-4a3e-beac-f8c6fa87f417",
+   "file": "../mockups/pixel/small/s_a.png",
+   "model": "pixel-engine-image-v1 112x56",
+   "note": "native mid-shot sprite, chosen"
+  },
+  {
+   "name": "small_sulky_b",
+   "asset_id": "b5c60794-8f3d-479f-be93-86f84e81f45f",
+   "file": "../mockups/pixel/small/s_b.png",
+   "model": "pixel-engine-image-v1 112x56",
+   "note": "not chosen"
+  },
+  {
+   "name": "small_cycle",
+   "asset_id": "ec93d1ac-b085-46b0-ac18-287a86eeac6f",
+   "file": "../mockups/pixel/small/cycle.png",
+   "model": "pixel-engine-v1.5",
+   "note": "8-frame pacing cycle of small_sulky_a"
+  },
+  {
+   "name": "small_racing_a",
+   "asset_id": "86dabd2b-b6d7-4691-a9fb-f0c02140baa4",
+   "file": "../mockups/pixel/small/r_a.png",
+   "model": "pixel-engine-image-v1",
+   "note": "racing posture try, still upright; not chosen"
+  },
+  {
+   "name": "small_racing_b",
+   "asset_id": "4f86f6fd-955b-4829-b472-8595ddc04e56",
+   "file": "../mockups/pixel/small/r_b.png",
+   "model": "pixel-engine-image-v1",
+   "note": "racing posture, neck forward; chosen"
+  },
+  {
+   "name": "small_race_cycle",
+   "asset_id": "92e50a19-098e-42ae-8a12-36939aa1b8ec",
+   "file": "../mockups/pixel/small/race_cycle.png",
+   "model": "pixel-engine-v1.5",
+   "note": "8-frame fast pace of small_racing_b"
+  },
+  {
+   "name": "small_restyled_a",
+   "asset_id": "30494a31-eb38-4ce4-8e27-df02179993c2",
+   "file": "../mockups/pixel/small/t_a.png",
+   "model": "gpt-image-2.5-flare pixel edit",
+   "note": "restyle at 252 px; too large, not chosen"
+  },
+  {
+   "name": "small_restyled_b",
+   "asset_id": "1412d3e6-782a-4357-b4dd-bc3a57e2ff48",
+   "file": "../mockups/pixel/small/t_b.png",
+   "model": "gpt-image-2.5-flare pixel edit",
+   "note": "restyle at 136 px, head forward; chosen"
+  },
+  {
+   "name": "small_final_cycle",
+   "asset_id": "a7443c9d-9ec4-4618-8ca4-fb3602e8f054",
+   "file": "../mockups/pixel/small/final_cycle.png",
+   "model": "pixel-engine-v1.5",
+   "note": "8-frame fast pace of small_restyled_b"
+  },
+  {
+   "name": "fe8_fast",
+   "asset_id": "f4e36a07-6a10-41b0-ada9-143771adcaa9",
+   "file": "../mockups/pixel/fe8_cycle.png",
+   "model": "frame-engine-v1.1",
+   "note": "racing sprite, fast long stride, 8 frames, pinned at pad"
+  },
+  {
+   "name": "fe12_fast",
+   "asset_id": "a726270c-3dc7-4dc8-a4ce-c65b24825488",
+   "file": "../mockups/pixel/fe12_cycle.png",
+   "model": "frame-engine-v1.1",
+   "note": "racing sprite, fast long stride, 12 frames, pinned at pad"
+  },
+  {
+   "name": "front_sulky_a",
+   "asset_id": "c8b9c093-0893-42e1-8ea1-d69479bde613",
+   "file": "../mockups/pixel/front/f_a.png",
+   "model": "pixel-engine-image-v1 72x96",
+   "note": "head-on; not chosen"
+  },
+  {
+   "name": "front_sulky_b",
+   "asset_id": "3811ff05-d5f2-411c-a758-440f2614182a",
+   "file": "../mockups/pixel/front/f_b.png",
+   "model": "pixel-engine-image-v1 72x96",
+   "note": "head-on; chosen"
+  },
+  {
+   "name": "front_cycle",
+   "asset_id": "3865540b-42cd-421c-99ef-dfb99f08a497",
+   "file": "../mockups/pixel/front/cycle.png",
+   "model": "pixel-engine-v1.5",
+   "note": "8-frame head-on pace of front_sulky_b"
+  },
+  {
+   "name": "top_pacer",
+   "asset_id": "dac76805-2d94-4295-9802-6f954a7d0e58",
+   "file": "../mockups/pixel/top/top_a.png",
+   "model": "gpt-image-2",
+   "note": "overhead pacer still, red silks re-dyed per pad"
+  },
+  {
+   "name": "top_pacer_cycle",
+   "asset_id": "1a68baf9-a7bd-477f-b73d-7b4219149e17",
+   "file": "../mockups/pixel/top/cycle12.png",
+   "model": "frame-engine-v1.1",
+   "note": "12-frame overhead stride from 3x upload f8cfd683; shrunk /3, common crop"
+  },
+  {
+   "name": "top_track_strip",
+   "asset_id": "4a9b8456-613c-4923-aaaa-3cfcf5118dd1",
+   "file": "../mockups/pixel/top/track_tile.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "overhead track strip, ends blended to tile; 5.42 px/ft, inner rail at y=340"
+  },
+  {
+   "name": "pacer_front34",
+   "asset_id": "4b44eba6-4afd-4e60-aa88-9312a28a1a53",
+   "file": "../mockups/pixel/angles/front_a.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "front 3/4 still, ref side sprite 56969b85"
+  },
+  {
+   "name": "pacer_front34_cycle",
+   "asset_id": "80bb8fd1-43ec-4994-ab73-ba8bb70d7bb9",
+   "file": "../mockups/pixel/angles/front12.png",
+   "model": "frame-engine-v1.1",
+   "note": "12 frames, 86x110 each, common crop"
+  },
+  {
+   "name": "pacer_rear34",
+   "asset_id": "915264da-b4bc-4b95-acdd-19a125e7f093",
+   "file": "../mockups/pixel/angles/rear_b.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "rear 3/4 still"
+  },
+  {
+   "name": "pacer_rear34_cycle",
+   "asset_id": "cbf59c77-db7f-4c0e-be00-ba9f1b8ef4cd",
+   "file": "../mockups/pixel/angles/rear12.png",
+   "model": "frame-engine-v1.1",
+   "note": "12 frames, 111x110 each, common crop"
+  },
+  {
+   "name": "pacer_headon",
+   "asset_id": "b9137288-0086-46d7-9f45-169c210ac807",
+   "file": "../mockups/pixel/angles/head_a.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "straight head-on still, ref front 3/4"
+  },
+  {
+   "name": "pacer_headon_cycle",
+   "asset_id": "910c0a87-efdf-4290-bfab-0924707d8f39",
+   "file": "../mockups/pixel/angles/head12.png",
+   "model": "frame-engine-v1.1",
+   "note": "12 frames 85x110"
+  },
+  {
+   "name": "pacer_away",
+   "asset_id": "8ed801a1-558a-4a23-89be-de77e33bae93",
+   "file": "../mockups/pixel/angles/away_a.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "straight going-away still, ref rear 3/4"
+  },
+  {
+   "name": "pacer_away_cycle",
+   "asset_id": "b9223d7a-f8ae-413a-a47e-a38118bd49eb",
+   "file": "../mockups/pixel/angles/away12.png",
+   "model": "frame-engine-v1.1",
+   "note": "12 frames 78x110"
+  },
+  {
+   "name": "infield_grass",
+   "asset_id": "683bfc67-1bf9-4817-91dc-c3bfc1193e21",
+   "file": "../mockups/pixel/infield/grass.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "tileable mown lawn, 1 tile per 40 ft"
+  },
+  {
+   "name": "infield_signs",
+   "asset_id": "c5084e7c-0dc8-4f17-b0db-63ed1da41402",
+   "file": "../mockups/pixel/infield/signs.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "4 fictional sponsor boards, split to sign0-3.png"
+  },
+  {
+   "name": "light_tower",
+   "asset_id": "8441b6ee-c16e-42ac-958e-8c8f94d1b4d5",
+   "file": "../mockups/pixel/infield/tower_c.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "billboarded, 95 ft"
+  },
+  {
+   "name": "tote_board",
+   "asset_id": "a02afb74-193c-471c-9014-8c4bb74c3d53",
+   "file": "../mockups/pixel/infield/tote.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "90 ft wide, infield centre facing stands"
+  },
+  {
+   "name": "gate_wing",
+   "asset_id": "a57442ba-b80c-41fa-9bc7-54f389322fc2",
+   "file": "../mockups/pixel/wing_c.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "gate wing panel, repeated every 24 ft along each wing, 5 ft tall"
+  },
+  {
+   "name": "pacer_driving",
+   "asset_id": "c2351e10-86cd-4589-8048-50daa5377b70",
+   "file": "../mockups/pixel/drive/b.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "edit of side sprite 56969b85: driver leaning back working the lines"
+  },
+  {
+   "name": "pacer_driving_cycle",
+   "asset_id": "79717f43-93d3-451d-a6c1-4ef79bdacd53",
+   "file": "../mockups/pixel/drive/drive12.png",
+   "model": "frame-engine-v1.1",
+   "note": "12 frames 251x101, cloth at 97,24 61x27; used in the stretch for horses within 4 lengths"
+  },
+  {
+   "name": "grandstand",
+   "asset_id": "0d82d934-b281-4890-98e3-826b4c93debb",
+   "file": "../mockups/pixel/venue/stand.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "420 ft card, outside homestretch 170 ft out, centred 120 ft before the wire"
+  },
+  {
+   "name": "clubhouse",
+   "asset_id": "e703167e-9283-4365-9d6f-81bff373fc94",
+   "file": "../mockups/pixel/venue/club.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "210 ft card beside the grandstand toward the first turn"
+  },
+  {
+   "name": "parking_lot",
+   "asset_id": "edf22c53-71be-4546-92fe-c62f195abc61",
+   "file": "../mockups/pixel/venue/lot.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "tile 72 x 61.5 ft, 9 ft bays"
+  },
+  {
+   "name": "parked_cars",
+   "asset_id": "d7a2ff04-d59b-41ed-8ad7-b12b0deac2ac",
+   "file": "../mockups/pixel/venue/cars.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "8 top-down cars sliced to car0-7.png, 7 x 15 ft"
+  },
+  {
+   "name": "stable_barn",
+   "asset_id": "249393b8-6905-4396-bdc6-45efef68fc6d",
+   "file": "../mockups/pixel/venue/barn.png",
+   "model": "gpt-image-2.5-flare",
+   "note": "95 ft card, 2 rows of 9 outside the backstretch"
+  }
+ ]
+}
