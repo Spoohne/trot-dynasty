@@ -526,9 +526,10 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .clr summary{padding:0;border:0;font-size:inherit;font-weight:400;display:block}.clr summary::after{content:none}.clrow{display:flex;gap:10px;align-items:center}.cltag{flex:none;min-width:48px;text-align:center;font:800 15px 'Barlow Condensed',sans-serif;color:var(--led);text-shadow:0 0 6px var(--ledglow)}.clid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.clid .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.clact{flex:none}.clact button{width:auto;margin:0;padding:6px 10px}.clr.mine{background:#e8a33a14;border-left:3px solid var(--tote)}.clr .pglines{margin-top:8px;background:#f4f1e8;color:#111;border-radius:4px;padding:4px 6px;font-family:'Barlow Semi Condensed',Arial Narrow,sans-serif}.tier.sm{font-size:12px;width:auto;padding:0 5px;display:inline-block;line-height:16px}
 .mgr{padding:10px 12px 12px}.mgr .mhead{display:flex;justify-content:space-between;align-items:center;gap:8px}.mgr .mhead b{font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led);text-shadow:2px 2px 0 #000}
 .mgr .pchip{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--rule);border-radius:3px;color:var(--ink2)}.mgr .pchip.lit{color:var(--tote-ink);background:var(--tote);border-color:var(--tote)}
-.mgr .mgrid{margin-top:8px}.mgr .mrow{display:grid;grid-template-columns:minmax(0,1fr) 88px 108px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--rule2)}
+.mgr .mgrid{margin-top:8px}.mgr .mrow{display:grid;grid-template-columns:30px minmax(0,1fr) 82px 102px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--rule2)}
+.mgr .mpic{display:block;width:30px;height:30px;border:2px solid var(--rule);border-radius:3px;image-rendering:pixelated;background:#1c2430}
 .mgr .mrow.mh{border-top:0;padding:0 0 2px;font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
-.mgr .mname{display:flex;flex-direction:column;min-width:0}.mgr .mname b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mgr .mname small{font-size:11px;color:var(--ink3);white-space:nowrap}.mgr .mname small i{font-style:normal;color:var(--win);font-weight:700}
+.mgr .mname{display:flex;flex-direction:column;min-width:0}.mgr .mname b{font-size:14px;line-height:1.1;overflow-wrap:anywhere}.mgr .mname small{font-size:11px;color:var(--ink3);white-space:nowrap}.mgr .mname small i{font-style:normal;color:var(--win);font-weight:700}
 .mgr select{width:100%;font-size:13px;font-weight:600;padding:5px 4px;background:#0b1120;color:var(--ink);border:1px solid var(--rule);border-radius:3px;box-shadow:inset 1px 1px 0 #0008}.mgr select:focus{outline:none;border-color:var(--tote);box-shadow:0 0 0 1px var(--tote)}
 .mgr .mrow.done select{opacity:.6}
 .mgr .mact{display:flex;gap:8px;margin-top:10px}.mgr .mact button{width:auto;margin:0;flex:1}
@@ -1106,13 +1107,14 @@ def training_page():
     again = [h for h in unworked() if set_of(h)]
     if has_pass(ME):                                                           # the Stable Manager: every youngster's set, editable, and one tap to deploy
         sel = lambda n, cur, items: f"<select name='{n}'>" + "".join(f"<option value={k}{' selected' if k == cur else ''}>{v}</option>" for k, v in items) + "</select>"
-        srows = "".join(f"<div class='mrow{' done' if worked(h) else ''}'><span class=mname><b>{esc(h.name)}</b><small>{'yearling' if h in e.nursery else f'{h.age}yo'}"
+        srows = "".join(f"<div class='mrow{' done' if worked(h) else ''}'><img class=mpic src='/portrait/{urlname(h.name)}.png' width=30 height=30 loading=lazy alt='' style='border-color:{TIER_RGB[tier_base(h)]}'>"
+                        f"<span class=mname><b>{esc(h.name)}</b><small>{'yearling' if h in e.nursery else f'{h.age}yo'}"
                         f"{' · <i>&#10003; done today</i>' if worked(h) else ''}</small></span>"
                         f"{sel(f'j{h.id}', (set_of(h) or ('jog', 'gait'))[0], JOB_WORD.items())}{sel(f'f{h.id}', (set_of(h) or ('jog', 'gait'))[1], FOCUS_NAME.items())}</div>" for h in ys)
         repeat_all = ("<form method=post action=/sets class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Stable Manager</b>"
                       f"<span class='pchip{' lit' if again else ''}'>{len(again)} to deploy</span></div>"
                       "<div class=sub>Each youngster's set: the job and focus the manager runs. Save changes, or deploy every set now.</div>"
-                      "<div class=mgrid><div class='mrow mh'><span>Horse</span><span>Job</span><span>Focus</span></div>"
+                      "<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Job</span><span>Focus</span></div>"
                       + srows + "</div><div class=mact><button class=sec name=do value=save>Save sets</button>"
                       f"<button name=do value=deploy{'' if again else ' disabled'}>Deploy sets ({len(again)})</button></div></form>") if ys else ""
     else:
