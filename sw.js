@@ -2,7 +2,7 @@
 // Game pages are live (cash, entries, results), so they always come from the network; when there is none, a branded
 // offline page shows instead of the browser's error. Art, sounds, fonts and scripts under /mock/ are kept once fetched,
 // so the replay and the barn load instantly on the next visit. Bump VERSION to drop everything cached.
-const VERSION = "td-v2";
+const VERSION = "td-v3";
 const SHELL = ["/offline", "/mock/brand/logo_text.png", "/mock/brand/app_192.png"];
 
 self.addEventListener("install", e => {
