@@ -486,10 +486,10 @@ def tick():
         name_handicapper(c.year_of(G["day"] - 1))             # the season's best handicapper takes the title
         sk.year_tick(G["horses"], G["ai"], G["day"])          # opens with everyone a year older and the 2-year-olds in the barn
         open_sponsor_auction()                                # and the season's stakes go up for sponsorship
-    if G["day"] % c.YEAR == SPONSOR_WEEKS and G.get("sponsor_auction"):
-        settle_sponsors()
         G["horses"] = e.new_year(G["horses"], G["ai"])
         e.ROLLED[0] = G["day"]                                # (the week-1 night itself won't roll it a second time)
+    if G["day"] % c.YEAR == SPONSOR_WEEKS and G.get("sponsor_auction"):
+        settle_sponsors()
     c.draw_claimers(G["horses"], G["ai"])                     # next week's claiming program goes up now
     draw_program()                                            # and tomorrow's card is drawn and posted: a whole day to read it
     events = {o: [] for o in c.HUMAN}
