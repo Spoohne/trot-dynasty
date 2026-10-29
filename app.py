@@ -1009,6 +1009,7 @@ def train_banner():
 JOB_NOTE = {"jog": "<b>Jogged today.</b> Ticking over.", "train": "<b>Trained today</b>, {focus} miles.",
             "school": "<b>Schooled today</b> on its gait.", "out": "<b>Turned out.</b> A day off; freshness comes back."}
 FOCUS_NAME = {"gait": "Gait", "early_speed": "Early speed", "late_speed": "Late speed", "stamina": "Stamina"}
+JOB_WORD = {"jog": "Jog", "train": "Train", "school": "School", "out": "Turn out"}
 
 
 def day_sheet(h, back="/training"):
@@ -1022,8 +1023,11 @@ def day_sheet(h, back="/training"):
     tired = not foal and h.freshness < 35
     btn = lambda key, label: (f"<button name=j value={key}{' disabled' if key == 'train' and tired else ''}"
                               f"{' class=sec' if key != 'train' else ' class=sec'}>{label}</button>")
-    foc = "".join(f"<label><input type=radio name=f value={k}{' checked' if k == 'gait' else ''}>{t}</label>" for k, t in FOCUS_NAME.items())
-    return (f"<form method=post action=/job class=sheet><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='{back}'>"
+    last = job[2] if job and job[2] in FOCUS_NAME else "gait"             # the focus stays what it was last set to
+    foc = "".join(f"<label><input type=radio name=f value={k}{' checked' if k == last else ''}>{t}</label>" for k, t in FOCUS_NAME.items())
+    again = (f"<button name=j value=repeat style='grid-column:1/-1'{' disabled' if job[1] == 'train' and tired else ''}>Same as yesterday: "
+             f"{JOB_WORD[job[1]]}{' · ' + FOCUS_NAME[job[2]] if job[1] != 'out' else ''}</button>") if job and job[1] in JOB_WORD else ""
+    return (f"<form method=post action=/job class=sheet><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='{back}'>{again}"
             f"{btn('jog', 'Jog')}{btn('train', 'Train')}{btn('school', 'School')}{btn('out', 'Turn out')}"
             f"<div class=foc><span>Training focus</span>{foc}</div>"
             + ("<div class=foc><span class=sub>Too tired for training miles this week.</span></div>" if tired else "") + "</form>")
@@ -1042,7 +1046,10 @@ def training_page():
                  f"<div class=bbars>{bars}</div>"
                  + ("" if foal else f"<div class=row style='gap:4px 10px;margin-top:4px;flex-wrap:wrap'>{condition(h)}</div>")
                  + day_sheet(h) + "</div></div>")
-    body = (train_banner() + f"<div class=stablehead><h2>Day sheet <span class='stallct st-grn'>{done}/{len(ys)}</span></h2></div>"
+    again = [h for h in unworked() if getattr(h, "job", None) and h.job[1] in JOB_WORD]
+    repeat_all = (f"<form method=post action=/job style='margin:0 0 8px'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
+                  f"<button class=big>Repeat yesterday for all ({len(again)})</button></form>") if len(again) > 1 else ""
+    body = (train_banner() + f"<div class=stablehead><h2>Day sheet <span class='stallct st-grn'>{done}/{len(ys)}</span></h2></div>" + repeat_all +
             "<div class=sub style='margin:-4px 0 8px'>Yearlings, 2 and 3-year-olds: one job a day, your call. The stable jogs any you don't get to.</div>"
             + (rows or "<div class=card><div class=sub>No youngsters in the barn. Yearlings come from your broodmares; 2 and 3-year-olds race here.</div></div>")
             + "<div class=card><div class=sub><b>Jog</b> keeps a youngster ticking over. <b>Train</b> is training miles: the big step, on the focus you pick, "
@@ -1693,21 +1700,24 @@ def status_of(h):
 def archive_page(qs):
     """History and search, live: every horse in the stud book (racing, retired, the foals, and the departed still in
     a pedigree or the hall of winners), filtered by name, age, sex, status, owner and tier, sorted any way."""
-    name, sex, status, who, tier = (qs.get(k, "") for k in ("q", "sex", "status", "who", "tier"))
+    name, sex, status, who, tier, barn = (qs.get(k, "") for k in ("q", "sex", "status", "who", "tier", "barn"))
+    bname = lambda o: (f"{G['players'][o].get('user', '')} {G['players'][o].get('stable', '')} " if o in G.get("players", {}) else "") + full_name(o)
     amin, amax = int(qs.get("amin") or 0), int(qs.get("amax") or 30)
     sort = qs.get("sort", "earnings")
     pool = c.lineage(G["horses"] + e.nursery + sk.HALL)
     rows = [h for h in pool
             if (not name or name.lower() in h.name.lower()) and (not sex or h.sex == sex)
             and (not status or status_of(h) == status) and (not who or (h.owner == ME) == (who == "mine"))
-            and (not tier or tier_label(h) == tier) and amin <= h.age <= amax]
+            and (not tier or tier_label(h) == tier) and amin <= h.age <= amax
+            and (not barn or (status_of(h) != "departed" and barn.lower() in bname(h.owner).lower()))]
+    barns = sorted({h.owner for h in rows if status_of(h) != "departed"}, key=lambda o: -sum(x.earnings for x in rows if x.owner == o))[:12] if barn else []
     key = {"earnings": lambda h: -h.earnings, "wins": lambda h: -h.wins, "starts": lambda h: -h.starts,
            "best": lambda h: getattr(h, "best", 999), "trophies": lambda h: -len(getattr(h, "trophies", [])),
            "age": lambda h: h.age, "name": lambda h: h.name}[sort if sort in ("earnings", "wins", "starts", "best", "trophies", "age", "name") else "earnings"]
     rows.sort(key=key)
     opt = lambda k, v, label: f"<option value='{v}'{' selected' if qs.get(k, '') == v else ''}>{label}</option>"
     form = ("<form class='card filt' method=get action=/archive>"
-            f"<input name=q placeholder='Name' value='{esc(name)}'>"
+            f"<input name=q placeholder='Horse name' value='{esc(name)}'><input name=barn placeholder='Barn or player' value='{esc(barn)}'>"
             f"<select name=sex>{opt('sex', '', 'Any sex')}{opt('sex', 'm', 'Colts & horses')}{opt('sex', 'f', 'Fillies & mares')}</select>"
             f"<select name=status>{opt('status', '', 'Any status')}{opt('status', 'racing', 'Racing')}{opt('status', 'retired', 'Retired')}"
             f"{opt('status', 'foal', 'Foals')}{opt('status', 'departed', 'Departed')}</select>"
@@ -1721,10 +1731,12 @@ def archive_page(qs):
     shown = rows[:200]
     table = "".join(
         f"<tr{brow(h.owner)}><td><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>"
-        f"<div class=sub>{h.age}yo {sex_word(h)} · {status_of(h)} · {esc(barn_name(h.owner)) if status_of(h) != 'departed' else 'gone'}</div></td>"
+        f"<div class=sub>{h.age}yo {sex_word(h)} · {status_of(h)} · {f'<a href=/barn/{h.owner}>' + esc(barn_name(h.owner)) + '</a>' if status_of(h) != 'departed' else 'gone'}</div></td>"
         f"<td>{tier_label(h)}</td><td>{h.starts}-{h.wins}</td><td>{best_time(h)}</td><td>{len(getattr(h, 'trophies', [])) or ''}</td>"
         f"<td class=money>${h.earnings:,.0f}</td></tr>" for h in shown)
-    body = (form + f"<p class=sub>{len(rows):,} horses match{f' · showing the first 200' if len(rows) > 200 else ''}.</p>"
+    found = ("<div class=card><b>Barns</b><div class=sub>Tap a barn for its live stable.</div><div class=fchips>"
+             + "".join(f"<a href=/barn/{o}>{esc(full_name(o))} · {sum(1 for x in rows if x.owner == o)}</a>" for o in barns) + "</div></div>") if barns else ""
+    body = (form + found + f"<p class=sub>{len(rows):,} horses match{f' · showing the first 200' if len(rows) > 200 else ''}.</p>"
             "<div class=card><table class=arch><tr><th>Horse</th><th>Tier</th><th>Record</th><th>Best</th><th>🏆</th><th>Earned</th></tr>"
             + (table or "<tr><td colspan=6 class=sub>No horses match.</td></tr>") + "</table></div>")
     return page("History and search", body)
@@ -4530,14 +4542,26 @@ class H(BaseHTTPRequestHandler):
         elif p == "/groom" and h:
             e.groom(h, ME, G["day"])
         elif p == "/job":                                         # the day sheet: one job a day for a youngster
-            job, focus = q.get("j", ""), q.get("f", "gait")
-            f = next((x for x in e.nursery if x.name == q.get("h", "")), None)
-            if focus in FOCUS_NAME and job in ("jog", "train", "school", "out"):
-                if f:
-                    e.handle(f, ME, G["day"], job, focus)
-                elif h and h.owner == ME and not h.retired and h.age <= c.YOUNG and not getattr(h, "order", None) \
-                        and not (job == "train" and h.freshness < 35):
-                    h.job = (G["day"], job, focus)
+            def set_job(x, job, focus):
+                prev = getattr(x, "job", None)
+                if job == "repeat":                                   # one tap: yesterday's job and focus again
+                    if not prev or prev[1] not in JOB_WORD:
+                        return
+                    job, focus = prev[1], prev[2]
+                if focus not in FOCUS_NAME or job not in JOB_WORD:
+                    return
+                if x in e.nursery:
+                    e.handle(x, ME, G["day"], job, focus)
+                elif x.owner == ME and not x.retired and x.age <= c.YOUNG and not getattr(x, "order", None) and not (job == "train" and x.freshness < 35):
+                    x.job = (G["day"], job, focus)
+            if q.get("h") == "*":                                     # the whole string: every youngster not yet worked today
+                for x in unworked():
+                    set_job(x, "repeat", "")
+            else:
+                f = next((x for x in e.nursery if x.name == q.get("h", "")), None)
+                x = f or (h if h and h.owner == ME else None)
+                if x:
+                    set_job(x, q.get("j", ""), q.get("f", "gait"))
             save()
             return self.send("", 303, q.get("back") if q.get("back", "").startswith("/") else "/training")
         elif p == "/scratch" and h and h.owner == ME:
