@@ -2790,15 +2790,15 @@ def growth_chart(h):
 
 
 def sell_box(h):
-    """Two ways out of the barn: the sale board, where the price is the market's (never under $50k) and a buyer has
-    to come; or the house, which takes any horse tonight at a price set by its record, never under $20k."""
+    """Two ways out of the barn: the sale board, where the price is the market's (a proven earner's record, never under
+    $50k) and a buyer has to come; or the house, which pays 40% of that same record tonight, never under $20k."""
     house = e.house_offer(h)
     return (f"<div class=card><div class=row style='gap:10px;flex-wrap:wrap'>"
             f"<form method=post action=/order class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=o value=sell>"
             f"<button class=sec>List on the market</button></form>"
             f"<form method=post action=/scrap class=inline><input type=hidden name=h value='{esc(h.name)}'>"
             f"<button class=sec onclick=\"return ask(this,'Sell {h.name} to the house for ${house:,.0f}? Gone for good.')\">Sell to the house · ${house:,.0f}</button></form></div>"
-            f"<div class=sub>Market: priced at what the horse is worth, ${e.MIN_PRICE:,} at the least; it goes up tonight and sells when a barn buys. "
+            f"<div class=sub>Market: worth about ${max(e.MIN_PRICE, e.value(h)):,.0f}; bidding opens under that tonight and it sells when a barn buys. "
             f"House: ${house:,.0f}, paid now, no buyer needed. The house pays on the record, so a proven earner brings "
             f"more and an unraced or losing horse brings ${e.SCRAP:,}.</div></div>")
 

@@ -208,6 +208,7 @@ def buy_house_horse(owner, horses, rig=None):
 
 SCRAP = 20_000           # the least the house pays for any horse you hand it
 HOUSE_SHARE = 0.4        # of a proven racer's projected career net: the house buys on the record, never on the card
+BOARD_SHARE = 0.6        # what the sale board asks of that same net: above the house, with room for the buyer to profit
 MIN_PRICE = 50_000       # nothing goes on the sale board for less
 
 
@@ -251,8 +252,9 @@ def value(h):
             book = 0 if rank is None else BOOK if rank == 0 else 2
             return max(1_000, AI_RATE * house_price(h) * (1 - REGISTRY) * book * years * 0.5)
         return max(1_000, 1_200 * max(0, c.peak_est(h) - 45) * years * 0.1)   # a mare: a foal a year
-    v = max(2_000, 1_500 * (c.on_aged_scale(h.est, c.age_group(h)) - 35))
-    return v * max(0.3, 1 - 0.12 * max(0, h.age - 4))
+    v = max(2_000, 1_500 * (c.on_aged_scale(h.est, c.age_group(h)) - 35)) * max(0.3, 1 - 0.12 * max(0, h.age - 4))
+    # a proven earner is worth its record: the board asks 60% of the projected career net the house pays 40% of
+    return max(v, house_offer(h) * BOARD_SHARE / HOUSE_SHARE) if house_offer(h) > SCRAP else v
 
 
 def expected_foal_net(s):
@@ -965,6 +967,8 @@ if __name__ == "__main__":
         p * (1 - c.DRIVER - st.mean(t.cut for t in c.ROSTER)) - c.YEAR * UPKEEP for p in (400_000, 300_000)) * (1 + 1 + .88 + .76 + .64), -3)
     star.seasons[9][4] = star.seasons[8][4] = 20_000
     assert house_offer(star) == SCRAP, "a record that didn't cover its board gets the floor"
+    star.seasons[9][4] = star.seasons[8][4] = 400_000
+    assert abs(value(star) - house_offer(star) * 1.5) < 1, "the board asks half again what the house pays for a proven earner"
     got[1][0].starts = 1
     assert scrap(mare, 1, horses) is None, "only the owner can sell a horse to the house"
     print(f"scrap: a house horse hands back ${SCRAP:,.0f} unraced; a pack-ripper nets {rtp:.0%}-{SCRAP / HOUSE_HORSE:.0%} of price per roll")
