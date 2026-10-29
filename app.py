@@ -3228,8 +3228,10 @@ def entries_page(qs=None):
                          f"<div style='padding:0 8px'>{''.join(rows[mark:])}</div></details>")
     body = "".join(folds) if vid == "all" else "".join(rows)
     finder = (f"<div class=secbar>Races · {len(rows)}</div>" + (body or "<p class=sub>No races match.</p>"))
-    plan = "".join(f"<div class=card><a href='/horse/{urlname(h.name)}'><b>{esc(h.name)}</b></a> <span class=sub>{h.age}yo {sex_word(h)} · {tier_label(h)}</span><div>{tonight(h)}</div></div>" for h in racers)
-    return page("Entries", head + finder + "<div class=secbar>Your horses</div>" + (plan or "<p class=sub>No racers.</p>"))
+    plan = "".join(f"<div class=card style='display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap'><div style='flex:1;min-width:0'><a href='/horse/{urlname(h.name)}'><b>{esc(h.name)}</b></a> <span class=sub>{h.age}yo {sex_word(h)} · {tier_label(h)}</span><div>{tonight(h)}</div></div>"
+                   f"<span class=row style='gap:6px'><a class='btn sec' href='/horse/{urlname(h.name)}'>{'Change' if getattr(h, 'order', None) else 'Enter'}</a>"
+                   + (f"<form method=post action=/scratch class=inline><input type=hidden name=h value='{esc(h.name)}'><button class=sec>Scratch</button></form>" if getattr(h, "order", None) and not on_card(h) else "") + "</span></div>" for h in racers)
+    return page("Entries", head + "<div class=secbar>Your horses</div>" + (plan or "<p class=sub>No racers.</p>") + "<div class=secbar>Find a race</div>" + finder)
 
 
 def unseen_night():
