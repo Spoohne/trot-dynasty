@@ -574,6 +574,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .mgr .mname{display:flex;flex-direction:column;min-width:0}.mgr .mname b{font-size:14px;line-height:1.1;overflow-wrap:anywhere}.mgr .mname small{font-size:11px;color:var(--ink3);white-space:nowrap}.mgr .mname small i{font-style:normal;color:var(--win);font-weight:700}
 .mgr select{width:100%;font-size:13px;font-weight:600;padding:5px 4px;background:#0b1120;color:var(--ink);border:1px solid var(--rule);border-radius:3px;box-shadow:inset 1px 1px 0 #0008}.mgr select:focus{outline:none;border-color:var(--tote);box-shadow:0 0 0 1px var(--tote)}
 .mgr .mrow.done select{opacity:.6}
+.mgr .erow2{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--rule2)}.mgr .erow2 .sub{font-size:12px}
 .mgr .mact{display:flex;gap:8px;margin-top:10px}.mgr .mact button,.mgr .mact .btn{width:auto;margin:0;flex:1;text-align:center;position:static}
 .pk .pkrow{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--rule2);cursor:pointer}.pk .pkrow.on b{color:var(--tote)}.pk .pkrow .sub{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pk input{accent-color:var(--tote);margin:0}
 .fullorder{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:16px;background:#05070dcc}.fobox{width:min(440px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:2px solid var(--rule);border-top:3px solid var(--tote);padding:10px 12px}.foh{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}.foh span{color:var(--ink2);font-size:13px}.forow{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)}.forow.fome{background:#e8a33a22}.fopl{width:34px;flex:none}.fon{flex:1;min-width:0;display:flex;flex-direction:column}.fon small{color:var(--ink2);font-size:12px}.foo{width:44px;text-align:right;color:var(--ink2)}.fom{width:46px;text-align:right}.fohead{font-size:11px;color:var(--ink3);text-transform:uppercase;border-top:0}.mut{margin-top:10px;padding-top:8px;border-top:2px solid var(--rule)}.muh{display:flex;gap:6px;font-size:11px;color:var(--ink3);text-transform:uppercase;padding-bottom:4px}.muh span:first-child{flex:1;color:var(--tote);font-weight:700;letter-spacing:.1em}.murow{display:flex;align-items:center;gap:6px;padding:4px 0}.mun{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.muv{width:58px;text-align:right;font-variant-numeric:tabular-nums}.muex{display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--rule2);font-size:14px}
@@ -629,7 +630,7 @@ h2{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;text
 .hdr.card{padding:0}
 button,.btn,.btn.big,button.big{border-radius:0;text-transform:uppercase;letter-spacing:.06em;font-weight:700;box-shadow:3px 3px 0 var(--edge),inset 0 2px 0 #fff5,inset 0 -2px 0 #0003;border:2px solid var(--edge);transition:transform .05s}
 button:active,.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}
-button.sec{background:var(--btn2);color:var(--ink);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge)}
+button.sec,a.btn.sec{background:var(--btn2);color:var(--ink);border:2px solid var(--rule);box-shadow:3px 3px 0 var(--edge)}
 .btn.big.off{box-shadow:none;border-color:var(--rule)}
 select,input{border-radius:0;border:2px solid var(--rule);background:var(--well)}
 .ev{background:#0a0702;border:2px solid #3a2a10;border-left:4px solid var(--led);color:#ffd9a0;font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:15px;line-height:1.3;
@@ -1108,7 +1109,7 @@ def setup_page():
     body = ("<p class=sub>Nothing is entered until you confirm. Everything below stays editable afterward from the horse cards and the Training tab.</p>"
             f"<div class=card><b>Enter for tomorrow night · {len(entries)}</b><div class=sub>The trainer's picks, never a claimer.</div>{rows or '<div class=sub>Every fit horse is already entered.</div>'}</div>"
             f"<div class=card><b>Sets to work · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to work today.</div>'}</div>"
-            "<a class='btn sec' href=/entries style='display:block;text-align:center;margin-bottom:8px'>Check or change tomorrow's entries</a>"
+            "<a class='btn sec' href=/#entrybox style='display:block;text-align:center;margin-bottom:8px'>Check or change tomorrow's entries</a>"
             "<div class=row style='gap:8px'><form method=post action=/setup style='flex:1'><button class=big style='width:100%;background:var(--win);color:#06170c;box-shadow:3px 3px 0 var(--edge)'" + ("" if entries or sets else " disabled") + ">Confirm</button></form>"
             "<a class='btn sec big' href=/ style='flex:1;text-align:center'>Cancel</a></div>")
     return page("Stable Manager", body)
@@ -1187,8 +1188,6 @@ def training_page():
                       "<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Job</span><span>Focus</span></div>"
                       + srows + "</div><div class=mact><button class=sec name=do value=save>Save sets</button>"
                       f"<button name=do value=deploy{'' if again else ' disabled'}>Work sets ({len(again)})</button></div></form>") if ys else ""
-        repeat_all = ("<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Entries</b></div><div class=sub>Check or change tomorrow's entries, or preview what the manager would enter and work tonight.</div>"
-                      "<div class=mact><a class='btn sec' href=/entries>Tomorrow's entries</a><a class='btn sec' href=/setup>Set up tonight</a></div></div>") + repeat_all
     else:
         repeat_all = (f"<form method=post action=/job style='margin:0 0 8px'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
                       f"<button class=big>Repeat yesterday for all ({len(again)})</button></form>") if len(again) > 1 else ""
@@ -1438,7 +1437,7 @@ def race_banner():
     idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
     if idle:
         left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
-        out += bar(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow. Entries drawn in {left // 3600}h {left % 3600 // 60}m", "/")
+        out += bar(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow. Entries drawn in {left // 3600}h {left % 3600 // 60}m", "/#entrybox")
     open_picks = [s for s in stakes_tonight() if s.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s)) >= 2]
     if open_picks:
         out += bar(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''} tonight: make your picks", "/stakes#picks")
@@ -1446,9 +1445,6 @@ def race_banner():
         log = P().get("pass_log")
         if log and log[0] == G["day"]:
             out += f"<div class=ev>Stable Manager{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} set{'s' if log[2] != 1 else ''} worked.</div>"
-        elif idle or unworked():
-            out += ("<a class='btn big' href=/setup>Stable Manager: set up tonight</a>"
-                    "<div class=sub style='margin:4px 0 8px'>Shows what the trainer would enter and which sets would run, then asks you to confirm.</div>")
     return out
 
 
@@ -3155,7 +3151,7 @@ def barn_page(qs=None):
     owe = (f"<div class='card ev' style='border-color:var(--loss)'><b>Training bill overdue: ${owe:,.0f}</b><div class=sub>Your trainer's "
            "day rate and the farm's board ran past your cash. It comes out of your next purses. Selling or retiring a horse that isn't "
            "earning brings the bill down.</div></div>" if owe else "")
-    return page("Your barn", menu + owe + race_banner() + train_banner() + ev + cards + wipe)
+    return page("Your barn", menu + owe + race_banner() + train_banner() + ev + entry_box() + cards + wipe)
 
 
 def entries_page(qs=None):
@@ -3228,10 +3224,27 @@ def entries_page(qs=None):
                          f"<div style='padding:0 8px'>{''.join(rows[mark:])}</div></details>")
     body = "".join(folds) if vid == "all" else "".join(rows)
     finder = (f"<div class=secbar>Races · {len(rows)}</div>" + (body or "<p class=sub>No races match.</p>"))
-    plan = "".join(f"<div class=card style='display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap'><div style='flex:1;min-width:0'><a href='/horse/{urlname(h.name)}'><b>{esc(h.name)}</b></a> <span class=sub>{h.age}yo {sex_word(h)} · {tier_label(h)}</span><div>{tonight(h)}</div></div>"
+    return page("Find a race", head + finder)
+
+
+def entry_rows(racers):
+    """One line a racer: what it's doing tomorrow night, Enter or Change (the horse page picks the race), and Scratch."""
+    return "".join(f"<div class='erow2'><div style='flex:1;min-width:0'><a href='/horse/{urlname(h.name)}'><b>{esc(h.name)}</b></a> <span class=sub>{h.age}yo {sex_word(h)} · {tier_label(h)}</span><div class=sub>{tonight(h)}</div></div>"
                    f"<span class=row style='gap:6px'><a class='btn sec' href='/horse/{urlname(h.name)}'>{'Change' if getattr(h, 'order', None) else 'Enter'}</a>"
                    + (f"<form method=post action=/scratch class=inline><input type=hidden name=h value='{esc(h.name)}'><button class=sec>Scratch</button></form>" if getattr(h, "order", None) and not on_card(h) else "") + "</span></div>" for h in racers)
-    return page("Entries", head + "<div class=secbar>Your horses</div>" + (plan or "<p class=sub>No racers.</p>") + "<div class=secbar>Find a race</div>" + finder)
+
+
+def entry_box():
+    """The Barn tab's entry box: every racer's entry for tomorrow night, the trainer's picks in one tap, and the race finder."""
+    racers = [h for h in mine() if not h.retired]
+    if not racers or entries_closed():
+        return ""
+    open_ = sum(1 for h in racers if not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h))
+    acts = ("<div class=mact>" + (f"<form method=post action=/entries class=inline style='flex:1'><input type=hidden name=back value=/><button class=sec style='width:100%'>Trainer's picks</button></form>" if open_ else "")
+            + ("<a class='btn sec' href=/setup>Set up tonight</a>" if has_pass(ME) else "") + "<a class='btn sec' href=/entries>Find a race</a></div>")
+    return (f"<div class='card hc mgr' id=entrybox style='--tc:#c9922e'><div class=mhead><b>Entry box</b><span class='pchip{' lit' if open_ else ''}'>{open_} to enter</span></div>"
+            "<div class=sub>Tomorrow night's entries, drawn into the card at 8 PM. Change or scratch any until then.</div>"
+            f"<div class=mgrid>{entry_rows(racers)}</div>{acts}</div>")
 
 
 def unseen_night():
@@ -4883,7 +4896,7 @@ class H(BaseHTTPRequestHandler):
         if p == "/entries":
             trainers_entries(G["horses"])
             save()
-            return self.send("", 303, "/entries")
+            return self.send("", 303, "/#entrybox" if q.get("back") == "/" else "/entries")
         if p == "/buytonic":
             k = q.get("k")
             if k in TONIC_PRICE and e.cash.get(ME, 0) >= TONIC_PRICE[k]:
