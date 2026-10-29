@@ -1441,7 +1441,9 @@ GUIDE = [
     ]),
     ("Stakes and the Crown", [
         ("Stakes", "The big races of the season, on the Stakes & Crown page. Most must be nominated in advance, with a fee to keep a horse "
-         "eligible; nominate early and it costs less. Stakes are run at Harness Park and carry the richest purses on the circuit."),
+         "eligible; nominate early and it costs less. Stakes are run at Harness Park and carry the richest purses on the circuit. "
+         "Each stake is for colts, for fillies and mares, or for both, and when a division has a fillies' race that week the open "
+         "one is the colts'. A horse starts in one stake a night."),
         ("The Crown", "The season closes with the Crown: the top earners in each division are invited to its championship, and the "
          "winner is that year's champion. One title per division per year, and it stays in the book forever."),
         ("Trophies and records", "Stakes wins, championships and course records go in a horse's trophy case. Every track keeps its own "
