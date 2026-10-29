@@ -1792,11 +1792,16 @@ def fill(v, h):
         v += (h.id % 3 - 1) * 0.8
     xs, ys = (-4.17,) + PIP_STEPS, range(10, 101, 10)
     if v <= xs[0]:
-        return max(4.0, 10 + 6 * (v - xs[0]))
-    if v >= xs[-1]:
-        return 100.0
-    i = bisect.bisect_right(xs, v) - 1
-    return ys[i] + 10 * (v - xs[i]) / (xs[i + 1] - xs[i])
+        raw = max(4.0, 10 + 6 * (v - xs[0]))
+    elif v >= xs[-1]:
+        raw = 100.0
+    else:
+        i = bisect.bisect_right(xs, v) - 1
+        raw = ys[i] + 10 * (v - xs[i]) / (xs[i + 1] - xs[i])
+    return BAR_FLOOR + (100 - BAR_FLOOR) * raw / 100         # lifted: the weakest bar is still a quarter full, so a card never looks empty
+
+
+BAR_FLOOR = 25   # chosen 2026-10-29 off a side-by-side of real cards: tiers still read, a green 2-year-old no longer looks like another species
 
 
 def on_bar(trait, v):
