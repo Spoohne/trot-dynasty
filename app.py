@@ -405,6 +405,13 @@ def undo_night():
 def tick():
     """One game week for everyone: stakes, the cards, the books. Each player's barn gets its own notices."""
     snapshot()
+    for o in list(G.get("players", {})):                      # Season Pass grace: a holder who didn't check in today is set up, three nights at most
+        if has_pass(o):
+            if P(o).get("seen_day") == G["day"]:
+                P(o)["pass_missed"] = 0
+            elif P(o).get("pass_missed", 0) < PASS_GRACE:
+                P(o)["pass_missed"] = P(o).get("pass_missed", 0) + 1
+                setup_tonight(o, auto=True)
     day, before = G["day"], {h.id: (h.earnings, h.owner) for h in G["horses"] if h.owner in c.HUMAN}
     for o in G.get("players", {}):                            # the books going into tonight: the Earnings graphs, week by week
         hist = P(o).setdefault("hist", [])
@@ -984,9 +991,10 @@ def page(title, body, foot=True, theme=None):
             f"<title>{esc(title)} · Trot Dynasty</title>{HEAD}{FONTS}{MQ_CSS}<style>{CSS}{SKIN}{theme_css()}</style>{ASK_JS}</head>{bodytag}<div class=w>{top}<h1>{esc(title)}</h1>{under}{body}</div>{tabs}</body></html>")
 
 
-def youngsters():
+def youngsters(o=None):
     """The day sheet's horses: your yearlings in the nursery and your 2- and 3-year-olds, youngest first."""
-    ys = [f for f in e.nursery if f.owner == ME and f.age == 1] + [h for h in mine() if not h.retired and h.age <= c.YOUNG]
+    o = ME if o is None else o
+    ys = [f for f in e.nursery if f.owner == o and f.age == 1] + [h for h in G["horses"] if h.owner == o and not h.retired and h.age <= c.YOUNG]
     return sorted(ys, key=lambda h: (h.age, h.name))
 
 
@@ -994,8 +1002,40 @@ def worked(h):
     return (getattr(h, "job", None) or (None,))[0] == G["day"]
 
 
-def unworked():
-    return [h for h in youngsters() if not worked(h) and not (h not in e.nursery and getattr(h, "order", None))]
+def unworked(o=None):
+    return [h for h in youngsters(o) if not worked(h) and not (h not in e.nursery and getattr(h, "order", None))]
+
+
+def apply_job(x, o, job, focus):
+    """One job on one youngster's day sheet for barn o; 'repeat' is yesterday's job and focus again. False if nothing was set."""
+    prev = getattr(x, "job", None)
+    if job == "repeat":
+        if not prev or prev[1] not in JOB_WORD:
+            return False
+        job, focus = prev[1], prev[2]
+    if focus not in FOCUS_NAME or job not in JOB_WORD or x.owner != o:
+        return False
+    if x in e.nursery:
+        e.handle(x, o, G["day"], job, focus)
+        return True
+    if not x.retired and x.age <= c.YOUNG and not getattr(x, "order", None) and not (job == "train" and x.freshness < 35):
+        x.job = (G["day"], job, focus)
+        return True
+    return False
+
+
+def has_pass(o):
+    return bool(P(o).get("pass"))
+
+
+def setup_tonight(o, auto=False):
+    """The Season Pass's one button: the trainer's entries for every fit, unentered horse (never a claimer), yesterday's
+    sheet again for every youngster not yet worked, and a note of what it did. auto: run by the night tick for a pass
+    holder who didn't check in."""
+    n_e = trainers_entries(G["horses"], o)
+    n_s = sum(apply_job(x, o, "repeat", "") for x in unworked(o))
+    P(o)["pass_log"] = (G["day"], n_e, n_s, auto)
+    return n_e, n_s
 
 
 def train_banner():
@@ -1058,6 +1098,7 @@ def training_page():
     return page("Training", body)
 
 
+PASS_GRACE = 3       # the Season Pass covers this many nights in a row without a check-in, then waits
 PICK_PRIZE = 1_000   # the handicapper's game: a correct stake pick earns this flat prize, small next to any purse. Measured 2026-10-29:
                      # 89 stakes a season; always-the-favorite hits 16-30%, so chalk banks about $20-27k a season at this prize
 
@@ -1151,6 +1192,13 @@ def race_banner():
     open_picks = [s for s in stakes_tonight() if s.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s)) >= 2]
     if open_picks:
         out += bar(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''} tonight: make your picks", "/stakes#picks")
+    if has_pass(ME):                                                           # the Season Pass: one tap does the chores
+        log = P().get("pass_log")
+        if log and log[0] == G["day"]:
+            out += f"<div class=ev>Season Pass{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} sheet{'s' if log[2] != 1 else ''} repeated.</div>"
+        elif idle or unworked():
+            out += ("<form method=post action=/setup><button class=big>Set up tonight · Season Pass</button>"
+                    "<div class=sub style='margin:-4px 0 8px'>The trainer's entries for every fit horse, never a claimer, and yesterday's sheet for every youngster. All of it stays editable.</div></form>")
     return out
 
 
@@ -1288,13 +1336,14 @@ def admin_page(msg=""):
     rows = "".join(f"<tr><td><b>{esc(p.get('user', '?'))}</b><div class=sub>{esc(barn_name(o))}</div></td>"
                    f"<td style='text-align:right'>${e.cash.get(o, 0):,.0f}</td>"
                    f"<td style='text-align:right'>{sum(1 for h in G['horses'] if h.owner == o and not h.retired)}</td>"
-                   f"<td style='text-align:right' class=sub>{ago(p.get('last_seen'))}</td></tr>"
+                   f"<td style='text-align:right' class=sub>{ago(p.get('last_seen'))}</td>"
+                   f"<td><form method=post action=/admin/pass class=inline><input type=hidden name=o value={o}><button class=sec style='padding:3px 8px'>{'Pass: on' if p.get('pass') else 'Pass: off'}</button></form></td></tr>"
                    for o, p in sorted(G["players"].items()))
     opts = "".join(f"<option value={o}>{esc(p.get('user', '?'))} · {esc(full_name(o))}</option>" for o, p in sorted(G["players"].items()))
     last = f"Year {c.year_of(int(snaps[-1][6:12]))}, week {int(snaps[-1][6:12]) % c.YEAR + 1}" if snaps else ""
     body = ((f"<div class=card><b>{esc(msg)}</b></div>" if msg else "")
             + "<div class=secbar>Players</div><table><tr><th>Player</th><th style='text-align:right'>Cash</th>"
-              "<th style='text-align:right'>Racers</th><th style='text-align:right'>Seen</th></tr>" + rows + "</table>"
+              "<th style='text-align:right'>Racers</th><th style='text-align:right'>Seen</th><th></th></tr>" + rows + "</table>"
             + "<div class=secbar>Cash</div><form method=post action=/admin/cash class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
               f"<select name=o>{opts}</select><input name=amt type=number step=1000 placeholder='+/- amount' style='width:140px'>"
               "<button>Apply</button><div class=sub style='width:100%'>A negative amount takes cash away.</div></form>"
@@ -1447,6 +1496,10 @@ GUIDE = [
          "before it runs, one pick a stake, free. A winner earns a small prize from the track, the same for every stake, and the "
          "season's best handicapper is named at the Crown. It's a prize for reading the form, not a wager: nothing is staked and "
          "nothing can be lost."),
+        ("The Season Pass", "The pass does your chores in one tap: the trainer's entries for every fit horse and yesterday's "
+         "day sheet for every youngster, all of it still yours to change. Miss a night and it covers you, for a few nights in a "
+         "row, then it waits for you. It never enters a claimer, never nominates for a stake, and never does anything you "
+         "couldn't do yourself with a few taps."),
         ("Fair play", "Nothing you can buy for real money wins a race, buys a horse, or makes one grow faster: horses are earned on the "
          "track, in the ring and in the breeding shed, at the same price for everyone. Each person runs one barn. The stewards review "
          "sales that look wrong, such as horses passed between the same two barns for far under their worth, and a barn under review "
@@ -2594,14 +2647,18 @@ def tonight(h):
     return "<span style='color:var(--tote)'>not entered</span>"
 
 
-def trainers_entries(horses):
-    """Fill the sheet with the trainer's picks for every fit, unentered horse. Each stays editable."""
+def trainers_entries(horses, o=None):
+    """Fill the sheet with the trainer's picks for every fit, unentered horse. Each stays editable. Never a claimer:
+    putting a horse up for a tag is the owner's call alone."""
+    o = ME if o is None else o
     n = 0
     for h in horses:
-        if h.owner == ME and not h.retired and not getattr(h, "order", None) and h.freshness >= 50:
+        if h.owner == o and not h.retired and not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h):
             tr = c.trainer_of(h)
             tr.plan(h)                                         # sets h.ship by style
             group, sex, name, purse, tag = c.entry(h)
+            if tag:
+                continue
             track = getattr(h, "ship", None) or ("mile", "half")[h.id % 2]
             h.order = ("enter", name, purse, tag, track)
             n += 1
@@ -4141,7 +4198,7 @@ class H(BaseHTTPRequestHandler):
         if o is None:
             return p.startswith(("/mock/", "/login", "/signup")) or p in ("/manifest.webmanifest", "/sw.js", "/offline")
         ME = o
-        P()["last_seen"] = time.time()
+        P()["last_seen"] = time.time(); P()["seen_day"] = G["day"]        # today's check-in: the pass's grace counts the days missed
         ips, ua = P().setdefault("ips", []), (self.headers.get("User-Agent") or "")[:80]   # where and what they sign in from: the anti-dupe review reads it
         if self.ip() not in ips:
             ips.append(self.ip()); del ips[:-8]
@@ -4455,6 +4512,14 @@ class H(BaseHTTPRequestHandler):
             return self.send(admin_page(f"Clock frozen at {at}." if at else "Clock running again."))
         if p == "/admin/undo" and ME == ADMIN:
             return self.send(admin_page("Last race night undone." if undo_night() else "Nothing to undo."))
+        if p == "/setup" and has_pass(ME):                               # the Season Pass's one button
+            setup_tonight(ME); save()
+            return self.send("", 303, "/")
+        if p == "/admin/pass" and ME == ADMIN:                            # dev: the pass on or off for a barn, until there's a store
+            o = int(q.get("o", "")) if str(q.get("o", "")).isdigit() else -1
+            if o in G["players"]:
+                P(o)["pass"] = not P(o).get("pass"); save()
+            return self.send(admin_page(f"Season Pass {'on' if P(o).get('pass') else 'off'} for {G['players'][o].get('user')}." if o in G["players"] else "Pick a player."))
         if p == "/pick":                                                  # the handicapper's game: one pick per stake, changeable until it runs
             s = next((s for s in stakes_tonight() if s.id == q.get("s")), None)
             hid = int(q["h"]) if str(q.get("h", "")).isdigit() else None
@@ -4542,26 +4607,14 @@ class H(BaseHTTPRequestHandler):
         elif p == "/groom" and h:
             e.groom(h, ME, G["day"])
         elif p == "/job":                                         # the day sheet: one job a day for a youngster
-            def set_job(x, job, focus):
-                prev = getattr(x, "job", None)
-                if job == "repeat":                                   # one tap: yesterday's job and focus again
-                    if not prev or prev[1] not in JOB_WORD:
-                        return
-                    job, focus = prev[1], prev[2]
-                if focus not in FOCUS_NAME or job not in JOB_WORD:
-                    return
-                if x in e.nursery:
-                    e.handle(x, ME, G["day"], job, focus)
-                elif x.owner == ME and not x.retired and x.age <= c.YOUNG and not getattr(x, "order", None) and not (job == "train" and x.freshness < 35):
-                    x.job = (G["day"], job, focus)
             if q.get("h") == "*":                                     # the whole string: every youngster not yet worked today
                 for x in unworked():
-                    set_job(x, "repeat", "")
+                    apply_job(x, ME, "repeat", "")
             else:
                 f = next((x for x in e.nursery if x.name == q.get("h", "")), None)
                 x = f or (h if h and h.owner == ME else None)
                 if x:
-                    set_job(x, q.get("j", ""), q.get("f", "gait"))
+                    apply_job(x, ME, q.get("j", ""), q.get("f", "gait"))
             save()
             return self.send("", 303, q.get("back") if q.get("back", "").startswith("/") else "/training")
         elif p == "/scratch" and h and h.owner == ME:
