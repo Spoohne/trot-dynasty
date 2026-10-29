@@ -1109,7 +1109,7 @@ def setup_page():
             f"<div class=card><b>Enter for tomorrow night · {len(entries)}</b><div class=sub>The trainer's picks, never a claimer.</div>{rows or '<div class=sub>Every fit horse is already entered.</div>'}</div>"
             f"<div class=card><b>Deploy sets · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to deploy today.</div>'}</div>"
             "<a class='btn sec' href=/entries style='display:block;text-align:center;margin-bottom:8px'>Check or change tomorrow's entries</a>"
-            "<div class=row style='gap:8px'><form method=post action=/setup><button class=big" + ("" if entries or sets else " disabled") + ">Confirm</button></form>"
+            "<div class=row style='gap:8px'><form method=post action=/setup style='flex:1'><button class=big style='width:100%;background:var(--win);color:#06170c;box-shadow:3px 3px 0 var(--edge)'" + ("" if entries or sets else " disabled") + ">Confirm</button></form>"
             "<a class='btn sec big' href=/ style='flex:1;text-align:center'>Cancel</a></div>")
     return page("Stable Manager", body)
 
