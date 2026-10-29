@@ -206,23 +206,39 @@ def buy_house_horse(owner, horses, rig=None):
     return h, rarity
 
 
-SCRAP = 20_000           # what the house pays back, flat, for any horse you hand it
+SCRAP = 20_000           # the least the house pays for any horse you hand it
+HOUSE_SHARE = 0.4        # of a proven racer's projected career net: the house buys on the record, never on the card
 MIN_PRICE = 50_000       # nothing goes on the sale board for less
 
 
+def house_offer(h):
+    """What the house pays for a horse tonight: 40% of its projected career net, from its own record (its last two
+    seasons' purses less cuts and board, carried over the five seasons ahead with the market's decline from age 4),
+    never under $20k. An unraced or losing horse gets the floor: the card alone buys nothing."""
+    share = 1 - c.DRIVER - st.mean(t.cut for t in c.ROSTER)
+    seasons = getattr(h, "seasons", {}) or {}
+    rows = [seasons[y] for y in sorted(seasons)[-2:]]          # its two latest seasons on the books (c.DAY is only set in a tick)
+    if h.retired or sum(r[0] for r in rows) < 8:
+        return SCRAP
+    season = st.mean(r[4] * share - c.YEAR * UPKEEP for r in rows)
+    ahead = sum(max(0.3, 1 - 0.12 * max(0, h.age + k - 4)) for k in range(min(5, sim.RETIRE_AGE - h.age)))
+    return max(SCRAP, round(HOUSE_SHARE * season * ahead, -3))
+
+
 def scrap(h, owner, horses):
-    """Sell any horse back to the house, at once, for a flat $20k: the floor under every horse in the barn.
-    The sale board (from $50k) is where a horse worth more gets its price."""
+    """Sell any horse back to the house, at once, for house_offer(): the floor under every horse in the barn.
+    The sale board (from $50k) is where a horse worth more to another barn gets its price."""
     if h.owner != owner or h not in horses:
         return None
+    paid = house_offer(h)
     if getattr(h, "trainer", None):
         h.trainer.horses -= 1
     horses.remove(h)
     barn_size[owner] = barn_size.get(owner, 1) - 1
     listings.pop(h.id, None); auctions.pop(h.id, None)
-    h.owner, h.gone = -1, f"sold to the house for ${SCRAP:,.0f}"
-    book(owner, "sales", SCRAP)
-    return SCRAP
+    h.owner, h.gone = -1, f"sold to the house for ${paid:,.0f}"
+    book(owner, "sales", paid)
+    return paid
 
 
 def value(h):
@@ -934,14 +950,21 @@ if __name__ == "__main__":
     print(f"house horse ${HOUSE_HORSE:,}: return to player {rtp:.0%} over a full career; "
           f"{sum(o for _, _, o, net in LOOT if net > HOUSE_HORSE):.1%} of rolls beat the price")
     assert 0.8 <= rtp <= 0.95, "the house keeps an edge, but not a cruel one"
-    cash[0], level[0] = HOUSE_HORSE * 3, 1                     # a working barn with room for two
+    cash[0], level[0], house_bought[0] = HOUSE_HORSE * 3, 1, 99   # a working barn with room for two, past the welcome prices
     before = len([h for h in horses if h.owner == 0])
     got = [buy_house_horse(0, horses) for _ in range(4)]
     print("rolled:", [r for g in got if g for _, r in [g]], "stalls:", before, "->", len([h for h in horses if h.owner == 0]))
     assert all(got[:3]) and got[3] is None, "three rolls on the money, the fourth refused for cash"
     assert cash[0] == 0 and all(g[0].age == 3 and g[0].starts == 0 for g in got[:3])
+    assert house_offer(got[0][0]) == SCRAP, "unraced, the house pays the floor"
     assert scrap(got[0][0], 0, horses) == SCRAP and cash[0] == SCRAP
     assert scrap(got[0][0], 0, horses) is None, "can't scrap twice"
+    star = got[1][0]
+    star.seasons = {9: [20, 8, 4, 2, 400_000, 110.0], 8: [18, 6, 3, 2, 300_000, 111.0], 7: [20, 0, 0, 0, 0, 999.0]}
+    assert house_offer(star) > SCRAP and house_offer(star) == round(HOUSE_SHARE * st.mean(
+        p * (1 - c.DRIVER - st.mean(t.cut for t in c.ROSTER)) - c.YEAR * UPKEEP for p in (400_000, 300_000)) * (1 + 1 + .88 + .76 + .64), -3)
+    star.seasons[9][4] = star.seasons[8][4] = 20_000
+    assert house_offer(star) == SCRAP, "a record that didn't cover its board gets the floor"
     got[1][0].starts = 1
     assert scrap(mare, 1, horses) is None, "only the owner can sell a horse to the house"
     print(f"scrap: a house horse hands back ${SCRAP:,.0f} unraced; a pack-ripper nets {rtp:.0%}-{SCRAP / HOUSE_HORSE:.0%} of price per roll")

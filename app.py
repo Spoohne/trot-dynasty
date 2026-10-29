@@ -1151,7 +1151,7 @@ GUIDE = [
         ("The Market", "The <b>Auction</b> is the sale board: horses from around the circuit, each running a full day, bid in steps, with "
          "a late bid putting time back on the clock. You can also buy an unraced 3-year-old from the house, sight unseen: most are "
          "ordinary, a few are something special. The <b>Shop</b> sells Post Time Tonic, with more to come. Sell your own horses on "
-         "the board, or to the house for a flat price."),
+         "the board, or to the house, which pays on the record: more for a proven earner, a floor for the rest."),
         ("Barn upgrades", "A bigger barn means more stalls, more grooming slots each week, and the breeding shed and broodmare space "
          "you need to breed your own."),
     ]),
@@ -2791,15 +2791,16 @@ def growth_chart(h):
 
 def sell_box(h):
     """Two ways out of the barn: the sale board, where the price is the market's (never under $50k) and a buyer has
-    to come; or the house, which takes any horse tonight for a flat $20k."""
-    house = e.SCRAP
+    to come; or the house, which takes any horse tonight at a price set by its record, never under $20k."""
+    house = e.house_offer(h)
     return (f"<div class=card><div class=row style='gap:10px;flex-wrap:wrap'>"
             f"<form method=post action=/order class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=o value=sell>"
             f"<button class=sec>List on the market</button></form>"
             f"<form method=post action=/scrap class=inline><input type=hidden name=h value='{esc(h.name)}'>"
             f"<button class=sec onclick=\"return ask(this,'Sell {h.name} to the house for ${house:,.0f}? Gone for good.')\">Sell to the house · ${house:,.0f}</button></form></div>"
             f"<div class=sub>Market: priced at what the horse is worth, ${e.MIN_PRICE:,} at the least; it goes up tonight and sells when a barn buys. "
-            f"House: ${house:,.0f}, paid now, no buyer needed.</div></div>")
+            f"House: ${house:,.0f}, paid now, no buyer needed. The house pays on the record, so a proven earner brings "
+            f"more and an unraced or losing horse brings ${e.SCRAP:,}.</div></div>")
 
 
 def horse_page(name, entering=False):
