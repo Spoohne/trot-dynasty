@@ -1292,7 +1292,7 @@ def admin_page(msg=""):
               f"<select name=o>{opts}</select><input name=amt type=number step=1000 placeholder='+/- amount' style='width:140px'>"
               "<button>Apply</button><div class=sub style='width:100%'>A negative amount takes cash away.</div></form>"
             + "<div class=secbar>Gift a horse</div><form method=post action=/admin/gift class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
-              f"<select name=o>{opts}</select><input name=h placeholder='Horse name' style='width:160px'><select name=mode><option value=exact>this horse</option><option value=like>one like it</option></select>"
+              f"<select name=o>{opts}</select><input name=h placeholder='Horse name' style='width:160px'><select name=mode><option value=exact>this horse</option><option value=like>one like it</option><option value=clone>an identical copy (dev)</option></select>"
               "<button>Give</button><div class=sub style='width:100%'>Exact: a computer barn's racer by name. Like: the nearest computer-owned racer of the same age by rating.</div></form>"
             + "<div class=secbar>Message from the barn</div><form method=post action=/admin/msg class=card style='display:flex;flex-direction:column;gap:8px'>"
               "<textarea name=text maxlength=280 rows=3 placeholder='New tonight: ...' style='font:inherit;font-size:16px;padding:8px;background:var(--panel);color:var(--ink);border:1px solid var(--rule)'></textarea>"
@@ -4378,6 +4378,27 @@ class H(BaseHTTPRequestHandler):
             name, like = q.get("h", "").strip(), q.get("mode") == "like"
             if o not in G["players"] or not name:
                 return self.send(admin_page("Pick a player and name a horse."))
+            if q.get("mode") == "clone":                               # dev: an identical copy, fresh record, new name
+                import copy
+                ref = find_horse(name)
+                if not ref or ref.retired:
+                    return self.send(admin_page(f"No racer called {name}."))
+                h = copy.copy(ref)
+                for k, v in list(vars(ref).items()):                   # own copies of every dict/list so the two never share state
+                    if isinstance(v, (dict, list, set)) and k not in ("sire", "dam"):
+                        setattr(h, k, copy.deepcopy(v))
+                h.id = max(x.id for x in G["horses"]) + 1
+                base = ref.name + " II"; n = 2
+                while find_horse(base):
+                    n += 1; base = f"{ref.name} {'I' * n if n <= 3 else n}"
+                h.name = base
+                h.results, h.trophies, h.seasons, h.history = [], [], {}, []
+                h.starts = h.wins = h.earnings = 0; h.places = h.shows = 0; h.last5 = []; h.recent = []
+                h.last, h.best, h.order, h.ship, h.job, h.wk = None, 999, None, None, None, None
+                h.owner, h.breeder, h.gone = o, None, "a gift from the circuit"
+                h.freshness = 100
+                G["horses"].append(h); e.barn_size[o] = e.barn_size.get(o, 0) + 1; c.trainer_of(h); save()
+                return self.send(admin_page(f"{h.name} ({h.age}yo {sex_word(h)}, {tier_label(h)}), a copy of {ref.name}, now races for {G['players'][o].get('user')}."))
             if like:
                 ref = find_horse(name)
                 if not ref:
