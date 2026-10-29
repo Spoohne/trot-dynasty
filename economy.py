@@ -25,7 +25,10 @@ AI_BREED_WEEK = 26       # until then player-owned studs are for players; AI bar
 AI_RATE = 1.0            # what an AI barn will pay for a cover, as a share of the house price: the AI's own
                          # the computer barns pay their own house price; a player asking more gets no computer mares
 REGISTRY = 0.15          # the breed registry's cut of every cover sold: a sink on stud money
-COMMISSION = 0.05        # auction and private sale
+COMMISSION = 0.10        # the house's cut of every sale on the board: the one sink in a player-to-player market
+HOLD_WEEKS = 3           # a horse bought on the board can't be sold again for this long (no flipping between barns)
+TODAY = [0]              # the game day, kept current by the app so sales can be stamped outside a race night
+trades = []              # every sale between barns: (day, seller, buyer, horse id, price, market value then); the admin's review reads it
 RESERVE = 25_000         # an AI barn keeps this much before spending
 AI_CAP = 2_500_000       # what a computer barn banks: each year half of anything above it goes back into the farm (the sink)
 BARN_MAX = 12            # AI stalls
@@ -236,7 +239,7 @@ def house_offer(h):
 def scrap(h, owner, horses):
     """Sell any horse back to the house, at once, for house_offer(): the floor under every horse in the barn.
     The sale board (from $50k) is where a horse worth more to another barn gets its price."""
-    if h.owner != owner or h not in horses:
+    if h.owner != owner or h not in horses or held(h):
         return None
     paid = house_offer(h)
     if getattr(h, "trainer", None):
@@ -349,7 +352,15 @@ def transfer(h, buyer, price, kind):
     book(h.owner, kind, price * (1 - COMMISSION))
     barn_size[buyer] = barn_size.get(buyer, 0) + 1
     barn_size[h.owner] = barn_size.get(h.owner, 1) - 1
+    trades.append((TODAY[0], h.owner, buyer, h.id, round(price), round(value(h))))
+    del trades[:-5000]
     h.owner, h.order, h.ship, h.gone = buyer, None, None, f"sold for ${price:,.0f}"
+    h.bought = TODAY[0]
+
+
+def held(h):
+    """Weeks before a horse bought on the board can be sold again; 0 when it can go."""
+    return max(0, HOLD_WEEKS - (TODAY[0] - getattr(h, "bought", -999)))
 
 
 STUD_RANK = {}       # stallion id -> his place among the standing studs (refreshed as the books settle)
@@ -379,7 +390,7 @@ auctions = {}            # horse id -> {"open": opening bid, "price": high bid, 
 def open_auction(h, now=None):
     now = _time.time() if now is None else now
     v = value(h)
-    start = max(STEP, round(v * rng.uniform(.6, .8), -4))         # bidding opens under value: the room bids it up
+    start = max(STEP, round(v * rng.uniform(.6, .8), -4), house_offer(h))   # bidding opens under value, never under what the house would pay
     keen = [o for o in cash if o not in human and o != h.owner and cash.get(o, 0) > start + RESERVE and barn_size.get(o, 0) < BARN_MAX]
     proxies = {o: round(min(cash[o] - RESERVE, v * rng.uniform(.8, 1.25)), -4) for o in rng.sample(keen, min(len(keen), rng.randint(0, 3)))}
     proxies = {o: t for o, t in proxies.items() if t >= start}   # only barns that would pay the opening bid take part
@@ -458,7 +469,7 @@ def post_listings(horses, ai):
         if len(mine) > BARN_FULL:
             list_for_sale(min(mine, key=value))
     for h in horses:
-        if getattr(h, "order", None) == "sell":
+        if getattr(h, "order", None) == "sell" and not held(h):
             list_for_sale(h)
 
 
@@ -1001,6 +1012,17 @@ if __name__ == "__main__":
     assert house_offer(got[0][0]) == SCRAP, "unraced, the house pays the floor"
     assert scrap(got[0][0], 0, horses) == SCRAP and cash[0] == SCRAP
     assert scrap(got[0][0], 0, horses) is None, "can't scrap twice"
+    # the board's rules: the reserve is never under the house offer, a sale is logged and stamps the horse, and it's held
+    seller = got[2][0]; seller.seasons = {9: [20, 8, 4, 2, 400_000, 110.0], 8: [18, 6, 3, 2, 300_000, 111.0]}
+    TODAY[0] = 100; open_auction(seller, now=0)
+    assert auctions[seller.id]["open"] >= house_offer(seller) > SCRAP, "bidding never opens under what the house pays"
+    cash[1] = 10_000_000; human.add(1); level[1] = 1; barn_size[1] = 0; n = len(trades)
+    assert bid(seller, 1, now=1, amount=auctions[seller.id]["open"]) and (settle_auctions(horses, now=10 ** 9) or True)
+    assert seller.owner == 1 and seller.bought == 100 and len(trades) == n + 1 and trades[-1][1:3] == (0, 1), "a sale is logged"
+    assert held(seller) == HOLD_WEEKS and scrap(seller, 1, horses) is None, "just bought: can't be sold on or to the house"
+    TODAY[0] = 100 + HOLD_WEEKS
+    assert not held(seller) and scrap(seller, 1, horses), "free to sell once the hold is up"
+    human.discard(1)
     star = got[1][0]
     star.seasons = {9: [20, 8, 4, 2, 400_000, 110.0], 8: [18, 6, 3, 2, 300_000, 111.0], 7: [20, 0, 0, 0, 0, 999.0]}
     assert house_offer(star) > SCRAP and house_offer(star) == round(HOUSE_SHARE * st.mean(

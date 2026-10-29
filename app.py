@@ -206,7 +206,7 @@ def save():
                      "bookings": e.bookings, "scouted": e.scouted, "nursery": e.nursery, "level": e.level, "groomed": e.groomed, "human": set(c.HUMAN), "roster": c.ROSTER,
                      "house": c.HOUSE, "barn_trainer": c.BARN_TRAINER, "class": c.CLASS_RATING,
                      "groups": c.GROUP_STATS, "calendar": sk.CALENDAR, "claims": c.CLAIMS, "champions": sk.CHAMPIONS, "hall": sk.HALL, "epoch": c.EPOCH[0], "rolled": e.ROLLED[0], "ratings": sk.RATINGS, "stories": c.STORIES, "records": c.RECORDS,
-                     "card": c.CARD, "drivers": c.DRIVER_STATS, "rng": sim.rng.getstate()}, f)
+                     "card": c.CARD, "drivers": c.DRIVER_STATS, "trades": e.trades, "rng": sim.rng.getstate()}, f)
         f.flush(); os.fsync(f.fileno())
     os.replace(SAVE + ".tmp", SAVE)
 
@@ -288,6 +288,7 @@ def load(path=None):
     e.bookings[:] = s["bookings"]; e.nursery[:] = s.get("nursery", []); e.scouted.clear(); e.scouted.update(s.get("scouted", ())); c.ROSTER[:] = s["roster"]; sk.CALENDAR[:] = s["calendar"]
     sk.CHAMPIONS.clear(); sk.CHAMPIONS.update(s.get("champions", {})); sk.HALL[:] = s.get("hall", [])
     c.EPOCH[0] = s.get("epoch", 0); e.ROLLED[0] = s.get("rolled")
+    e.trades[:] = s.get("trades", []); e.TODAY[0] = G["day"]
     c.CLAIMS.clear(); c.CLAIMS.update(s.get("claims", {}))
     c.DRIVER_STATS.clear(); c.DRIVER_STATS.update(s.get("drivers", {}))
     c.CARD.clear(); c.CARD.update(s.get("card", {}))
@@ -438,7 +439,7 @@ def tick():
             h.order = None
         if h.owner in c.HUMAN:
             h.order = h.ship = None
-    G["day"] += 1
+    G["day"] += 1; e.TODAY[0] = G["day"]
     if G["day"] % c.YEAR == 0:                                # the season's last night is run: roll the year in now, so week 1
         sk.year_tick(G["horses"], G["ai"], G["day"])          # opens with everyone a year older and the 2-year-olds in the barn
         G["horses"] = e.new_year(G["horses"], G["ai"])
@@ -1151,6 +1152,41 @@ def more_page():
     return page("Manage", body)
 
 
+def review_flags():
+    """Pairs of player barns the stewards should look at, with why. One barn per person is the rule; a second barn feeding
+    the first, or a real-money deal outside the game, both show up the same way: shared sign-ins, or sales between the
+    same two barns at prices far from the horse's worth. Signals only: the admin decides."""
+    pl, flags = G.get("players", {}), {}
+    def add(a, b, why):
+        k = tuple(sorted((a, b)))
+        if k not in G.get("cleared", []):
+            flags.setdefault(k, []).append(why)
+    ids = sorted(pl)
+    for i, a in enumerate(ids):
+        for b in ids[i + 1:]:
+            if a == ADMIN or b == ADMIN:
+                continue
+            shared = set(pl[a].get("ips", [])) & set(pl[b].get("ips", [])) - {"127.0.0.1"}
+            if shared:
+                add(a, b, f"signed in from the same address ({len(shared)} shared)")
+            if shared and set(pl[a].get("uas", [])) & set(pl[b].get("uas", [])):
+                add(a, b, "same address and the same device")
+    pair = collections.defaultdict(list)
+    for d, s, b, hid, price, worth in e.trades:
+        if s in pl and b in pl:
+            pair[tuple(sorted((s, b)))].append((d, s, b, hid, price, worth))
+    for (a, b), ts in pair.items():
+        if len(ts) >= 3:
+            add(a, b, f"{len(ts)} sales between them")
+        cheap = [t for t in ts if t[5] > e.MIN_PRICE and t[4] < t[5] / 3]
+        if cheap:
+            add(a, b, f"{len(cheap)} sold for under a third of worth")
+        flow = sum(t[4] if t[2] == a else -t[4] for t in ts)
+        if len(ts) >= 2 and abs(flow) == sum(t[4] for t in ts):
+            add(a, b, f"cash only ever goes one way (${abs(flow):,.0f})")
+    return flags
+
+
 def admin_page(msg=""):
     """The admin's desk: cash for any barn, undo the last race night, run a night now, and who's playing."""
     snaps = sorted(os.listdir(SNAPS)) if os.path.isdir(SNAPS) else []
@@ -1185,6 +1221,19 @@ def admin_page(msg=""):
             + (f"<form method=post action=/admin/undo class=inline><button class=sec onclick=\"return ask(this,'Undo the race night of {last}? "
                f"Everything since it ran goes back.')\">Undo last race night ({last})</button></form>" if snaps else "<span class=sub>No race night to undo yet.</span>")
             + f"<div class=sub style='width:100%'>{len(snaps)} night{'s' if len(snaps) != 1 else ''} can be undone, newest first.</div></div>")
+    flags, frozen = review_flags(), [o for o, p in G["players"].items() if p.get("frozen")]
+    who = lambda o: esc(G["players"].get(o, {}).get("user", "?"))
+    body += "<div class=secbar>Stewards' review</div>"
+    for (a, b), whys in sorted(flags.items()):
+        body += (f"<div class=card><b>{who(a)}</b> and <b>{who(b)}</b><div class=sub>{'; '.join(esc(w) for w in whys)}</div>"
+                 f"<form method=post action=/admin/review class='row' style='gap:8px;margin-top:6px'><input type=hidden name=a value={a}><input type=hidden name=b value={b}>"
+                 "<button class=sec name=do value=clear>Clear</button><button class=sec name=do value=warn>Warn both</button>"
+                 "<button class=warn name=do value=freeze>Freeze both</button></form></div>")
+    if not flags:
+        body += "<div class=sub>Nothing flagged: no shared sign-ins and no odd sales between barns.</div>"
+    for o in frozen:
+        body += (f"<div class=card><b>{who(o)}</b> is frozen: can race, can't buy or sell.<form method=post action=/admin/review class=inline>"
+                 f"<input type=hidden name=a value={o}><input type=hidden name=b value={o}><button class=sec name=do value=unfreeze>Unfreeze</button></form></div>")
     return page("Admin", body)
 
 
@@ -1285,10 +1334,17 @@ GUIDE = [
          "the race as it was run: watch from the grandstand, from the blimp, or the TV coverage."),
         ("Money", "Purses pay down the order of finish, with the lion's share to the winner. The trainer and driver take their cut of "
          "what each horse wins. Your Earnings page shows where every dollar came from and went."),
-        ("The Market", "The <b>Auction</b> is the sale board: horses from around the circuit, each running a full day, bid in steps, with "
-         "a late bid putting time back on the clock. You can also buy an unraced 3-year-old from the house, sight unseen: most are "
+        ("The Market", "The <b>Auction</b> is the sale board, and the only place a horse changes hands between barns: every horse "
+         "runs a full day in the open, bid in steps, with a late bid putting time back on the clock, and the highest bid at the close "
+         "takes it. There are no private deals, so the price of a horse is whatever the circuit's barns will pay. Bidding never opens "
+         "under what the house would pay for the horse, the house takes its commission on every sale, and a horse you buy stays in "
+         "your barn a few weeks before it can be sold on. You can also buy an unraced 3-year-old from the house, sight unseen: most are "
          "ordinary, a few are something special. The <b>Shop</b> sells Post Time Tonic, with more to come. Sell your own horses on "
          "the board, or to the house, which pays on the record: more for a proven earner, a floor for the rest."),
+        ("Fair play", "Nothing you can buy for real money wins a race, buys a horse, or makes one grow faster: horses are earned on the "
+         "track, in the ring and in the breeding shed, at the same price for everyone. Each person runs one barn. The stewards review "
+         "sales that look wrong, such as horses passed between the same two barns for far under their worth, and a barn under review "
+         "can race but not buy or sell until it's cleared."),
         ("Barn upgrades", "A bigger barn means more stalls, more grooming slots each week, and the Breeder's License and broodmare space "
          "you need to breed your own."),
     ]),
@@ -2963,6 +3019,10 @@ def sell_box(h):
     """Two ways out of the barn: the sale board, where the price is the market's (a proven earner's record, never under
     $50k) and a buyer has to come; or the house, which pays 40% of that same record tonight, never under $20k."""
     house = e.house_offer(h)
+    if (w := e.held(h)):
+        return f"<div class=card><div class=sub>Bought on the board: {h.name} can be sold again in {w} week{'s' if w != 1 else ''}.</div></div>"
+    if P().get("frozen"):
+        return "<div class=card><div class=sub>Your barn's buying and selling is paused while the stewards look at a sale. You can still race.</div></div>"
     return (f"<div class=card><div class=row style='gap:10px;flex-wrap:wrap'>"
             f"<form method=post action=/order class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=o value=sell>"
             f"<button class=sec>List on the market</button></form>"
@@ -3897,6 +3957,11 @@ class H(BaseHTTPRequestHandler):
             return p.startswith(("/mock/", "/login", "/signup")) or p in ("/manifest.webmanifest", "/sw.js", "/offline")
         ME = o
         P()["last_seen"] = time.time()
+        ips, ua = P().setdefault("ips", []), (self.headers.get("User-Agent") or "")[:80]   # where and what they sign in from: the anti-dupe review reads it
+        if self.ip() not in ips:
+            ips.append(self.ip()); del ips[:-8]
+        if ua and ua not in P().setdefault("uas", []):
+            P()["uas"].append(ua); del P()["uas"][:-4]
         return True
 
     def start_session(self, o):
@@ -4159,6 +4224,20 @@ class H(BaseHTTPRequestHandler):
             return self.send(admin_page(f"Clock frozen at {at}." if at else "Clock running again."))
         if p == "/admin/undo" and ME == ADMIN:
             return self.send(admin_page("Last race night undone." if undo_night() else "Nothing to undo."))
+        if p == "/admin/review" and ME == ADMIN:                        # the stewards' call on a flagged pair
+            a, b, do = (int(q.get(k, -1)) if str(q.get(k, "")).isdigit() else -1 for k in ("a", "b")), q.get("do")
+            a, b = a
+            if a in G["players"] and b in G["players"]:
+                if do == "clear":
+                    G.setdefault("cleared", []).append(tuple(sorted((a, b))))
+                elif do == "warn":
+                    for o in {a, b}:
+                        P(o).setdefault("events", []).append("A note from the stewards: a sale between barns has been looked at. Keep the market honest.")
+                elif do in ("freeze", "unfreeze"):
+                    for o in {a, b}:
+                        P(o)["frozen"] = do == "freeze"
+                save()
+            return self.send(admin_page(f"{do}: done."))
         if p == "/newgame" and ME == ADMIN:                           # a world wipe: the original barn's owner only
             keep = P(0)
             new_game()
@@ -4243,6 +4322,8 @@ class H(BaseHTTPRequestHandler):
         if p == "/order" and h and h.owner == ME:
             if q["o"] == "retire":
                 e.retire(h, ME)
+            elif q["o"] == "sell" and (e.held(h) or P().get("frozen")):
+                pass                                                  # just bought, or the barn is under review: it stays
             else:
                 try:
                     h.order = parse(q["o"], h)
@@ -4273,7 +4354,8 @@ class H(BaseHTTPRequestHandler):
                 return self.send("", 303, f"/horse/{urlname(e.nursery[-1].name)}")      # straight to the new foal
         elif p == "/bid" and h:
             amt = q.get("amt", "")
-            e.bid(h, ME, amount=int(amt) if amt.isdigit() else None)
+            if not P().get("frozen"):
+                e.bid(h, ME, amount=int(amt) if amt.isdigit() else None)
             save()
             return self.send("", 303, "/market#a" + str(h.id))
         elif p == "/claim" and h and h.owner != ME:
@@ -4287,7 +4369,7 @@ class H(BaseHTTPRequestHandler):
             save()
             return self.send("", 303, "/program")
         elif p == "/scrap" and h:
-            if e.scrap(h, ME, G["horses"]):
+            if not P().get("frozen") and e.scrap(h, ME, G["horses"]):
                 save()
                 return self.send("", 303, "/market")
         elif p == "/fee" and h:
