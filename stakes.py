@@ -150,6 +150,8 @@ def nominate(h, s, day):
     fee = s.fee(day)
     if fee is None or not s.eligible(h) or h in s.noms or s.result or e.cash.get(h.owner, 0) < fee:
         return None
+    if any(h in x.noms and x.week == s.week and x is not s for x in CALENDAR):
+        return None                                           # one stake a week: a filly can't go in the open leg and the filly leg both
     e.book(h.owner, "stakes", -fee)
     s.noms.append(h)
     return fee
@@ -177,8 +179,9 @@ def best_for(h, day):
 
 
 def ai_nominate(horses, ai, day):
-    """On the early-closing week AI barns nominate horses that rate near the class, if flush."""
-    for s in CALENDAR:
+    """On the early-closing week AI barns nominate horses that rate near the class, if flush. A filly goes to the
+    fillies' stake first, since it's one stake a week."""
+    for s in sorted(CALENDAR, key=lambda s: (s.week, s.sex != "F&M")):
         if s.week - day % c.YEAR != EARLY or s.kind == "final":
             continue
         for h in horses:
@@ -189,16 +192,16 @@ def ai_nominate(horses, ai, day):
 
 def run_today(day, horses):
     """Stakes on tonight's card: draw the field, race on the mile, pay out, learn the class."""
-    alive = set(id(h) for h in horses)
+    alive, ran = set(id(h) for h in horses), set()
     for s in CALENDAR:
         if s.week != day % c.YEAR or s.result:
             continue
         if s.kind == "final":
             invite(s, horses, day)
-        noms = [h for h in s.noms if id(h) in alive and s.eligible(h)]
+        noms = [h for h in s.noms if id(h) in alive and s.eligible(h) and id(h) not in ran]   # one start a night: nominated twice (older saves), it draws out of the second
         field = sorted(noms, key=lambda h: -h.est)[:BIG_FIELD if len(noms) >= BIG_NOMS else FIELD]
-        for h in [h for h in noms if h not in field] if s.kind != "final" else []:
-            e.book(h.owner, "stakes", s.purse * 0.01)          # drew out: nomination refunded
+        for h in [h for h in s.noms if h not in field and id(h) in alive] if s.kind != "final" else []:
+            e.book(h.owner, "stakes", s.purse * 0.01)          # drew out (or already ran tonight): nomination refunded
         if len(field) < 2:                                    # a walkover: fees back, no race
             for h in field:
                 e.book(h.owner, "stakes", s.purse * 0.01)
@@ -221,6 +224,7 @@ def run_today(day, horses):
         c.STORIES[rid] = dict(_story.build(order, "mile", passing=True), id=rid, name=s.name, purse=s.purse, day=day, venue="Harness Park", passing=True)   # stakes nights are the flagship's
         c.drove(order, c.STORIES[rid]["horses"], c.year_of(day))
         s.result = order
+        ran.update(id(h) for h in field)
         champ = order[0]                                      # a stake's winner keeps the trophy; the Crown names a champion
         title = f"Year {c.year_of(day)} {s.name}"
         champ.trophies = getattr(champ, "trophies", []) + [title]
@@ -242,10 +246,10 @@ if __name__ == "__main__":
     ai = set(range(60))
     new_calendar()
     assert len(CALENDAR) == len(SCHEDULE) == 100 and all(any(x.week == w for x in CALENDAR) for w in range(49)) and sum(x.kind == "final" for x in CALENDAR) == 6 and sum(x.kind == "leg" for x in CALENDAR) == 16
-    log, ran = [], []
+    log, ran, years = [], [], []
     for d in range(2 * c.YEAR):
         if d == c.YEAR:
-            ran += [s for s in CALENDAR if s.result]
+            ran += [s for s in CALENDAR if s.result]; years.append(list(CALENDAR))
             new_calendar()
         ai_nominate(horses, ai, d)
         run_today(d, horses)
@@ -253,7 +257,7 @@ if __name__ == "__main__":
         for h in horses:
             if getattr(h, "order", None) == "stakes":
                 h.order = None
-    ran += [s for s in CALENDAR if s.result]
+    ran += [s for s in CALENDAR if s.result]; years.append(list(CALENDAR))
     print(f"stakes run: {len(ran)} of {2 * len(SCHEDULE)} over two years; fields {sorted(len(s.result) for s in ran)}")
     assert len(ran) >= 1.4 * len(SCHEDULE) and all(len(s.result) <= BIG_FIELD for s in ran)
     finals = [s for s in ran if s.kind == "final" and s.result]
@@ -263,6 +267,11 @@ if __name__ == "__main__":
     assert all(len(set(v.values())) == len(v) for v in CHAMPIONS.values()), "a horse holds one title a year: boys and girls apart"
     assert all(any(s.name in t for t in getattr(s.result[0], "trophies", [])) for s in ran if s.result), "every winner keeps the trophy"
     assert all(s.eligible(h) or h.retired or c.age_group(h) != s.group for s in ran for h in s.result), "every starter was eligible"
+    import collections as _co
+    for cal in years:
+        doubles = [k for k, n in _co.Counter((s.week, id(h)) for s in cal if s.result for h in s.result).items() if n > 1]
+        assert not doubles, f"a horse starts in one stake a night: {doubles[:3]}"
+        assert not any(h in y.noms for x in cal for y in cal if x is not y and x.week == y.week for h in x.noms), "no horse nominated to two stakes in one week"
     full = [s for s in ran if len(s.result) >= 6]
     night = lambda s, hs: st.mean(s.tonight[h.id] for h in hs)
     better = st.mean(night(s, s.result[:3]) > night(s, s.result[-3:]) for s in full)
