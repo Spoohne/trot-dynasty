@@ -3423,29 +3423,29 @@ def claimers_page(qs=None):
     keyf = {"tag": lambda x: (x[1], -x[0].est), "est": lambda x: -x[0].est, "earn": lambda x: -x[0].earnings, "age": lambda x: (x[0].age, x[1])}[sort if sort in ("tag", "est", "earn", "age") else "tag"]
     rows.sort(key=keyf)
     room = e.stalls(ME) - e.barn_size.get(ME, 0) - sum(1 for b in c.CLAIMS.values() if b == ME)
+    PER = 10; n = max(1, -(-len(rows) // PER))
+    pg = max(1, min(n, int(qs.get("p", 1)) if str(qs.get("p", "")).isdigit() else 1))
+    nums = {(key, vn): num for num, key, vn, f, o in program_races()[1]}       # each race's number on its track's card
     out = ""
-    for h, tag, r in rows:
-        mine_ = h.owner == ME
-        if mine_:
-            act = "<span class=sub>yours · exposed tonight</span>"
-        elif c.CLAIMS.get(h.id) == ME:
-            act = (f"<form method=post action=/claim class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=undo value=1><input type=hidden name=back value=/claimers>"
-                   f"<button class=sec>Withdraw claim</button></form>")
-        elif h.id in c.CLAIMS:
-            act = "<span class=sub>claim in</span>"
-        elif e.cash.get(ME, 0) >= tag and room > 0:
-            act = (f"<form method=post action=/claim class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value=/claimers>"
-                   f"<button class=sec onclick=\"return ask(this,'Claim {esc(h.name)} for ${tag:,}? Binding if it races.')\">Claim</button></form>")
-        else:
-            act = "<span class=sub>" + ("no stall free" if room <= 0 else "over your cash") + "</span>"
-        out += (f"<details class='card clr{' mine' if mine_ else ''}'><summary><div class=clrow>"
-                f"<span class=cltag>${tag // 1000}k</span><span class=clid><a href='/horse/{urlname(h.name)}'><b>{esc(h.name)}</b></a>"
-                f"<span class=sub>{h.age}yo {sex_word(h)} · <span class='tier {tier_cls(h)} sm'>{tier_label(h)}</span> · {h.starts}-{h.wins} · ${h.earnings:,.0f} · {best_time(h)}</span>"
-                f"<span class=sub>{esc(c.race_title(group := r['key'][0], r['key'][2]))} at {esc(r['v']['name'])}, post {getattr(h, 'post', 0)} · {barn_tag(h.owner, 14)}</span></span>"
-                f"<span class=clact>{act}</span></div></summary>{pp_lines(h, 5)}</details>")
-    note = ("<p class=sub>Every horse in a claiming race tonight. A claim is binding if the horse races, whatever the result; claims stay open until post time. "
+    for h, tag, r in rows[(pg - 1) * PER: pg * PER]:                            # each claimer as its program entry, under a strip in the track's colors
+        lk = vlook(r["v"]["name"]); num = nums.get((r["key"], r["v"]["name"]), "·")
+        tkname = f"<span class=tkn style='font-family:{lk[2]}'>{esc(r['v']['name'])}</span><br>" if lk else ""
+        strip = (f"<div class='pgh{' tk' if lk else ''}'" + (f" style='--tp:{lk[0]};--ta:{lk[1]}'" if lk else "") + f"><div class=pgn>${tag // 1000}k</div>"
+                 + (f"<img class=tkb src={lk[4]} width=40 height=40 alt=''>" if lk else "")
+                 + f"<div class=pgt>{tkname}RACE {num} · {esc(c.race_title(r['key'][0], r['key'][2]))}</div>"
+                 f"<div class=pgp>TAG<br><b>${tag:,}</b><br>post {getattr(h, 'post', 0)}</div></div>")
+        entry = program_entry(h, tag, r["odds"], True, room).replace("class='inline pgclaim'>", "class='inline pgclaim'><input type=hidden name=back value=/claimers>")
+        out += f"<div class=pgm>{strip}{entry}</div>"
+    pager = ""
+    if n > 1:
+        lnk = lambda k, t: f"<a class=pg href='{link(p=k)}'>{t}</a>" if 1 <= k <= n and k != pg else f"<span class='pg{' on' if k == pg else ''}'>{t}</span>"
+        pager = f"<div class=pager>{lnk(pg - 1, '&laquo;')}{''.join(lnk(k, k) for k in range(1, n + 1))}{lnk(pg + 1, '&raquo;')}</div>"
+    note = (f"<p class=sub>Every horse in a claiming race tonight, each as its program entry. A claim is binding if the horse races, whatever the result; claims stay open until post time. "
             f"You can claim {max(0, room)} more tonight.</p>")
-    return page("Claimers", market_tabs("claimers") + note + head + (out or "<p class=sub>No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 8 PM") + ".</p>"))
+    body = (f"<style>{PP_CSS}</style><style>.pgm{{margin:10px 0}}.pgm .pgh{{cursor:default}}</style>" + market_tabs("claimers") + note + head
+            + f"<p class=sub>{len(rows)} claimer{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>"
+            + (out or "<p class=sub>No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 8 PM") + ".</p>") + pager)
+    return page("Claimers", body)
 
 
 def shop_page(msg=""):
