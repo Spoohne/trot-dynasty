@@ -1108,6 +1108,7 @@ def setup_page():
     body = ("<p class=sub>Nothing is entered until you confirm. Everything below stays editable afterward from the horse cards and the Training tab.</p>"
             f"<div class=card><b>Enter for tomorrow night · {len(entries)}</b><div class=sub>The trainer's picks, never a claimer.</div>{rows or '<div class=sub>Every fit horse is already entered.</div>'}</div>"
             f"<div class=card><b>Deploy sets · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to deploy today.</div>'}</div>"
+            "<a class='btn sec' href=/entries style='display:block;text-align:center;margin-bottom:8px'>Check or change tomorrow's entries</a>"
             "<div class=row style='gap:8px'><form method=post action=/setup><button class=big" + ("" if entries or sets else " disabled") + ">Confirm</button></form>"
             "<a class='btn sec big' href=/ style='flex:1;text-align:center'>Cancel</a></div>")
     return page("Stable Manager", body)
@@ -1186,6 +1187,8 @@ def training_page():
                       "<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Job</span><span>Focus</span></div>"
                       + srows + "</div><div class=mact><button class=sec name=do value=save>Save sets</button>"
                       f"<button name=do value=deploy{'' if again else ' disabled'}>Deploy sets ({len(again)})</button></div></form>") if ys else ""
+        repeat_all = ("<div class='card hc' style='--tc:#c9922e'><b>Stable Manager</b><div class=sub>Check or change tomorrow's entries, or preview what the manager would enter and deploy tonight.</div>"
+                      "<div class=mact><a class='btn sec' href=/entries>Tomorrow's entries</a><a class='btn sec' href=/setup>Set up tonight</a></div></div>") + repeat_all
     else:
         repeat_all = (f"<form method=post action=/job style='margin:0 0 8px'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
                       f"<button class=big>Repeat yesterday for all ({len(again)})</button></form>") if len(again) > 1 else ""
