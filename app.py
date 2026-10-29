@@ -4393,7 +4393,8 @@ class H(BaseHTTPRequestHandler):
                     n += 1; base = f"{ref.name} {'I' * n if n <= 3 else n}"
                 h.name = base
                 h.results, h.trophies, h.seasons, h.history = [], [], {}, []
-                h.starts = h.wins = h.earnings = 0; h.places = h.shows = 0; h.last5 = []; h.recent = []
+                h.starts = h.wins = h.earnings = h.costs = 0; h.places = h.shows = 0; h.last5 = []; h.recent = []
+                e.settled[h.id] = (0, 0)                                # a clean ledger: nothing of the original's purses or bills carries over
                 h.last, h.best, h.order, h.ship, h.job, h.wk = None, 999, None, None, None, None
                 h.owner, h.breeder, h.gone = o, None, "a gift from the circuit"
                 h.freshness = 100
