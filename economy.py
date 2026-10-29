@@ -440,6 +440,8 @@ def settle_auctions(horses, now=None):
     now = _time.time() if now is None else now
     alive = {h.id for h in horses}
     for hid, a in list(auctions.items()):
+        if hid not in alive:                                # culled or retired out of the world while listed: off the board at once
+            auctions.pop(hid); listings.pop(hid, None); continue
         if now < a["ends"]:
             continue
         h = listings.get(hid, (None,))[0]
