@@ -340,7 +340,7 @@ buildPoles();
 let rails = [];
 function buildRails() {
   rails.forEach(r => scene.remove(r)); rails = [];
-  const tl = RACE.tlook, white = new THREE.MeshBasicMaterial({ color: tl ? tl.a : "#e8eef4" }), grey = new THREE.MeshBasicMaterial({ color: tl ? tl.p : "#aeb8c2" });   // the rail in the track's accent, its posts in the primary
+  const tl = RACE.tlook, white = new THREE.MeshBasicMaterial({ color: "#e8eef4" }), grey = new THREE.MeshBasicMaterial({ color: tl ? tl.p : "#aeb8c2" });   // white rails everywhere, as real tracks run them; the posts carry the track's primary
   for (const o of [-.6, TRACK_W + .6]) {
     const io = s => o < 0 ? o - RACE.inset(s) : o;                         // the inside rail swings in for the passing lane
     const pts = []; for (let s = 0; s <= RACE.L + 1; s += 10) pts.push(V(s, io(s), 3.2));
