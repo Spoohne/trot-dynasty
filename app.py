@@ -843,7 +843,7 @@ TABS = (("barn", "/", "Barn", "<path d='M3 11 12 4l9 7v9H3z'/><path d='M9 20v-6h
         ("breed", "/studs", "Breeding", "<path d='M12 20s-7-4.3-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.7-7 10-7 10z'/>"),
         ("more", "/more", "Manage", "<circle cx='5' cy='12' r='1.5'/><circle cx='12' cy='12' r='1.5'/><circle cx='19' cy='12' r='1.5'/>"))
 TAB_OF = {"Training": "train", "Compendium": "more", "Shop": "market", "Claimers": "market", "Sponsor a stake": "market", "Stable Manager": "barn", "Tonic": "barn", "Stakes & Crown": "more", "Breeding": "breed", "Breed": "breed", "Entries": "more", "Sale board": "market", "Stud book": "breed", "Results": "more", "Trainers": "more", "Stakes": "more",
-          "Barn upgrades": "more", "Barn identity": "more", "More": "more", "Manage": "more", "Earnings": "more", "Leaderboards": "more", "Archive": "more"}
+          "Barn upgrades": "market", "Barn identity": "more", "More": "more", "Manage": "more", "Earnings": "more", "Leaderboards": "more", "Archive": "more"}
 
 
 # color themes: each one re-points the skin's palette (the base skin is "night", the original deep blue;
@@ -1518,7 +1518,6 @@ def more_page():
               ("The circuit", [item("/leaders", "Leaderboards", "top horses and barns"),
                                item("/archive", "History and search", "every horse and season on record")]),
               ("Your operation", [item("/earnings", "Earnings", "where your money came from and went"),
-                                  item("/upgrade", "Barn upgrades", "stalls, breeding head, grooming slots"),
                                   item("/crest", "Barn identity", "build your emblem, Marquee, name and title")]))
     body = "".join(f"<div class=secbar>{g}</div>" + "".join(items) for g, items in groups)
     cur = P().get("skin", "clubhouse")
@@ -3649,7 +3648,7 @@ def bottle(kind, size=22, empty=None):
 
 def market_tabs(on):
     return ("<div class=hmenu>" + "".join(f"<a href='{h_}' class='{'on' if on == k else ''}'>{l_}</a>"
-                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("sponsor", "/sponsor", "Sponsor"), ("shop", "/shop", "Shop"))) + "</div>")
+                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("sponsor", "/sponsor", "Sponsor"), ("shop", "/shop", "Shop"), ("upgrade", "/upgrade", "Upgrades"))) + "</div>")
 
 
 def claimers_page(qs=None):
@@ -4397,7 +4396,7 @@ def upgrade_page():
         body += (f"<div class='upc up{i} {st}'><img src=/mock/brand/barns/{BARN_ART[i]}.png width=96 height=96 alt=''>"
                  f"<div class=upm><b>{esc(' '.join(w[0].upper() + w[1:] for w in name.split()))}</b><span class=sub>{BARN_BLURB[i]}</span>"
                  f"<div class=upk>{''.join(f'<span>{p}</span>' for p in perks)}</div></div><div class=upa>{act}</div></div>")
-    return page("Barn upgrades", body + "</div>")
+    return page("Barn upgrades", market_tabs("upgrade") + body + "</div>")
 
 
 REVEAL_CSS = """
