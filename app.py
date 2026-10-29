@@ -211,6 +211,42 @@ def save():
     os.replace(SAVE + ".tmp", SAVE)
 
 
+IDENTITY = ("user", "pw", "salt", "stable", "named", "skin", "emblem", "emblem_lic", "owned", "marquee", "verified", "pass", "hide_tips", "theme_off", "drivers")
+
+
+def new_world(years=HISTORY):
+    """Launch day: the world as it stands is backed up beside the save, a fresh world is built with its own past, and
+    every player keeps their login, stable name and look but starts over with a new starter barn and the starting cash.
+    Records, trophies, prestige, the trade log, picks and notices all go with the old world."""
+    import shutil
+    if os.path.exists(SAVE):
+        shutil.copy(SAVE, SAVE.replace(".pkl", f".before-world-{G.get('day', 0)}.pkl"))
+    old = {o: dict(p) for o, p in sorted(G.get("players", {}).items())}
+    sessions = dict(G.get("sessions", {}))
+    for k in list(G):                                               # nothing of the old world's state carries over
+        G.pop(k)
+    e.trades.clear(); e.listings.clear(); e.auctions.clear(); e.nursery.clear(); c.CLAIMS.clear(); c.CARD.clear(); HELD[0] = False
+    global ME
+    ME = 0
+    new_game(years)                                                 # builds the circuit and starts barn 0 (the admin's)
+    G["players"], remap = {}, {}
+    for o, p in old.items():
+        if o == 0:
+            o2 = 0
+        else:
+            o2 = min(G["ai"]); G["ai"].discard(o2)
+            e.start_from_history(G["horses"], o2)
+        keep = {k: v for k, v in p.items() if k in IDENTITY}
+        if isinstance(keep.get("marquee"), dict):
+            keep["marquee"] = dict(keep["marquee"], shelf=[])          # the shelf held trophies won in the old world
+        G["players"][o2] = dict(keep, events=["A new world. Your barn starts over: a fresh string, the starting cash, the same name over the door."])
+        remap[o] = o2
+    G["sessions"] = {t: remap[v] for t, v in sessions.items() if v in remap}   # everyone stays signed in
+    e.TODAY[0] = G["day"]
+    save()
+    return len(old)
+
+
 def _renamed(x, old, new, seen=None):
     """x with every string (values and keys, inside containers and objects) having old replaced by new; shared objects stay shared."""
     seen = {} if seen is None else seen
@@ -1397,6 +1433,9 @@ def admin_page(msg=""):
             + (f"<form method=post action=/admin/undo class=inline><button class=sec onclick=\"return ask(this,'Undo the race night of {last}? "
                f"Everything since it ran goes back.')\">Undo last race night ({last})</button></form>" if snaps else "<span class=sub>No race night to undo yet.</span>")
             + f"<div class=sub style='width:100%'>{len(snaps)} night{'s' if len(snaps) != 1 else ''} can be undone, newest first.</div></div>")
+    body += ("<div class=secbar>New world</div><form method=post action=/newgame class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
+             "<input name=confirm placeholder='Type NEW WORLD' style='width:170px' autocomplete=off><button class=warn onclick=\"return ask(this,'Start a new world? Every barn starts over. The old world is backed up first.')\">Start a new world</button>"
+             "<div class=sub style='width:100%'>Builds a fresh circuit with its own fifty-year past (a few minutes, the game pauses), backs the old world up beside the save, and gives every player a new starter barn under the same login and name. Records, trophies and cash do not carry over.</div></form>")
     flags, frozen = review_flags(), [o for o, p in G["players"].items() if p.get("frozen")]
     who = lambda o: esc(G["players"].get(o, {}).get("user", "?"))
     body += "<div class=secbar>Stewards' review</div>"
@@ -4581,12 +4620,11 @@ class H(BaseHTTPRequestHandler):
                         P(o)["frozen"] = do == "freeze"
                 save()
             return self.send(admin_page(f"{do}: done."))
-        if p == "/newgame" and ME == ADMIN:                           # a world wipe: the original barn's owner only
-            keep = P(0)
-            new_game()
-            G["players"], G["sessions"] = {0: keep}, {k: v for k, v in G["sessions"].items() if v == 0}
-            save()
-            return self.send("", 303, "/")
+        if p == "/newgame" and ME == ADMIN:                           # a world wipe: every player starts over in a new world
+            if q.get("confirm", "").strip() != "NEW WORLD":
+                return self.send(admin_page("Type NEW WORLD in the box to start a new world."))
+            n = new_world()
+            return self.send(admin_page(f"A new world. {n} player barn{'s' if n != 1 else ''} started over; the old world is saved beside the save file."))
         if p == "/crest":
             msg = build_save(q) if q.get("build") else buy_crest(q); save()
             return self.send(crest_page(msg))
