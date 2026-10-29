@@ -1291,6 +1291,9 @@ def admin_page(msg=""):
             + "<div class=secbar>Cash</div><form method=post action=/admin/cash class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
               f"<select name=o>{opts}</select><input name=amt type=number step=1000 placeholder='+/- amount' style='width:140px'>"
               "<button>Apply</button><div class=sub style='width:100%'>A negative amount takes cash away.</div></form>"
+            + "<div class=secbar>Gift a horse</div><form method=post action=/admin/gift class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
+              f"<select name=o>{opts}</select><input name=h placeholder='Horse name' style='width:160px'><select name=mode><option value=exact>this horse</option><option value=like>one like it</option></select>"
+              "<button>Give</button><div class=sub style='width:100%'>Exact: a computer barn's racer by name. Like: the nearest computer-owned racer of the same age by rating.</div></form>"
             + "<div class=secbar>Message from the barn</div><form method=post action=/admin/msg class=card style='display:flex;flex-direction:column;gap:8px'>"
               "<textarea name=text maxlength=280 rows=3 placeholder='New tonight: ...' style='font:inherit;font-size:16px;padding:8px;background:var(--panel);color:var(--ink);border:1px solid var(--rule)'></textarea>"
               f"<div class=row style='justify-content:space-between'><span class=sub>Each player sees it once, on their next card. {len(G.get('team_msgs', []))} posted so far.</span><button>Post</button></div></form>"
@@ -4370,6 +4373,31 @@ class H(BaseHTTPRequestHandler):
             e.book(o, "gifts", amt)
             save()
             return self.send(admin_page(f"{'Gave' if amt > 0 else 'Took'} ${abs(amt):,} {'to' if amt > 0 else 'from'} {G['players'][o].get('user')} ({full_name(o)}). Their cash is now ${e.cash[o]:,.0f}."))
+        if p == "/admin/gift" and ME == ADMIN:                          # move a horse to a player's barn: by name, or one like a named horse
+            o = int(q.get("o", "")) if str(q.get("o", "")).isdigit() else -1
+            name, like = q.get("h", "").strip(), q.get("mode") == "like"
+            if o not in G["players"] or not name:
+                return self.send(admin_page("Pick a player and name a horse."))
+            if like:
+                ref = find_horse(name)
+                if not ref:
+                    return self.send(admin_page(f"No horse called {name}."))
+                pool = [x for x in G["horses"] if x.owner in G["ai"] and not x.retired and c.age_group(x) == c.age_group(ref) and x.id not in e.listings and x.id not in c.CLAIMS and not on_card(x)]
+                h = min(pool, key=lambda x: (abs(x.est - ref.est), -x.starts), default=None)
+            else:
+                h = find_horse(name)
+                if h and h.owner in c.HUMAN:
+                    return self.send(admin_page(f"{h.name} belongs to a player; the board is for that."))
+            if not h or h.retired or h in e.nursery:
+                return self.send(admin_page("No racer to give."))
+            was = h.owner
+            e.listings.pop(h.id, None); e.auctions.pop(h.id, None); c.CLAIMS.pop(h.id, None)
+            h.owner, h.order, h.ship, h.gone = o, None, None, "a gift from the circuit"
+            e.barn_size[o] = e.barn_size.get(o, 0) + 1; e.barn_size[was] = max(0, e.barn_size.get(was, 1) - 1)
+            c.trainer_of(h)
+            save()
+            over = "" if e.barn_size[o] <= e.stalls(o) else f" They are over their stalls ({e.barn_size[o]} of {e.stalls(o)})."
+            return self.send(admin_page(f"{h.name} ({h.age}yo {sex_word(h)}, {tier_label(h)}, {h.starts}-{h.wins}, ${h.earnings:,.0f}) now races for {G['players'][o].get('user')}.{over}"))
         if p == "/drivers":
             P()["drivers"] = [n for n in (q.get(f"d{k}", "") for k in (1, 2, 3)) if n in DRV.STYLE][:3]
             P()["drivers"] = list(dict.fromkeys(P()["drivers"]))           # a driver named twice counts once
