@@ -1837,12 +1837,39 @@ GUIDE = [
 def guide_page():
     """The Compendium: the world the player is in, how to read it and why it matters, in plain words. No formulas,
     no numbers behind the curtain: what a horseman would know, not what the engine does."""
-    body = ("<p class=sub>How the circuit works, what the numbers on a horse's card mean, and the craft of getting a horse to the "
-            "winner's circle. Tap a topic to open it.</p>")
-    for part, topics in GUIDE:                                    # sections fold open to their topics, topics to their text
-        body += (f"<details class=gpart><summary>{esc(part)}<span class=gcount>{len(topics)}</span></summary><div class=gbody>" + "".join(
-            f"<details class=gtopic><summary>{esc(t)}</summary><div class=gtext>{txt}</div></details>" for t, txt in topics) + "</div></details>")
-    return page("Compendium", body)
+    roman = "I II III IV V VI VII VIII IX X XI XII".split()
+    body = (BOOK_CSS + "<div class=book><div class=bkhead><span>The Compendium</span><span>Trot Dynasty</span></div>"
+            "<div class=bktitle><b>The Compendium</b><span>being a horseman's manual of the circuit</span></div><div class=bkrule></div>"
+            "<p class=bkintro>How the circuit works, what the numbers on a horse's card mean, and the craft of getting a horse to the "
+            "winner's circle. Open a chapter, then a topic.</p>")
+    for i, (part, topics) in enumerate(GUIDE):                    # chapters fold open to their topics, topics to their text
+        body += (f"<details class=bkch><summary><i>{roman[i]}.</i><span class=bkchn>{esc(part)}</span><span class=bkdots></span></summary>" + "".join(
+            f"<details class=bktp><summary>{esc(t)}</summary><div class=bktxt>{txt}</div></details>" for t, txt in topics) + "</details>")
+    return page("Compendium", body + "<div class=bkfoot>&#10086;</div></div>")
+
+
+# The Compendium as an old horseman's manual: an aged page under the track lamps, the one light surface in the game.
+BOOK_CSS = ("<link href='https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap' rel=stylesheet><style>"
+    ".book{position:relative;margin:4px 6px 16px;background:#e9dcbd;color:#2b2016;border-radius:2px 6px 6px 2px;padding:18px 16px 12px 18px;"
+    "font-family:'IM Fell English',Georgia,serif;"
+    "background-image:radial-gradient(90% 60% at 50% 12%,rgba(255,236,190,.55),transparent 70%),radial-gradient(160% 100% at 50% 50%,transparent 60%,rgba(110,74,30,.35));"
+    "box-shadow:-3px 0 0 #cdbd98,-6px 0 0 #b9a77f,0 10px 26px #000,0 0 60px rgba(232,163,58,.12)}"
+    ".bkhead{display:flex;justify-content:space-between;font:12px 'IM Fell English SC',Georgia,serif;color:#7a6446;letter-spacing:.08em;border-bottom:1px solid #b9a27a;padding-bottom:4px;margin-bottom:12px}"
+    ".bktitle{text-align:center;margin:4px 0 12px}.bktitle b{display:block;font:italic 900 28px 'Playfair Display',Georgia,serif;color:#3a2412}"
+    ".bktitle span{font:15px 'IM Fell English SC',Georgia,serif;color:#6b5236}"
+    ".bkrule{height:5px;border-top:1px solid #7a5a36;border-bottom:1px solid #7a5a36;margin:0 30px 10px}"
+    ".bkintro{font-style:italic;font-size:15px;line-height:1.45;color:#4a3826;text-align:center;margin:0 6px 8px}"
+    ".book details{border-bottom:1px dotted #b39b72}.book summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;"
+    "padding:9px 0;margin:0;border:0;background:none;text-transform:none;letter-spacing:0;text-shadow:none}"
+    ".book summary::-webkit-details-marker{display:none}.book details>summary::after,.book details[open]>summary::after{content:none!important}"
+    ".book summary{font-family:'IM Fell English',Georgia,serif!important;font-weight:400!important;text-transform:none!important;letter-spacing:0!important}"
+    ".bkch>summary{font:19px 'IM Fell English SC',Georgia,serif!important;color:#2b2016}.bkch>summary i{font:italic 15px 'IM Fell English',Georgia,serif;color:#8a2a1c;min-width:34px}"
+    ".bkchn{flex:0 1 auto}.bkdots{flex:1;border-bottom:1px dotted #9c8462;transform:translateY(-4px)}"
+    ".bktp>summary{font-size:16px;color:#4a3826;padding-left:44px}.bktp[open]>summary{color:#8a2a1c}.bkch .bktp:last-child{border-bottom:0}"
+    ".bktxt{padding:0 0 14px 44px;font-size:16.5px;line-height:1.48;text-align:justify;hyphens:auto;color:#2b2016}"
+    ".bktxt b{font-weight:normal;font-style:italic}.bktxt::first-letter{float:left;font-size:46px;line-height:.82;color:#8a2a1c;padding:6px 6px 0 0}"
+    ".bktxt .tierrow{margin:8px 0}.bktxt .tierrow b{font:normal 800 15px 'Barlow Semi Condensed',sans-serif}.bktxt .tierrow .tl{color:#7a6446}.bkfoot{text-align:center;color:#8a6a46;padding-top:10px;font-size:16px}"
+    "@media(max-width:400px){.bktp>summary,.bktxt{padding-left:26px}.bkch>summary i{min-width:18px}}</style>")
 
 
 # ---------------------------------------------------------------- tip cards: the replay load and the pause after race night
