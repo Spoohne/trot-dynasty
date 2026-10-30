@@ -34,6 +34,7 @@ import recolor
 import drivers as DRV
 import crest as CR
 import emblem_art as EA
+import tack_art as TA
 import track_id as TI
 
 SAVE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "save.pkl")
@@ -843,7 +844,7 @@ TABS = (("barn", "/", "Barn", "<path d='M3 11 12 4l9 7v9H3z'/><path d='M9 20v-6h
         ("breed", "/studs", "Breeding", "<path d='M12 20s-7-4.3-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.7-7 10-7 10z'/>"),
         ("more", "/more", "Manage", "<circle cx='5' cy='12' r='1.5'/><circle cx='12' cy='12' r='1.5'/><circle cx='19' cy='12' r='1.5'/>"))
 TAB_OF = {"Training": "train", "Compendium": "more", "Shop": "market", "Claimers": "market", "Sponsor a stake": "market", "Stable Manager": "barn", "Tonic": "barn", "Stakes & Crown": "more", "Breeding": "breed", "Breed": "breed", "Entries": "more", "Sale board": "market", "Stud book": "breed", "Results": "more", "Trainers": "more", "Stakes": "more",
-          "Barn upgrades": "market", "Barn identity": "more", "More": "more", "Manage": "more", "Earnings": "more", "Leaderboards": "more", "Archive": "more"}
+          "Barn upgrades": "market", "Tack Room": "market", "Barn identity": "more", "More": "more", "Manage": "more", "Earnings": "more", "Leaderboards": "more", "Archive": "more"}
 
 
 # color themes: each one re-points the skin's palette (the base skin is "night", the original deep blue;
@@ -1800,8 +1801,13 @@ GUIDE = [
         ("The Marquee and Prestige", "The elite barns can buy a Marquee: their top bar on every screen becomes a lit banner that every "
          "player sees, and it hangs over the winner's circle when their horse wins. It starts as a plain gilded nameplate and grows "
          "through ten tiers of Prestige as the barn wins: big races, Crown finals, championships, course records and a long career "
-         "all move it up the ladder. Each tier is kept for good once reached, and the barn's tier shows beside its name. The owner "
-         "chooses which tier to show and which trophies sit on its shelf."),
+         "all move it up the ladder. A tier is awarded while the barn holds the Stable Manager's pass; the record keeps counting "
+         "in between, and the next season with the pass collects whatever was earned. Each tier is kept for good once reached, "
+         "and the barn's tier shows beside its name. The owner chooses which tier to show and which trophies sit on its shelf."),
+        ("The Tack Room", "Where a barn keeps its gear. A design is bought once for the barn, in Markers, and worn in the barn's two "
+         "colors: the harness, the face mask, the leg wraps and the bike, with the bike and its hub colored apart. Fitting a "
+         "horse is a small charge each time; the gear stays with the barn when a horse leaves. Gear is looks, nothing more: a "
+         "horse races the same in it or out of it. The most prestigious barns fit their horses for free."),
     ]),
 ]
 
@@ -2496,8 +2502,9 @@ TROPHY_ART = {"cup": "cup", "laurel": "horseshoe", "crown": "crown", "clock": "c
 def prestige_of(o):
     """The highest Prestige tier the barn has reached; kept for good once reached (a sold horse doesn't take it away)."""
     p = P(o)
-    p["prestige"] = max(p.get("prestige", 1), CR.prestige(barn_record(o)), 10 if o == ADMIN else 0)   # the owner's barn: every tier open
-    return p["prestige"]
+    if has_pass(o) or o == ADMIN:                                         # tiers are awarded while the pass is held; the record counts regardless
+        p["prestige"] = max(p.get("prestige", 1), CR.prestige(barn_record(o)), 10 if o == ADMIN else 0)   # the owner's barn: every tier open
+    return p.get("prestige", 1)
 
 
 def marquee_of(o):
@@ -3648,7 +3655,7 @@ def bottle(kind, size=22, empty=None):
 
 def market_tabs(on):
     return ("<div class=hmenu>" + "".join(f"<a href='{h_}' class='{'on' if on == k else ''}'>{l_}</a>"
-                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("sponsor", "/sponsor", "Sponsor"), ("shop", "/shop", "Shop"), ("upgrade", "/upgrade", "Upgrades"))) + "</div>")
+                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("sponsor", "/sponsor", "Sponsor"), ("shop", "/shop", "Shop"), ("tack", "/tack", "Tack Room"), ("upgrade", "/upgrade", "Upgrades"))) + "</div>")
 
 
 def claimers_page(qs=None):
@@ -3711,6 +3718,94 @@ def claimers_page(qs=None):
             + f"<p class=sub id=list style='scroll-margin-top:8px'>{len(rows)} claimer{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>"
             + (out or "<p class=sub>No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 8 PM") + ".</p>") + pager)
     return page("Claimers", body)
+
+
+TACK = {"harness": ("Harness", 0, 0), "mask": ("Face mask", 40, 5), "wraps": ("Leg wraps", 30, 5), "bike": ("Bike", 50, 5)}   # name, unlock, fitting
+TACK_FREE_FIT = 7      # Prestige tier from which fittings cost nothing
+
+
+def tack_of(o):
+    """The barn's Tack Room: designs unlocked, and which of its two colors each piece takes (the hub apart from the bike)."""
+    return P(o).setdefault("tack", {"own": ["harness"], "col": {"harness": "p", "mask": "p", "wraps": "s", "bike": "p", "hub": "s"}})
+
+
+def tack_colors(o):
+    sk_ = silks_of(o)
+    return sk_["c1"], sk_["c2"]
+
+
+def fitted(h):
+    """The pieces a horse wears: only while it's with the barn that fitted it."""
+    f = getattr(h, "fit", None)
+    return f[1] if f and f[0] == h.owner else []
+
+
+def fit_cost(o, pieces):
+    return 0 if prestige_of(o) >= TACK_FREE_FIT else sum(TACK[k][2] for k in pieces)
+
+
+def tack_model(o, pieces=None):
+    t = tack_of(o); c1, c2 = tack_colors(o)
+    return TA.render(t["own"] if pieces is None else pieces, t["col"], c1, c2)
+
+
+def tack_page(msg=""):
+    """The Tack Room: the barn's horse model pinned at the top in its gear, the designs to unlock and color, and the
+    string below to fit, all in Markers."""
+    t = tack_of(ME); own = t["own"]; c1, c2 = tack_colors(ME); free = prestige_of(ME) >= TACK_FREE_FIT
+    sw = lambda hx: f"<span style='display:inline-block;width:12px;height:12px;background:{hx};border:1px solid #000;vertical-align:-1px'></span>"
+    pick = lambda k: "".join(f"<label style='margin-right:8px'><input type=radio name=c_{k} value={v}{' checked' if t['col'].get(k, 'p') == v else ''}> {sw(c1 if v == 'p' else c2)}</label>" for v in ("p", "s"))
+    rows = ""
+    for k, (name, unlock, fee) in TACK.items():
+        have = k in own
+        rows += (f"<div class='erow2'><div style='flex:1'><b>{name}</b><div class=sub>{'in the barn' if have else f'unlock {unlock} Markers'} · fitting {'free' if free else f'{fee} each'}</div>"
+                 + (f"<div class=sub style='margin-top:4px'>{'Bike ' if k == 'bike' else ''}{pick(k)}{' Hub ' + pick('hub') if k == 'bike' else ''}</div>" if have else "") + "</div>"
+                 + ("" if have else f"<form method=post action=/tack class=inline><input type=hidden name=do value=unlock><input type=hidden name=k value={k}><button class=sec{'' if markers() >= unlock else ' disabled'}>Unlock {unlock}</button></form>") + "</div>")
+    horses = ""
+    for h in sorted((x for x in mine() if not x.retired), key=lambda x: x.name):
+        on = fitted(h); cost = fit_cost(ME, [k for k in own if k not in on])
+        horses += (f"<div class='erow2'><div style='flex:1;min-width:0'><b>{esc(h.name)}</b> <span class=sub>{h.age}yo {sex_word(h)}</span>"
+                   f"<div class=sub>{'wearing ' + ', '.join(TACK[k][0].lower() for k in on) if on else 'bare'}</div></div><span class=row style='gap:6px'>"
+                   + (f"<form method=post action=/tack class=inline><input type=hidden name=do value=fit><input type=hidden name=h value='{esc(h.name)}'><button class=sec{'' if markers() >= cost else ' disabled'}>Fit{f' · {cost}' if cost else ''}</button></form>" if len(on) < len(own) else "")
+                   + (f"<form method=post action=/tack class=inline><input type=hidden name=do value=strip><input type=hidden name=h value='{esc(h.name)}'><button class=sec>Strip</button></form>" if on else "") + "</span></div>")
+    body = (market_tabs("tack") + (f"<div class=card><b>{esc(msg)}</b></div>" if msg else "")
+            + f"<div class='card hc mgr' style='--tc:{c1}'><div class=mhead><b>Tack Room</b><span>{mk_tag(markers())}</span></div>"
+            f"<div style='text-align:center;background:#0b1120;border:1px solid var(--rule);padding:8px'><img src='{tack_model(ME)}' alt='your horse in its gear' style='max-width:100%;image-rendering:pixelated'></div>"
+            f"<div class=sub style='margin-top:6px'>Your colors {sw(c1)} primary {sw(c2)} secondary, set in Barn identity. A design is bought once for the barn; fitting a horse is a small charge each time, and the gear stays home when a horse leaves. Looks only: a horse races the same in it or out of it.</div></div>"
+            f"<form method=post action=/tack><input type=hidden name=do value=colors><div class='card hc mgr' style='--tc:{c2}'><div class=mhead><b>Designs</b></div><div class=mgrid>{rows}</div><div class=mact><button class=sec>Save colors</button></div></div></form>"
+            f"<div class='card hc mgr' style='--tc:{c1}'><div class=mhead><b>Your string</b><span class=pchip>{'fittings free' if free else 'fit per horse'}</span></div><div class=mgrid>{horses or '<p class=sub>No racers.</p>'}</div></div>")
+    return page("Tack Room", body)
+
+
+def tack_post(q):
+    """Unlock a design, save the colors, fit or strip a horse. Returns the message for the page."""
+    t = tack_of(ME); do = q.get("do")
+    if do == "unlock" and q.get("k") in TACK and q["k"] not in t["own"]:
+        price = TACK[q["k"]][1]
+        if markers() < price:
+            return "Not enough Markers."
+        mk_book(ME, -price, f"{TACK[q['k']][0]} design"); t["own"].append(q["k"])
+        return f"{TACK[q['k']][0]}: in the barn."
+    if do == "colors":
+        for k in list(TACK) + ["hub"]:
+            if q.get(f"c_{k}") in ("p", "s"):
+                t["col"][k] = q[f"c_{k}"]
+        return "Colors saved."
+    h = next((x for x in mine() if x.name == q.get("h")), None)
+    if not h:
+        return ""
+    if do == "fit":
+        on = fitted(h); new = [k for k in t["own"] if k not in on]; cost = fit_cost(ME, new)
+        if markers() < cost:
+            return "Not enough Markers."
+        if cost:
+            mk_book(ME, -cost, f"fitting {h.name}")
+        h.fit = (ME, list(t["own"]))
+        return f"{h.name} fitted."
+    if do == "strip":
+        h.fit = None
+        return f"{h.name} stripped."
+    return ""
 
 
 def shop_page(msg=""):
@@ -4663,6 +4758,8 @@ class H(BaseHTTPRequestHandler):
             return self.send("", 303, "/program")                       # the claiming races live on the program now
         if p == "/shop":
             return self.send(shop_page())
+        if p == "/tack":
+            return self.send(tack_page())
         if p.startswith("/tonic/"):
             return self.send(tonic_page(unquote(p.split("/")[2])))
         if p == "/stakes":
@@ -4876,6 +4973,9 @@ class H(BaseHTTPRequestHandler):
         if p == "/crest":
             msg = build_save(q) if q.get("build") else buy_crest(q); save()
             return self.send(crest_page(msg))
+        if p == "/tack":
+            msg = tack_post(q); save()
+            return self.send(tack_page(msg))
         if p == "/verify" and ME == ADMIN:
             o = int(q.get("o", -1)) if str(q.get("o", "")).lstrip("-").isdigit() else -1
             if o in G.get("players", {}):
