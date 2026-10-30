@@ -74,12 +74,15 @@ def paint(pieces, cols, c1, c2):
                 p = px[x, y]
                 if p[3] and ((p[0] > p[1] > p[2] and p[0] > 60) or (sum(p[:3]) < 150 and y < 16)):
                     px[x, y] = other + (255,) if y < 15 else shade(p, col("mask"))
-    if "wraps" in pieces:                                             # SpriteCook's wraps, in the horse's wrap color, their own light kept
+    if "wraps" in pieces:                                             # SpriteCook's wraps dyed like fabric (art/tack_layers/wrap_tint.py, same numbers)
         m, c = wrapped0()[1].load(), col("wraps")
+        avg = sum(c) / 3; c = tuple(v * .88 + avg * .12 for v in c)
+        on = lambda x, y: 0 <= x < W and 0 <= y < H and m[x, y] > 128
         for y in range(H):
             for x in range(W):
                 if m[x, y] > 128 and px[x, y][3]:
-                    s = .35 + .75 * sum(px[x, y][:3]) / 765
+                    k = min(1, max(0, (sum(px[x, y][:3]) / 765 - .45) / .53))
+                    s = (.5 + .55 * k) * (1 if on(x - 1, y) and on(x + 1, y) and on(x, y - 1) and on(x, y + 1) else .8)
                     px[x, y] = tuple(min(255, int(v * s)) for v in c) + (255,)
     return im
 
@@ -87,7 +90,7 @@ def paint(pieces, cols, c1, c2):
 def render(pieces, cols, c1, c2):
     """The model's PNG at 3x, cached like the emblems; returns its path under /mock."""
     pieces = tuple(p for p in PIECES if p in pieces)
-    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v5"
+    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v6"
     name = hashlib.md5(key.encode()).hexdigest()[:12] + ".png"
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):
