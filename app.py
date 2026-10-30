@@ -570,7 +570,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .packs{display:flex;gap:8px;margin-top:8px}.packs .pack{flex:1;text-align:center;margin:0;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px}.packs .pack .mk{font-size:18px}
 .mgr{padding:10px 12px 12px}.mgr .mhead{display:flex;justify-content:space-between;align-items:center;gap:8px}.mgr .mhead b{font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led);text-shadow:2px 2px 0 #000}
 .mgr .pchip{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--rule);border-radius:3px;color:var(--ink2)}.mgr .pchip.lit{color:var(--tote-ink);background:var(--tote);border-color:var(--tote)}
-.mgr .mgrid{margin-top:8px}.mgr .mrow{display:grid;grid-template-columns:30px minmax(0,1fr) 82px 102px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--rule2)}
+.mgr .mgrid{margin-top:8px}.mgr .mrow{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--rule2)}
 .mgr .mpic{display:block;width:30px;height:30px;border:2px solid var(--rule);border-radius:3px;image-rendering:pixelated;background:#1c2430}
 .mgr .mrow.mh{border-top:0;padding:0 0 2px;font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
 .mgr .mname{display:flex;flex-direction:column;min-width:0}.mgr .mname b{font-size:14px;line-height:1.1;overflow-wrap:anywhere}.mgr .mname small{font-size:11px;color:var(--ink3);white-space:nowrap}.mgr .mname small i{font-style:normal;color:var(--win);font-weight:700}
@@ -1204,21 +1204,23 @@ def training_page():
                  + ("" if foal else f"<div class=row style='gap:4px 10px;margin-top:4px;flex-wrap:wrap'>{condition(h)}</div>")
                  + day_sheet(h) + "</div></div>")
     again = [h for h in unworked() if set_of(h)]
-    if has_pass(ME):                                                           # the Stable Manager: every youngster's set, editable, and one tap to deploy
-        sel = lambda n, cur, items: f"<select name='{n}'>" + "".join(f"<option value={k}{' selected' if k == cur else ''}>{v}</option>" for k, v in items) + "</select>"
-        srows = "".join(f"<div class='mrow{' done' if worked(h) else ''}'><img class=mpic src='/portrait/{urlname(h.name)}.png' width=30 height=30 loading=lazy alt='' style='border-color:{TIER_RGB[tier_base(h)]}'>"
-                        f"<span class=mname><b>{esc(h.name)}</b><small>{'yearling' if h in e.nursery else f'{h.age}yo'}"
-                        f"{' · <i>&#10003; done today</i>' if worked(h) else ''}</small></span>"
-                        f"{sel(f'j{h.id}', (set_of(h) or ('jog', 'gait'))[0], [(k, v) for k, v in JOB_WORD.items() if k in e.open_jobs(h)])}{sel(f'f{h.id}', (set_of(h) or ('jog', 'gait'))[1], FOCUS_NAME.items()) if e.stage(h) == 'train' else '<span class=sub>No focus yet</span>'}</div>" for h in ys)
-        repeat_all = ("<form method=post action=/sets class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Stable Manager</b>"
-                      f"<span class='pchip{' lit' if again else ''}'>{len(again)} to work</span></div>"
-                      "<div class=sub>Each youngster's set: the job and focus the manager runs. Save changes, or work every set now.</div>"
-                      "<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Job</span><span>Focus</span></div>"
-                      + srows + "</div><div class=mact><button class=sec name=do value=save>Save sets</button>"
-                      f"<button name=do value=deploy{'' if again else ' disabled'}>Work ({len(again)})</button></div></form>") if ys else ""
+    # Standing orders: one card either way. With the pass it works every saved set in a tap and covers nights away;
+    # without it, the same list with the manual button, so a free barn sees what the pass does where the chore is.
+    word = lambda st: JOB_WORD[st[0]] + (" · " + FOCUS_NAME[st[1]] if st[0] == "train" else "")
+    srows = "".join(f"<div class='mrow{' done' if worked(h) else ''}'><img class=mpic src='/portrait/{urlname(h.name)}.png' width=30 height=30 loading=lazy alt='' style='border-color:{TIER_RGB[tier_base(h)]}'>"
+                    f"<span class=mname><b>{esc(h.name)}</b><small>{'yearling' if h in e.nursery else f'{h.age}yo'}{' · <i>&#10003; done today</i>' if worked(h) else ''}</small></span>"
+                    f"<span class=sub>{word(set_of(h)) if set_of(h) else 'no set yet'}</span></div>" for h in ys)
+    if has_pass(ME):
+        line = "Each horse's last set, saved from its day sheet below. Your manager works them all in a tap, and runs them for you on nights you're away."
+        act = f"<form method=post action=/sets class=inline style='flex:1'><button name=do value=deploy{'' if again else ' disabled'}>Work the sets ({len(again)})</button></form>"
     else:
-        repeat_all = (f"<form method=post action=/job style='margin:0 0 8px'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
-                      f"<button class=big>Repeat yesterday for all ({len(again)})</button></form>") if len(again) > 1 else ""
+        line = (f"Each horse's last set, saved from its day sheet below. Repeat them by hand here, or let a manager run them "
+                f"every night, away or not, with the Season Pass.")
+        act = (f"<form method=post action=/job class=inline style='flex:1'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
+               f"<button class=sec{'' if again else ' disabled'}>Repeat yesterday for all ({len(again)})</button></form><a class='btn sec' href=/guide>Season Pass</a>")
+    repeat_all = (f"<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Standing orders</b>"
+                  f"<span class='pchip{' lit' if again else ''}'>{len(again)} to work</span></div><div class=sub>{line}</div>"
+                  f"<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Set</span></div>{srows}</div><div class=mact>{act}</div></div>") if ys else ""
     body = (train_banner() + f"<div class=stablehead><h2>Day sheet <span class='stallct st-grn'>{done}/{len(ys)}</span></h2></div>" + repeat_all +
             "<div class=sub style='margin:-4px 0 8px'>Yearlings, 2 and 3-year-olds: one job a day, your call. The stable jogs any you don't get to.</div>"
             + (rows or "<div class=card><div class=sub>No youngsters in the barn. Yearlings come from your broodmares; 2 and 3-year-olds race here.</div></div>")
@@ -1787,8 +1789,8 @@ GUIDE = [
          "season's best handicapper is named at the Crown. It's a prize for reading the form, not a wager: nothing is staked and "
          "nothing can be lost."),
         ("The Stable Manager", "What the Season Pass buys: a manager who does your chores in one tap. The trainer's entries for "
-         "every fit horse, and every youngster's set from the Training tab, where you keep each one's job and focus and can "
-         "change them any time. Miss a night and the manager covers you, for a few nights in a row, then waits for you. It never "
+         "every fit horse, and every youngster's standing orders from the Training tab: the last set you gave each one, "
+         "saved from its day sheet, which you change any time by working it by hand. Miss a night and the manager covers you, for a few nights in a row, then waits for you. It never "
          "enters a claimer, never nominates for a stake, and never does anything you couldn't do yourself with a few taps."),
     ] + ([
         ("Sponsoring a stake", "At the start of every season the stakes go up for sponsorship, in Markers, to the highest bid. "
@@ -3310,7 +3312,8 @@ def entry_box():
         return ""
     open_ = sum(1 for h in racers if not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h))
     acts = ("<div class=mact>" + (f"<form method=post action=/entries class=inline style='flex:1'><input type=hidden name=back value=/><button class=sec style='width:100%'>Trainer's picks</button></form>" if open_ else "")
-            + ("<a class='btn sec' href=/setup>Set up tonight</a>" if has_pass(ME) else "") + "<a class='btn sec' href=/entries>Find a race</a></div>")
+            + ("<a class='btn sec' href=/setup>Set up tonight</a>" if has_pass(ME) else "") + "<a class='btn sec' href=/entries>Find a race</a></div>"
+            + ("<div class=sub>Your manager enters the trainer's picks every night, and works the standing orders, on nights you're away.</div>" if has_pass(ME) else ""))
     return (f"<div class='card hc mgr' id=entrybox style='--tc:#c9922e'><div class=mhead><b>Entry box</b><span class='pchip{' lit' if open_ else ''}'>{open_} to enter</span></div>"
             "<div class=sub>Tomorrow night's entries, drawn into the card at 8 PM. Change or scratch any until then.</div>"
             f"<div class=mgrid>{entry_rows(racers)}</div>{acts}</div>")
