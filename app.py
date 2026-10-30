@@ -510,6 +510,8 @@ def tick():
     for o, ev in events.items():
         if G["day"] % c.YEAR == 0:
             ev.append("New year: the yearlings are on the board")
+            if has_pass(o):
+                mk_book(o, MK_PASS, "Season Pass: the season's Markers")
         ev.extend(G.get("pick_news", {}).pop(o, []))              # how the night's picks went
         P(o)["events"] = ev
     events = P()["events"]
@@ -1232,7 +1234,7 @@ def training_page():
 
 
 PASS_GRACE = 3       # the Season Pass covers this many nights in a row without a check-in, then waits
-MK_CHECKIN, MK_SEVENTH, MK_TITLE = 1, 5, 25   # Markers: a day's check-in, the seventh in a row, a season title (Handicapper of the Year, a Crown champion)
+MK_NIGHTS, MK_STREAK, MK_PASS, MK_TITLE = 5, 1, 15, 25   # Markers: a Marker for every 5 nights in a row with an action; the pass's season grant; a season title
 MK_ICON = lambda size=16: f"<img class=mkic src=/mock/brand/markers/marker_{size}.png width={size} height={round(size * .72)} alt='Markers'>"
 
 
@@ -1305,15 +1307,14 @@ def mk_tag(n, size=16):
 
 
 def check_in(o):
-    """The day's first visit: a Marker for showing up, five on the seventh day in a row. Once a day."""
+    """A night counts once the barn did something that moved the game (a set worked, an entry, a bid, a booking, a fitting),
+    not for a page load. Every MK_NIGHTS in a row pays a Marker; one night missed is forgiven, two start the streak over."""
     if P(o).get("mk_day") == G["day"]:
         return
-    streak = P(o).get("streak", 0) + 1 if P(o).get("mk_day") == G["day"] - 1 else 1
+    streak = P(o).get("streak", 0) + 1 if P(o).get("mk_day", -9) >= G["day"] - 2 else 1
     P(o)["mk_day"], P(o)["streak"] = G["day"], streak
-    if streak % 7 == 0:
-        mk_book(o, MK_SEVENTH, "seventh day in a row")
-    else:
-        mk_book(o, MK_CHECKIN, "daily check-in")
+    if streak % MK_NIGHTS == 0:
+        mk_book(o, MK_STREAK, f"{MK_NIGHTS} nights in a row")
 PICK_PRIZE = 1_000   # the handicapper's game: a correct stake pick earns this flat prize, small next to any purse. Measured 2026-10-29:
                      # 89 stakes a season; always-the-favorite hits 16-30%, so chalk banks about $20-27k a season at this prize
 
@@ -1799,8 +1800,9 @@ GUIDE = [
          "races the stake on the same terms as any other. The Crown is never for sale."),
     ] if SPONSORING else []) + [
         ("Markers", "The track's own chits, shown beside your cash when you hold any. Markers buy the look of "
-         "your barn; they never buy a horse, a cover, a claim or an entry, and they never turn into cash. A few come free for "
-         "showing up each day, with a bonus for a week straight, and the season's titles pay them too."),
+         "your barn; they never buy a horse, a cover, a claim or an entry, and they never turn into cash. They are hard to earn: "
+         "a night counts once you've done something in the barn, and five nights in a row pay one, with a single night off forgiven. "
+         "The Season Pass brings a few each season, and the season's titles pay them too."),
         ("Fair play", "Nothing you can buy for real money wins a race, buys a horse, or makes one grow faster: horses are earned on the "
          "track, in the ring and in the breeding shed, at the same price for everyone. Each person runs one barn. The stewards review "
          "sales that look wrong, such as horses passed between the same two barns for far under their worth, and a barn under review "
@@ -3890,10 +3892,10 @@ def shop_page(msg=""):
     packs = "".join(f"<div class='card pack'><b>{mk_tag(n, 20)}</b><span class=sub>${usd:.2f}</span><span class=sub>coming soon</span></div>" for n, usd in ((20, 4.99), (50, 9.99), (120, 19.99)))
     loglines = "".join(f"<div class=row style='justify-content:space-between;font-size:13px'><span class=sub>Yr {c.year_of(d)} wk {d % c.YEAR + 1} · {esc(why)}</span><b style='color:{'var(--mk)' if n > 0 else 'var(--loss)'}'>{n:+,}</b></div>" for d, n, why in log)
     mk = (f"<div class='card' id=markers><div class=row style='gap:12px'>{MK_ICON(40)}<div style='flex:1'><b>Markers</b> <span class=mk style='margin-left:6px'>{markers():,}</span>"
-          "<div class=sub>The track's own chits. Spent on the barn's look, never on a horse, and never turned into cash. A few come free for showing up.</div></div></div>"
+          "<div class=sub>The track's own chits. Spent on the barn's look, never on a horse, and never turned into cash. Hard to come by: a night of play, five in a row, earns one.</div></div></div>"
           + (f"<a class='btn sec' href=/sponsor style='display:block;text-align:center;margin-top:8px'>Sponsor a stake · {len(G.get('sponsor_auction', {}))} open</a>" if G.get("sponsor_auction") else "")
           + f"<div class=packs>{packs}</div>"
-          f"<div class=row style='gap:10px;margin-top:8px'>{MK_ICON(28)}<div style='flex:1'><b>Daily check-in</b><div class=sub>Day {streak % 7 or 7} of 7 · {MK_CHECKIN} Marker a day, {MK_SEVENTH} on the seventh</div></div></div>"
+          f"<div class=row style='gap:10px;margin-top:8px'>{MK_ICON(28)}<div style='flex:1'><b>Nights in a row</b><div class=sub>Night {streak % MK_NIGHTS or MK_NIGHTS} of {MK_NIGHTS} · a night counts once you've done something in the barn · one night off is forgiven</div></div></div>"
           + (f"<div style='margin-top:8px'>{loglines}</div>" if loglines else "") + "</div>")
     body = (market_tabs("shop") + (f"<div class=card><b>{esc(msg)}</b></div>" if msg else "")
             + "<div class=secbar>Markers</div>" + mk
@@ -4696,8 +4698,7 @@ class H(BaseHTTPRequestHandler):
         if o is None:
             return p.startswith(("/mock/", "/login", "/signup")) or p in ("/manifest.webmanifest", "/sw.js", "/offline")
         ME = o
-        P()["last_seen"] = time.time(); P()["seen_day"] = G["day"]        # today's check-in: the pass's grace counts the days missed
-        check_in(o)
+        P()["last_seen"] = time.time(); P()["seen_day"] = G["day"]        # today's visit: the pass's grace counts the days missed
         ips, ua = P().setdefault("ips", []), (self.headers.get("User-Agent") or "")[:80]   # where and what they sign in from: the anti-dupe review reads it
         if self.ip() not in ips:
             ips.append(self.ip()); del ips[:-8]
@@ -4917,6 +4918,8 @@ class H(BaseHTTPRequestHandler):
             return self.start_session(o) if o is not None else self.send(login_page(True, error=err, local=local))
         if not self.gate(p):
             return self.send("", 303, "/login")
+        if not p.startswith("/admin"):
+            check_in(ME)                                                    # a night of play: anything posted to the game counts
         if p == "/logout":
             for k in [k for k, v in G["sessions"].items() if v == ME]:
                 G["sessions"].pop(k)
