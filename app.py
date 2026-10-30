@@ -3011,7 +3011,7 @@ def horse_card(h, link=True):
             elif corner:
                 act = corner.replace("class=enterplus", "class=go").replace("class='enterplus pause'", "class='go pause'").replace(">+</a>", ">Enter</a>")
                 act = act.replace("</svg></a>", "</svg> Enter</a>")
-            act = f"<div class=act2><span class=acts>{act}</span><a class=sec href=/program>Program</a></div>"
+            act = f"<div class=act2><span class=acts>{act}</span><a class=sec href='/program?h={quote(h.name)}'>Program</a></div>"
     return (f"<div class='card brow hc{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b></div></div><div class=hr2>"
             f"<div class=bname>{name}</div>"
             f"<div class=facts><span class=chip>{h.age}yo {sex_word(h)}</span>"
@@ -4598,7 +4598,8 @@ def program_race(num, key, venue, field, odds, drawn, open_):
             f"TROT – {'1 MILE' if track == 'mile' else '½ MILE TRACK, 1 MILE'}{' · PASSING LANE' if lane else ''}<br><b>{title}</b>{vs}</div>"
             f"<div class=pgp>PURSE<br><b>${purse:,}</b><br>{len(field)} {'starters' if drawn else 'in'}</div></summary>")
     inner = program_race_body(drawn, key, field, odds) if open_ else f"<div class=pgload data-k='{esc(repr((key, venue, num)))}'>Loading…</div>"
-    return f"<details class=pgm{' open' if open_ else ''}>{head}{inner}</details>"
+    names = "|" + "|".join(h.name for h in field) + "|"                   # the card's Program link lands on the horse's race
+    return f"<details class=pgm{' open' if open_ else ''} data-h='{esc(names)}'>{head}{inner}</details>"
 
 
 def program_page(qs=None):
@@ -4638,6 +4639,9 @@ def program_page(qs=None):
         body += "<p class=sub>Nothing entered yet tonight.</p>"
     body += ("<script>document.querySelectorAll('details.pgm').forEach(d=>d.addEventListener('toggle',()=>{const l=d.querySelector('.pgload');"
              "if(d.open&&l&&!l.dataset.go){l.dataset.go=1;fetch('/program?k='+encodeURIComponent(l.dataset.k)).then(r=>r.text()).then(t=>l.outerHTML=t)}}))</script>")
+    if qs.get("h"):                                                        # from a horse's card: open and scroll to its race
+        body += (f"<script>(()=>{{const d=document.querySelector(`details.pgm[data-h*=\"|{esc(qs['h']).replace('`', '')}|\"]`);"
+                 "if(d){d.open=true;d.scrollIntoView({block:'start'})}})()</script>")
     return page("Tonight's program", body)
 
 
