@@ -7,8 +7,10 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.abspath(__file__))
 FRAME = os.path.join(ROOT, "mockups", "pixel", "fe12_cycle.png")
 CACHE = os.path.join(ROOT, "mockups", "brand", "emblem", "cache")
+WRAPPED = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12.png")      # SpriteCook's leg wraps on the cycle, and the mask of them
+WMASK = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12_mask.png")
 PIECES = ("harness", "mask", "wraps", "bike")
-_frame = []
+_frame, _wrapped = [], []
 
 
 def frame0():
@@ -16,6 +18,14 @@ def frame0():
         im = Image.open(FRAME).convert("RGBA")
         _frame.append(im.crop((0, 0, im.width // 12, im.height)))
     return _frame[0]
+
+
+def wrapped0():
+    """Frame 0 in SpriteCook's wraps, and the mask of the wrap pixels."""
+    if not _wrapped:
+        im, m = Image.open(WRAPPED).convert("RGBA"), Image.open(WMASK).convert("L")
+        w = im.width // 12; _wrapped.append((im.crop((0, 0, w, im.height)), m.crop((0, 0, w, m.height))))
+    return _wrapped[0]
 
 
 def rgb(hx):
@@ -32,7 +42,7 @@ def shade(p, base):
 def paint(pieces, cols, c1, c2):
     """pieces: the fitted set; cols: piece -> 'p' | 's' (and 'hub'); c1/c2: the barn's primary and secondary hex."""
     col = lambda k: rgb(cols[k]) if str(cols.get(k, "")).startswith("#") else rgb(c1 if cols.get(k, "p") == "p" else c2)   # a hex: the horse's own
-    im = frame0().copy(); px = im.load(); W, H = im.size
+    im = (wrapped0()[0] if "wraps" in pieces else frame0()).copy(); px = im.load(); W, H = im.size
     blue = lambda p: p[3] > 0 and p[2] > p[0] + 40 and p[2] > p[1] + 30
     cx, cy = 27, 82
     for y in range(H):
@@ -64,21 +74,20 @@ def paint(pieces, cols, c1, c2):
                 p = px[x, y]
                 if p[3] and ((p[0] > p[1] > p[2] and p[0] > 60) or (sum(p[:3]) < 150 and y < 16)):
                     px[x, y] = other + (255,) if y < 15 else shade(p, col("mask"))
-    if "wraps" in pieces:                                             # the front legs, a band in the other color
-        other = rgb(cols["wraps2"]) if "wraps2" in cols else rgb(c2 if cols.get("wraps", "p") == "p" else c1)
-        for x0, x1 in ((128, 146), (186, 201)):
-            for y in range(70, 86):
-                for x in range(x0, x1):
-                    p = px[x, y]
-                    if p[3] and sum(p[:3]) < 200:
-                        px[x, y] = other + (255,) if 75 <= y <= 76 else shade(p, col("wraps"))
+    if "wraps" in pieces:                                             # SpriteCook's wraps, in the horse's wrap color, their own light kept
+        m, c = wrapped0()[1].load(), col("wraps")
+        for y in range(H):
+            for x in range(W):
+                if m[x, y] > 128 and px[x, y][3]:
+                    s = .35 + .75 * sum(px[x, y][:3]) / 765
+                    px[x, y] = tuple(min(255, int(v * s)) for v in c) + (255,)
     return im
 
 
 def render(pieces, cols, c1, c2):
     """The model's PNG at 3x, cached like the emblems; returns its path under /mock."""
     pieces = tuple(p for p in PIECES if p in pieces)
-    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v1"
+    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v2"
     name = hashlib.md5(key.encode()).hexdigest()[:12] + ".png"
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):

@@ -4982,6 +4982,7 @@ class H(BaseHTTPRequestHandler):
                     r["player"] = bool(h and h.owner in c.HUMAN)
                     r["emblem"] = CR.svg(emblem_of(h.owner)).split("src=")[1].split()[0] if h else ""   # the PNG's path
                     r["marquee"] = marquee_html(h.owner, mq_) if h and (mq_ := marquee_of(h.owner)) else ""
+                    r["wraps"] = kit_of(h)["wraps"] if h and "wraps" in fitted(h) else ""   # shortcut: the gear it wears now, not on race night
                     if h:                                                  # the handicapper's pick, on what was known before the race
                         form = [x["place"] == 1 for x in getattr(h, "results", []) if x["day"] < st_["day"]][-5:]
                         score = h.est + 1.5 * sum(form) - 0.4 * r["post"]
