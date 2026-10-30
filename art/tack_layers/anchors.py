@@ -43,3 +43,18 @@ def drift(today, cell):
     na, nb = nose(today), nose(cell)
     d = sum(abs(A[k][j] - B[k][j]) for k in (0, 1) for j in (0, 1)) + abs(na[0] - nb[0]) + abs(na[1] - nb[1])
     return d + 40 * abs(wheel_w(cell) / wheel_w(today) - 1)
+
+
+def body(im):
+    """The body's outline as a set: opaque pixels above the legs and right of the bike (back, belly, neck, head)."""
+    px = im.load(); W, H = im.size
+    return {(x, y) for y in range(H * 62 // 100) for x in range(W // 3, W) if px[x, y][3]}
+
+
+def lines(im):
+    """Where the back and the belly sit: top and bottom of the body at three points along it."""
+    px = im.load(); W, H = im.size; out = []
+    for x in (95, 120, 145):
+        ys = [y for y in range(H * 70 // 100) if px[x, y][3]]
+        out += [min(ys), max(ys)] if ys else [0, 0]
+    return out

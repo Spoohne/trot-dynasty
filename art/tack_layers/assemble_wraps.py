@@ -49,6 +49,29 @@ def fit_length(i):
     return cell
 
 
+def settle(cell, i):
+    """The frame nudged until its body (back, belly, neck, head, above the legs) overlaps today's best: a small
+    scale and shift, so the horse rides as level as the stock runner instead of bobbing."""
+    import numpy as np
+    o = np.array(orig.crop((i * W, 0, (i + 1) * W, H)))[:, :, 3] > 0
+    top, x0 = H * 62 // 100, W // 3
+    target = o[:top, x0:]
+    best = (-1, cell)
+    for k in (.94, .96, .98, 1.0, 1.02, 1.04, 1.06):
+        sc = cell.resize((round(W * k), round(H * k)), Image.NEAREST)
+        base = Image.new("RGBA", (W, H)); base.paste(sc, (round((W - sc.width) / 2), round(H - sc.height)), sc)   # scaled about the ground line
+        a = np.array(base)[:, :, 3] > 0
+        for dy in range(-6, 7):
+            for dx in range(-6, 7):
+                m = np.roll(np.roll(a, dy, 0), dx, 1)[:top, x0:]
+                iou = (m & target).sum() / max(1, (m | target).sum())
+                if iou > best[0]:
+                    best = (iou, (k, dx, dy, base))
+    k, dx, dy, base = best[1]
+    out = Image.new("RGBA", (W, H)); out.paste(base, (dx, dy), base)
+    return out
+
+
 def steady(cell, i):
     """Today's wheel and driver laid over SpriteCook's: they're the same on every horse, so they never pulse."""
     o = orig.crop((i * W, 0, (i + 1) * W, H)); po, pc = o.load(), cell.load()
@@ -82,7 +105,7 @@ def tint(cell, mask, hx):
 
 
 if __name__ == "__main__":
-    cells = [steady(fit(i), i) for i in range(N)]; masks = [wraps(c) for c in cells]
+    cells = [steady(settle(fit(i), i), i) for i in range(N)]; masks = [wraps(c) for c in cells]
     for i, m in enumerate(masks):
         assert m.getbbox(), f"frame {i}: no wraps found"
     sheet, msheet = Image.new("RGBA", (W * N, H)), Image.new("L", (W * N, H))
