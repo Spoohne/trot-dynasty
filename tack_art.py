@@ -31,7 +31,7 @@ def shade(p, base):
 
 def paint(pieces, cols, c1, c2):
     """pieces: the fitted set; cols: piece -> 'p' | 's' (and 'hub'); c1/c2: the barn's primary and secondary hex."""
-    col = lambda k: rgb(c1 if cols.get(k, "p") == "p" else c2)
+    col = lambda k: rgb(cols[k]) if str(cols.get(k, "")).startswith("#") else rgb(c1 if cols.get(k, "p") == "p" else c2)   # a hex: the horse's own
     im = frame0().copy(); px = im.load(); W, H = im.size
     blue = lambda p: p[3] > 0 and p[2] > p[0] + 40 and p[2] > p[1] + 30
     cx, cy = 27, 82
@@ -58,14 +58,14 @@ def paint(pieces, cols, c1, c2):
                     elif d < 17:
                         px[x, y] = col("bike") + (255,)
     if "mask" in pieces:                                              # over the head, muzzle bare, the ear tips in the other color
-        other = rgb(c2 if cols.get("mask", "p") == "p" else c1)
+        other = rgb(cols["mask2"]) if "mask2" in cols else rgb(c2 if cols.get("mask", "p") == "p" else c1)
         for y in range(9, 34):
             for x in range(176, 201):
                 p = px[x, y]
                 if p[3] and ((p[0] > p[1] > p[2] and p[0] > 60) or (sum(p[:3]) < 150 and y < 16)):
                     px[x, y] = other + (255,) if y < 15 else shade(p, col("mask"))
     if "wraps" in pieces:                                             # the front legs, a band in the other color
-        other = rgb(c2 if cols.get("wraps", "p") == "p" else c1)
+        other = rgb(cols["wraps2"]) if "wraps2" in cols else rgb(c2 if cols.get("wraps", "p") == "p" else c1)
         for x0, x1 in ((128, 146), (186, 201)):
             for y in range(70, 86):
                 for x in range(x0, x1):
