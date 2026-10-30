@@ -1123,7 +1123,7 @@ def setup_page():
     """The Stable Manager's preview: exactly what one tap would enter and deploy, then Confirm or Cancel."""
     entries, sets = setup_plan(ME)
     rows = "".join(f"<div class=row style='justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)'><b>{esc(h.name)}</b><span class=sub>{esc(title)} · {'mile' if track == 'mile' else 'half-mile'}</span></div>" for h, title, track in entries)
-    srows = "".join(f"<div class=row style='justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)'><b>{esc(x.name)}</b><span class=sub>{JOB_WORD[set_of(x)[0]]}{' · ' + FOCUS_NAME[set_of(x)[1]] if set_of(x)[0] != 'out' else ''}</span></div>" for x in sets)
+    srows = "".join(f"<div class=row style='justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)'><b>{esc(x.name)}</b><span class=sub>{JOB_WORD[set_of(x)[0]]}{' · ' + FOCUS_NAME[set_of(x)[1]] if set_of(x)[0] == 'train' else ''}</span></div>" for x in sets)
     body = ("<p class=sub>Nothing is entered until you confirm. Everything below stays editable afterward from the horse cards and the Training tab.</p>"
             f"<div class=card><b>Enter for tomorrow night · {len(entries)}</b><div class=sub>The trainer's picks, never a claimer.</div>{rows or '<div class=sub>Every fit horse is already entered.</div>'}</div>"
             f"<div class=card><b>Sets to work · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to work today.</div>'}</div>"
@@ -1175,7 +1175,7 @@ def day_sheet(h, back="/training"):
     foc = "".join(f"<label><input type=radio name=f value={k}{' checked' if k == last else ''}>{t}</label>" for k, t in FOCUS_NAME.items())
     st = set_of(h)
     last = st[1] if st else last
-    again = (f"<button name=j value=repeat style='grid-column:1/-1'{' disabled' if st[0] == 'train' and tired else ''}>Its set: "
+    again = (f"<button name=j value=repeat style='grid-column:1/-1'{' disabled' if st[0] == 'train' and tired else ''}>Work: "
              f"{JOB_WORD[st[0]]}{' · ' + FOCUS_NAME[st[1]] if st[0] != 'out' and 'train' in can else ''}</button>") if st else ""
     return (stage_line(h) + f"<form method=post action=/job class=sheet style='grid-template-columns:repeat({4 if past else len(can)},1fr)'><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='{back}'>{again}"
             f"{btn('jog', 'Jog')}{btn('train', 'Train')}{btn('school', 'Break')}{btn('out', 'Turn out')}"
@@ -1202,13 +1202,13 @@ def training_page():
         srows = "".join(f"<div class='mrow{' done' if worked(h) else ''}'><img class=mpic src='/portrait/{urlname(h.name)}.png' width=30 height=30 loading=lazy alt='' style='border-color:{TIER_RGB[tier_base(h)]}'>"
                         f"<span class=mname><b>{esc(h.name)}</b><small>{'yearling' if h in e.nursery else f'{h.age}yo'}"
                         f"{' · <i>&#10003; done today</i>' if worked(h) else ''}</small></span>"
-                        f"{sel(f'j{h.id}', (set_of(h) or ('jog', 'gait'))[0], [(k, v) for k, v in JOB_WORD.items() if k in e.open_jobs(h)])}{sel(f'f{h.id}', (set_of(h) or ('jog', 'gait'))[1], FOCUS_NAME.items())}</div>" for h in ys)
+                        f"{sel(f'j{h.id}', (set_of(h) or ('jog', 'gait'))[0], [(k, v) for k, v in JOB_WORD.items() if k in e.open_jobs(h)])}{sel(f'f{h.id}', (set_of(h) or ('jog', 'gait'))[1], FOCUS_NAME.items()) if e.stage(h) == 'train' else '<span class=sub>No focus yet</span>'}</div>" for h in ys)
         repeat_all = ("<form method=post action=/sets class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Stable Manager</b>"
                       f"<span class='pchip{' lit' if again else ''}'>{len(again)} to work</span></div>"
                       "<div class=sub>Each youngster's set: the job and focus the manager runs. Save changes, or work every set now.</div>"
                       "<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Job</span><span>Focus</span></div>"
                       + srows + "</div><div class=mact><button class=sec name=do value=save>Save sets</button>"
-                      f"<button name=do value=deploy{'' if again else ' disabled'}>Run the sheet ({len(again)})</button></div></form>") if ys else ""
+                      f"<button name=do value=deploy{'' if again else ' disabled'}>Work ({len(again)})</button></div></form>") if ys else ""
     else:
         repeat_all = (f"<form method=post action=/job style='margin:0 0 8px'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
                       f"<button class=big>Repeat yesterday for all ({len(again)})</button></form>") if len(again) > 1 else ""
@@ -4949,7 +4949,7 @@ class H(BaseHTTPRequestHandler):
             return self.send(admin_page("Sponsorship auction opened." if q.get("do") == "open" else "Sponsorship auction settled."))
         if p == "/sets" and has_pass(ME):                                # the Stable Manager's sheet: save every set, or deploy them all
             for x in youngsters():
-                j, f_ = q.get(f"j{x.id}"), q.get(f"f{x.id}")
+                j, f_ = q.get(f"j{x.id}"), q.get(f"f{x.id}") or (getattr(x, "tset", None) or (None, "stamina"))[1]   # no focus field before training opens
                 if j in JOB_WORD and f_ in FOCUS_NAME:
                     x.tset = (j, f_)
             if q.get("do") == "deploy":

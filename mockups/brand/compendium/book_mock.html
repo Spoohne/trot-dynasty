@@ -1,0 +1,101 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Compendium book mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Barlow+Semi+Condensed:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,900&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel=stylesheet>
+<style>
+/* Mockup only: two takes on the Compendium as a period horseman's manual, at the game's 420px column. */
+:root{--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--ink:#e6e8ec;--ink2:#a4acb9;--tote:#e8a33a}
+body{margin:0;background:linear-gradient(#0b1430,#070a14 300px);color:var(--ink);font:15px 'Barlow Semi Condensed',sans-serif;padding:20px 16px}
+.cols{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+.col{width:420px;max-width:100%}
+.lab{font:800 14px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--tote);margin:0 0 8px}
+h1.g{font:800 30px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.04em;text-shadow:2px 2px 0 #000;margin:0 0 10px}
+.fell{font-family:'IM Fell English',Georgia,serif}
+.sc{font-family:'IM Fell English SC',Georgia,serif}
+
+/* ---------- A: leather and gilt (stays dark) ---------- */
+.a{background:#1a1310 radial-gradient(120% 80% at 50% 0,#2a1d16,#140e0b);border:1px solid #3a2a1e;border-radius:4px;padding:18px 16px 10px;
+   box-shadow:inset 0 0 0 4px #140e0b,inset 0 0 0 5px #6b5326,0 6px 18px #000}
+.a .title{text-align:center;padding:4px 0 14px;border-bottom:1px solid #6b5326;margin-bottom:6px}
+.a .title b{display:block;font:italic 900 30px 'Playfair Display',serif;color:#d9b064;text-shadow:0 1px 0 #000,0 0 12px rgba(232,163,58,.25)}
+.a .title span{font-size:15px;color:#b9a483;letter-spacing:.06em}
+.a details{border-bottom:1px solid #3a2a1e}
+.a summary{list-style:none;cursor:pointer;padding:10px 2px;display:flex;align-items:baseline;gap:10px}
+.a summary::-webkit-details-marker{display:none}
+.a .ch>summary{font-size:19px;color:#e9dcc3}
+.a .ch>summary i{font:italic 900 15px 'Playfair Display',serif;color:#d9b064;min-width:34px}
+.a .tp>summary{font-size:16px;color:#cfc2a8;padding-left:44px}
+.a .tp[open]>summary{color:#d9b064}
+.a .txt{padding:2px 4px 14px 44px;font-size:16.5px;line-height:1.5;color:#e2d6be}
+.a .txt b{font-weight:normal;font-style:italic;color:#f0e4c9}
+.a .txt::first-letter{float:left;font:900 44px/0.8 'Playfair Display',serif;color:#d9b064;padding:6px 6px 0 0}
+.a .orn{text-align:center;color:#6b5326;padding:8px 0 2px;letter-spacing:.6em}
+
+/* ---------- B: lamplit page (a light page set on the dark night) ---------- */
+.b{position:relative;background:#e9dcbd;color:#2b2016;border-radius:2px 6px 6px 2px;padding:20px 20px 14px 22px;
+   background-image:radial-gradient(90% 60% at 50% 15%,rgba(255,236,190,.55),transparent 70%),radial-gradient(160% 100% at 50% 50%,transparent 60%,rgba(110,74,30,.35));
+   box-shadow:-3px 0 0 #cdbd98,-6px 0 0 #b9a77f,0 10px 26px #000,0 0 60px rgba(232,163,58,.12)}
+.b .head{display:flex;justify-content:space-between;font-size:12px;color:#7a6446;letter-spacing:.08em;border-bottom:1px solid #b9a27a;padding-bottom:4px;margin-bottom:12px}
+.b .title{text-align:center;margin:4px 0 14px}
+.b .title b{display:block;font:italic 900 30px 'Playfair Display',serif;color:#3a2412}
+.b .title span{font-size:15px;color:#6b5236}
+.b .rule{height:5px;border-top:1px solid #7a5a36;border-bottom:1px solid #7a5a36;margin:0 30px 8px}
+.b details{border-bottom:1px dotted #b39b72}
+.b summary{list-style:none;cursor:pointer;padding:9px 0;display:flex;align-items:baseline;gap:10px}
+.b summary::-webkit-details-marker{display:none}
+.b .ch>summary{font-size:19px;color:#2b2016}
+.b .ch>summary i{font-size:15px;color:#8a2a1c;min-width:34px}
+.b .ch>summary .dots{flex:1;border-bottom:1px dotted #9c8462;transform:translateY(-4px)}
+.b .tp>summary{font-size:16px;color:#4a3826;padding-left:44px}
+.b .tp[open]>summary{color:#8a2a1c}
+.b .txt{padding:0 0 14px 44px;font-size:16.5px;line-height:1.48;text-align:justify;hyphens:auto}
+.b .txt b{font-weight:normal;font-style:italic}
+.b .txt::first-letter{float:left;font-size:46px;line-height:.82;color:#8a2a1c;padding:6px 6px 0 0}
+.b .foot{text-align:center;font-size:12px;color:#7a6446;padding-top:10px}
+.now{opacity:.55;font-size:13px;margin-top:20px}
+</style></head><body>
+<div class=cols>
+
+<div class=col>
+  <p class=lab>A · Leather and gilt</p>
+  <h1 class=g>Compendium</h1>
+  <div class="a fell">
+    <div class=title><b>The Compendium</b><span class=sc>being a horseman's manual of the circuit</span></div>
+    <details class=ch><summary><i>I.</i><span class=sc>The Circuit</span></summary></details>
+    <details class=ch open><summary><i>II.</i><span class=sc>Your Horses</span></summary>
+      <details class=tp><summary>The Four Stats</summary></details>
+      <details class=tp><summary>Development</summary></details>
+      <details class=tp open><summary>Training the Youngsters</summary>
+        <div class=txt>Yearlings, 2-year-olds and 3-year-olds are yours to make, and the Training tab is their day sheet. A yearling comes up in stages, one at a time: <b>break</b> work to get it used to the harness, then <b>jogging</b>. Once it's broke and jogged, its days are <b>training miles</b> on the focus you choose, or a <b>turn out</b> for a day off.</div>
+      </details>
+      <details class=tp><summary>Freshness and Grooming</summary></details>
+    </details>
+    <details class=ch><summary><i>III.</i><span class=sc>Entering a Race</span></summary></details>
+    <details class=ch><summary><i>IV.</i><span class=sc>On the Track</span></summary></details>
+    <div class=orn>✦ ✦ ✦</div>
+  </div>
+</div>
+
+<div class=col>
+  <p class=lab>B · Lamplit page</p>
+  <h1 class=g>Compendium</h1>
+  <div class="b fell">
+    <div class=head><span class=sc>The Compendium</span><span class=sc>Your Horses</span></div>
+    <div class=title><b>The Compendium</b><span class=sc>being a horseman's manual of the circuit</span></div>
+    <div class=rule></div>
+    <details class=ch><summary><i>I.</i><span class=sc>The Circuit</span><span class=dots></span></summary></details>
+    <details class=ch open><summary><i>II.</i><span class=sc>Your Horses</span><span class=dots></span></summary>
+      <details class=tp><summary>The Four Stats</summary></details>
+      <details class=tp><summary>Development</summary></details>
+      <details class=tp open><summary>Training the Youngsters</summary>
+        <div class=txt>Yearlings, 2-year-olds and 3-year-olds are yours to make, and the Training tab is their day sheet. A yearling comes up in stages, one at a time: <b>break</b> work to get it used to the harness, then <b>jogging</b>. Once it's broke and jogged, its days are <b>training miles</b> on the focus you choose, or a <b>turn out</b> for a day off.</div>
+      </details>
+      <details class=tp><summary>Freshness and Grooming</summary></details>
+    </details>
+    <details class=ch><summary><i>III.</i><span class=sc>Entering a Race</span><span class=dots></span></summary></details>
+    <details class=ch><summary><i>IV.</i><span class=sc>On the Track</span><span class=dots></span></summary></details>
+    <div class=foot>— ii —</div>
+  </div>
+</div>
+
+</div>
+</body></html>

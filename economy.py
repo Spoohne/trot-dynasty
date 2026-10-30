@@ -573,9 +573,8 @@ def handle(f, owner, day, job, focus):
         f.jogged += 1
     if stage(f) != was:
         f.stage_days = getattr(f, "stage_days", []) + [(day, stage(f))]   # the barn hears the day each stage opens
-    focus = "gait" if job == "school" else focus
-    d = min(c.JOBS[job][1] * 2.5, c.SHAPE_CAP - f.shape[focus])         # a yearling is the most moldable it will ever be
-    if d > 0 and focus in c.SHAPED:
+    d = min(c.JOBS[job][1] * 2.5, c.SHAPE_CAP - f.shape.get(focus, 0))  # a yearling is the most moldable it will ever be
+    if job == "train" and d > 0 and focus in c.SHAPED:                  # breaking and jogging bring it along; only training miles have a focus
         for t in c.SHAPED:
             f.shape[t] = max(-c.SHAPE_CAP, f.shape[t] + (d if t == focus else -d / (len(c.SHAPED) - 1)))
     grow(f, day)
