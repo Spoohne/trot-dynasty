@@ -2666,7 +2666,7 @@ def marquee_html(o, mq, href=None, boom=False, el_id="", big=False, hidden=False
             f"{f' id={el_id}' if el_id else ''}{f' href={href}' if href else ''}{' hidden' if hidden else ''} data-slots={mq['slots']}"
             f" style='--bg:url(/mock/brand/marquee/v2/{mq['scene'] or 'plate'}.png);--bulb:{CR.BULBS['gold']}'>"
             f"<i class=mqfx></i>{'<i class=mqboom></i>' if boom or 'pt-dynasty' in fx else ''}"
-            f"{MQ_SPARKS if 'pt-embers' in fx else ''}{MQ_CORNERS if 'pt-corners' in fx else ''}{'<i class=gems></i>' if 'pt-dynasty' in fx else ''}"
+            f"{MQ_SPARKS if 'pt-embers' in fx else ''}{MQ_CORNERS if 'pt-corners' in fx else ''}"
             f"<span class='mqshelf l'>{''.join(imgs[:1])}</span>"
             f"<div class=mqmid><span class='mqped ld-{metal}'>{CR.svg(em, 64)}"
             f"{'<img class=pcrown src=/mock/brand/trophies/crown.png alt=>' if 'pt-crown' in fx else ''}</span>"
