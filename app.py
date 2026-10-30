@@ -1493,9 +1493,9 @@ def tonight_card():
 def barn_strip():
     """Entered tomorrow, stalls used, bills a week: the barn's three numbers, under the chores."""
     racers = [h for h in mine() if not h.retired]
-    entered = sum(1 for h in racers if getattr(h, "order", None) or on_card(h))
+    entered = sum(1 for h in racers if getattr(h, "order", None))                 # tomorrow's entries, not tonight's card
     tb, fb = e.bills(ME, G["horses"])
-    return (f"<div class=etiles style='grid-template-columns:1fr 1fr 1fr'><div class=etile><div class=etl>Entered</div><b>{entered} <span class=sub style='font-size:14px'>/ {len(racers)}</span></b></div>"
+    return (f"<div class=etiles style='grid-template-columns:1fr 1fr 1fr'><div class=etile><div class=etl>Entered tomorrow</div><b>{entered} <span class=sub style='font-size:14px'>/ {len(racers)}</span></b></div>"
             f"<div class=etile><div class=etl>Stalls</div><b>{len(racers)} <span class=sub style='font-size:14px'>/ {e.stalls(ME)}</span></b></div>"
             f"<div class=etile><div class=etl>Bills a week</div><b>${tb + fb:,}</b><a class=sub href=/earnings style='font-size:12px'>Books ›</a></div></div>")
 
