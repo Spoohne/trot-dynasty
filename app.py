@@ -1679,7 +1679,7 @@ GUIDE = [
          "way many times over; a slow one costs you to keep, so sell, retire or drop down the ones that aren't earning. If the bills "
          "ever run past your cash, they come out of your next purses."),
         ("Race night", "The circuit races once a day, at 8:00 PM Eastern. Each race night is a week of the season, and the season "
-         "builds to the Crown, which closes it. The way the real sport does it, you enter a day ahead: the moment tonight's card has "
+         "builds to the Crown, which closes it. On this circuit you enter a day ahead: the moment tonight's card has "
          "run, tomorrow's program is drawn from the entries and posted, so you have all day to read the form, make your claims and "
          "scratch if you need to. The countdown at the top of the screen tells you where you are in the day."),
         ("The tracks", "The circuit's tracks come in two sizes. Mile tracks have long, sweeping turns and reward a horse that can sustain "
@@ -1746,7 +1746,7 @@ GUIDE = [
          "come late, some know the half-mile tracks, some settle a rank horse. The standings show who's winning this season."),
         ("Post Time Tonic", "Sold in the Market's Shop. Once a horse is entered, tap the bottle on its card to give it a tonic for the "
          "night: Speed, Stamina, Finish or Manners each lift that side of its game, and the Premium lifts all four. The vet charges a "
-         "small share of the race's purse to give it. It's legal, it's part of race prep, and nobody else knows who's on what. A tonic "
+         "small share of the race's purse to give it. On this circuit it's allowed as part of race prep, and nobody else knows who's on what. A tonic "
          "helps; it doesn't make a slow horse fast."),
     ]),
     ("On the track", [
