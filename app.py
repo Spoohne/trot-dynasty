@@ -1028,7 +1028,7 @@ def page(title, body, foot=True, theme=None):
         boom = won is not None and P().get("mq_boom") != won
         if boom:
             P()["mq_boom"] = won                                              # once per winning night (kept at the next save)
-        plaque = f"<div class=mqbar>{marquee_html(ME, mq, href=f'/barn/{ME}', boom=boom, big=title == 'Your barn')}</div>"
+        plaque = f"<div class=mqbar>{marquee_html(ME, mq, href=f'/barn/{ME}', boom=boom, big=False)}</div>"
     top = (f"<div class=top><div class=tleft><span class=money>${e.cash[ME]:,.0f}</span>" + (f"<a href=/shop#markers class=mkbar>{mk_tag(markers())}</a>" if markers() else "") +
            f"<span class=when>Year {c.year_of(day)}, wk {day % c.YEAR + 1}{' <b style=color:#ff6f7d>DEV</b>' if DEV else ''}<br>{countdown()}</span></div>"
            f"<a href=/welcome class=brand><img src=/mock/brand/logo_text.png alt='Trot Dynasty'></a><div class=tright>"
@@ -1456,6 +1456,48 @@ def picks_section():
             f"<p class=sub>Pick the winner of each stake before it runs; a winner pays a ${PICK_PRIZE:,} prize, and the season's best handicapper is named at the Crown. Free to play; picks lock at post time.</p>"
             + (cards or "<p class=sub>No stakes tonight. The next ones are below.</p>")
             + (f"<div class=card><b>Year {yr} handicappers</b><table><tr><th>#</th><th>Barn</th><th>Winners</th><th>Picks</th><th>Rate</th></tr>{table}</table></div>" if table else ""))
+
+
+def tonight_card():
+    """The Barn tab's one card of chores: each with its count and its own button, the draw countdown in the chip. When
+    nothing is owed it stays as a quiet line, so the screen doesn't jump night to night."""
+    row = lambda n, what, href, label, sec=False: (f"<div class=erow2><span><b>{n}</b> <span class=sub>{what}</span></span>"
+                                                 f"<a class='btn{' sec' if sec else ''}' href={href} style='width:auto;margin:0'>{label}</a></div>")
+    rows = ""
+    if c.CARD.get("day") == G["day"]:
+        n = sum(1 for r in c.CARD["races"] if any(h.owner == ME for h in r["field"]))
+        if n:
+            rows += row(f"{n} race{'s' if n != 1 else ''}", "of yours on tonight's program", "/program", "Program", True)
+    idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
+    closed = entries_closed()
+    if idle and not closed:
+        rows += row(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''}", "not entered for tomorrow", "/entries", "Enter")
+    sets = len(unworked())
+    if sets and not closed:
+        rows += row(f"{sets} youngster{'s' if sets != 1 else ''}", "not worked today", "/training", "Work the sets", True)
+    open_picks = [s_ for s_ in stakes_tonight() if s_.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s_)) >= 2]
+    if open_picks:
+        rows += row(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''}", "tonight, picks open", "/stakes#picks", "Pick", True)
+    note = ""
+    if has_pass(ME):
+        log = P().get("pass_log")
+        if log and log[0] == G["day"]:
+            note = f"<div class=sub style='margin-top:6px'>Your manager{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} set{'s' if log[2] != 1 else ''} worked.</div>"
+    left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
+    chip = "entries closed" if closed else f"draw in {left // 3600}h {left % 3600 // 60:02d}m"
+    if not rows:
+        rows = "<div class=sub style='padding:6px 0'>All entered and every set worked. Nothing owed before the draw.</div>"
+    return (f"<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Tonight</b><span class=pchip>{chip}</span></div>{rows}{note}</div>")
+
+
+def barn_strip():
+    """Entered tomorrow, stalls used, bills a week: the barn's three numbers, under the chores."""
+    racers = [h for h in mine() if not h.retired]
+    entered = sum(1 for h in racers if getattr(h, "order", None) or on_card(h))
+    tb, fb = e.bills(ME, G["horses"])
+    return (f"<div class=etiles style='grid-template-columns:1fr 1fr 1fr'><div class=etile><div class=etl>Entered</div><b>{entered} <span class=sub style='font-size:14px'>/ {len(racers)}</span></b></div>"
+            f"<div class=etile><div class=etl>Stalls</div><b>{len(racers)} <span class=sub style='font-size:14px'>/ {e.stalls(ME)}</span></b></div>"
+            f"<div class=etile><div class=etl>Bills a week</div><b>${tb + fb:,}</b><a class=sub href=/earnings style='font-size:12px'>Books ›</a></div></div>")
 
 
 def race_banner():
@@ -3198,8 +3240,7 @@ def barn_page(qs=None):
     toggle = ("<div class=sortby><span>Sort by</span>"
               + "".join(f"<a href='/?sort={k}' class='{'on' if by == k else ''}'>{label}</a>" for k, label in (("age", "Age"), ("class", "Class"))) + "</div>")
     tb, fb = e.bills(ME, G["horses"])
-    cards = (f"<div class=billrow><span>Training bill <b>${tb:,}</b>/wk</span><span>Farm board <b>${fb:,}</b>/wk</span>"
-             f"<a href=/earnings>Books ›</a></div>")
+    cards = ""
     if not e.can_breed(ME) and any(h.retired and h.sex == "f" for h in mine()):   # the way up, until the barn can breed
         lv = e.level.get(ME, 0)
         shed = next(i for i, L in enumerate(e.LEVELS) if L[2])
@@ -3224,7 +3265,7 @@ def barn_page(qs=None):
     owe = (f"<div class='card ev' style='border-color:var(--loss)'><b>Training bill overdue: ${owe:,.0f}</b><div class=sub>Your trainer's "
            "day rate and the farm's board ran past your cash. It comes out of your next purses. Selling or retiring a horse that isn't "
            "earning brings the bill down.</div></div>" if owe else "")
-    return page("Your barn", menu + owe + race_banner() + train_banner() + ev + cards + wipe)   # the entry box is off the barn page for now; entries are on /entries
+    return page("Your barn", menu + owe + tonight_card() + barn_strip() + ev + cards + wipe)   # the entry box is off the barn page for now; entries are on /entries
 
 
 def entries_page(qs=None):
