@@ -660,7 +660,7 @@ const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => {
 // Side view only for now; the angle, overhead and drive-cam sheets stay bare.
 const WRAPS_OK = !RIG && !PAINTED;                                    // the race data may not be in yet: load the sheet, pick per horse later
 let wrapImg = null, wrapMask = null;
-const wrapLoaded = WRAPS_OK ? Promise.all(["wraps12", "wraps12_mask"].map(n => new Promise(r => { const i = new Image(); i.onload = () => { if (n === "wraps12") wrapImg = i; else wrapMask = i; r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=5`); }))) : Promise.resolve();
+const wrapLoaded = WRAPS_OK ? Promise.all(["wraps12", "wraps12_mask"].map(n => new Promise(r => { const i = new Image(); i.onload = () => { if (n === "wraps12") wrapImg = i; else wrapMask = i; r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=6`); }))) : Promise.resolve();
 function wrapTint(c, hex) {
   if (!wrapMask) return c;
   if (!wrapTint.m) { const k = document.createElement("canvas"); k.width = wrapMask.width; k.height = wrapMask.height; const kg = k.getContext("2d"); kg.drawImage(wrapMask, 0, 0); wrapTint.m = kg.getImageData(0, 0, k.width, k.height).data; }
