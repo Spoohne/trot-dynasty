@@ -29,6 +29,16 @@ def build(k):
 for _ in range(2):                                                      # settle the scale on the real fitted frames
     trial = build(k)
     k *= (np.mean([area(stock.crop((i * W, 0, (i + 1) * W, H))) for i in range(N)]) / np.mean([area(c) for c in trial])) ** .5
+from anchors import nose
+def reach(k):                                                           # the furthest the nose gets in any frame, at scale k
+    out = 0
+    for i in range(N):
+        f = src.crop((i * sw, 0, (i + 1) * sw, src.height)).resize((round(W * k), round(H * k)), Image.NEAREST)
+        out = max(out, round(ow - anchors(f)[0][0]) + nose(f)[0])
+    return out
+stock_nose = max(nose(stock.crop((i * W, 0, (i + 1) * W, H)))[0] for i in range(N))
+while reach(k) > stock_nose and k > .7:                                 # never past today's runner's nose: the frame would clip it
+    k *= .99
 cells = []
 for i in range(N):
     f = src.crop((i * sw, 0, (i + 1) * sw, src.height)).resize((round(W * k), round(H * k)), Image.NEAREST)
@@ -36,7 +46,7 @@ for i in range(N):
     dx, dy = round(ow - a[0][0]), round(oy - a[0][1])                   # one wheel, same place every frame
     c = Image.new("RGBA", (W, H)); c.paste(f, (dx, dy), f); cells.append(c)
 masks = [A.wraps(c) for c in cells]
-PAST = 4                                                                # the pastern left bare above the hoof
+PAST = 0                                                                # the pastern left bare above the hoof
 KEEP = 99                                                               # wrap height from the fetlock up, like the still's pads
 
 

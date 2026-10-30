@@ -135,7 +135,7 @@ def graft(cell, i):
     return out
 
 
-def steady(cell, i):
+def steady(cell, i, keep_tail=True):
     """Today's wheel and driver laid over SpriteCook's: they're the same on every horse, so they never pulse."""
     from anchors import anchors, wheel_w
     o = orig.crop((i * W, 0, (i + 1) * W, H)); po, pc = o.load(), cell.load()
@@ -146,14 +146,20 @@ def steady(cell, i):
             for x in range(W):
                 p = pc[x, y]
                 warm = p[0] > p[1] + 12 and p[0] > p[2] + 25 and not p[2] > p[0] + 40      # the horse's own coat stays
-                if p[3] and not warm and ((x - cx) ** 2 + (y - cy) ** 2) ** .5 <= r:
+                blue = p[2] > p[0] + 40 and p[2] > p[1] + 20                 # the disc, wherever it is
+                # the pale rim only on the wheel's left half: the hind legs (and their white wraps) reach it from the right
+                if p[3] and not warm and ((x - cx) ** 2 + (y - cy) ** 2) ** .5 <= r and (blue or x < cx):
                     pc[x, y] = (0, 0, 0, 0)
     for y in range(H):
         for x in range(70):
             in_wheel = ((x - 30) ** 2 + (y - 75) ** 2) ** .5 <= 27
             in_driver = x < 62 and y < 58
+            q = po[x, y]
+            tail = in_driver and not in_wheel and x >= 38 and q[3] and not (q[2] > q[0] + 30) and sum(q[:3]) < 260   # today's tail: dark, not silks
+            if tail and keep_tail:
+                continue                                                # the tail stays the animation's own, unbroken
             if in_wheel or in_driver:
-                pc[x, y] = po[x, y] if po[x, y][3] else (pc[x, y] if not in_driver else (0, 0, 0, 0))
+                pc[x, y] = q if q[3] else (pc[x, y] if not in_driver or (x >= 38 and keep_tail) else (0, 0, 0, 0))
     return cell
 
 

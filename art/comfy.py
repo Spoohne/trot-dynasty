@@ -101,6 +101,27 @@ def edit(prompt, src, out, seed=7, steps=24, cfg=2.5):
     return run(g, out)
 
 
+def inpaint(prompt, src, mask, out, seed=7, steps=24, cfg=2.5, denoise=.8):
+    """Edit only where `mask` (same size as src, white = repaint) is white; the latent outside it is kept as is."""
+    g = _base(EDIT)
+    g.update({
+        "load": {"class_type": "LoadImage", "inputs": {"image": upload(src)}},
+        "scale": {"class_type": "ImageScaleToTotalPixels", "inputs": {"image": ["load", 0], "upscale_method": "lanczos", "megapixels": 1.0, "resolution_steps": 8}},
+        "mload": {"class_type": "LoadImage", "inputs": {"image": upload(mask)}},
+        "mscale": {"class_type": "ImageScaleToTotalPixels", "inputs": {"image": ["mload", 0], "upscale_method": "nearest-exact", "megapixels": 1.0, "resolution_steps": 8}},
+        "m": {"class_type": "ImageToMask", "inputs": {"image": ["mscale", 0], "channel": "red"}},
+        "pos": {"class_type": "TextEncodeQwenImageEditPlus", "inputs": {"clip": ["clip", 0], "prompt": prompt, "vae": ["vae", 0], "image1": ["scale", 0]}},
+        "neg": {"class_type": "TextEncodeQwenImageEditPlus", "inputs": {"clip": ["clip", 0], "prompt": "", "vae": ["vae", 0], "image1": ["scale", 0]}},
+        "enc": {"class_type": "VAEEncode", "inputs": {"pixels": ["scale", 0], "vae": ["vae", 0]}},
+        "latent": {"class_type": "SetLatentNoiseMask", "inputs": {"samples": ["enc", 0], "mask": ["m", 0]}},
+        "norm": {"class_type": "CFGNorm", "inputs": {"model": ["shift", 0], "strength": 1.0}},
+        "sample": {"class_type": "KSampler", "inputs": {"model": ["norm", 0], "seed": seed, "steps": steps, "cfg": cfg,
+                   "sampler_name": "euler", "scheduler": "simple", "positive": ["pos", 0], "negative": ["neg", 0],
+                   "latent_image": ["latent", 0], "denoise": denoise}},
+    })
+    return run(g, out)
+
+
 def cutout(src, out):
     """BiRefNet's foreground mask from ComfyUI, applied here as the PNG's alpha."""
     from PIL import Image

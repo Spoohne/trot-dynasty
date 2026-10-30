@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sprite Lab · Wraps</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap">
+<style>
+:root{--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--rule2:#1b2539;--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--led:#ffb347;--win:#3fb96b;--loss:#e0704f;--dirt:#3a2618}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px 'Barlow Semi Condensed',system-ui,sans-serif}
+h1,h2{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.06em;margin:0}
+h1{font-size:24px;color:var(--led);text-shadow:2px 2px 0 #000}h2{font-size:15px;color:var(--ink2);margin-bottom:8px}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--rule);background:#0b1430}
+.bar label,.tools label{display:flex;gap:6px;align-items:center;color:var(--ink2);font-size:14px}
+button{font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--rule);padding:5px 12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+button:hover{border-color:var(--tote)}button.on,button.go{background:var(--tote);color:#1a1000;border-color:#05070d}
+main{display:grid;gap:14px;padding:14px 16px;grid-template-columns:minmax(0,1fr) 340px}
+@media (max-width:900px){main{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--rule);padding:12px;min-width:0}
+canvas{image-rendering:pixelated;background:var(--dirt);display:block;max-width:100%}
+.frames{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;margin-bottom:12px}
+.frames button{padding:3px 0}.frames button.done{box-shadow:inset 0 -3px 0 var(--win)}
+.cands{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.cand{border:2px solid var(--rule2);cursor:pointer;background:var(--dirt);position:relative}.cand.on{border-color:var(--tote)}
+.cand canvas{width:100%}.cand b{position:absolute;left:4px;top:2px;font-size:12px;color:var(--led);text-shadow:1px 1px 0 #000}
+.tools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:10px 0}
+#ed{width:100%;cursor:crosshair;touch-action:none}
+.sw{width:22px;height:22px;border:1px solid var(--rule);display:inline-block;vertical-align:middle}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--tote);padding:10px 16px}
+.hint{color:var(--ink3);font-size:13px}
+</style></head><body>
+<div class="bar"><h1>Sprite Lab · Wraps</h1>
+  <span class="hint">Today's runner never changes. Pick each frame's wrap overlay, touch it up, send it to the game.</span>
+  <label>Wrap color <input type="color" id="tint" value="#1f4fbf"></label>
+  <label><input type="checkbox" id="tintOn" checked> Tint preview</label>
+  <button class="go" id="send">Send to game</button>
+</div>
+<main>
+<section class="card">
+  <h2>Frame</h2><div class="frames" id="frames"></div>
+  <h2>Overlay for this frame</h2><div class="cands" id="cands"></div>
+  <h2>Touch up (8×)</h2>
+  <div class="tools">
+    <button id="tPaint" class="on">Pen</button><button id="tErase">Erase</button><button id="tPick">Eyedropper</button>
+    <label>Color <input type="color" id="pen" value="#f2f2f2"></label><span class="sw" id="penSw"></span>
+    <button id="undo">Undo</button><button id="reset">Reset frame</button>
+    <label><input type="checkbox" id="onlyOv"> Overlay only</label>
+  </div>
+  <canvas id="ed" width="1664" height="808"></canvas>
+  <p class="hint">Pen and erase change the overlay only: today's horse underneath can't be touched. Eyedropper picks from what you see.</p>
+</section>
+<aside class="card">
+  <h2>Preview</h2>
+  <canvas id="pv" width="624" height="303" style="width:100%"></canvas>
+  <div class="tools"><label>Speed <input type="range" id="fps" min="2" max="36" value="12"></label><label><input type="checkbox" id="play" checked> Play</label><label><input type="checkbox" id="off"> Wraps off</label></div>
+  <canvas id="pv1" width="208" height="101"></canvas>
+  <p class="hint">Real size, below. Toggle "Wraps off": only the wraps should change.</p>
+</aside>
+</main>
+<script>
+const W = 208, H = 101, N = 12, K = 8, $ = id => document.getElementById(id);
+const SOURCES = [["inpaint", "GPU inpaint"], ["sc_a", "SpriteCook A"], ["sc_b", "SpriteCook B"], ["blank", "None"]];
+let cur = 0, tool = "paint", base = null, ov = [], choice = Array(N).fill(null), hist = [];
+const img = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+const cv = (w = W, h = H) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3500); }
+let cands = {};                                                         // source -> 12 canvases
+function tinted(c) {
+  if (!$("tintOn").checked) return c;
+  const o = cv(), g = o.getContext("2d"); g.drawImage(c, 0, 0); const d = g.getImageData(0, 0, W, H), p = d.data;
+  const t = $("tint").value, r = parseInt(t.slice(1, 3), 16), gg = parseInt(t.slice(3, 5), 16), b = parseInt(t.slice(5, 7), 16);
+  for (let i = 0; i < p.length; i += 4) {
+    if (!p[i + 3]) continue; const s = p[i] + p[i + 1] + p[i + 2], sat = Math.max(p[i], p[i + 1], p[i + 2]) - Math.min(p[i], p[i + 1], p[i + 2]);
+    if (s > 330 && sat < 50) { const k = Math.min(1, Math.max(0, (s / 765 - .45) / .53)), m = .5 + .55 * k; p[i] = r * m; p[i + 1] = gg * m; p[i + 2] = b * m; }
+  }
+  g.putImageData(d, 0, 0); return o;
+}
+function frameOf(i, withOv = true) {
+  const c = cv(), g = c.getContext("2d"); g.drawImage(base, i * W, 0, W, H, 0, 0, W, H);
+  if (withOv && ov[i]) g.drawImage(tinted(ov[i]), 0, 0); return c;
+}
+function renderFrames() {
+  $("frames").innerHTML = ""; for (let i = 0; i < N; i++) { const b = document.createElement("button"); b.textContent = i + 1;
+    b.className = (i === cur ? "on " : "") + (choice[i] ? "done" : ""); b.onclick = () => { cur = i; hist = []; renderAll(); }; $("frames").appendChild(b); }
+}
+function renderCands() {
+  $("cands").innerHTML = "";
+  for (const [id, name] of SOURCES) {
+    const d = document.createElement("div"); d.className = "cand" + (choice[cur] === id ? " on" : ""); const c = cv(), g = c.getContext("2d");
+    g.drawImage(base, cur * W, 0, W, H, 0, 0, W, H); if (cands[id] && cands[id][cur]) g.drawImage(cands[id][cur], 0, 0);
+    d.appendChild(c); d.insertAdjacentHTML("beforeend", "<b>" + name + "</b>");
+    d.onclick = () => { choice[cur] = id; ov[cur] = cv(); if (cands[id] && cands[id][cur]) ov[cur].getContext("2d").drawImage(cands[id][cur], 0, 0); hist = []; save(); renderAll(); };
+    $("cands").appendChild(d);
+  }
+}
+function renderEd() {
+  const g = $("ed").getContext("2d"); g.imageSmoothingEnabled = false; g.fillStyle = "#3a2618"; g.fillRect(0, 0, W * K, H * K);
+  if (!$("onlyOv").checked) g.drawImage(base, cur * W, 0, W, H, 0, 0, W * K, H * K);
+  if (ov[cur]) g.drawImage(ov[cur], 0, 0, W * K, H * K);
+}
+function renderAll() { renderFrames(); renderCands(); renderEd(); }
+function px(e) { const r = $("ed").getBoundingClientRect(); return [Math.floor((e.clientX - r.left) / r.width * W), Math.floor((e.clientY - r.top) / r.height * H)]; }
+let down = false;
+function paint(e) {
+  const [x, y] = px(e); if (x < 0 || y < 0 || x >= W || y >= H) return;
+  if (tool === "pick") { const c = frameOf(cur, true).getContext("2d").getImageData(x, y, 1, 1).data;
+    if (ov[cur]) { const o = ov[cur].getContext("2d").getImageData(x, y, 1, 1).data; if (o[3]) c.set(o); }
+    $("pen").value = "#" + [0, 1, 2].map(j => c[j].toString(16).padStart(2, "0")).join(""); $("penSw").style.background = $("pen").value; setTool("paint"); return; }
+  if (!ov[cur]) { ov[cur] = cv(); choice[cur] = choice[cur] || "blank"; }
+  const g = ov[cur].getContext("2d");
+  if (tool === "erase") g.clearRect(x, y, 1, 1); else { g.fillStyle = $("pen").value; g.fillRect(x, y, 1, 1); }
+  if (!choice[cur]) choice[cur] = "blank"; renderEd();
+}
+$("ed").onpointerdown = e => { down = true; if (ov[cur]) hist.push(ov[cur].getContext("2d").getImageData(0, 0, W, H)); paint(e); };
+$("ed").onpointermove = e => { if (down && tool !== "pick") paint(e); };
+window.onpointerup = () => { if (down) { down = false; save(); renderFrames(); } };
+function setTool(t) { tool = t; ["Paint", "Erase", "Pick"].forEach(n => $("t" + n).classList.toggle("on", "t" + n === "t" + t[0].toUpperCase() + t.slice(1))); }
+$("tPaint").onclick = () => setTool("paint"); $("tErase").onclick = () => setTool("erase"); $("tPick").onclick = () => setTool("pick");
+$("undo").onclick = () => { const h = hist.pop(); if (h && ov[cur]) { ov[cur].getContext("2d").putImageData(h, 0, 0); save(); renderEd(); } };
+$("reset").onclick = () => { const id = choice[cur]; ov[cur] = cv(); if (id && cands[id] && cands[id][cur]) ov[cur].getContext("2d").drawImage(cands[id][cur], 0, 0); hist = []; save(); renderEd(); };
+$("onlyOv").onchange = renderEd; $("pen").oninput = () => $("penSw").style.background = $("pen").value;
+// per-viewer draft so a reload keeps the touch-ups
+function save() { try { localStorage.setItem("wraplab", JSON.stringify({ choice, ov: ov.map(c => c ? c.toDataURL() : null) })); } catch (e) {} }
+async function restore() { try { const s = JSON.parse(localStorage.getItem("wraplab")); if (!s) return;
+  choice = s.choice; for (let i = 0; i < N; i++) if (s.ov[i]) { const im = await img(s.ov[i]); ov[i] = cv(); ov[i].getContext("2d").drawImage(im, 0, 0); } } catch (e) {} }
+let tick = 0, last = 0;
+function loop(t) {
+  if ($("play").checked && t - last > 1000 / +$("fps").value) { tick++; last = t; }
+  const f = $("play").checked ? tick % N : cur, c = frameOf(f, !$("off").checked);
+  for (const id of ["pv", "pv1"]) { const g = $(id).getContext("2d"); g.imageSmoothingEnabled = false; g.fillStyle = "#3a2618"; g.fillRect(0, 0, $(id).width, $(id).height); g.drawImage(c, 0, 0, $(id).width, $(id).height); }
+  requestAnimationFrame(loop);
+}
+$("send").onclick = async () => {
+  if (choice.some(c => !c)) return toast("Pick an overlay for every frame first (None is fine).");
+  const r = await fetch("/wraps-export", { method: "POST", body: JSON.stringify({ overlays: ov.map(c => c ? c.toDataURL() : null), choice }) });
+  const j = await r.json(); toast(j.ok ? "Sent: export " + j.export + ". Pixel check passed. Reload the replay." : "Not sent: " + j.error);
+};
+$("tint").oninput = () => renderCands(); $("tintOn").onchange = () => renderCands();
+(async () => {
+  base = await img("/stock.png");
+  for (const [id] of SOURCES) { if (id === "blank") continue; cands[id] = await Promise.all([...Array(N)].map((_, i) => img(`/overlays/${id}/f${String(i + 1).padStart(2, "0")}.png`))); }
+  await restore(); renderAll(); requestAnimationFrame(loop);
+})();
+</script></body></html>

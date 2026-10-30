@@ -274,8 +274,9 @@ const ART_SET = new Set(ART_SETS[ART] || []);
 let DAY = new URLSearchParams(location.search).has("day");
 const DAY_SET = new Set(["top/track_tile.png", "infield/grass.png", "panorama.png"]);
 const P = src => { const k = src.slice("/mock/pixel/".length); if (DAY && DAY_SET.has(k)) return src.replace(/\.png$/, "_day.png"); return ART && ART_SET.has(k) ? src.replace("/mock/pixel/", `/mock/art_${ART}/`) : src; };
-const sharp = t => { if (PAINTED || (t.image && /\/art_/.test(t.image.src || ""))) return crisp(t); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; return t; };   // sprites: every pixel kept, near or far
-const crisp = t => { t.magFilter = PAINTED || (t.image && /\/art_/.test(t.image.src || "")) ? THREE.LinearFilter : THREE.NearestFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = ANISO; t.colorSpace = THREE.SRGBColorSpace; return t; };
+const QS = new URLSearchParams(location.search), SMOOTH = QS.has("smooth"), NOGRIT = QS.has("nogrit");   // test switches: ?smooth (filtered sprites), ?nogrit (no grain)
+const sharp = t => { if (PAINTED || SMOOTH || (t.image && /\/art_/.test(t.image.src || ""))) return crisp(t); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; return t; };   // sprites: every pixel kept, near or far
+const crisp = t => { t.magFilter = PAINTED || SMOOTH || (t.image && /\/art_/.test(t.image.src || "")) ? THREE.LinearFilter : THREE.NearestFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = ANISO; t.colorSpace = THREE.SRGBColorSpace; return t; };
 const tex = (src, fn) => new THREE.TextureLoader().load(src, t => { crisp(t); t.needsUpdate = true; fn && fn(t); });
 // on a straight (no turn within 60 ft either way): where the infield broadcast camera can work
 const straightAt = d => { const a = V(d - 60, 0), b = V(d, 0), c = V(d + 60, 0); return Math.abs(Math.atan2(c.z - b.z, c.x - b.x) - Math.atan2(b.z - a.z, b.x - a.x)) < .002; };
@@ -562,12 +563,13 @@ function saddleCloth(g, x, y, w, h, pad, num, dark) {
 }
 // grit: knock the flat front light off the rig. Light from above and behind the camera's left, shade falling
 // down and to the hooves, highlights pulled in, and a fixed per-pixel grain so it reads as worn paint, not plastic
-function grit(c, fw) {
-  const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height;
+function grit(c, fw, fh = c.height) {                                          // fh: one frame's height, for a sheet stacked in rows
+  if (NOGRIT) return c;
+  const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = fh;
   for (let i = 0; i < p.length; i += 4) {
     if (!p[i + 3]) continue;
-    const x = (i / 4) % W, y = (i / 4 / W) | 0, fx = (x % fw) / fw, n = ((x * 73856093 ^ y * 19349663) >>> 0) % 1000 / 1000;
-    const k = (1.04 - .22 * (y / H) ** 1.3 - .06 * (1 - fx)) * (.9 + .17 * n);
+    const x = (i / 4) % W, y = (i / 4 / W) | 0, fx = (x % fw) / fw, n = (((x % fw) * 73856093 ^ (y % H) * 19349663) >>> 0) % 1000 / 1000;   // frame-local, so every frame gets the same grain (no flicker)
+    const k = (1.04 - .22 * ((y % H) / H) ** 1.3 - .06 * (1 - fx)) * (.9 + .17 * n);
     for (let j = 0; j < 3; j++) { let v = p[i + j]; v = v > 170 ? 170 + (v - 170) * .7 : v; p[i + j] = Math.min(255, v * k); }
   }
   g.putImageData(d, 0, 0); return c;
@@ -586,17 +588,17 @@ function paintSilks(p, w, hex) {
     p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l;
   }
 }
-function dye(img, hex, num, dark, pad, fw = FW, rect = PAD, cloth = null) {   // cloth: [x, y, w, h] of a saddle cloth to paint whole in the pad color                                           // hex: silks; pad: the saddle-cloth color
+function dye(img, hex, num, dark, pad, fw = FW, rect = PAD, cloth = null, frames = FR, cols = frames, fh = FH) {   // frames, cols: a sheet of any length, in rows of cols   // cloth: [x, y, w, h] of a saddle cloth to paint whole in the pad color                                           // hex: silks; pad: the saddle-cloth color
   const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
   const g = c.getContext("2d"); g.drawImage(img, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
   paintSilks(p, c.width, hex);
   if (cloth) { const pc = [1, 3, 5].map(k => parseInt(pad.slice(k, k + 2), 16));
-    for (let f = 0; f < FR; f++) for (let y = cloth[1]; y < cloth[1] + cloth[3]; y++) for (let x = f * fw + cloth[0]; x < f * fw + cloth[0] + cloth[2]; x++) {
+    for (let f = 0; f < frames; f++) for (let y = cloth[1]; y < cloth[1] + cloth[3]; y++) for (let x = f * fw + cloth[0]; x < f * fw + cloth[0] + cloth[2]; x++) {
       const q = (y * c.width + x) * 4, l = (p[q] + p[q + 1] + p[q + 2]) / 3;
       if (p[q + 3] && l > 150 && Math.max(p[q], p[q + 1], p[q + 2]) - Math.min(p[q], p[q + 1], p[q + 2]) < 40) { const k = l / 235; p[q] = pc[0] * k; p[q + 1] = pc[1] * k; p[q + 2] = pc[2] * k; } } }
   g.putImageData(d, 0, 0);
-  for (let f = 0; f < FR; f++) saddleCloth(g, f * fw + rect[0], rect[1], rect[2], rect[3], pad, num, dark);
+  for (let f = 0; f < frames; f++) saddleCloth(g, (f % cols) * fw + rect[0], Math.floor(f / cols) * fh + rect[1], rect[2], rect[3], pad, num, dark);
   return c;
 }
 const cardGeo = new THREE.PlaneGeometry(LEN_FT, H_FT).translate(LEN_FT * (.5 - NOSE), H_FT / 2, 0);   // origin at the nose, on the ground
@@ -659,8 +661,9 @@ const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => {
 // Tack Room leg wraps: SpriteCook's wrapped cycle (same 12 cells) and the mask of its wrap pixels, tinted to each horse's color.
 // Side view only for now; the angle, overhead and drive-cam sheets stay bare.
 const WRAPS_OK = !RIG && !PAINTED;                                    // the race data may not be in yet: load the sheet, pick per horse later
-let wrapImg = null, wrapMask = null;
-const wrapLoaded = WRAPS_OK ? Promise.all(["wraps12", "wraps12_mask"].map(n => new Promise(r => { const i = new Image(); i.onload = () => { if (n === "wraps12") wrapImg = i; else wrapMask = i; r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=6`); }))) : Promise.resolve();
+let wrapImg = null, wrapMask = null, wrapMeta = { frames: FR, cols: FR };    // the wrapped sheet's own frame count and row width (wraps12.json)
+const wrapMetaLoaded = WRAPS_OK ? fetch(P("/mock/pixel/tack/wraps12.json?v=" + Date.now())).then(r => r.ok ? r.json() : null).then(j => { if (j && j.frames) wrapMeta = { frames: j.frames, cols: j.cols || j.frames }; }).catch(() => {}) : Promise.resolve();
+const wrapLoaded = WRAPS_OK ? Promise.all(["wraps12", "wraps12_mask"].map(n => new Promise(r => { const i = new Image(); i.onload = () => { if (n === "wraps12") wrapImg = i; else wrapMask = i; r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=10`); }))) : Promise.resolve();
 function wrapTint(c, hex) {
   if (!wrapMask) return c;
   if (!wrapTint.m) { const k = document.createElement("canvas"); k.width = wrapMask.width; k.height = wrapMask.height; const kg = k.getContext("2d"); kg.drawImage(wrapMask, 0, 0); wrapTint.m = kg.getImageData(0, 0, k.width, k.height).data; }
@@ -682,9 +685,10 @@ function buildRunners() {
   runners.forEach(r => { scene.remove(r.drive); scene.remove(r.card); scene.remove(r.shadow); scene.remove(r.flat); Object.values(r.ang).forEach(a => scene.remove(a.m)); });
   runners = RACE.H.map((h, i) => {
     const wr = WRAPS_OK && wrapImg && h.wraps;                                     // in wraps: the wrapped cycle, dyed, then the wraps in its color
-    const sil = dye(coat(wr ? wrapImg : cycleImg, h.coat), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null);
-    const t = new THREE.CanvasTexture(grit(wr ? wrapTint(sil, h.wraps) : sil, FW));
-    sharp(t); t.repeat.set(1 / FR, 1);
+    const fr = wr ? wrapMeta.frames : FR, cols = wr ? wrapMeta.cols : FR, rows = Math.ceil(fr / cols);   // a wrapped sheet may run longer than 12
+    const sil = dye(coat(wr ? wrapImg : cycleImg, h.coat), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null, fr, cols);
+    const t = new THREE.CanvasTexture(grit(wr ? wrapTint(sil, h.wraps) : sil, FW, FH));
+    sharp(t); t.repeat.set(1 / cols, 1 / rows);
     const card = new THREE.Mesh(cardGeo, new THREE.MeshBasicMaterial({ map: t, color: 0xece6dc, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false }));
     const shadow = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
     shadow.scale.set(5, 1, 4.2); scene.add(card); scene.add(shadow);
@@ -701,7 +705,7 @@ function buildRunners() {
     }
     const dt2 = new THREE.CanvasTexture(dye(coat(driveImg, h.coat), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], DFW, DPAD, [97, 24, 61, 27])); sharp(dt2); dt2.repeat.set(1 / FR, 1);
     const drive = new THREE.Mesh(driveGeo, new THREE.MeshBasicMaterial({ map: dt2, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false })); scene.add(drive);
-    return { card, shadow, t, flat, ft, ang, drive, dt2, whip };
+    return { card, shadow, t, flat, ft, ang, drive, dt2, whip, fr, cols, rows };
   });
 }
 
@@ -908,7 +912,8 @@ function place(t, st, dt) {
     if (r.flip === undefined || Math.abs(across) > .2) r.flip = across < 0;          // only flip once it's clearly crossing the other way
     // seen from its other side the card shows mirrored, which is the horse facing the other way: no flip needed
     const stride = Math.floor((h.d - gateLag(h)) / STRIDE_FT * FR + i * 3), frame = ((stride % FR) + FR) % FR;   // legs geared to the ground: one cycle per stride travelled
-    r.t.offset.x = frame / FR; r.dt2.offset.x = frame / FR;
+    const sfr = Math.floor((h.d - gateLag(h)) / STRIDE_FT * r.fr + i * 3 * r.fr / FR), side = ((sfr % r.fr) + r.fr) % r.fr;   // the side card at its own frame count
+    r.t.offset.x = (side % r.cols) / r.cols; r.t.offset.y = 1 - (Math.floor(side / r.cols) + 1) / r.rows; r.dt2.offset.x = frame / FR;
     const lead = st.reduce((m, x) => Math.max(m, x.d), 0);
     const urging = t > RACE.FIN - 10 && t < RACE.FIN + .3 && lead - h.d < RACE.LEN * 4 && cam.position.distanceTo(p) < 700;   // driving for the line
     r.whip.visible = urging;
@@ -1100,7 +1105,7 @@ const bulb = () => { const b = document.createElement("i"), sz = 10 + Math.rando
   bulbsEl.appendChild(b); setTimeout(() => b.remove(), 260); };
 const ctl = RACE.controls(() => { froze = Math.max(...RACE.state(ctl.t).map(h => h.d)) >= 5280; camSnap = true; introT = INTRO; wireZoom = null; freezeLeft = 0; });   // a scrub lets go of the held wire shot
 let ready = false;
-Promise.all([cycleLoaded, topLoaded, angLoaded, driveLoaded, wrapLoaded]).then(async () => {
+Promise.all([cycleLoaded, topLoaded, angLoaded, driveLoaded, wrapLoaded, wrapMetaLoaded]).then(async () => {
   if (RACE_ID && await RACE.load(RACE_ID, MY_NAME)) { if (RACE.MATINEE) DAY = true; applyDay(); ctl.refit(); topBar(); buildTrack(); buildPoles(); buildRails(); buildInfield(); buildVenue(); buildSurroundings(); buildScreen(); }
   buildRunners(); ready = true;
   { const fin = RACE.H.map(h => h[2][6]).sort((a, b) => a - b); PHOTO = fin.length > 1 && fin[1] - fin[0] < .5; }   // margins in lengths

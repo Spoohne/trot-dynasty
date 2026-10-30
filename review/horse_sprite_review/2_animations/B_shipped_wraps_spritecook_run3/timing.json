@@ -1,0 +1,8 @@
+{
+ "frames": 12,
+ "frame_w": 208,
+ "frame_h": 101,
+ "order": "00..11 left to right",
+ "gif_fps": 36,
+ "timing": "In game: one full cycle per 17 ft travelled (frame from distance, not a clock). At race speed ~48 ft/s that is ~2.8 cycles/s. GIF plays 3 cycles/s."
+}

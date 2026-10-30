@@ -1,0 +1,167 @@
+{
+ "sources": [
+  {
+   "id": "today",
+   "name": "Today's runner (no wraps)",
+   "frames": 12,
+   "suggest": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "note": "The stock stride, for comparison and for borrowing frames."
+  },
+  {
+   "id": "run3",
+   "name": "SpriteCook run 3 (shipped earlier)",
+   "frames": 12,
+   "suggest": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "note": "The animated wrapped runner you reviewed frame by frame."
+  },
+  {
+   "id": "run0",
+   "name": "SpriteCook run 0",
+   "frames": 12,
+   "suggest": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "note": "Another animation run of the wrapped still."
+  },
+  {
+   "id": "run1",
+   "name": "SpriteCook run 1",
+   "frames": 12,
+   "suggest": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "note": "Another animation run of the wrapped still."
+  },
+  {
+   "id": "run2",
+   "name": "SpriteCook run 2",
+   "frames": 12,
+   "suggest": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "note": "Another animation run of the wrapped still."
+  },
+  {
+   "id": "inpaint",
+   "name": "Inpainted on today's runner (GPU)",
+   "frames": 11,
+   "suggest": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "note": "Today's frames with wraps painted onto the lower legs only. Frame 12 isn't made yet."
+  },
+  {
+   "id": "seedance1",
+   "name": "Seedance clip 1",
+   "frames": 97,
+   "suggest": [
+    64,
+    66,
+    67,
+    68,
+    69,
+    69,
+    70,
+    71,
+    72,
+    72,
+    73,
+    74
+   ],
+   "note": "Every frame of the clip (97). Suggested: one stride, poses spaced by leg travel, real frames only."
+  },
+  {
+   "id": "seedance_slow1",
+   "name": "Seedance slow motion, green screen, 720p",
+   "frames": 97,
+   "suggest": [
+    56,
+    62,
+    64,
+    67,
+    69,
+    72,
+    73,
+    76,
+    78,
+    81,
+    85,
+    88
+   ],
+   "note": "Every frame of the clip (97). One stride is 36.0 frames, from frame 57. Fill takes real frames only.",
+   "stride": [
+    56.5,
+    35.9999999999999
+   ]
+  }
+ ]
+}

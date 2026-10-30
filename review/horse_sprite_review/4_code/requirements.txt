@@ -1,0 +1,6 @@
+pillow==13.0.0
+numpy==2.5.4
+opencv-python==5.0.0
+# ComfyUI + Qwen image edit (local, only for the inpaint experiment)
+# fal.ai account for Seedance (FAL_KEY env var; not included)
+# three.js 0.160.0 loaded from jsDelivr by the replay page

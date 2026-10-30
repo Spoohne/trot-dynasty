@@ -24,7 +24,7 @@ def wrapped0():
     """Frame 0 in SpriteCook's wraps, and the mask of the wrap pixels."""
     if not _wrapped:
         im, m = Image.open(WRAPPED).convert("RGBA"), Image.open(WMASK).convert("L")
-        w = im.width // 12; _wrapped.append((im.crop((0, 0, w, im.height)), m.crop((0, 0, w, m.height))))
+        _wrapped.append((im.crop((0, 0, 208, 101)), m.crop((0, 0, 208, 101))))   # frame 0, whatever the sheet's length
     return _wrapped[0]
 
 
@@ -90,7 +90,7 @@ def paint(pieces, cols, c1, c2):
 def render(pieces, cols, c1, c2):
     """The model's PNG at 3x, cached like the emblems; returns its path under /mock."""
     pieces = tuple(p for p in PIECES if p in pieces)
-    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v8"
+    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v12"
     name = hashlib.md5(key.encode()).hexdigest()[:12] + ".png"
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):

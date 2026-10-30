@@ -1,0 +1,406 @@
+{
+ "track": "mile",
+ "calls": [
+  0,
+  12.398152544123697,
+  27.55145009805266,
+  56.30290019610531,
+  84.75435029415797,
+  99.63264784808693,
+  111.80580039221063
+ ],
+ "quarters": [
+  0.0,
+  27.6,
+  56.4,
+  84.8,
+  111.8
+ ],
+ "horses": [
+  {
+   "name": "Brandy Wolf",
+   "post": 4,
+   "behind": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "lane": [
+    3.0,
+    0.35,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "place": 1,
+   "time": 111.8,
+   "trip": "post 4, on the lead",
+   "stamina": -3.27,
+   "early": -1.63,
+   "coat": "grey",
+   "marking": "none"
+  },
+  {
+   "name": "Cocoa Topaz",
+   "post": 5,
+   "behind": [
+    0.0,
+    5.4,
+    18.0,
+    14.0,
+    14.0,
+    7.71,
+    2.57
+   ],
+   "lane": [
+    4.0,
+    1.8,
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    4.0
+   ],
+   "place": 2,
+   "time": 112.8,
+   "trip": "post 5, sat in behind, came from off the pace",
+   "stamina": -2.79,
+   "early": -0.84,
+   "coat": "black",
+   "marking": "none"
+  },
+  {
+   "name": "Sunny Blossom",
+   "post": 10,
+   "behind": [
+    0.0,
+    0.6,
+    2.0,
+    2.0,
+    2.0,
+    2.46,
+    2.83
+   ],
+   "lane": [
+    9.0,
+    3.05,
+    0.0,
+    0.0,
+    0.0,
+    -1.0,
+    -1.0
+   ],
+   "place": 3,
+   "time": 113.0,
+   "trip": "post 10, sat in the pocket, up the passing lane",
+   "stamina": 0.4,
+   "early": 1.38,
+   "coat": "bay",
+   "marking": "star"
+  },
+  {
+   "name": "Honey Venture",
+   "post": 8,
+   "behind": [
+    0.0,
+    4.8,
+    16.0,
+    12.0,
+    12.0,
+    7.26,
+    3.39
+   ],
+   "lane": [
+    7.0,
+    3.15,
+    0.0,
+    0.0,
+    0.0,
+    3.0,
+    3.0
+   ],
+   "place": 4,
+   "time": 113.2,
+   "trip": "post 8, sat in behind, came from off the pace",
+   "stamina": -1.63,
+   "early": 0.05,
+   "coat": "black",
+   "marking": "none"
+  },
+  {
+   "name": "Harness Petal",
+   "post": 2,
+   "behind": [
+    0.0,
+    3.6,
+    12.0,
+    4.0,
+    2.0,
+    3.72,
+    5.12
+   ],
+   "lane": [
+    1.0,
+    0.45,
+    0.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "place": 5,
+   "time": 114.0,
+   "trip": "post 2, parked first-over",
+   "stamina": -3.42,
+   "early": -3.5,
+   "coat": "black",
+   "marking": "blaze"
+  },
+  {
+   "name": "Rusty Odyssey",
+   "post": 11,
+   "behind": [
+    0.0,
+    6.6,
+    22.0,
+    18.0,
+    18.0,
+    11.61,
+    6.38
+   ],
+   "lane": [
+    10.0,
+    4.5,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    4.0
+   ],
+   "place": 6,
+   "time": 114.4,
+   "trip": "post 11, sat in behind, came from off the pace",
+   "stamina": -4.79,
+   "early": -3.79,
+   "coat": "bay",
+   "marking": "none"
+  },
+  {
+   "name": "Crimson Keeper",
+   "post": 1,
+   "behind": [
+    0.0,
+    3.0,
+    10.0,
+    6.0,
+    4.0,
+    5.65,
+    7.0
+   ],
+   "lane": [
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    1.0,
+    2.0,
+    2.0
+   ],
+   "place": 7,
+   "time": 114.8,
+   "trip": "post 1, sat mid-pack, moved after the half",
+   "stamina": -0.5,
+   "early": -1.53,
+   "coat": "bay",
+   "marking": "none"
+  },
+  {
+   "name": "Shadow Elm",
+   "post": 6,
+   "behind": [
+    0.0,
+    2.4,
+    8.0,
+    8.0,
+    8.0,
+    8.53,
+    8.96
+   ],
+   "lane": [
+    5.0,
+    2.25,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    4.0
+   ],
+   "place": 8,
+   "time": 115.6,
+   "trip": "post 6, sat mid-pack, moved after the half",
+   "stamina": -1.43,
+   "early": -0.23,
+   "coat": "black",
+   "marking": "star"
+  },
+  {
+   "name": "Northern Keeper",
+   "post": 7,
+   "behind": [
+    0.0,
+    1.8,
+    6.0,
+    6.0,
+    6.0,
+    7.71,
+    9.11
+   ],
+   "lane": [
+    6.0,
+    2.7,
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    3.0
+   ],
+   "place": 9,
+   "time": 115.6,
+   "trip": "post 7, sat mid-pack, moved after the half",
+   "stamina": 0.55,
+   "early": 0.47,
+   "coat": "bay",
+   "marking": "star"
+  },
+  {
+   "name": "Willow Garnet",
+   "post": 3,
+   "behind": [
+    0.0,
+    1.2,
+    4.0,
+    4.0,
+    4.0,
+    7.54,
+    10.43
+   ],
+   "lane": [
+    2.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    2.0
+   ],
+   "place": 10,
+   "time": 116.2,
+   "trip": "post 3, sat in behind",
+   "stamina": -0.86,
+   "early": -0.2,
+   "coat": "chestnut",
+   "marking": "none"
+  },
+  {
+   "name": "Comet Delight",
+   "post": 9,
+   "behind": [
+    0.0,
+    4.2,
+    14.0,
+    10.0,
+    10.0,
+    11.2,
+    12.18
+   ],
+   "lane": [
+    8.0,
+    3.6,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "place": 11,
+   "time": 116.8,
+   "trip": "post 9, sat mid-pack, moved after the half",
+   "stamina": -4.67,
+   "early": -2.5,
+   "coat": "bay",
+   "marking": "star"
+  },
+  {
+   "name": "Bay Garnet",
+   "post": 12,
+   "behind": [
+    0.0,
+    6.0,
+    20.0,
+    16.0,
+    16.0,
+    13.98,
+    12.33
+   ],
+   "lane": [
+    11.0,
+    4.95,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "place": 12,
+   "time": 116.8,
+   "trip": "post 12, sat in behind, came from off the pace",
+   "stamina": -5.89,
+   "early": -3.5,
+   "coat": "black",
+   "marking": "star"
+  }
+ ],
+ "captions": [
+  [
+   0.0,
+   "They're away"
+  ],
+  [
+   12.398152544123697,
+   "Brandy Wolf leaves for the lead"
+  ],
+  [
+   50.672610176494786,
+   "Harness Petal pulls first-over"
+  ],
+  [
+   56.30290019610531,
+   "Half in :56.4, Brandy Wolf in front"
+  ],
+  [
+   84.75435029415797,
+   "Three-quarters in 1:24.8"
+  ],
+  [
+   97.63264784808693,
+   "Sunny Blossom dives up the passing lane"
+  ],
+  [
+   111.80580039221063,
+   "Brandy Wolf wins it in 1:51.8"
+  ]
+ ],
+ "final": 111.8,
+ "id": "2891-stake-S1613",
+ "name": "Juvenile Sire Stakes Leg 4",
+ "purse": 45000,
+ "day": 2891,
+ "venue": "Harness Park",
+ "passing": true
+}
