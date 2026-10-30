@@ -3735,6 +3735,10 @@ def horse_page(name, entering=False):
         body = retired_header(h, own)
     else:
         body = card_header(h, own, listed[1] if listed and not own else None) + sim + stats_block(h, own)
+    if own and not h.retired and h not in e.nursery:                          # its gear: straight to this horse in the Tack Room
+        on = fitted(h)
+        body += (f"<div class='card row' style='justify-content:space-between;gap:8px'><span class=sub>{'Wearing ' + ', '.join(TACK[k][0].lower() for k in on) if on else 'No gear fitted'}</span>"
+                 f"<a class='btn sec' href='/tack?h={quote(h.name)}'>Fit in the Tack Room</a></div>")
     if own and (h in e.nursery and h.age == 1 or h not in e.nursery and not h.retired and h.age <= c.YOUNG):   # the day sheet, for a youngster
         body += section("Training", f"<div class=card>{day_sheet(h, '/horse/' + urlname(h.name))}</div>", True)
     if not h.retired and (own or h.starts >= 10 or h.age > 2):                # anyone's horse once it has a 10-start record to read
