@@ -356,6 +356,10 @@ def load(path=None):
     c.CLAIMS.clear(); c.CLAIMS.update(s.get("claims", {}))
     c.DRIVER_STATS.clear(); c.DRIVER_STATS.update(s.get("drivers", {}))
     c.CARD.clear(); c.CARD.update(s.get("card", {}))
+    for r in c.CARD.get("races", []):                                         # a card drawn under a class since taken off the sheet
+        if r["key"][2] in c.RETIRED_CLASS:
+            n = c.RETIRED_CLASS[r["key"][2]]
+            r["key"] = (("all" if n in c.ALL_AGES else r["key"][0]), r["key"][1], n, next(p for nm, _, p, _ in c.CONDITIONS if nm == n), 0, r["key"][5])
     if not any(getattr(h, "drawn", False) for h in G["horses"]):                # a save from before the program: post this week's
         c.draw_claimers(G["horses"], G["ai"])
     for h in c.lineage(G["horses"] + e.nursery + sk.HALL):                  # season ledgers for saves from before they existed:
@@ -1805,9 +1809,9 @@ GUIDE = [
         ("Entries", "Tap the + on a horse's card in your barn to see every race it qualifies for, track by track, and enter it. "
          "Nothing in your barn races unless you enter it."),
         ("Race classes", "<b>Opens</b> are for the best of each age; an older horse climbs from the Aged Open through the Open and the "
-         "Preferred to the Invitational at the top of the ladder, "
-         "and above them the <b>Winners Over</b> races, where the best horses meet others who have earned as much as they have. "
-         "When too few are entered, a Winners Over race isn't carded and its horses race the Invitational. "
+         "Preferred to the Invitational at the top of the ladder, the circuit's free-for-all, where the best meet whatever "
+         "their age or their bankroll. The top races take only horses that belong in them: a short field runs short rather "
+         "than being padded out, and a race too thin to run folds into the class below it. "
          "<b>Conditioned races</b> keep horses with like records together: NW1 is for non-winners of a race, NW2L6 for horses that "
          "haven't won two of their last six, NW$20k for horses that haven't earned a set amount, and so on. "
          "<b>Claiming races</b> (CLM) carry a price tag: every horse in one is for sale at that price. The ladder runs from cheap "
@@ -3379,7 +3383,7 @@ def entries_page(qs=None):
         for v, rname, purse, vpurse, tag, track in c.offerings(h):
             can.setdefault((v["id"], rname), []).append((h, purse, tag, track))
     def keep(name):
-        clm, young, top = name.startswith("CLM"), name[:3] in ("2YO", "3YO"), name in ("Open", "Aged Open", "Preferred", "Invitational") + c.WINNERS_OVER
+        clm, young, top = name.startswith("CLM"), name[:3] in ("2YO", "3YO"), name in ("Open", "Aged Open", "Preferred", "Invitational")
         return {"all": True, "cond": not clm and not top, "clm": clm, "young": young, "top": top}.get(kind, True)
     claim_ask = lambda h, tag: (f"onclick=\"return ask(this,'Enter {esc(h.name)} for a ${tag:,} tag? Any barn can take it for the tag.')\""
                                 if tag else "")

@@ -24,30 +24,29 @@ CONDITIONS = [
     ("NW$50k", lambda h: h.earnings < 50_000, 15_000, 63),
     ("NW2L5", lambda h: wins_in(h, 5) < 2, 17_000, 68),
     ("NW$15kL5", lambda h: sum(h.last5) < 15_000, 14_000, 63),
+    # the top of the ladder is one race: rating 88 is the top one or two percent of the circuit, a dozen horses, and
+    # splitting them by earnings (the old Winners Over rungs, retired 2026-10-30) left four thin fields and no race at all.
+    # A 3-year-old that rates goes up to it; 2-year-olds stay with their own age
+    ("Invitational", lambda h: _rated(h) >= 88 and h.age >= 3, 80_000, 92),     # the Free-for-All: the very best, by invitation
     # the top of each young age: a fast 2- or 3-year-old that has outgrown every condition races its own age here,
-    # not the veterans in the all-ages Open (and an AI barn sends its young stars here before the Invitational)
+    # not the veterans in the all-ages Open
     ("2YO Open", lambda h: age_group(h) == "2", 20_000, 72),
     ("3YO Open", lambda h: age_group(h) == "3", 25_000, 75),
-    # above the Invitational: the same bar, split by what a horse has earned in its career (USTA "winners over")
-    ("Winners Over $1M", lambda h: _rated(h) >= 88 and h.earnings >= 1_000_000, 100_000, 95),
-    ("Winners Over $500k", lambda h: _rated(h) >= 88 and h.earnings >= 500_000, 80_000, 94),
-    ("Winners Over $200k", lambda h: _rated(h) >= 88 and h.earnings >= 200_000, 60_000, 93),
-    ("Invitational", lambda h: _rated(h) >= 88, 50_000, 92),     # the Free-for-All: the very best, by invitation
     ("Preferred", lambda h: _rated(h) >= 82, 40_000, 86),       # three rungs for an older horse between the top claimer
     ("Open", lambda h: _rated(h) >= 76, 32_000, 78),            # and the Invitational (Aged Open used to catch them all)
     ("Aged Open", lambda h: True, 30_000, 77),                  # the top of the ordinary older horses
 ]
-RETIRED_CLASS = {"NW$6kL5": "NW$20k"}                            # classes taken off the sheet: an old order for one lands here
-WINNERS_OVER = ("Winners Over $1M", "Winners Over $500k", "Winners Over $200k")
-WO_MIN = 5                                                       # fewer entered than this: no race, they go in the Invitational
-ALL_AGES = WINNERS_OVER + ("Invitational", "Preferred", "Open")   # the top classes take every age; the conditions below them are per age
+RETIRED_CLASS = {"NW$6kL5": "NW$20k", "Winners Over $1M": "Invitational", "Winners Over $500k": "Invitational",
+                 "Winners Over $200k": "Invitational"}           # classes taken off the sheet: an old order for one lands here
+ALL_AGES = ("Invitational", "Preferred", "Open")                 # the top classes take every age; the conditions below them are per age
+TOP_MIN = 4                                                      # a top class short of this folds into the one below it
 MIXED = ("2YO Open", "3YO Open", "Aged Open")                   # colts and fillies race together here: few qualify, so one card each
 # tag, class rating, purse. Every tag is carded
 # for each age class (2YO, 3YO, Aged); colts and fillies race together.
 # Tags sit a little under what a horse at that level earns (measured 2026-10-28: the old $50k-$1M tags ran 3-4x that),
 # so a claim is a real bargain and dropping a good horse in is a real risk. The bottom tag stays above the house's $20k.
 # Purses sit just over the condition class at the same rating: the owner is paid a little for the risk, and a computer
-# barn (which takes the richer race half its weeks) puts real horses in. Winners Over horses never drop in.
+# barn (which takes the richer race half its weeks) puts real horses in.
 CLAIMERS = [(25_000, 35, 8_000), (40_000, 50, 11_000), (60_000, 58, 14_000), (90_000, 64, 18_000), (125_000, 70, 22_000),
             (200_000, 76, 30_000), (300_000, 82, 42_000), (500_000, 88, 52_000), (1_000_000, 92, 62_000)]
 OLD_TAGS = {50_000: 25_000, 100_000: 40_000, 200_000: 60_000, 300_000: 90_000, 500_000: 125_000, 1_000_000: 200_000}
@@ -80,7 +79,7 @@ CLM_TOP = ("CLM300k", "CLM500k", "CLM1M")
 VENUES = [
     dict(id="hp", name="Harness Park", track="mile", purse=1.15, passing=True,
          about="The flagship mile: the Invitational, the Preferred and the big-money claimers. Stakes nights are run here.",
-         slate=WINNERS_OVER + ("Invitational", "Preferred", "Open", "3YO Open", "NW2L5", "NW$15kL5", "CLM90k", "CLM125k", "CLM200k") + CLM_TOP),
+         slate=("Invitational", "Preferred", "Open", "3YO Open", "NW2L5", "NW$15kL5", "CLM90k", "CLM125k", "CLM200k") + CLM_TOP),
     dict(id="rd", day=True, name="Riverside Downs", track="mile", purse=0.95, passing=True,
          about="The proving ground: conditioned and mid-priced claiming stock on a fair, sweeping mile.",
          slate=("Open", "2YO Open", "3YO Open", "NW1", "NW2L6", "NW$20k", "NW4L10", "NW$50k", "NW2L5", "NW$15kL5",
@@ -91,7 +90,7 @@ VENUES = [
     dict(id="gh", name="Granite Hill", track="half", purse=1.1,
          about="Tight turns that favour a horse with gate speed: earnings conditions, the Open and the claiming middle.",
          slate=("Open", "NW$20k", "NW$15kL5", "NW2L6", "NW4L10", "NW2L5", "CLM25k", "CLM40k", "CLM60k",
-                "CLM90k", "CLM125k", "CLM200k", "Preferred", "Invitational") + WINNERS_OVER + CLM_TOP),
+                "CLM90k", "CLM125k", "CLM200k", "Preferred", "Invitational") + CLM_TOP),
     dict(id="bf", day=True, name="Bayview Fair", track="half", purse=0.9, fair=(30, 34),
          about="The county-fair half: maidens and cheap claimers most of the year; fair week (weeks 30-33) pays double.",
          slate=("NW1", "NW2L6", "CLM25k", "CLM40k", "2YO Open")),
@@ -410,9 +409,6 @@ def entry(h):
     if isinstance(o, tuple) and o[0] == "claim":              # a tag chosen: open entry, every age and sex together
         tag = clm_tag(o[1])
         return (group, "open", clm_name(tag), CLAIM_PURSE[tag], tag)
-    wo = next((c for c in CONDITIONS if c[0] in WINNERS_OVER and c[1](h)), None)
-    if wo:                                                    # a proven horse at the top races the money it has earned
-        return ("all", sex, wo[0], wo[2], 0)
     name, _, purse, _ = next(c for c in CONDITIONS if c[1](h))
     if group == "aged" and o != "stay" and h.owner not in HUMAN and (h.id + DAY[0]) % 2 == 0:
         # half the weeks an owner also looks at the claiming ladder: the richest tag it can win at, if that pays more
@@ -997,7 +993,7 @@ def draw_card(day, horses, skip=()):
         asked = {wanted(h) for h in entries} & {v["id"] for v in hosts(key[2], key[5])}
         stack = max(Counter(h.owner for h in entries if h.owner in HUMAN).values(), default=0)   # a player's horses in one class
         short = max((-len(entries)) % FIELD[key[5]], max(len(asked), stack) * 7 - len(entries))   # a race for each, so they don't meet
-        for strict in ((0,) if key[2] in WINNERS_OVER else (0, 1, 2)):   # exact class, then same group+sex, then same group
+        for strict in ((0,) if key[2] in ALL_AGES else (0, 1, 2)):   # top classes take only horses that meet the condition; below, same group+sex, then same group
             for h in (idle if strict < 2 else idle_all):
                 if short == 0:
                     break
@@ -1005,11 +1001,11 @@ def draw_card(day, horses, skip=()):
                     entries.append(h)
                     drafted.add(h.id)
                     short -= 1
-    # a Winners Over class needs a real field of its own: short of one, it isn't carded and its horses race the Invitational
-    for key in [k for k in cards if k[2] in WINNERS_OVER]:
-        if len(cards[key]) < WO_MIN:
-            inv = next(c for c in CONDITIONS if c[0] == "Invitational")
-            cards.setdefault((key[0], key[1], "Invitational", inv[2], 0, key[5]), []).extend(cards.pop(key))
+    # a top class runs short rather than padded, but below TOP_MIN it folds into the class under it (then the <2 rule)
+    for name, below in (("Invitational", "Preferred"), ("Preferred", "Open")):
+        for key in [k for k in cards if k[2] == name and len(cards[k]) < TOP_MIN]:
+            purse = next(c[2] for c in CONDITIONS if c[0] == below)
+            cards.setdefault((key[0], key[1], below, purse, 0, key[5]), []).extend(cards.pop(key))
     # still alone: the office rewrites the condition and the horse races in the fullest card
     # of its age group tonight, whatever the class
     for key in [k for k, v in cards.items() if len(v) < 2]:
@@ -1098,7 +1094,8 @@ def race_day(day, horses, log):
         for h in field:
             h.tonic_on = None
         field_est = st.mean(h.est for h in field)        # who you beat, not where you ran
-        CLASS_RATING[name] += 0.1 * (field_est - CLASS_RATING[name])   # what the class really is
+        if name in CLASS_RATING:                          # a card drawn before a class was retired still runs
+            CLASS_RATING[name] += 0.1 * (field_est - CLASS_RATING[name])   # what the class really is
         base = f"{DAY[0]}-{v['id']}-{track}-{name.replace('$', '').replace('&', 'and')}"   # plain letters: it travels in a URL
         rid = f"{base}-{taken_ids.setdefault(base, -1) + 1}"             # the same class for two age groups gets its own id
         taken_ids[base] += 1
