@@ -2014,7 +2014,7 @@ def card_page(nxt):
 
 LEDGER_NAMES = {"purses": "Purses", "sales": "Horse sales", "stud": "Stud fees", "claims": "Claims", "costs": "Upkeep and fees",
                 "barn": "Barn upgrades", "cosmetics": "Emblem and Marquee", "registry": "Foal registration", "shop": "Shop and tonic",
-                "stakes": "Stakes nominations", "vet": "Vet", "gifts": "Gifts", "upkeep": "Upkeep", "training": "Training bill", "board": "Farm board"}
+                "stakes": "Stakes nominations", "bids": "Bids held", "vet": "Vet", "gifts": "Gifts", "upkeep": "Upkeep", "training": "Training bill", "board": "Farm board"}
 
 
 def money_k(v):
@@ -3987,7 +3987,7 @@ def market_page(qs=None):
     def left(s):
         s = max(0, int(s)); h_, m = s // 3600, s % 3600 // 60
         return f"{h_}h {m:02d}m" if h_ else f"{m}m {s % 60:02d}s"
-    body = ("<div class=card><b>Auction</b><div class=sub>Every horse runs a full day. Type your bid: at least the minimum shown, as much more as you like. All bids are final. A bid with ten "
+    body = ("<div class=card><b>Auction</b><div class=sub>Every horse runs a full day. Type your bid: at least the minimum shown, as much more as you like. All bids are final. Your bid is held from your cash while it leads and comes straight back if you're outbid. A bid with ten "
             "minutes or less left puts an hour back on the clock. The high bid at the close takes the horse. Other barns bid too.</div></div>")
     sort = qs.get("s") if qs.get("s") in ("age", "tier", "price") else "ends"
     age, sex, tier = qs.get("a", "all"), qs.get("x", "all"), qs.get("t", "all")
@@ -4018,7 +4018,7 @@ def market_page(qs=None):
         if own_h:
             act = "<span class=sub>your horse</span>"
         elif lead:
-            act = "<span class=sub>you're the high bid</span>"
+            act = f"<span class=sub>you're the high bid · ${a['price']:,.0f} held</span>"
         elif e.cash.get(ME, 0) < nb:
             act = "<span class=sub>not enough cash</span>"
         else:
@@ -5031,7 +5031,7 @@ class H(BaseHTTPRequestHandler):
             if not h or h.retired or h in e.nursery:
                 return self.send(admin_page("No racer to give."))
             was = h.owner
-            e.listings.pop(h.id, None); e.auctions.pop(h.id, None); c.CLAIMS.pop(h.id, None)
+            e.drop_auction(h.id); c.CLAIMS.pop(h.id, None)
             h.owner, h.order, h.ship, h.gone, h.ageless = o, None, None, "a gift from the circuit", False
             e.barn_size[o] = e.barn_size.get(o, 0) + 1; e.barn_size[was] = max(0, e.barn_size.get(was, 1) - 1)
             c.trainer_of(h)

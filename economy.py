@@ -173,7 +173,7 @@ def start_from_history(horses, owner, racers=3):
     mares = sorted((h for h in horses if h.retired and h.sex == "f" and h.age <= 12), key=c.peak_est)
     picks += [rng.choice(mares[:max(1, len(mares) // 2)])] if mares else []
     for h in picks:
-        listings.pop(h.id, None); auctions.pop(h.id, None)
+        drop_auction(h.id)
         h.owner = owner
         if not h.retired:
             c.assign(h, c.BARN_TRAINER.get(owner, c.HOUSE)) or c.assign(h, c.HOUSE)
@@ -246,7 +246,7 @@ def scrap(h, owner, horses):
         h.trainer.horses -= 1
     horses.remove(h)
     barn_size[owner] = barn_size.get(owner, 1) - 1
-    listings.pop(h.id, None); auctions.pop(h.id, None)
+    drop_auction(h.id)
     h.owner, h.gone = -1, f"sold to the house for ${paid:,.0f}"
     book(owner, "sales", paid)
     return paid
@@ -398,6 +398,24 @@ def open_auction(h, now=None):
     listings[h.id] = (h, start)
 
 
+def _lead(a, o, price):
+    """A new high bid: the money is held while the bid leads (so it can't be spent twice), and goes straight back to the
+    barn it outbid. Computer barns bid by proxy and hold nothing."""
+    if a["leader"] in human:
+        book(a["leader"], "bids", a["price"])
+    if o in human:
+        book(o, "bids", -price)
+    a["price"], a["leader"] = price, o
+
+
+def drop_auction(hid):
+    """An auction off the board, however it ended: the leading barn's held money comes back first."""
+    a = auctions.pop(hid, None); listings.pop(hid, None)
+    if a and a["leader"] in human:
+        book(a["leader"], "bids", a["price"])
+    return a
+
+
 def next_bid(hid):
     a = auctions[hid]
     return a["price"] + STEP if a["leader"] is not None else a["price"]
@@ -412,8 +430,7 @@ def _answer(hid, h):
     if rivals:
         top, o = rivals[0]
         others = [t for t, x in rivals[1:]] + ([a["proxies"][a["leader"]]] if a["leader"] in a["proxies"] else [])
-        a["price"] = min(top, max(next_bid(hid), max(others, default=0) + STEP))
-        a["leader"] = o
+        _lead(a, o, min(top, max(next_bid(hid), max(others, default=0) + STEP)))
         listings[hid] = (h, a["price"])
 
 
@@ -427,7 +444,7 @@ def bid(h, bidder, now=None, amount=None):
     price = next_bid(h.id) if amount is None else round(amount)
     if price < next_bid(h.id) or cash.get(bidder, 0) < price or barn_size.get(bidder, 0) >= stalls(bidder):
         return None
-    a["price"], a["leader"] = price, bidder
+    _lead(a, bidder, price)
     if a["ends"] - now <= SNIPE_SECS:
         a["ends"] = now + EXTEND_SECS                       # a late bid: an hour back on the clock
     listings[h.id] = (h, price)
@@ -441,13 +458,13 @@ def settle_auctions(horses, now=None):
     alive = {h.id for h in horses}
     for hid, a in list(auctions.items()):
         if hid not in alive:                                # culled or retired out of the world while listed: off the board at once
-            auctions.pop(hid); listings.pop(hid, None); continue
+            drop_auction(hid); continue
         if now < a["ends"]:
             continue
         h = listings.get(hid, (None,))[0]
         if h is not None and hid in alive and a["leader"] is None:
             _answer(hid, h)                                 # nobody bid: the proxies settle it among themselves (before it closes)
-        auctions.pop(hid); listings.pop(hid, None)
+        drop_auction(hid)                                   # the held bid is back in the winner's cash; the sale then charges it
         if h is None or hid not in alive or a["leader"] is None:
             continue                                        # gone, or no sale
         w, price = a["leader"], a["price"]
@@ -773,7 +790,7 @@ def new_year(horses, ai):
     ai_overhead(ai)
     for hid, (h, _) in list(listings.items()):                # a racer listed last week that retired at the year turn:
         if hid in racing and h.retired:                       # its asking price was a racer's; take it down
-            listings.pop(hid); auctions.pop(hid, None)
+            drop_auction(hid)
     return horses
 
 
