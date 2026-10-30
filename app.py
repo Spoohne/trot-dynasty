@@ -540,7 +540,7 @@ a{color:var(--ink);text-decoration:none} h1{font-size:26px;margin:8px 0 6px;lett
 .bar{height:6px;background:var(--rule2);border-radius:3px;margin:4px 0} .bar i{display:block;height:6px;background:var(--win);border-radius:3px}
 .chart{font-size:13px;color:var(--ink2);margin-top:4px} .money{font-weight:600;font-variant-numeric:tabular-nums}
 button,.btn{background:var(--tote);color:var(--tote-ink);border:0;border-radius:4px;padding:8px 12px;font-size:14px;font-family:inherit;font-weight:600}
-button.armed{outline:2px solid var(--tote);outline-offset:1px} button.sec.armed{color:var(--tote);border-color:var(--tote)}
+button.armed{outline:2px solid var(--win);outline-offset:1px;background:var(--win);color:#06170c} button.sec.armed{color:var(--win);border-color:var(--win);background:none}
 button.sec{background:transparent;color:var(--ink);border:1px solid var(--rule)} button.sec:hover{border-color:var(--ink3)} button.warn{background:var(--loss);color:#fff}
 form.inline{display:inline} select,input{font-size:16px;padding:6px;border-radius:4px;border:1px solid var(--rule);font-family:inherit;background:var(--rule2);color:var(--ink)}
 .ev{background:#2a2213;border-left:3px solid var(--tote);padding:8px 10px;font-size:14px;margin:8px 0}
@@ -5186,7 +5186,8 @@ class H(BaseHTTPRequestHandler):
             if not P().get("frozen"):
                 e.bid(h, ME, amount=int(amt) if amt.isdigit() else None)
             save()
-            return self.send("", 303, "/market#a" + str(h.id))
+            back = self.headers.get("Referer", "")                      # back to the same page and position: the scroll keeper needs no hash
+            return self.send("", 303, back if "/market" in back else "/market#a" + str(h.id))
         elif p == "/claim" and h and h.owner != ME:
             o = getattr(h, "order", None)
             if q.get("undo"):
