@@ -516,7 +516,7 @@ const STRIDE_FT = RIG ? 51 : 17, FR = 12, FW = RIG ? 230 : PAINTED ? 416 : 208, 
 const H_FT = LEN_FT * FH / FW, NOSE = .99;
 // Coat colors from the bay art: the warm body pixels are re-toned, and black points, mane, harness and silks
 // are left alone (a grey's dark points are lifted too). One canvas per sheet per coat, made once.
-const COAT = { bay: null, brown: [.62, .5, .45, 1], black: [.26, .24, .24, 1], chestnut: [1.25, .82, .55, 1], grey: "grey" };
+const COAT = { bay: null, brown: [.62, .5, .45, 1], black: "black", chestnut: [1.25, .82, .55, 1], grey: "grey" };
 const coatCache = new Map();
 function coat(img, kind) {
   if (!COAT[kind]) return img;
@@ -531,6 +531,8 @@ function coat(img, kind) {
       const l = (r + gg + b) / 3;
       if (warm) { const v = Math.min(235, 70 + l * 1.25); p[i] = v; p[i + 1] = v; p[i + 2] = v + 6; }
       else if (l < 60 && Math.abs(r - b) < 18) { const v = 40 + l * 1.4; p[i] = v; p[i + 1] = v; p[i + 2] = v + 4; }
+    } else if (k === "black") {                                                  // from the bay's light, so the muscling keeps its shading, with a blue sheen
+      if (warm) { const v = 10 + (r + gg + b) / 3 * .42; p[i] = v * .9; p[i + 1] = v * .94; p[i + 2] = Math.min(255, v * 1.12); }
     } else if (warm) { p[i] = Math.min(255, r * k[0]); p[i + 1] = Math.min(255, gg * k[1] * (kind === "chestnut" ? 1.05 : 1)); p[i + 2] = Math.min(255, b * k[2]); }
   }
   g.putImageData(d, 0, 0); c.src = key; coatCache.set(key, c); return c;

@@ -712,7 +712,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 /* compact bars (sale board, stud book): too small for ten ticks, so a plain solid bar with its value as a number */
 .sbars .sv{display:block;min-width:14px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink)}
 .sbars .stat{height:8px;background-image:none}.sbars .stat:after{display:none}
-.sbars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 12px;margin:6px 0 2px;width:100%;max-width:420px}.sbars .row{gap:6px;width:100%}.sbars .stat{flex:1;min-width:0}.sbars .sub{width:52px!important;font-size:12px}
+.sbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px 12px;margin:6px 0 2px;width:100%;max-width:420px}.sbars .row{gap:6px;width:100%}.sbars .stat{flex:1;min-width:0}.sbars .sub{width:52px!important;font-size:12px}
 .sbrow td{border-top:0;padding-top:0}
 .kin{margin-top:6px;font-size:13px;color:#ffb38a}.kin b{color:#ff8a7a}.kin.ok{color:#7fd69a}.kin.bad{color:#ff8a7a;font-weight:700}
 .hc{position:relative}
@@ -1128,7 +1128,7 @@ def setup_page():
     body = ("<p class=sub>Nothing is entered until you confirm. Everything below stays editable afterward from the horse cards and the Training tab.</p>"
             f"<div class=card><b>Enter for tomorrow night · {len(entries)}</b><div class=sub>The trainer's picks, never a claimer.</div>{rows or '<div class=sub>Every fit horse is already entered.</div>'}</div>"
             f"<div class=card><b>Sets to work · {len(sets)}</b><div class=sub>Each youngster's saved job and focus, today.</div>{srows or '<div class=sub>No sets to work today.</div>'}</div>"
-            "<a class='btn sec' href=/#entrybox style='display:block;text-align:center;margin-bottom:8px'>Check or change tomorrow's entries</a>"
+            "<a class='btn sec' href=/entries style='display:block;text-align:center;margin-bottom:8px'>Check or change tomorrow's entries</a>"
             "<div class=row style='gap:8px'><form method=post action=/setup style='flex:1'><button class=big style='width:100%;background:var(--win);color:#06170c;box-shadow:3px 3px 0 var(--edge)'" + ("" if entries or sets else " disabled") + ">Confirm</button></form>"
             "<a class='btn sec big' href=/ style='flex:1;text-align:center'>Cancel</a></div>")
     return page("Stable Manager", body)
@@ -1467,7 +1467,7 @@ def race_banner():
     idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
     if idle:
         left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
-        out += bar(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow. Entries drawn in {left // 3600}h {left % 3600 // 60}m", "/#entrybox")
+        out += bar(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow. Entries drawn in {left // 3600}h {left % 3600 // 60}m", "/entries")
     open_picks = [s for s in stakes_tonight() if s.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s)) >= 2]
     if open_picks:
         out += bar(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''} tonight: make your picks", "/stakes#picks")
@@ -3220,7 +3220,7 @@ def barn_page(qs=None):
     owe = (f"<div class='card ev' style='border-color:var(--loss)'><b>Training bill overdue: ${owe:,.0f}</b><div class=sub>Your trainer's "
            "day rate and the farm's board ran past your cash. It comes out of your next purses. Selling or retiring a horse that isn't "
            "earning brings the bill down.</div></div>" if owe else "")
-    return page("Your barn", menu + owe + race_banner() + train_banner() + ev + entry_box() + cards + wipe)
+    return page("Your barn", menu + owe + race_banner() + train_banner() + ev + cards + wipe)   # the entry box is off the barn page for now; entries are on /entries
 
 
 def entries_page(qs=None):
@@ -4031,7 +4031,7 @@ def breeding_page(qs=None):
         return (f"<div class=card><div class=brow><a href='/horse/{urlname(h.name)}'>{portrait(h, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(h.name)}' class=bname>{esc(h.name)}</a> <span class=sub>{h.age}yo {sex_word(h)} · {left} season{'s' if left != 1 else ''} left</span>"
                 f"<div class=sub>{len(ks)} foal{'s' if len(ks) != 1 else ''} · {sum(k.wins for k in ks)} wins · ${sum(k.earnings for k in ks):,.0f}</div>"
-                f"<div>{now}</div></div><div>{act}</div></div></div>")
+                f"<div>{now}</div>{stud_bars(h)}</div><div>{act}</div></div></div>")
     body = (BREED_MENU("mine") + f"<div class=card><div class=row style='justify-content:space-between'><span>{len(stallions)} stallion{"s" if len(stallions) != 1 else ""} · {len(mares)} broodmare{"s" if len(mares) != 1 else ""}</span>"
             f"</div>"
             + ("" if e.can_breed(ME) else license_offer()) + "</div>")
@@ -4100,6 +4100,7 @@ def breed_page(name):
         close = e.too_close(s, m)
         btn = (f"<span class='btn big off'>{close}</span>" if close else "<span class='btn big off'>book full</span>" if full else "" if why else
                f"<form method=post action=/breed><input type=hidden name=h value='{esc(m.name)}'><input type=hidden name=s value='{esc(s.name)}'>"
+               f"<input name=n placeholder='Name the foal' maxlength={_names.MAXLEN} pattern='[A-Za-z ]+' title='Letters and spaces, up to {_names.MAXLEN}' style='width:100%;margin:0 0 4px'>"
                f"<button onclick=\"return ask(this,'Book {m.name} to {s.name}{'' if own else f' for ${fee:,.0f}'}?')\">Book{'' if own else f' ${fee:,.0f}'}</button></form>")
         return (f"<div class=card><div class=brow><a href='/horse/{urlname(s.name)}'>{portrait(s, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(s.name)}' class=bname>{esc(s.name)}</a> <span class=sub>{s.tier} · {s.starts}-{s.wins} · ${s.earnings:,.0f}</span>"
@@ -4270,7 +4271,7 @@ PP_CSS = """
 .pgped,.pgown{font-size:13px;line-height:1.35;color:#222;font-weight:500}.pgtag{font-size:10px;font-weight:700;padding:0 4px;border-radius:2px;background:#111;color:#fff;margin-left:4px;vertical-align:2px}.pgtag.pl{background:#1e4fb5}
 .pgcar{width:auto!important;font-size:13px;font-weight:500;border-collapse:collapse;margin-top:4px;font-variant-numeric:tabular-nums}.pgcar td{padding:0 10px 0 0!important;border:0!important;white-space:nowrap}.pgcar td:first-child{font-weight:700}
 .pglines{margin-top:6px}.pglines table{border-collapse:collapse;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;width:100%;table-layout:fixed}.pglines td{overflow:hidden;text-overflow:ellipsis}
-.pglines td{padding:3px 6px 1px 0;border-top:1px solid #0002}.pglines .w{font-weight:800}.pglines sup{font-size:9px}.pglines .pph td{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#555;border-top:0}.pglines .ppc{max-width:130px;overflow:hidden;text-overflow:ellipsis}.pglines .ppt td{border-top:0;padding:0 0 4px;font-size:12px;font-style:italic;color:#555;white-space:normal}
+.pglines td{padding:3px 6px 1px 0;border-top:1px solid #0002}.pglines .w{font-weight:800}.pglines sup{font-size:9px}.pglines .pph td{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#555;border-top:0}.pglines .ppc{max-width:130px;overflow:hidden;text-overflow:ellipsis}.pglines .ppt td{border-top:0;padding:0 0 4px;font-size:12px;font-style:italic;color:#555;white-space:normal}.pglines .pptk{font-style:normal;font-weight:700;color:#333}
 .pgclaim{margin-top:4px}.pgfoot{font-size:13px;padding:6px 8px;background:#111;color:#e9e4d6;line-height:1.4}
 .pgsec{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin:14px 0 4px;color:var(--ink2)}
 """
@@ -4298,6 +4299,9 @@ def _calls(r):
     return out
 
 
+TRACK_WORD = {"mile": "Mile track", "half": "Half-mile track"}
+
+
 def pp_lines(h, n=3):
     """A horse's last few starts for the program, kept short: week, class, purse, post, stretch call, finish, time and the
     trip in a word or two."""
@@ -4313,7 +4317,8 @@ def pp_lines(h, n=3):
                  f"<td>{r['trip'].split(',')[0].replace('post ', '') if r['trip'].startswith('post') else ''}</td><td>{st_}</td>"
                  f"<td class={'w' if r['place'] == 1 else ''}>{nth(r['place'])}{f'<sup>{_lengths(fin[1])}</sup>' if r['place'] > 1 and fin[1] > 0 else ''}</td>"
                  f"<td>{c.mile_time(r['time'])}</td></tr>"
-                 + (f"<tr class=ppt><td></td><td colspan=6>{esc(trip)}</td></tr>" if trip else ""))
+                 + f"<tr class=ppt><td></td><td colspan=6><b class=pptk>{TRACK_WORD.get(r.get('track'), '')}</b>"   # times on a half are slower: say which
+                 f"{' · ' if trip and r.get('track') in TRACK_WORD else ''}{esc(trip)}</td></tr>")
     if not rows:
         return "<div class=pgped>Unraced.</div>"
     return ("<div class=pglines><table><colgroup><col style='width:2.2em'><col><col style='width:4.6em'><col style='width:1.8em'>"
@@ -5081,7 +5086,7 @@ class H(BaseHTTPRequestHandler):
         if p == "/entries":
             trainers_entries(G["horses"])
             save()
-            return self.send("", 303, "/#entrybox" if q.get("back") == "/" else "/entries")
+            return self.send("", 303, "/entries")
         if p == "/buytonic":
             k = q.get("k")
             if k in TONIC_PRICE and e.cash.get(ME, 0) >= TONIC_PRICE[k]:
@@ -5168,6 +5173,9 @@ class H(BaseHTTPRequestHandler):
         elif p == "/breed" and h and h.owner == ME:
             s = by_name.get(q.get("s", ""))
             if s and e.book_mare(h, s, ME, G["horses"], day=G["day"]) is not None:
+                n = " ".join(q.get("n", "").split())                       # the breeder names the foal; the registry's rules, else the house name stands
+                if n and n.replace(" ", "").isalpha() and len(n) <= _names.MAXLEN and n not in _names.USED and not find_horse(n):
+                    e.nursery[-1].name = n; _names.USED.add(n)
                 save()
                 return self.send("", 303, f"/horse/{urlname(e.nursery[-1].name)}")      # straight to the new foal
         elif p == "/bid" and h:
