@@ -1824,7 +1824,22 @@ GUIDE = [
          "helps; it doesn't make a slow horse fast."),
     ]),
     ("On the track", [
-        ("Trips", "How a race unfolds matters as much as how fast a horse is. The <b>leader</b> sets the pace and runs the shortest way "
+        ("How a race is run", "Every race on this circuit is run the same way for every barn, the house's horses included. Nothing "
+         "decides it but what the horses bring to the gate and what happens between the gate and the wire.<br><br>"
+         "What a horse brings is on its card: its speed, its stamina, its finish and its manners, how fresh it is tonight, where in a "
+         "field it likes to sit, and the class of company it's been keeping. A fit horse in the right company with a driver who suits "
+         "it has done most of its work before the gate car pulls away.<br><br>"
+         "What happens after is the trip. The post it drew. Whether it got to the spot it wanted or got parked outside. How hot the "
+         "pace was and who paid for it. Whether it stayed flat or broke. Those are the same for every horse in the race, and the same "
+         "horse can win from the pocket on Tuesday and come up empty first-over on Friday without being any different a horse.<br><br>"
+         "What doesn't count: the name over the barn door, the money in the bank, the Season Pass, the Marquee, the gear a horse "
+         "wears, or who's watching. The track doesn't know who you are. Tonic is race prep, open to every barn at the same price, "
+         "and it sharpens a horse; it never makes a slow one fast.<br><br>"
+         "When a result surprises you, read it before you judge it. The trip note under each finisher says what kind of mile it got, "
+         "and the replay shows it. A horse that drew the eight, went first-over and finished fourth has told you something different "
+         "from one that sat the pocket and finished fourth. The form you see on the program is the same form the circuit's own "
+         "handicapper sees, and he's wrong plenty of nights too."),
+        ("Trips","How a race unfolds matters as much as how fast a horse is. The <b>leader</b> sets the pace and runs the shortest way "
          "round. The <b>pocket</b>, sitting right behind the leader, is the classic trip: sheltered, saving ground, waiting for the "
          "stretch, though it can get boxed in. <b>First-over</b> means pulling out to race on the outside and take the field to the "
          "leader with no cover: honest, hard work. Horses tucked in behind it get cover. <b>Closers</b> sit back and come late, and a "
