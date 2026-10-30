@@ -1134,9 +1134,9 @@ def train_banner():
             f"font-weight:700;text-decoration:none'>{n} youngster{'s' if n != 1 else ''} not worked today ›</a>")
 
 
-JOB_NOTE = {"jog": "<b>Jogged today.</b> Ticking over.", "train": "<b>Trained today</b>, {focus} miles.",
+JOB_NOTE = {"jog": "<b>Jogged today.</b> Ticking over.", "train": "<b>Trained today</b>, focus on {focus}.",
             "school": "<b>Schooled today</b> on its gait.", "out": "<b>Turned out.</b> A day off; freshness comes back."}
-FOCUS_NAME = {"gait": "Gait", "early_speed": "Early speed", "late_speed": "Late speed", "stamina": "Stamina"}
+FOCUS_NAME = {"early_speed": "Speed", "stamina": "Stam", "late_speed": "Finish", "gait": "Manners"}   # same words and order as the stat bars
 JOB_WORD = {"jog": "Jog", "train": "Train", "school": "School", "out": "Turn out"}
 
 
@@ -1188,7 +1188,7 @@ def training_page():
                       "<div class=sub>Each youngster's set: the job and focus the manager runs. Save changes, or work every set now.</div>"
                       "<div class=mgrid><div class='mrow mh'><span></span><span>Horse</span><span>Job</span><span>Focus</span></div>"
                       + srows + "</div><div class=mact><button class=sec name=do value=save>Save sets</button>"
-                      f"<button name=do value=deploy{'' if again else ' disabled'}>Work sets ({len(again)})</button></div></form>") if ys else ""
+                      f"<button name=do value=deploy{'' if again else ' disabled'}>Run the sheet ({len(again)})</button></div></form>") if ys else ""
     else:
         repeat_all = (f"<form method=post action=/job style='margin:0 0 8px'><input type=hidden name=h value='*'><input type=hidden name=j value=repeat>"
                       f"<button class=big>Repeat yesterday for all ({len(again)})</button></form>") if len(again) > 1 else ""
