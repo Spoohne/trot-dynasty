@@ -1068,16 +1068,16 @@ def set_of(x):
     return tuple(st) if st[0] in e.open_jobs(x) else (STAGE_JOB[e.stage(x)], st[1])
 
 
-STAGE_JOB = {"break": "school", "jog": "jog"}
+STAGE_JOB = {"break": "school", "jog": "jog", "train": "train"}
 
 
 def stage_line(x):
     """A yearling's progress through breaking and jogging, for its card; empty once it's ready to train."""
     s = e.stage(x)
     if s == "break":
-        return f"<div class=stageln><b>Breaking</b> · week {x.broke} of {e.BREAK_WEEKS} done. Jog opens after {e.BREAK_WEEKS}.</div>"
+        return f"<div class=stageln><b>Breaking</b> · week {x.broke} of {e.BREAK_WEEKS} done. Jogging comes next.</div>"
     if s == "jog":
-        return f"<div class=stageln><b>Jogging</b> · week {x.jogged} of {e.JOG_WEEKS} done. Training opens after {e.JOG_WEEKS}.</div>"
+        return f"<div class=stageln><b>Jogging</b> · week {x.jogged} of {e.JOG_WEEKS} done. Training comes next.</div>"
     return "<div class=stageln><b>Ready to train</b> · broke and jogged.</div>" if x in e.nursery else ""
 
 
@@ -1089,7 +1089,7 @@ def apply_job(x, o, job, focus):
         if not st:
             return False
         job, focus = st
-    if focus not in FOCUS_NAME or job not in JOB_WORD or x.owner != o:
+    if focus not in FOCUS_NAME or job not in e.open_jobs(x) or x.owner != o:
         return False
     if not rep:
         x.tset = (job, focus)                                   # whatever you last chose is the set the manager deploys
@@ -1167,17 +1167,17 @@ def day_sheet(h, back="/training"):
         return f"<div class=didnote>{JOB_NOTE[job[1]].format(focus=FOCUS_NAME.get(job[2], '').lower())}</div>" + stage_line(h)
     tired = not foal and h.freshness < 35
     can = e.open_jobs(h)
-    why = {"jog": f"Opens after {e.BREAK_WEEKS} weeks of Break", "train": f"Opens after {e.JOG_WEEKS} weeks of jogging"}
-    btn = lambda key, label: (f"<button name=j value={key} class=sec"
-                              + (f" disabled title='{why[key]}'>&#128274; {label}" if key not in can else f"{' disabled' if key == 'train' and tired else ''}>{label}")
-                              + "</button>")
+    past = e.stage(h) == "train"                                         # broke and jogged: Break and Jog stay on the sheet, locked
+    btn = lambda key, label: (f"<button name=j value={key} class=sec{' disabled' if key == 'train' and tired else ''}>{label}</button>" if key in can
+                              else f"<button class=sec disabled title='Done: past this stage'>&#128274; {label}</button>" if past
+                              else "")                                  # a yearling still in a stage sees only that stage's job
     last = job[2] if job and job[2] in FOCUS_NAME else "gait"             # the focus stays what it was last set to
     foc = "".join(f"<label><input type=radio name=f value={k}{' checked' if k == last else ''}>{t}</label>" for k, t in FOCUS_NAME.items())
     st = set_of(h)
     last = st[1] if st else last
     again = (f"<button name=j value=repeat style='grid-column:1/-1'{' disabled' if st[0] == 'train' and tired else ''}>Its set: "
              f"{JOB_WORD[st[0]]}{' · ' + FOCUS_NAME[st[1]] if st[0] != 'out' and 'train' in can else ''}</button>") if st else ""
-    return (stage_line(h) + f"<form method=post action=/job class=sheet><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='{back}'>{again}"
+    return (stage_line(h) + f"<form method=post action=/job class=sheet style='grid-template-columns:repeat({4 if past else len(can)},1fr)'><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='{back}'>{again}"
             f"{btn('jog', 'Jog')}{btn('train', 'Train')}{btn('school', 'Break')}{btn('out', 'Turn out')}"
             + (f"<div class=foc><span>Training focus</span>{foc}</div>" if "train" in can else "<input type=hidden name=f value=stamina>")   # jogging builds a yearling's bottom
             + ("<div class=foc><span class=sub>Too tired for training miles this week.</span></div>" if tired else "") + "</form>")
@@ -1215,9 +1215,9 @@ def training_page():
     body = (train_banner() + f"<div class=stablehead><h2>Day sheet <span class='stallct st-grn'>{done}/{len(ys)}</span></h2></div>" + repeat_all +
             "<div class=sub style='margin:-4px 0 8px'>Yearlings, 2 and 3-year-olds: one job a day, your call. The stable jogs any you don't get to.</div>"
             + (rows or "<div class=card><div class=sub>No youngsters in the barn. Yearlings come from your broodmares; 2 and 3-year-olds race here.</div></div>")
-            + "<div class=card><div class=sub><b>Jog</b> keeps a youngster ticking over. <b>Train</b> is training miles: the big step, on the focus you pick, "
-              "and it takes something out of the horse. <b>Break</b> is harness and gait work. <b>Turn out</b> is a day off that brings freshness back. "
-              f"A yearling starts with {e.BREAK_WEEKS} weeks of Break, then {e.JOG_WEEKS} weeks of jogging, before training miles and a focus open up. "
+            + f"<div class=card><div class=sub>A yearling comes up in stages: {e.BREAK_WEEKS} weeks of <b>Break</b> to get it used to the harness, then "
+              f"{e.JOG_WEEKS} weeks of <b>Jog</b>. After that both are locked and <b>Train</b> opens: training miles on the focus you pick, "
+              "the big step, and it takes something out of the horse. <b>Turn out</b> is a day off that brings freshness back. "
               "Older horses are kept sound, not trained: see them in the Barn.</div></div>")
     return page("Training", body)
 
@@ -1703,8 +1703,9 @@ GUIDE = [
          "decline; some are early bloomers, some late. A horse's Development chart is the trainer's read of that arc, showing where it is "
          "now: developing, in its prime, just past its peak, or declining."),
         ("Training the youngsters", "Yearlings, 2-year-olds and 3-year-olds are yours to make, and the Training tab is their day sheet. "
-         "Each gets one job a day: a <b>jog</b> to keep it ticking over, <b>training miles</b> on the focus you choose, <b>break</b> work in "
-         "the harness and on its gait, or a <b>turn out</b> for a day off. A yearling is broken to harness first, then jogged, before training miles and a focus open up. Training miles are the big step and take something out of a horse, so a tired one "
+         "Each gets one job a day. A yearling comes up in stages, one at a time: <b>break</b> work to get it used to the harness, then "
+         "<b>jogging</b>. Once it's broke and jogged, its days are <b>training miles</b> on the focus you choose, or a <b>turn out</b> "
+         "for a day off. Training miles are the big step and take something out of a horse, so a tired one "
          "can't go. A youngster you don't get to is jogged by the stable, which keeps it coming along but leaves it the horse its blood "
          "made; only your hands decide what kind of horse it becomes. A yearling worked through its year comes to the races further "
          "along than one left in the field. Older horses are past making: they're kept fit and sound, not trained."),

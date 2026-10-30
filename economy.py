@@ -552,8 +552,9 @@ def stage(f):
 
 
 def open_jobs(f):
-    """The day-sheet jobs a horse can do at its stage."""
-    return {"break": {"school", "out"}, "jog": {"school", "jog", "out"}}.get(stage(f), set(c.JOBS) | {"out"})
+    """The day-sheet jobs a horse can do at its stage: a breaking or jogging yearling has just that job (and a day off);
+    one past both trains or turns out, and the stable jogs it on the days it isn't worked."""
+    return {"break": {"school", "out"}, "jog": {"jog", "out"}}.get(stage(f), {"train", "out"})
 
 
 def handle(f, owner, day, job, focus):
@@ -1067,8 +1068,9 @@ if __name__ == "__main__":
     for d in range(9, 9 + JOG_WEEKS):
         handle(yl, 0, d, "jog", "stamina")
     assert stage(yl) == "train" and handle(yl, 0, 20, "train", "early_speed") and yl.shape["early_speed"] > 0, "jogged: training miles shape it"
+    assert not handle(yl, 0, 21, "jog", "stamina") and not handle(yl, 0, 21, "school", "gait"), "past the stages: Break and Jog are locked"
     for d in range(21, 21 + HANDLED_FULL - yl.handled):
-        handle(yl, 0, d, "jog", "stamina")
+        handle(yl, 0, d, "train", "stamina")
     old = c.foal(sire_, dam_); old.age, old.owner, old.handled = 1, 0, 3; nursery.append(old)
     assert stage(old) == "jog" and old.jogged == 1, "a yearling from before the stages keeps credit for its work"
     nursery.remove(old)
