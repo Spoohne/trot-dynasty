@@ -3769,7 +3769,7 @@ def claimers_page(qs=None):
         strip = (f"<div class='pgh{' tk' if lk else ''}'" + (f" style='--tp:{lk[0]};--ta:{lk[1]}'" if lk else "") + f"><div class=pgn style='font-size:{20 if tag >= 1_000_000 else 24}px'>${tag:,}</div>"
                  + (f"<img class=tkb src={lk[4]} width=40 height=40 alt=''>" if lk else "")
                  + f"<div class=pgt>{tkname}RACE {num} · {esc(c.race_title(r['key'][0], r['key'][2]).split(' $')[0])}"   # the tag shows once, big, on the left
-                   f"<br>Purse ${c.venue_purse(r['v'], r['key'][3]):,}</div>"
+                   f"<br>Purse ${c.venue_purse(r['v'], r['key'][3]):,} · {'Mile' if r['key'][5] == 'mile' else 'Half-mile'} track</div>"
                  f"<div class=pgp>POST<br><b>{getattr(h, 'post', 0)}</b></div></div>")
         entry = program_entry(h, tag, r["odds"], True, room).replace("class='inline pgclaim'>", "class='inline pgclaim'><input type=hidden name=back value=/claimers>")
         out += f"<div class=pgm>{strip}{entry}</div>"
@@ -4303,7 +4303,7 @@ def pp_lines(h, n=3):
     trip in a word or two."""
     nth = lambda p: f"{p}{'th' if 10 <= p % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(p % 10, 'th')}"
     rows = ""
-    for r in h.results[-n:][::-1]:
+    for r in getattr(h, "results", [])[-n:][::-1]:                     # a first-time starter has no history yet
         calls = _calls(dict(r, name_=h.name))
         st_ = (f"{calls[3][0]}{f'<sup>{_lengths(calls[3][1])}</sup>' if calls[3][0] > 1 and calls[3][1] > 0 else ''}") if calls else "—"
         fin = calls[4] if calls else (r["place"], 0)
@@ -4406,7 +4406,7 @@ def program_race_body(drawn, key, field, odds):
     body += "".join(program_entry(h, tag, odds, drawn, room) for h in sorted(field, key=lambda h: getattr(h, "post", 0)))
     if drawn and len(field) > 1:
         winp = lambda h: h.wins / h.starts if h.starts else 0
-        last = lambda h: h.results[-1]["time"] if h.results else 999
+        last = lambda h: h.results[-1]["time"] if getattr(h, "results", None) else 999
         yr = c.year_of(G["day"])
         earn = lambda h: (getattr(h, "seasons", {}) or {}).get(yr, [0] * 5)[4]
         hw, bl, te = max(field, key=winp), min(field, key=last), max(field, key=earn)
@@ -4442,13 +4442,15 @@ def program_race(num, key, venue, field, odds, drawn, open_):
     rival = sorted({barn_name(h.owner) for h in field if h.owner in c.HUMAN and h.owner != ME})
     vs = f" · vs {esc(', '.join(rival))}" if rival and any(h.owner == ME for h in field) else ""
     lane = any(v.get("passing") and v["name"] == venue for v in c.VENUES)
+    vd = next((v for v in c.VENUES if v["name"] == venue), None)
+    purse = c.venue_purse(vd, purse) if vd else purse                      # what this race pays at this track tonight
     lk = vlook(venue)
     tk_style = f' style="--tp:{lk[0]};--ta:{lk[1]}"' if lk else ""
     tk_name = f'<span class=tkn style="font-family:{lk[2]}">{esc(venue)}</span><br>' if lk else ""
     head = (f"<summary class='pgh{' tk' if lk else ''}'{tk_style}><div class=pgn>{num or '·'}</div>"
             + (f"<img class=tkb src={lk[4]} width=40 height=40 alt=''>" if lk else "")
             + f"<div class=pgt>{tk_name}"
-            f"TROT – {'1 MILE' if track == 'mile' else '½ MILE TRACK, 1 MILE'}{' · PASSING LANE' if lane else ''}<br><b>{title}</b>{f' · claiming ${tag:,}' if tag else ''}{vs}</div>"
+            f"TROT – {'1 MILE' if track == 'mile' else '½ MILE TRACK, 1 MILE'}{' · PASSING LANE' if lane else ''}<br><b>{title}</b>{vs}</div>"
             f"<div class=pgp>PURSE<br><b>${purse:,}</b><br>{len(field)} {'starters' if drawn else 'in'}</div></summary>")
     inner = program_race_body(drawn, key, field, odds) if open_ else f"<div class=pgload data-k='{esc(repr((key, venue, num)))}'>Loading…</div>"
     return f"<details class=pgm{' open' if open_ else ''}>{head}{inner}</details>"
