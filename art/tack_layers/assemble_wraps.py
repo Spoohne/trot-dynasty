@@ -87,6 +87,54 @@ def size(cell, i):
     return out
 
 
+SEAM = 64                                                              # rows above: today's runner; below: SpriteCook's legs
+
+
+def graft(cell, i):
+    """Today's frame with SpriteCook's lower legs grafted on: head, neck, body, harness, driver and wheel are the stock
+    runner's own pixels, so they move exactly as the baseline does. Each of SpriteCook's lower legs (with its wrap) is
+    slid sideways so its top meets the top of today's leg at the seam, then pasted in place of today's lower leg."""
+    o = orig.crop((i * W, 0, (i + 1) * W, H))
+    out = o.copy(); po, pc, pt = o.load(), cell.load(), out.load()
+    x0 = 70
+    for y in range(SEAM, H):                                           # today's lower legs out
+        for x in range(x0, W):
+            pt[x, y] = (0, 0, 0, 0)
+    runs, x = [], x0                                                   # where today's legs cross the seam
+    while x < W:
+        if po[x, SEAM - 1][3]:
+            s0 = x
+            while x < W and po[x, SEAM - 1][3]:
+                x += 1
+            runs.append((s0 + x - 1) / 2)
+        x += 1
+    seen = set()
+    for y in range(SEAM, H):                                           # SpriteCook's lower legs, one piece at a time
+        for x in range(x0, W):
+            if (x, y) in seen or not pc[x, y][3]:
+                continue
+            comp, stack = [], [(x, y)]; seen.add((x, y))
+            while stack:
+                u, v = stack.pop(); comp.append((u, v))
+                for du in (-1, 0, 1):
+                    for dv in (-1, 0, 1):
+                        q = (u + du, v + dv)
+                        if x0 <= q[0] < W and SEAM <= q[1] < H and q not in seen and pc[q][3]:
+                            seen.add(q); stack.append(q)
+            top = min(v for _, v in comp)
+            tx = [u for u, v in comp if v <= top + 1]
+            mid = sum(tx) / len(tx)
+            dx = 0
+            if runs and top <= SEAM + 2:                               # a leg that reaches the seam: line it up with today's
+                near = min(runs, key=lambda r: abs(r - mid))
+                if abs(near - mid) <= 10:
+                    dx = round(near - mid)
+            for u, v in comp:
+                if 0 <= u + dx < W:
+                    pt[u + dx, v] = pc[u, v]
+    return out
+
+
 def steady(cell, i):
     """Today's wheel and driver laid over SpriteCook's: they're the same on every horse, so they never pulse."""
     from anchors import anchors, wheel_w
@@ -136,7 +184,7 @@ def tint(cell, mask, hx):
 
 
 if __name__ == "__main__":
-    cells = [steady(size(settle(fit(i), i), i), i) for i in range(N)]; masks = [wraps(c) for c in cells]
+    cells = [graft(size(settle(fit(i), i), i), i) for i in range(N)]; masks = [wraps(c) for c in cells]
     for i, m in enumerate(masks):
         assert m.getbbox(), f"frame {i}: no wraps found"
     sheet, msheet = Image.new("RGBA", (W * N, H)), Image.new("L", (W * N, H))
