@@ -1,0 +1,2195 @@
+{
+ "url": "http://127.0.0.1:8112/",
+ "at": "2026-10-30T14:28:00.724Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 4,
+   "filled": [
+    0.27,
+    0.3,
+    0.28,
+    0.27
+   ],
+   "motion": {
+    "elements": 5,
+    "css": 5,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 3153,
+     "screens": 3.5,
+     "words": 358,
+     "img": 10,
+     "video": 0,
+     "canvas": 0,
+     "svg": 16,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Your barn",
+     "words": 2,
+     "chars": 9,
+     "lines": 1,
+     "size": 26,
+     "vw": 1.8,
+     "font": "Barlow Condensed",
+     "weight": 800,
+     "tracking": 0.04,
+     "leading": 1.1,
+     "top": 110,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "YOUR BARN",
+     "words": 2,
+     "lines": 1,
+     "size": 26,
+     "font": "Barlow Condensed"
+    },
+    "headings": [
+     {
+      "text": "Spoon Hill Stables",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 34,
+      "vw": 2.4,
+      "font": "Jersey 10",
+      "weight": 400,
+      "tracking": 0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0,
+      "top": 0,
+      "gradientText": true,
+      "tag": "div",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Barlow Semi Condensed",
+       "share": 0.84,
+       "mono": false
+      },
+      {
+       "family": "Barlow Condensed",
+       "share": 0.15,
+       "mono": false
+      },
+      {
+       "family": "Jersey 10",
+       "share": 0.01,
+       "mono": false
+      },
+      {
+       "family": "system-ui",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 4,
+     "sizes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      21,
+      22,
+      24,
+      26,
+      34
+     ],
+     "sizeCount": 14,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 34,
+      "vw": 2.4,
+      "font": "Jersey 10",
+      "text": "Spoon Hill Stables"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 29,
+     "microLabelShare": 0.168,
+     "microSamples": [
+      "draw in 9h 31m",
+      "Entered tomorrow",
+      "Stalls",
+      "Bills a week",
+      "Sort by",
+      "Best Time"
+     ],
+     "upperShare": 0.24,
+     "centerShare": 0.09,
+     "smallText": 6
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#070a14",
+     "bodyBgHsl": {
+      "h": 226,
+      "s": 0.48,
+      "l": 0.05
+     },
+     "dark": true,
+     "sectionBgs": [],
+     "textColors": [
+      {
+       "color": "#e6e8ec",
+       "share": 0.35
+      },
+      {
+       "color": "#ffb347",
+       "share": 0.16
+      },
+      {
+       "color": "#c6cede",
+       "share": 0.12
+      },
+      {
+       "color": "#a4acb9",
+       "share": 0.11
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.1
+      }
+     ],
+     "button": {
+      "bg": "#1a2338",
+      "hsl": {
+       "h": 222,
+       "s": 0.37,
+       "l": 0.16
+      },
+      "fg": "#a4acb9"
+     },
+     "lowContrast": [
+      {
+       "text": "New game",
+       "ratio": 3.2,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#ffffff",
+       "bg": "#e0704f"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 14,
+     "inHero": 13,
+     "radius": 0,
+     "height": 60,
+     "withShadow": 13,
+     "withGradient": 9,
+     "mono": 0,
+     "upper": 13,
+     "heroLabels": [
+      "POST TIME",
+      "Spoon Hill Stables I",
+      "STABLE",
+      "BARN NEWS",
+      "AROUND THE TRACK"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 28,
+     "shadowOverlay": 6,
+     "shadowSamples": [
+      "div.top → rgb(5, 7, 13) 0px 2px 0px 0px, rgb(54, 54, 62) 0px 4px 0px 0px",
+      "button → rgb(5, 7, 13) 3px 3px 0px 0px, rgba(255, 255, 255, 0.333) 0px 2px 0px 0px inset,",
+      "div.hmenu → rgba(0, 0, 0, 0.5) 2px 2px 0px 0px inset, rgba(255, 255, 255, 0.07) -1px -1px 0p",
+      "a.on → rgb(255, 243, 176) 1px 1px 0px 0px inset, rgb(138, 90, 18) -1px -2px 0px 0px ins"
+     ],
+     "gradients": 9,
+     "scrims": 0,
+     "gradientSamples": [
+      "div.card.hc → linear-gradient(100deg, color(srgb 0.345647 0.305961 0.24251), rgba(34, 48, 76, 0.91) 55%)",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.333647 0.287294 0.517177), rgba(34, 48, 76, 0.91) 55%)",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.317647 0.221961 0.193176), rgba(34, 48, 76, 0.91) 55%)",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.317647 0.221961 0.193176), rgba(34, 48, 76, 0.91) 55%)"
+     ],
+     "gradientText": 1,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "div.erow2 385px",
+      "div.erow2 385px"
+     ],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 40,
+     "cardRows": [
+      {
+       "count": 9,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 272
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 72,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "barlow condensed",
+     "barlow semi condensed",
+     "jersey 10"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 3153,
+    "margins": {
+     "left": 510,
+     "right": 524
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "YOUR BARN",
+      "size": 26,
+      "top": 110,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 510,
+      "n": 2
+     },
+     {
+      "x": 570,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 3,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.29,
+    "voidBox": {
+     "x": 0,
+     "y": 120,
+     "w": 480,
+     "h": 780
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": true,
+    "ground": "#070a14",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 510,
+     "right": 522
+    },
+    "hero": {
+     "text": "Your barn",
+     "words": 2,
+     "chars": 9,
+     "lines": 1,
+     "size": 26,
+     "vw": 1.8,
+     "font": "Barlow Condensed",
+     "weight": 800,
+     "tracking": 0.04,
+     "leading": 1.1,
+     "top": 110,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 10,
+     "firstScreen": 3,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 10,
+     "radii": [
+      [
+       0,
+       10
+      ]
+     ],
+     "heavyBorders": 9,
+     "borderSamples": [
+      "#8a7a66 on #070a14 (4.76:1)",
+      "#8a7a66 on #070a14 (4.76:1)",
+      "#8a7a66 on #070a14 (4.76:1)"
+     ],
+     "heavyShadows": 11,
+     "softShadows": 0,
+     "shadowSamples": [
+      "rgb(5, 7, 13) 0px 2px 0px 0px",
+      "rgb(54, 54, 62) 0px 4px 0px 0px",
+      "rgba(0, 0, 0, 0.533) 0px 2px 6px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 10,
+     "tabularShare": 0.9,
+     "kpiMax": 24
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.31,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      21,
+      22,
+      24,
+      26,
+      34
+     ]
+    },
+    "title": {
+     "text": "YOUR BARN",
+     "size": 26,
+     "top": 110
+    },
+    "colourShare": 0.027
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 4,
+   "filled": [
+    0.51,
+    0.54,
+    0.57,
+    0.54
+   ],
+   "motion": {
+    "elements": 5,
+    "css": 5,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 3153,
+     "screens": 3.1,
+     "words": 358,
+     "img": 10,
+     "video": 0,
+     "canvas": 0,
+     "svg": 16,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Your barn",
+     "words": 2,
+     "chars": 9,
+     "lines": 1,
+     "size": 26,
+     "vw": 3.4,
+     "font": "Barlow Condensed",
+     "weight": 800,
+     "tracking": 0.04,
+     "leading": 1.1,
+     "top": 110,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "YOUR BARN",
+     "words": 2,
+     "lines": 1,
+     "size": 26,
+     "font": "Barlow Condensed"
+    },
+    "headings": [
+     {
+      "text": "Spoon Hill Stables",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Jersey 10",
+      "weight": 400,
+      "tracking": 0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0,
+      "top": 0,
+      "gradientText": true,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "YOUR BARN",
+      "words": 2,
+      "chars": 9,
+      "lines": 1,
+      "size": 26,
+      "vw": 3.4,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.1,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.55,
+      "top": 110,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 2,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Barlow Semi Condensed",
+       "share": 0.84,
+       "mono": false
+      },
+      {
+       "family": "Barlow Condensed",
+       "share": 0.15,
+       "mono": false
+      },
+      {
+       "family": "Jersey 10",
+       "share": 0.01,
+       "mono": false
+      },
+      {
+       "family": "system-ui",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 4,
+     "sizes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      21,
+      22,
+      24,
+      26,
+      34
+     ],
+     "sizeCount": 14,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 34,
+      "vw": 4.4,
+      "font": "Jersey 10",
+      "text": "Spoon Hill Stables"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 29,
+     "microLabelShare": 0.168,
+     "microSamples": [
+      "draw in 9h 31m",
+      "Entered tomorrow",
+      "Stalls",
+      "Bills a week",
+      "Sort by",
+      "Best Time"
+     ],
+     "upperShare": 0.24,
+     "centerShare": 0.09,
+     "smallText": 6
+    },
+    "eyebrows": [
+     {
+      "text": "Race night in 9h 31m",
+      "above": "YOUR BARN",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 11.7,
+      "top": 68
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#070a14",
+     "bodyBgHsl": {
+      "h": 226,
+      "s": 0.48,
+      "l": 0.05
+     },
+     "dark": true,
+     "sectionBgs": [],
+     "textColors": [
+      {
+       "color": "#e6e8ec",
+       "share": 0.35
+      },
+      {
+       "color": "#ffb347",
+       "share": 0.16
+      },
+      {
+       "color": "#c6cede",
+       "share": 0.12
+      },
+      {
+       "color": "#a4acb9",
+       "share": 0.11
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.1
+      }
+     ],
+     "button": {
+      "bg": "#1a2338",
+      "hsl": {
+       "h": 222,
+       "s": 0.37,
+       "l": 0.16
+      },
+      "fg": "#a4acb9"
+     },
+     "lowContrast": [
+      {
+       "text": "New game",
+       "ratio": 3.2,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#ffffff",
+       "bg": "#e0704f"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 14,
+     "inHero": 13,
+     "radius": 0,
+     "height": 60,
+     "withShadow": 13,
+     "withGradient": 9,
+     "mono": 0,
+     "upper": 13,
+     "heroLabels": [
+      "POST TIME",
+      "Spoon Hill Stables I",
+      "STABLE",
+      "BARN NEWS",
+      "AROUND THE TRACK"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 28,
+     "shadowOverlay": 6,
+     "shadowSamples": [
+      "div.top → rgb(5, 7, 13) 0px 2px 0px 0px, rgb(54, 54, 62) 0px 4px 0px 0px",
+      "button → rgb(5, 7, 13) 3px 3px 0px 0px, rgba(255, 255, 255, 0.333) 0px 2px 0px 0px inset,",
+      "div.hmenu → rgba(0, 0, 0, 0.5) 2px 2px 0px 0px inset, rgba(255, 255, 255, 0.07) -1px -1px 0p",
+      "a.on → rgb(255, 243, 176) 1px 1px 0px 0px inset, rgb(138, 90, 18) -1px -2px 0px 0px ins"
+     ],
+     "gradients": 9,
+     "scrims": 0,
+     "gradientSamples": [
+      "div.card.hc → linear-gradient(100deg, color(srgb 0.345647 0.305961 0.24251), rgba(34, 48, 76, 0.91) 55%)",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.333647 0.287294 0.517177), rgba(34, 48, 76, 0.91) 55%)",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.317647 0.221961 0.193176), rgba(34, 48, 76, 0.91) 55%)",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.317647 0.221961 0.193176), rgba(34, 48, 76, 0.91) 55%)"
+     ],
+     "gradientText": 1,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "div.erow2 385px",
+      "div.erow2 385px"
+     ],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 40,
+     "cardRows": [
+      {
+       "count": 9,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 272
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 72,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "barlow condensed",
+     "barlow semi condensed",
+     "jersey 10"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 3153,
+    "margins": {
+     "left": 174,
+     "right": 188
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "YOUR BARN",
+      "size": 26,
+      "top": 110,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 174,
+      "n": 2
+     },
+     {
+      "x": 234,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 3,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": true,
+    "ground": "#070a14",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 174,
+     "right": 186
+    },
+    "hero": {
+     "text": "Your barn",
+     "words": 2,
+     "chars": 9,
+     "lines": 1,
+     "size": 26,
+     "vw": 3.4,
+     "font": "Barlow Condensed",
+     "weight": 800,
+     "tracking": 0.04,
+     "leading": 1.1,
+     "top": 110,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 10,
+     "firstScreen": 4,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 10,
+     "radii": [
+      [
+       0,
+       10
+      ]
+     ],
+     "heavyBorders": 9,
+     "borderSamples": [
+      "#8a7a66 on #070a14 (4.76:1)",
+      "#8a7a66 on #070a14 (4.76:1)",
+      "#8a7a66 on #070a14 (4.76:1)"
+     ],
+     "heavyShadows": 11,
+     "softShadows": 0,
+     "shadowSamples": [
+      "rgb(5, 7, 13) 0px 2px 0px 0px",
+      "rgb(54, 54, 62) 0px 4px 0px 0px",
+      "rgba(0, 0, 0, 0.533) 0px 2px 6px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 10,
+     "tabularShare": 0.9,
+     "kpiMax": 24
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.31,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      21,
+      22,
+      24,
+      26,
+      34
+     ]
+    },
+    "title": {
+     "text": "YOUR BARN",
+     "size": 26,
+     "top": 110
+    },
+    "colourShare": 0.067
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 5,
+   "filled": [
+    0.82,
+    0.86,
+    0.92,
+    0.8,
+    0.82
+   ],
+   "motion": {
+    "elements": 5,
+    "css": 5,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 3400,
+     "screens": 4,
+     "words": 358,
+     "img": 10,
+     "video": 0,
+     "canvas": 0,
+     "svg": 16,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Your barn",
+     "words": 2,
+     "chars": 9,
+     "lines": 1,
+     "size": 26,
+     "vw": 6.7,
+     "font": "Barlow Condensed",
+     "weight": 800,
+     "tracking": 0.04,
+     "leading": 1.1,
+     "top": 110,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "YOUR BARN",
+     "words": 2,
+     "lines": 1,
+     "size": 26,
+     "font": "Barlow Condensed"
+    },
+    "headings": [
+     {
+      "text": "Spoon Hill Stables",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Jersey 10",
+      "weight": 400,
+      "tracking": 0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0,
+      "top": 0,
+      "gradientText": true,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "$6,806,122",
+      "words": 1,
+      "chars": 10,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Barlow Semi Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.33,
+      "top": 22,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "YOUR BARN",
+      "words": 2,
+      "chars": 9,
+      "lines": 1,
+      "size": 26,
+      "vw": 6.7,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.1,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.93,
+      "top": 110,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 584,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Northern Star",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.31,
+      "top": 586,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 871,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Western Flyer",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.32,
+      "top": 873,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 1224,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Western Breeze",
+      "words": 2,
+      "chars": 14,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.36,
+      "top": 1226,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 1578,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Rebel Petal",
+      "words": 2,
+      "chars": 11,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.26,
+      "top": 1580,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 1931,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Sonnet Triumph",
+      "words": 2,
+      "chars": 14,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.36,
+      "top": 1933,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 2284,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Northern Keeper",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.38,
+      "top": 2286,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 2607,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Western Falcon",
+      "words": 2,
+      "chars": 14,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.35,
+      "top": 2609,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "+",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.09,
+      "top": 2929,
+      "tag": "a",
+      "kind": "heading"
+     },
+     {
+      "text": "Lively Garnet",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Barlow Condensed",
+      "weight": 800,
+      "tracking": 0.04,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.3,
+      "top": 2931,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 19,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Barlow Semi Condensed",
+       "share": 0.84,
+       "mono": false
+      },
+      {
+       "family": "Barlow Condensed",
+       "share": 0.15,
+       "mono": false
+      },
+      {
+       "family": "Jersey 10",
+       "share": 0.01,
+       "mono": false
+      },
+      {
+       "family": "system-ui",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 4,
+     "sizes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      21,
+      22,
+      24,
+      26,
+      34
+     ],
+     "sizeCount": 14,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 34,
+      "vw": 8.7,
+      "font": "Jersey 10",
+      "text": "Spoon Hill Stables"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 29,
+     "microLabelShare": 0.168,
+     "microSamples": [
+      "draw in 9h 31m",
+      "Entered tomorrow",
+      "Stalls",
+      "Bills a week",
+      "Sort by",
+      "Best Time"
+     ],
+     "upperShare": 0.24,
+     "centerShare": 0.09,
+     "smallText": 6
+    },
+    "eyebrows": [
+     {
+      "text": "Sort by",
+      "above": "Northern Star",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 533
+     },
+     {
+      "text": "Next Start:",
+      "above": "Western Flyer",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 817
+     },
+     {
+      "text": "Next Start:",
+      "above": "Western Breeze",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1153
+     },
+     {
+      "text": "Next Start:",
+      "above": "Rebel Petal",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1507
+     },
+     {
+      "text": "Next Start:",
+      "above": "Sonnet Triumph",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1860
+     },
+     {
+      "text": "Next Start:",
+      "above": "Northern Keeper",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 2213
+     },
+     {
+      "text": "Next Start:",
+      "above": "Western Falcon",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 2536
+     },
+     {
+      "text": "Next Start:",
+      "above": "Lively Garnet",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 2858
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#070a14",
+     "bodyBgHsl": {
+      "h": 226,
+      "s": 0.48,
+      "l": 0.05
+     },
+     "dark": true,
+     "sectionBgs": [],
+     "textColors": [
+      {
+       "color": "#e6e8ec",
+       "share": 0.35
+      },
+      {
+       "color": "#ffb347",
+       "share": 0.16
+      },
+      {
+       "color": "#c6cede",
+       "share": 0.12
+      },
+      {
+       "color": "#a4acb9",
+       "share": 0.11
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.1
+      }
+     ],
+     "button": {
+      "bg": "#1a2338",
+      "hsl": {
+       "h": 222,
+       "s": 0.37,
+       "l": 0.16
+      },
+      "fg": "#a4acb9"
+     },
+     "lowContrast": [
+      {
+       "text": "New game",
+       "ratio": 3.2,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#ffffff",
+       "bg": "#e0704f"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 14,
+     "inHero": 13,
+     "radius": 0,
+     "height": 60,
+     "withShadow": 13,
+     "withGradient": 9,
+     "mono": 0,
+     "upper": 13,
+     "heroLabels": [
+      "POST TIME",
+      "Spoon Hill Stables I",
+      "STABLE",
+      "BARN NEWS",
+      "AROUND THE TRACK"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 24,
+     "shadowOverlay": 6,
+     "shadowSamples": [
+      "div.top → rgb(5, 7, 13) 0px 2px 0px 0px, rgb(54, 54, 62) 0px 4px 0px 0px",
+      "button → rgb(5, 7, 13) 3px 3px 0px 0px, rgba(255, 255, 255, 0.333) 0px 2px 0px 0px inset,",
+      "div.hmenu → rgba(0, 0, 0, 0.5) 2px 2px 0px 0px inset, rgba(255, 255, 255, 0.07) -1px -1px 0p",
+      "a.on → rgb(255, 243, 176) 1px 1px 0px 0px inset, rgb(138, 90, 18) -1px -2px 0px 0px ins"
+     ],
+     "gradients": 17,
+     "scrims": 0,
+     "gradientSamples": [
+      "div.card.hc → linear-gradient(100deg, color(srgb 0.345647 0.305961 0.24251), rgba(34, 48, 76, 0.91) 55%)",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.333647 0.287294 0.517177), rgba(34, 48, 76, 0.91) 55%)",
+      "div.sq.tSp → radial-gradient(circle at 50% 30%, rgb(255, 246, 220) 0px, rgb(232, 200, 138) 38%, rgb(154, 106, 50) 72%, rgb(",
+      "div.card.brow → linear-gradient(100deg, color(srgb 0.317647 0.221961 0.193176), rgba(34, 48, 76, 0.91) 55%)"
+     ],
+     "gradientText": 1,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "div.erow2 327px",
+      "div.erow2 327px"
+     ],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 40,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "bg-image",
+      "ratio": 0.1
+     }
+    ],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 72,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "barlow condensed",
+     "barlow semi condensed",
+     "jersey 10"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 3400,
+    "margins": {
+     "left": 14,
+     "right": 33
+    },
+    "sections": [
+     {
+      "sel": "div.card.hc",
+      "tag": "div",
+      "top": 272,
+      "height": 150,
+      "words": 21,
+      "media": 0,
+      "middle": 19,
+      "heading": null,
+      "left": 33,
+      "right": 39,
+      "textLeft": 33,
+      "textRight": 39,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 574,
+      "height": 275,
+      "words": 21,
+      "media": 0,
+      "middle": 19,
+      "heading": {
+       "text": "Northern Star",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 92,
+      "textLeft": 56,
+      "textRight": 92,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 861,
+      "height": 341,
+      "words": 35,
+      "media": 0,
+      "middle": 16,
+      "heading": {
+       "text": "Western Flyer",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 45,
+      "textLeft": 56,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 1214,
+      "height": 341,
+      "words": 35,
+      "media": 0,
+      "middle": 16,
+      "heading": {
+       "text": "Western Breeze",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 45,
+      "textLeft": 56,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 1568,
+      "height": 341,
+      "words": 35,
+      "media": 0,
+      "middle": 16,
+      "heading": {
+       "text": "Rebel Petal",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 45,
+      "textLeft": 56,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 1921,
+      "height": 341,
+      "words": 35,
+      "media": 0,
+      "middle": 16,
+      "heading": {
+       "text": "Sonnet Triumph",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 45,
+      "textLeft": 56,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 2274,
+      "height": 310,
+      "words": 35,
+      "media": 0,
+      "middle": 16,
+      "heading": {
+       "text": "Northern Keeper",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 42,
+      "textLeft": 56,
+      "textRight": 42,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 2597,
+      "height": 310,
+      "words": 35,
+      "media": 0,
+      "middle": 16,
+      "heading": {
+       "text": "Western Falcon",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 42,
+      "textLeft": 56,
+      "textRight": 42,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.card.brow",
+      "tag": "div",
+      "top": 2919,
+      "height": 310,
+      "words": 35,
+      "media": 0,
+      "middle": 16,
+      "heading": {
+       "text": "Lively Garnet",
+       "size": 22,
+       "tag": "a"
+      },
+      "left": 38,
+      "right": 42,
+      "textLeft": 56,
+      "textRight": 42,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "YOUR BARN",
+      "size": 26,
+      "top": 110,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [
+     {
+      "text": "$6,806,122",
+      "side": "left",
+      "px": 14
+     },
+     {
+      "text": "Year 5, wk 33",
+      "side": "left",
+      "px": 14
+     },
+     {
+      "text": "Race night in 9h 31m",
+      "side": "left",
+      "px": 14
+     },
+     {
+      "text": "Your barn",
+      "side": "left",
+      "px": 14
+     },
+     {
+      "text": "Stable",
+      "side": "left",
+      "px": 14
+     }
+    ],
+    "edges": [
+     {
+      "x": 14,
+      "n": 2
+     },
+     {
+      "x": 74,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 3,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": true,
+    "ground": "#070a14",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 14,
+     "right": 28
+    },
+    "hero": {
+     "text": "Your barn",
+     "words": 2,
+     "chars": 9,
+     "lines": 1,
+     "size": 26,
+     "vw": 6.7,
+     "font": "Barlow Condensed",
+     "weight": 800,
+     "tracking": 0.04,
+     "leading": 1.1,
+     "top": 110,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 9,
+     "firstScreen": 2,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 9,
+     "radii": [
+      [
+       0,
+       9
+      ]
+     ],
+     "heavyBorders": 9,
+     "borderSamples": [
+      "#8a7a66 on #070a14 (4.76:1)",
+      "#8a7a66 on #070a14 (4.76:1)",
+      "#8a7a66 on #070a14 (4.76:1)"
+     ],
+     "heavyShadows": 9,
+     "softShadows": 0,
+     "shadowSamples": [
+      "rgba(0, 0, 0, 0.533) 0px 2px 6px 0px",
+      "rgba(0, 0, 0, 0.533) 0px 2px 6px 0px",
+      "rgba(0, 0, 0, 0.533) 0px 2px 6px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 10,
+     "tabularShare": 0.9,
+     "kpiMax": 24
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.31,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      21,
+      22,
+      24,
+      26,
+      34
+     ]
+    },
+    "title": {
+     "text": "YOUR BARN",
+     "size": 26,
+     "top": 110
+    },
+    "colourShare": 0.1
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "29 tiny uppercase letter-spaced labels (e.g. \"draw in 9h 31m\", \"Entered tomorrow\", \"Stalls\", \"Bills a week\").",
+   "fix": "Use sentence-case text at a readable size, or delete the label.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "9 gradient fill(s): div.card.hc → linear-gradient(100deg, color(srgb 0.345647 0.305961 0.24251), rgba(34, 48, 76, 0.91) 55%) | div.card.brow → linear-gradient(100deg, color(srgb 0.333647 0.287294 0.517177), rgba(34, 48, 76, 0.91) 55%) | div.card.brow → linear-gradient(100deg, color(srgb 0.317647 0.221961 0.193176), rgba(34, 48, 76, 0.91) 55%)",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient-text",
+   "width": 1440,
+   "message": "1 gradient-filled text element(s).",
+   "fix": "Solid colour text.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "text-shadow",
+   "width": 1440,
+   "message": "40 text-shadow(s).",
+   "fix": "Remove; fix legibility with a scrim or a different crop.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "button-fx",
+   "width": 1440,
+   "message": "Buttons with gradient fill and shadow/glow.",
+   "fix": "Flat fill, one colour.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "contrast",
+   "width": 1440,
+   "message": "Low-contrast text: \"New game\" 3.2:1 needs 4.5:1",
+   "fix": "Darken or lighten the text colour.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "hero-void",
+   "width": 1440,
+   "message": "29% of the first screen is one empty block (480×780px at 0,120).",
+   "fix": "Place the void on purpose or fill it: move the picture, the film or one fact into it, grow the headline to meet it, or shrink the screen to its content. A void reads as placed only when something closes it on the far side and it is the screen's one rest."
+  },
+  {
+   "level": "FAIL",
+   "id": "heavy-shadow",
+   "width": 1440,
+   "message": "11 panel shadow(s) heavy enough to read as floating: rgb(5, 7, 13) 0px 2px 0px 0px | rgb(54, 54, 62) 0px 4px 0px 0px | rgba(0, 0, 0, 0.533) 0px 2px 6px 0px",
+   "fix": "Panels sit on the ground: separate them with a fill one step from the ground or a quiet 1px border. A shadow, if any, is under 8% black with a small blur. Real overlays (menus, dialogs, popovers) may float.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "heavy-borders",
+   "width": 1440,
+   "message": "9 panel borders are dark against their ground: #8a7a66 on #070a14 (4.76:1) | #8a7a66 on #070a14 (4.76:1) | #8a7a66 on #070a14 (4.76:1)",
+   "fix": "A panel border is a whisper: about 1.1–1.3:1 against its ground on a light screen (#e5e7eb–#ededed on white), and about 1.2–1.5:1 on a dark one (#1a1a1a on #000, #2e2e2e on #111). Darker lines turn the screen into a grid of boxes; keep the stronger line for controls.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "below-fold",
+   "width": 1440,
+   "message": "Only 3 of 10 blocks start on the first 1440px screen.",
+   "fix": "Every block the brief names shows its header and first rows on the first desktop screen: size the headline block to its question, cap long lists with \"View all\", and put time-sensitive blocks before long tables."
+  },
+  {
+   "level": "WARN",
+   "id": "edge-text",
+   "width": 390,
+   "message": "5 text block(s) sit 12–15px from the phone's edge: \"$6,806,122\" (14px); \"Year 5, wk 33\" (14px); \"Race night in 9h 31m\" (14px)",
+   "fix": "The page margin is 16–20px on a phone; the header and the corner labels sit on it too."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\spooh\\HarnessSim\\.taste-skill\\card\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\spooh\\HarnessSim\\.taste-skill\\card\\desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\spooh\\HarnessSim\\.taste-skill\\card\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\spooh\\HarnessSim\\.taste-skill\\card\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\spooh\\HarnessSim\\.taste-skill\\card\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\spooh\\HarnessSim\\.taste-skill\\card\\mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

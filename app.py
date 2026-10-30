@@ -613,7 +613,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .stat.otc{box-shadow:0 0 0 1px #fde68a,0 0 8px #f0abfcaa}.sv.otc{color:#fde68a;white-space:nowrap}
 .hown{font-size:13px;color:var(--ink2);margin:4px 0 8px}.parents{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pbox{display:flex;flex-direction:column;justify-content:center;min-height:52px;padding:6px 8px;border-radius:4px;border:2px solid #05070d;text-decoration:none;min-width:0;box-shadow:inset 0 -3px 0 #0003}.pbox small{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.85}.pbox b{font-size:14px;line-height:1.15;color:#fff;overflow-wrap:anywhere}.pbox.sire{background:#1f4fbf;color:#cfe0ff}.pbox.dam{background:#b8336a;color:#ffd6e6}.pbox.none{opacity:.55}
 .gtopic{border-bottom:1px solid var(--rule2);padding:2px 0}.gtopic summary{cursor:pointer;font-weight:700;padding:9px 2px;font-size:16px}.gtext{color:var(--ink2);line-height:1.5;padding:0 2px 12px;font-size:15px}.gtext b{color:var(--ink)}.tierrow{display:flex;align-items:center;gap:5px;margin:10px 0}.tierrow b{width:30px;height:30px;display:grid;place-items:center;color:#fff;font-weight:800;border:2px solid #05070d;border-radius:3px}.tierrow .tsp{width:36px;color:#111;background:linear-gradient(135deg,#f0abfc,#67e8f9,#fde68a)}.tierrow .tl{font-size:12px;color:var(--ink3);text-transform:uppercase}
-.enterplus.tonic{color:#14170f;position:absolute}.enterplus.tonic.on{background:#14170f!important;color:#e8eef4;box-shadow:0 0 0 2px var(--tc2),0 0 10px var(--tc2)!important}.tbadge{position:absolute;right:-5px;bottom:-5px;width:14px;height:14px;border-radius:50%;font:800 10px/14px system-ui;font-style:normal;text-align:center;background:#14170f;color:#fff;border:1px solid #fff6}.enterplus.tonic.on .tbadge{background:var(--tc2);color:#111;border-color:#111}.tline{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--tc2);border:1px solid var(--tc2);border-radius:10px;padding:0 7px 0 4px}.tb{display:block}.tbp{filter:drop-shadow(0 0 4px #c084fc99)}.invrow{display:flex;justify-content:space-between;gap:6px}.inv{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}.inv b{font-size:16px}.inv .sub{font-size:11px}.titem{display:flex;align-items:center;gap:12px}.tmid{flex:1;min-width:0}.tbig{flex:none}.tprem{border-image:linear-gradient(#f0abfc,#67e8f9,#fde68a) 1;background-image:linear-gradient(90deg,#c084fc2a,#38bdf812 40%,transparent 70%)}.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.tpick button{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px}.tpick button:disabled{opacity:.4}
+.enterplus.tonic{color:#14170f}.enterplus.tonic.on{background:#14170f!important;color:#e8eef4;box-shadow:0 0 0 2px var(--tc2),0 0 10px var(--tc2)!important}.tbadge{position:absolute;right:-5px;bottom:-5px;width:14px;height:14px;border-radius:50%;font:800 10px/14px system-ui;font-style:normal;text-align:center;background:#14170f;color:#fff;border:1px solid #fff6}.enterplus.tonic.on .tbadge{background:var(--tc2);color:#111;border-color:#111}.tline{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--tc2);border:1px solid var(--tc2);border-radius:10px;padding:0 7px 0 4px}.tb{display:block}.tbp{filter:drop-shadow(0 0 4px #c084fc99)}.invrow{display:flex;justify-content:space-between;gap:6px}.inv{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}.inv b{font-size:16px}.inv .sub{font-size:11px}.titem{display:flex;align-items:center;gap:12px}.tmid{flex:1;min-width:0}.tbig{flex:none}.tprem{border-image:linear-gradient(#f0abfc,#67e8f9,#fde68a) 1;background-image:linear-gradient(90deg,#c084fc2a,#38bdf812 40%,transparent 70%)}.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.tpick button{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px}.tpick button:disabled{opacity:.4}
 .prograce{border:1px solid var(--rule);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--panel)}.prograce summary{cursor:pointer;padding:4px 0}.pform{font-size:12px;color:var(--ink2)}.pml{font-size:16px}.pyou,.pplay{font-size:11px;padding:1px 5px;border-radius:3px;background:var(--tote);color:#111}.pplay{background:#5ab7e6}.pmine{background:#e8a33a1a}.hpick{font-size:13px;margin:4px 0 6px;color:var(--ink2)}.pvs{font-size:13px;color:#5ab7e6;margin:2px 0}.plane{font-size:11px;padding:1px 6px;border-radius:3px;background:#5ab7e6;color:#111;margin-left:6px}.prograce .prow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--rule2)}.prograce .pmid{flex:1;min-width:0}.prograce .pright{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .proghead{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:2px solid var(--tote);border-bottom:1px solid var(--rule);font-size:14px;font-variant-numeric:tabular-nums}
 .progcard{font-size:13px;font-weight:700;color:var(--ink2);padding:14px 0 4px;border-bottom:1px solid var(--rule2)}
@@ -744,12 +744,18 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .sbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px 12px;margin:6px 0 2px;width:100%;max-width:420px}.sbars .row{gap:6px;width:100%}.sbars .stat{flex:1;min-width:0}.sbars .sub{width:52px!important;font-size:12px}
 .sbrow td{border-top:0;padding-top:0}
 .kin{margin-top:6px;font-size:13px;color:#ffb38a}.kin b{color:#ff8a7a}.kin.ok{color:#7fd69a}.kin.bad{color:#ff8a7a;font-weight:700}
-.hc{position:relative}
-.enterplus{position:absolute;top:8px;right:8px;z-index:4;width:30px;height:30px;display:grid;place-items:center;text-decoration:none;
-  font:700 22px/1 'Barlow Condensed',sans-serif;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;box-shadow:2px 2px 0 #05070d,inset 0 2px 0 #fff6}
-.enterplus:active{transform:translate(2px,2px);box-shadow:none}
-.enterplus.pause{color:#e8eefc;background:linear-gradient(#5b6b8c,#3a4762)}
-.hc .bname{padding-right:36px}
+.hc{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;align-items:start;padding-bottom:10px}
+.hc .pcol{grid-row:1}.hc .hr2{grid-row:1;min-width:0;align-self:center}
+.hc .bbars{grid-column:1/-1;margin:6px 0 2px}.hc .bbars .row{gap:10px;margin:3px 0}.hc .bbars .sub{width:62px;font-size:13px}.hc .bbars .stat{height:12px}
+.hc .sline{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;color:var(--ink2);font-size:14px;margin-top:4px}
+.hc .sline .cond b{font-size:14px}.hc .sline>span+span:before,.hc .sline>form+span:before{content:'· ';color:var(--ink3)}
+.hc .live{grid-column:1/-1;margin-top:6px;padding:7px 10px;border-left:3px solid var(--tote);background:#e8a33a14;font-size:14px;line-height:1.4}.hc .live b{color:var(--led)}
+.hc .act2{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}.hc .acts{display:inline-flex;align-items:center;gap:10px}
+.hc .go{display:inline-flex;align-items:center;gap:6px;font:800 16px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;padding:7px 16px;text-decoration:none;box-shadow:2px 2px 0 #05070d,inset 0 2px 0 #fff6}
+.hc .go:active{transform:translate(2px,2px);box-shadow:none}.hc .go.pause{color:#e8eefc;background:linear-gradient(#5b6b8c,#3a4762)}
+.hc .was{font:800 15px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}.hc .was b{color:var(--win)}
+.hc .act2 .sec{font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--panel);border:1px solid var(--rule);padding:7px 12px;text-decoration:none}
+.enterplus{position:relative;width:30px;height:30px;display:grid;place-items:center;text-decoration:none;font:700 22px/1 'Barlow Condensed',sans-serif;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;box-shadow:2px 2px 0 #05070d,inset 0 2px 0 #fff6}
 .entercell{white-space:nowrap}.mates{display:inline-block;vertical-align:middle;margin-left:6px}.mates svg{width:24px!important;height:24px!important;min-width:24px;display:block;box-shadow:2px 2px 0 #05070d}
 .pcol{flex:0 0 auto;display:flex;flex-direction:column;align-items:center}
 .besttime{margin-top:10px;text-align:center;line-height:1.1}.besttime span{display:block;font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
@@ -2971,12 +2977,14 @@ def corner_action(h):
 
 
 def horse_card(h, link=True):
-    """A barn row: square tier-edged portrait, the name line, four stacked stat bars, status."""
+    """A barn row: tier-edged portrait beside the name line, four full-width stat bars, one status line, and the
+    action at the foot: Enter for a fit horse that isn't entered, an Entered state (with the tonic bottle) when it is."""
     name = f"<a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>" if link else esc(h.name)
     bars = "".join(stat_bar(h.developed[t], h, k.capitalize(), trait=t) for k, t in FOCUS.items())
     last = h.form[-1] if getattr(h, "form", None) and isinstance(getattr(h, "last", None), tuple) else (getattr(h, "last", None) or "")
+    live, act = "", ""
     if h.retired:
-        status = f"<div class=sub>Retired, {'at stud' if h.sex == 'm' else 'broodmare'}</div>"
+        status = f"<div class=sline><span>Retired, {'at stud' if h.sex == 'm' else 'broodmare'}</span></div>"
     else:
         groom = ""
         if h.owner == ME and h.freshness < e.GROOMED_TO and e.groom_left(ME, G["day"]) > 0:   # next to the condition it fixes
@@ -2984,14 +2992,31 @@ def horse_card(h, link=True):
                      f"<button class=sec title='Uses 1 of {e.groom_left(ME, G['day'])} grooming slots left this week'>Groom</button></form>")
         tn = getattr(h, "tonic", None)
         ton = f"<span class=tline style='--tc2:{dict((k, c_) for k, _, c_, _ in TONICS)[tn] or "#c084fc"}'>{bottle(tn, 13)} {dict((k, l_) for k, l_, *_ in TONICS)[tn]} Tonic</span>" if tn and h.owner == ME else ""
-        status = f"<div class=row style='gap:4px 10px;margin-top:4px;flex-wrap:wrap'>{condition(h)}{groom}<span class=sub>{tonight(h)}</span>{ton}</div>"
-    enter = corner_action(h)
-    return (f"<div class='card brow hc{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'>{enter}<div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b></div></div><div style='flex:1;min-width:0'>"
+        tn_ = tonight(h)
+        items = [ton]
+        if tn_.startswith("<b>"):                                     # racing tonight or booked: the live box; the line keeps the rest
+            live = f"<div class=live>{tn_}</div>"
+        else:
+            items.append(tn_)
+        items.append(f"last: {esc(last.rsplit('; ', 1)[-1])}" if last else "")
+        nx = next_start(h)
+        if not getattr(h, "order", None) and nx != "—" and not on_card(h):
+            items.append(f"next: {nx}")
+        status = f"<div class=sline>{condition(h)}{groom}{''.join(f'<span>{x}</span>' for x in items if x)}</div>"
+        if h.owner == ME:
+            corner = corner_action(h)
+            o = getattr(h, "order", None)
+            if isinstance(o, tuple) and o[0] == "enter":
+                act = f"<span class=was><b>Entered</b></span>{corner}"
+            elif corner:
+                act = corner.replace("class=enterplus", "class=go").replace("class='enterplus pause'", "class='go pause'").replace(">+</a>", ">Enter</a>")
+                act = act.replace("</svg></a>", "</svg> Enter</a>")
+            act = f"<div class=act2><span class=acts>{act}</span><a class=sec href=/program>Program</a></div>"
+    return (f"<div class='card brow hc{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b></div></div><div class=hr2>"
             f"<div class=bname>{name}</div>"
             f"<div class=facts><span class=chip>{h.age}yo {sex_word(h)}</span>"
             f"<span class=chip title='starts-wins'><b>S{h.starts}-W{h.wins}</b></span><span class='chip cash'>${h.earnings:,.0f}</span>"
-            "</div>"
-            f"<div class=bbars>{bars}</div>{status}{"" if h.retired else f"<div class='chart starts'><span><b>Last Start:</b> {esc(last.rsplit('; ', 1)[-1]) if last else '—'}</span><span><b>Next Start:</b> {next_start(h)}</span></div>"}</div></div>")
+            f"</div></div><div class=bbars>{bars}</div>{live}{status}{act}</div>")
 
 
 def order_text(h):
