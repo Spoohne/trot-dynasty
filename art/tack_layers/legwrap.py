@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 from overlay import base, zone, OUT, W, H, N
 
-LO = 4                  # the hoof: this many px up the leg from its tip stay bare
+LO, HI = 6, 21           # px up the leg from the hoof tip: hoof and pastern bare, top stops below the knee
 
 
 def walk(leg, seeds):
@@ -37,7 +37,7 @@ def legwrap(i):
     tips = leg & (dt >= 12) & (dt == near_max)                             # the far end of each leg: the hoof
     dh = walk(leg, tips)
     dark = rgb.sum(2) < 250                                               # the black stocking of the lower leg
-    band = leg & dark & (dh >= LO)                            # all of it, except the hoof at the tip
+    band = leg & dark & (dh >= LO) & (dh <= HI)                            # all of it, except the hoof at the tip
     lum = a[..., :3].astype(float).mean(2)
     inner = band & np.roll(band, 1, 0) & np.roll(band, -1, 0) & np.roll(band, 1, 1) & np.roll(band, -1, 1)
     edge = band & ~inner

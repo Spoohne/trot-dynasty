@@ -49,7 +49,8 @@ def extract(i, cand):
     diff = (np.abs(c[..., :3] - b[..., :3]).sum(2) > 30) | (c[..., 3] != b[..., 3])
     pale = (c[..., :3].sum(2) > 330) & (c[..., :3].max(2) - c[..., :3].min(2) < 50) & (c[..., 3] > 0)
     near = np.array(Image.fromarray(pale.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(3))) > 0   # the cloth and its 1-px border only
-    take = zone(base(i)) & diff & (c[..., 3] > 0) & near
+    grey = (c[..., :3].max(2) - c[..., :3].min(2)) < 60                 # wrap cloth and its border are never colorful (no fringe)
+    take = zone(base(i)) & diff & (c[..., 3] > 0) & near & grey
     o = np.zeros((H, W, 4), np.uint8); o[take] = c[take]; o[take, 3] = 255
     return Image.fromarray(o)
 

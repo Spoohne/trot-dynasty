@@ -663,7 +663,7 @@ const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => {
 const WRAPS_OK = !RIG && !PAINTED;                                    // the race data may not be in yet: load the sheet, pick per horse later
 let wrapImg = null, wrapMask = null, wrapMeta = { frames: FR, cols: FR };    // the wrapped sheet's own frame count and row width (wraps12.json)
 const wrapMetaLoaded = WRAPS_OK ? fetch(P("/mock/pixel/tack/wraps12.json?v=" + Date.now())).then(r => r.ok ? r.json() : null).then(j => { if (j && j.frames) wrapMeta = { frames: j.frames, cols: j.cols || j.frames }; }).catch(() => {}) : Promise.resolve();
-const wrapLoaded = WRAPS_OK ? Promise.all(["wraps12", "wraps12_mask"].map(n => new Promise(r => { const i = new Image(); i.onload = () => { if (n === "wraps12") wrapImg = i; else wrapMask = i; r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=10`); }))) : Promise.resolve();
+const wrapLoaded = WRAPS_OK ? Promise.all(["wraps12", "wraps12_mask"].map(n => new Promise(r => { const i = new Image(); i.onload = () => { if (n === "wraps12") wrapImg = i; else wrapMask = i; r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=12`); }))) : Promise.resolve();
 function wrapTint(c, hex) {
   if (!wrapMask) return c;
   if (!wrapTint.m) { const k = document.createElement("canvas"); k.width = wrapMask.width; k.height = wrapMask.height; const kg = k.getContext("2d"); kg.drawImage(wrapMask, 0, 0); wrapTint.m = kg.getImageData(0, 0, k.width, k.height).data; }
