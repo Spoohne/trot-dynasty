@@ -60,5 +60,5 @@ for st in c.STORIES.values():
         st["records"] = scaled(st["records"], half)
 
 app.G["clock_v"] = 2
-app.save()
+app.save(); app.flush()
 print("converted", n_res, "results,", len(c.RECORDS), "course records,", len(c.STORIES), "replays")

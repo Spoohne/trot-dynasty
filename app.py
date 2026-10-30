@@ -201,7 +201,19 @@ def new_game(years=HISTORY, progress=None):
     save()
 
 
+DIRTY = [False]
+
+
 def save():
+    """Something changed: the world is written out within SAVE_EVERY seconds (a 25 MB pickle after every click was the
+    server's bottleneck). flush() writes it now."""
+    DIRTY[0] = True
+
+
+def flush():
+    if not DIRTY[0]:
+        return
+    DIRTY[0] = False
     with open(SAVE + ".tmp", "wb") as f:                                      # whole file or nothing: a crash mid-write never leaves a torn save
         pickle.dump({"G": G, "cash": e.cash, "ledger": e.ledger, "settled": e.settled, "listings": e.listings, "auctions": e.auctions,
                      "bookings": e.bookings, "scouted": e.scouted, "nursery": e.nursery, "level": e.level, "groomed": e.groomed, "human": set(c.HUMAN), "roster": c.ROSTER,
@@ -212,6 +224,20 @@ def save():
     os.replace(SAVE + ".tmp", SAVE)
 
 
+SAVE_EVERY = 10
+
+
+def saver():
+    """Writes the save when something changed, a few times a minute, under the request lock."""
+    while True:
+        time.sleep(SAVE_EVERY)
+        try:
+            with LOCK:
+                flush()
+        except Exception:
+            traceback.print_exc()
+
+
 IDENTITY = ("user", "pw", "salt", "stable", "named", "skin", "emblem", "emblem_lic", "owned", "marquee", "verified", "pass", "hide_tips", "theme_off", "drivers")
 
 
@@ -220,6 +246,7 @@ def new_world(years=HISTORY):
     every player keeps their login, stable name and look but starts over with a new starter barn and the starting cash.
     Records, trophies, prestige, the trade log, picks and notices all go with the old world."""
     import shutil
+    flush()
     if os.path.exists(SAVE):
         shutil.copy(SAVE, SAVE.replace(".pkl", f".before-world-{G.get('day', 0)}.pkl"))
     old = {o: dict(p) for o, p in sorted(G.get("players", {}).items())}
@@ -416,7 +443,7 @@ SNAPS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snapshots")
 
 def snapshot():
     """The world as it stood before tonight's races, for the admin's undo. The last three nights are kept."""
-    save()
+    save(); flush()
     os.makedirs(SNAPS, exist_ok=True)
     with open(SAVE, "rb") as f, open(os.path.join(SNAPS, f"night-{G['day']:06d}.pkl"), "wb") as g:
         g.write(f.read())
@@ -5281,4 +5308,11 @@ if __name__ == "__main__":
         new_game()
     print("Playtest barn at http://localhost:8111  (Ctrl+C to stop; progress is saved every day)")
     threading.Thread(target=race_nights, daemon=True).start()
-    ThreadingHTTPServer((os.environ.get("TD_BIND", "0.0.0.0"), 8111), H).serve_forever()
+    threading.Thread(target=saver, daemon=True).start()
+    import signal
+    signal.signal(signal.SIGTERM, lambda *a: sys.exit(0))              # systemctl stop: fall through to the final flush below
+    try:
+        ThreadingHTTPServer((os.environ.get("TD_BIND", "0.0.0.0"), 8111), H).serve_forever()
+    finally:
+        with LOCK:
+            flush()

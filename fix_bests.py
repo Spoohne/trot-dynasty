@@ -28,5 +28,5 @@ for h in c.lineage(app.G["horses"] + app.e.nursery + sk.HALL):
         if mine and row[5] < 999:
             mine[5] = min(mine[5], round(sim.retime(row[5]), 2))
 app.G["bests_fixed"] = True
-app.save()
+app.save(); app.flush()
 print("best times repaired:", fixed)
