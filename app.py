@@ -711,7 +711,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .mkt .row{align-items:flex-start}.mkt .sbars{grid-template-columns:1fr;max-width:none}.mkt .sbars .stat{min-width:0}   /* sale board: one column, so the grade and price keep their place */
 /* compact bars (sale board, stud book): too small for ten ticks, so a plain solid bar with its value as a number */
 .sbars .sv{display:block;min-width:14px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink)}
-.sbars .stat{height:8px}.sbars .stat:after{display:none}
+.sbars .stat{height:8px}
 .sbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px 12px;margin:6px 0 2px;width:100%;max-width:420px}.sbars .row{gap:6px;width:100%}.sbars .stat{flex:1;min-width:0}.sbars .sub{width:52px!important;font-size:12px}
 .sbrow td{border-top:0;padding-top:0}
 .kin{margin-top:6px;font-size:13px;color:#ffb38a}.kin b{color:#ff8a7a}.kin.ok{color:#7fd69a}.kin.bad{color:#ff8a7a;font-weight:700}
@@ -3946,14 +3946,26 @@ def market_page(qs=None):
         return f"{h_}h {m:02d}m" if h_ else f"{m}m {s % 60:02d}s"
     body = ("<div class=card><b>Auction</b><div class=sub>Every horse runs a full day. Type your bid: at least the minimum shown, as much more as you like. All bids are final. A bid with ten "
             "minutes or less left puts an hour back on the clock. The high bid at the close takes the horse. Other barns bid too.</div></div>")
-    sort = qs.get("s") if qs.get("s") in ("age", "tier") else "ends"
-    rows.sort(key={"ends": lambda r: r[1]["ends"], "age": lambda r: (r[0].age, r[1]["ends"]),
+    sort = qs.get("s") if qs.get("s") in ("age", "tier", "price") else "ends"
+    age, sex, tier = qs.get("a", "all"), qs.get("x", "all"), qs.get("t", "all")
+    AGES = {"young": (2, 3), "prime": (4, 6), "old": (7, 99)}
+    if age in AGES:
+        rows = [r for r in rows if AGES[age][0] <= r[0].age <= AGES[age][1]]
+    if sex in ("m", "f"):
+        rows = [r for r in rows if r[0].sex == sex]
+    if tier in TIER_ORDER:
+        rows = [r for r in rows if tier_base(r[0]) == tier]
+    rows.sort(key={"ends": lambda r: r[1]["ends"], "age": lambda r: (r[0].age, r[1]["ends"]), "price": lambda r: (r[1]["price"], r[1]["ends"]),
                    "tier": lambda r: (TIER_ORDER.get(tier_label(r[0]), 9), r[1]["ends"])}[sort])
     per, n = 10, max(1, -(-len(rows) // 10))
     pg = min(n, max(1, int(qs["p"]) if str(qs.get("p", "")).isdigit() else 1))
-    url = lambda k, s_=sort: f"/market?s={s_}&p={k}"
-    body += ("<div class=hmenu>" + "".join(f"<a href='{url(1, k)}' class='{'on' if k == sort else ''}'>{t}</a>"
-                                           for k, t in (("ends", "Ending soon"), ("age", "Age"), ("tier", "Tier"))) + "</div>")
+    url = lambda k, **kw: "/market?" + "&".join(f"{a}={b}" for a, b in {"s": sort, "a": age, "x": sex, "t": tier, "p": k, **kw}.items())
+    chips = lambda items, cur, key: "<div class=fchips>" + "".join(f"<a href='{url(1, **{key: k})}' class='{'on' if cur == k else ''}'>{t}</a>" for k, t in items) + "</div>"
+    body += (chips([("ends", "Ending soonest"), ("price", "By price"), ("age", "By age"), ("tier", "By tier")], sort, "s")
+             + chips([("all", "Any age"), ("young", "2 to 3"), ("prime", "4 to 6"), ("old", "7 and up")], age, "a")
+             + chips([("all", "Either sex"), ("m", "Colts and horses"), ("f", "Fillies and mares")], sex, "x")
+             + chips([("all", "Any tier")] + [(t, t) for t in ("S", "A", "B", "C", "D")], tier, "t")
+             + f"<p class=sub>{len(rows)} horse{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>")
     for h, a in rows[(pg - 1) * per:pg * per]:
         coat, _ = looks(h)
         sire = f"by {h.sire.name}" if h.sire else "foundation stock"
@@ -3979,6 +3991,8 @@ def market_page(qs=None):
                  f"<div style='text-align:center;min-width:96px'><div class='tier {tier_cls(h)}' style='margin:0 auto 4px'>{tier_label(h)}</div>"
                  f"<div class=money style='font-size:17px'>${a['price']:,.0f}</div><div class=sub style='font-size:11px'>{who}</div>"
                  f"<div class=sub style='font-size:11px;{'color:var(--loss)' if hot else ''}'>⏱ {left(a['ends'] - now)}</div>{act}</div></div></div>")
+    if not rows:
+        body += "<p class=sub>No horses match.</p>" if e.listings else ""
     link = lambda k, t: f"<a class=pg href='{url(k)}'>{t}</a>" if 1 <= k <= n and k != pg else f"<span class='pg{' on' if k == pg else ''}'>{t}</span>"
     if n > 1:
         body += f"<div class=pager>{link(pg - 1, '&laquo;')}{''.join(link(k, k) for k in range(1, n + 1))}{link(pg + 1, '&raquo;')}</div>"
