@@ -479,15 +479,15 @@ def _horseman(h):
 STYLES = {   # name: (what the owner is told, the policy)
     "journeyman": ("races them when fresh, works on whatever's lacking", _journeyman),
     "patient": ("never races a tired horse; builds stamina into the young ones", _patient),
-    "grinder": ("races every week he can; no schooling", _grinder),
+    "grinder": ("races every week he can; no break work", _grinder),
     "speed": ("ships to the half-mile; makes leavers of the young ones", _speed),
     "closer": ("ships to the mile; teaches the young ones to finish", _closer),
     "horseman": ("reads each horse: ships it where it fits, builds on its strength", _horseman),
     "neutral": ("races a horse when it's fit, rests it when it isn't", lambda h: "race" if h.freshness >= 50 else "rest"),
 }
 PERKS = {   # what the owner is told -> effect, applied in plan()/train()/current()
-    "good with 2YOs": "schooling takes twice as well on 2- and 3-year-olds",
-    "fixes breakers": "schools gait into a bad-gaited horse before anything else",
+    "good with 2YOs": "break work takes twice as well on 2- and 3-year-olds",
+    "fixes breakers": "works gait into a bad-gaited horse before anything else",
     "half-mile man": "ships everything to the half; horses leave sharper there",
     "miler": "ships everything to the mile; horses finish better there",
     "keeps them sound": "horses lose less freshness to a start",
@@ -1065,7 +1065,7 @@ def pass_week(day, horses, raced):
         elif isinstance(p, tuple) and p[0] == "train":
             job = p[3] if len(p) > 3 else None
             train(h, p[1], p[2], job)
-            h.last = {"stable": "jogged by the stable", "jog": f"jogged, {p[1].replace('_', ' ')}", "school": "schooled on its gait",
+            h.last = {"stable": "jogged by the stable", "jog": f"jogged, {p[1].replace('_', ' ')}", "school": "break work on its gait",
                       "out": "turned out"}.get(job, f"trained {p[1].replace('_', ' ')}{' hard' if p[2] else ''}")
         h.wk = None
 

@@ -1135,9 +1135,9 @@ def train_banner():
 
 
 JOB_NOTE = {"jog": "<b>Jogged today.</b> Ticking over.", "train": "<b>Trained today</b>, focus on {focus}.",
-            "school": "<b>Schooled today</b> on its gait.", "out": "<b>Turned out.</b> A day off; freshness comes back."}
+            "school": "<b>Break work today</b>: harness and gait.", "out": "<b>Turned out.</b> A day off; freshness comes back."}
 FOCUS_NAME = {"early_speed": "Speed", "stamina": "Stam", "late_speed": "Finish", "gait": "Manners"}   # same words and order as the stat bars
-JOB_WORD = {"jog": "Jog", "train": "Train", "school": "School", "out": "Turn out"}
+JOB_WORD = {"jog": "Jog", "train": "Train", "school": "Break", "out": "Turn out"}
 
 
 def day_sheet(h, back="/training"):
@@ -1158,7 +1158,7 @@ def day_sheet(h, back="/training"):
     again = (f"<button name=j value=repeat style='grid-column:1/-1'{' disabled' if st[0] == 'train' and tired else ''}>Its set: "
              f"{JOB_WORD[st[0]]}{' · ' + FOCUS_NAME[st[1]] if st[0] != 'out' else ''}</button>") if st else ""
     return (f"<form method=post action=/job class=sheet><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='{back}'>{again}"
-            f"{btn('jog', 'Jog')}{btn('train', 'Train')}{btn('school', 'School')}{btn('out', 'Turn out')}"
+            f"{btn('jog', 'Jog')}{btn('train', 'Train')}{btn('school', 'Break')}{btn('out', 'Turn out')}"
             f"<div class=foc><span>Training focus</span>{foc}</div>"
             + ("<div class=foc><span class=sub>Too tired for training miles this week.</span></div>" if tired else "") + "</form>")
 
@@ -1196,7 +1196,7 @@ def training_page():
             "<div class=sub style='margin:-4px 0 8px'>Yearlings, 2 and 3-year-olds: one job a day, your call. The stable jogs any you don't get to.</div>"
             + (rows or "<div class=card><div class=sub>No youngsters in the barn. Yearlings come from your broodmares; 2 and 3-year-olds race here.</div></div>")
             + "<div class=card><div class=sub><b>Jog</b> keeps a youngster ticking over. <b>Train</b> is training miles: the big step, on the focus you pick, "
-              "and it takes something out of the horse. <b>School</b> is gait work. <b>Turn out</b> is a day off that brings freshness back. "
+              "and it takes something out of the horse. <b>Break</b> is harness and gait work. <b>Turn out</b> is a day off that brings freshness back. "
               "Older horses are kept sound, not trained: see them in the Barn.</div></div>")
     return page("Training", body)
 
@@ -1682,8 +1682,8 @@ GUIDE = [
          "decline; some are early bloomers, some late. A horse's Development chart is the trainer's read of that arc, showing where it is "
          "now: developing, in its prime, just past its peak, or declining."),
         ("Training the youngsters", "Yearlings, 2-year-olds and 3-year-olds are yours to make, and the Training tab is their day sheet. "
-         "Each gets one job a day: a <b>jog</b> to keep it ticking over, <b>training miles</b> on the focus you choose, <b>schooling</b> on "
-         "its gait, or a <b>turn out</b> for a day off. Training miles are the big step and take something out of a horse, so a tired one "
+         "Each gets one job a day: a <b>jog</b> to keep it ticking over, <b>training miles</b> on the focus you choose, <b>break</b> work in "
+         "the harness and on its gait, or a <b>turn out</b> for a day off. Training miles are the big step and take something out of a horse, so a tired one "
          "can't go. A youngster you don't get to is jogged by the stable, which keeps it coming along but leaves it the horse its blood "
          "made; only your hands decide what kind of horse it becomes. A yearling worked through its year comes to the races further "
          "along than one left in the field. Older horses are past making: they're kept fit and sound, not trained."),
