@@ -232,7 +232,8 @@ def tote_odds(field):
 
 def race_title(group, name):
     if name.startswith("CLM"):                               # open-entry claimers: every age, one card per tag
-        return f"{AGE_CLASS.get(group, 'Aged')} Claiming ${name[3:]}"   # one per age class: 2YO, 3YO, Aged
+        amt = int(name[3:-1]) * (1_000_000 if name.endswith("M") else 1000)   # CLM25k -> $25,000, written out in full
+        return f"{AGE_CLASS.get(group, 'Aged')} Claiming ${amt:,}"   # one per age class: 2YO, 3YO, Aged
     if name == "Aged Open":
         return name
     return name if name in ALL_AGES or name[:3] in ("2YO", "3YO") else f"{AGE_CLASS[group]} {name}"

@@ -486,7 +486,8 @@ def tick():
     if G["day"] % c.YEAR == 0:                                # the season's last night is run: roll the year in now, so week 1
         name_handicapper(c.year_of(G["day"] - 1))             # the season's best handicapper takes the title
         sk.year_tick(G["horses"], G["ai"], G["day"])          # opens with everyone a year older and the 2-year-olds in the barn
-        open_sponsor_auction()                                # and the season's stakes go up for sponsorship
+        if SPONSORING:
+            open_sponsor_auction()                            # and the season's stakes go up for sponsorship
         G["horses"] = e.new_year(G["horses"], G["ai"])
         e.ROLLED[0] = G["day"]                                # (the week-1 night itself won't roll it a second time)
     if G["day"] % c.YEAR == SPONSOR_WEEKS and G.get("sponsor_auction"):
@@ -1233,6 +1234,7 @@ MK_CHECKIN, MK_SEVENTH, MK_TITLE = 1, 5, 25   # Markers: a day's check-in, the s
 MK_ICON = lambda size=16: f"<img class=mkic src=/mock/brand/markers/marker_{size}.png width={size} height={round(size * .72)} alt='Markers'>"
 
 
+SPONSORING = False      # held back until the game is further along (around season 5); True brings the whole feature back
 SPONSOR_WEEKS = 2       # the season-start auction: bidding closes at the tick of week 3
 SPONSOR_BUMP = 0.10     # a sponsored stake's purse rises by this share at the opening bid, up to half the purse for a big one
 
@@ -1788,11 +1790,13 @@ GUIDE = [
          "every fit horse, and every youngster's set from the Training tab, where you keep each one's job and focus and can "
          "change them any time. Miss a night and the manager covers you, for a few nights in a row, then waits for you. It never "
          "enters a claimer, never nominates for a stake, and never does anything you couldn't do yourself with a few taps."),
+    ] + ([
         ("Sponsoring a stake", "At the start of every season the stakes go up for sponsorship, in Markers, to the highest bid. "
          "The sponsor's barn presents that stake for the season: its name and colors on the calendar, the program and the track, "
          "and the purse runs richer for every barn in it. Sponsoring buys the name, nothing on the track: the sponsor's horse "
          "races the stake on the same terms as any other. The Crown is never for sale."),
-        ("Markers", "The track's own chits, shown beside your cash when you hold any. Markers buy sponsorships and the look of "
+    ] if SPONSORING else []) + [
+        ("Markers", "The track's own chits, shown beside your cash when you hold any. Markers buy the look of "
          "your barn; they never buy a horse, a cover, a claim or an entry, and they never turn into cash. A few come free for "
          "showing up each day, with a bonus for a week straight, and the season's titles pay them too."),
         ("Fair play", "Nothing you can buy for real money wins a race, buys a horse, or makes one grow faster: horses are earned on the "
@@ -3714,7 +3718,8 @@ def bottle(kind, size=22, empty=None):
 
 def market_tabs(on):
     return ("<div class=hmenu>" + "".join(f"<a href='{h_}' class='{'on' if on == k else ''}'>{l_}</a>"
-                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("sponsor", "/sponsor", "Sponsor"), ("shop", "/shop", "Shop"), ("tack", "/tack", "Tack Room"), ("upgrade", "/upgrade", "Upgrades"))) + "</div>")
+                                          for k, h_, l_ in (("auction", "/market", "Auction"), ("claimers", "/claimers", "Claimers"), ("sponsor", "/sponsor", "Sponsor"), ("shop", "/shop", "Shop"), ("tack", "/tack", "Tack Room"), ("upgrade", "/upgrade", "Upgrades"))
+                                          if k != "sponsor" or SPONSORING) + "</div>")
 
 
 def claimers_page(qs=None):
@@ -3727,7 +3732,7 @@ def claimers_page(qs=None):
     chips = lambda items, cur, key: "<div class=fchips>" + "".join(
         f"<a href='{link(**{key: k})}' class='{'on' if str(cur) == str(k) else ''}'>{label}</a>" for k, label in items) + "</div>"
     head = (chips([("tag", "By tag"), ("est", "By rating"), ("earn", "By purses"), ("age", "By age")], sort, "s")
-            + chips([("all", "Any tag"), ("lo", "$25k–60k"), ("mid", "$90k–200k"), ("hi", "$300k+")], band, "b")
+            + chips([("all", "Any tag"), ("lo", "$25,000–$60,000"), ("mid", "$90,000–$200,000"), ("hi", "$300,000+")], band, "b")
             + chips([("all", "All ages"), ("2", "2yo"), ("3", "3yo"), ("aged", "Aged")], grp, "g")
             + chips([("all", "Colts & fillies"), ("m", "Colts"), ("f", "Fillies")], sex, "x")
             + chips([("all", "All tracks")] + [(v["id"], v["name"]) for v in c.VENUES], vid, "v")
@@ -3761,10 +3766,11 @@ def claimers_page(qs=None):
     for h, tag, r in rows[(pg - 1) * PER: pg * PER]:                            # each claimer as its program entry, under a strip in the track's colors
         lk = vlook(r["v"]["name"]); num = nums.get((r["key"], r["v"]["name"]), "·")
         tkname = f"<span class=tkn style='font-family:{lk[2]}'>{esc(r['v']['name'])}</span><br>" if lk else ""
-        strip = (f"<div class='pgh{' tk' if lk else ''}'" + (f" style='--tp:{lk[0]};--ta:{lk[1]}'" if lk else "") + f"><div class=pgn>${tag // 1000}k</div>"
+        strip = (f"<div class='pgh{' tk' if lk else ''}'" + (f" style='--tp:{lk[0]};--ta:{lk[1]}'" if lk else "") + f"><div class=pgn style='font-size:{20 if tag >= 1_000_000 else 24}px'>${tag:,}</div>"
                  + (f"<img class=tkb src={lk[4]} width=40 height=40 alt=''>" if lk else "")
-                 + f"<div class=pgt>{tkname}RACE {num} · {esc(c.race_title(r['key'][0], r['key'][2]))}</div>"
-                 f"<div class=pgp>TAG<br><b>${tag:,}</b><br>post {getattr(h, 'post', 0)}</div></div>")
+                 + f"<div class=pgt>{tkname}RACE {num} · {esc(c.race_title(r['key'][0], r['key'][2]).split(' $')[0])}"   # the tag shows once, big, on the left
+                   f"<br>Purse ${c.venue_purse(r['v'], r['key'][3]):,}</div>"
+                 f"<div class=pgp>POST<br><b>{getattr(h, 'post', 0)}</b></div></div>")
         entry = program_entry(h, tag, r["odds"], True, room).replace("class='inline pgclaim'>", "class='inline pgclaim'><input type=hidden name=back value=/claimers>")
         out += f"<div class=pgm>{strip}{entry}</div>"
     pager = ""
@@ -3881,7 +3887,7 @@ def shop_page(msg=""):
     packs = "".join(f"<div class='card pack'><b>{mk_tag(n, 20)}</b><span class=sub>${usd:.2f}</span><span class=sub>coming soon</span></div>" for n, usd in ((20, 4.99), (50, 9.99), (120, 19.99)))
     loglines = "".join(f"<div class=row style='justify-content:space-between;font-size:13px'><span class=sub>Yr {c.year_of(d)} wk {d % c.YEAR + 1} · {esc(why)}</span><b style='color:{'var(--mk)' if n > 0 else 'var(--loss)'}'>{n:+,}</b></div>" for d, n, why in log)
     mk = (f"<div class='card' id=markers><div class=row style='gap:12px'>{MK_ICON(40)}<div style='flex:1'><b>Markers</b> <span class=mk style='margin-left:6px'>{markers():,}</span>"
-          "<div class=sub>The track's own chits. Spent on sponsorships and the barn's look, never on a horse, and never turned into cash. A few come free for showing up.</div></div></div>"
+          "<div class=sub>The track's own chits. Spent on the barn's look, never on a horse, and never turned into cash. A few come free for showing up.</div></div></div>"
           + (f"<a class='btn sec' href=/sponsor style='display:block;text-align:center;margin-top:8px'>Sponsor a stake · {len(G.get('sponsor_auction', {}))} open</a>" if G.get("sponsor_auction") else "")
           + f"<div class=packs>{packs}</div>"
           f"<div class=row style='gap:10px;margin-top:8px'>{MK_ICON(28)}<div style='flex:1'><b>Daily check-in</b><div class=sub>Day {streak % 7 or 7} of 7 · {MK_CHECKIN} Marker a day, {MK_SEVENTH} on the seventh</div></div></div>"
@@ -4263,7 +4269,7 @@ PP_CSS = """
 .pgid{flex:1;min-width:0}.pgname{font-size:19px;font-weight:800;text-transform:uppercase;line-height:1.05}.pgname a{color:#111;text-decoration:none}
 .pgped,.pgown{font-size:13px;line-height:1.35;color:#222;font-weight:500}.pgtag{font-size:10px;font-weight:700;padding:0 4px;border-radius:2px;background:#111;color:#fff;margin-left:4px;vertical-align:2px}.pgtag.pl{background:#1e4fb5}
 .pgcar{width:auto!important;font-size:13px;font-weight:500;border-collapse:collapse;margin-top:4px;font-variant-numeric:tabular-nums}.pgcar td{padding:0 10px 0 0!important;border:0!important;white-space:nowrap}.pgcar td:first-child{font-weight:700}
-.pglines{margin-top:6px}.pglines table{border-collapse:collapse;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;width:100%}
+.pglines{margin-top:6px}.pglines table{border-collapse:collapse;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;width:100%;table-layout:fixed}.pglines td{overflow:hidden;text-overflow:ellipsis}
 .pglines td{padding:3px 6px 1px 0;border-top:1px solid #0002}.pglines .w{font-weight:800}.pglines sup{font-size:9px}.pglines .pph td{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#555;border-top:0}.pglines .ppc{max-width:130px;overflow:hidden;text-overflow:ellipsis}.pglines .ppt td{border-top:0;padding:0 0 4px;font-size:12px;font-style:italic;color:#555;white-space:normal}
 .pgclaim{margin-top:4px}.pgfoot{font-size:13px;padding:6px 8px;background:#111;color:#e9e4d6;line-height:1.4}
 .pgsec{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin:14px 0 4px;color:var(--ink2)}
@@ -4302,14 +4308,16 @@ def pp_lines(h, n=3):
         st_ = (f"{calls[3][0]}{f'<sup>{_lengths(calls[3][1])}</sup>' if calls[3][0] > 1 and calls[3][1] > 0 else ''}") if calls else "—"
         fin = calls[4] if calls else (r["place"], 0)
         trip = r["trip"].split(", ", 1)[1] if ", " in r["trip"] else ""
-        rows += (f"<tr><td>W{r['day'] % c.YEAR + 1}</td><td class=ppc>{esc(r['race'])}</td><td>{r['purse'] // 1000}k</td>"
+        cls = "Clm " + r["race"].split("$", 1)[1] if " Claiming $" in r["race"] else r["race"]   # the program's short form: Clm 25,000
+        rows += (f"<tr><td>W{r['day'] % c.YEAR + 1}</td><td class=ppc title='{esc(r['race'])}'>{esc(cls)}</td><td>{r['purse']:,}</td>"
                  f"<td>{r['trip'].split(',')[0].replace('post ', '') if r['trip'].startswith('post') else ''}</td><td>{st_}</td>"
                  f"<td class={'w' if r['place'] == 1 else ''}>{nth(r['place'])}{f'<sup>{_lengths(fin[1])}</sup>' if r['place'] > 1 and fin[1] > 0 else ''}</td>"
                  f"<td>{c.mile_time(r['time'])}</td></tr>"
                  + (f"<tr class=ppt><td></td><td colspan=6>{esc(trip)}</td></tr>" if trip else ""))
     if not rows:
         return "<div class=pgped>Unraced.</div>"
-    return ("<div class=pglines><table><tr class=pph><td>Wk</td><td>Class</td><td>Purse</td><td>PP</td><td>Str</td><td>Fin</td><td>Time</td></tr>"
+    return ("<div class=pglines><table><colgroup><col style='width:2.2em'><col><col style='width:4.6em'><col style='width:1.8em'>"
+            "<col style='width:2.6em'><col style='width:3.4em'><col style='width:3.6em'></colgroup><tr class=pph><td>Wk</td><td>Class</td><td>Purse</td><td>PP</td><td>Str</td><td>Fin</td><td>Time</td></tr>"
             + rows + "</table></div>")
 
 
@@ -4804,7 +4812,7 @@ class H(BaseHTTPRequestHandler):
         if p == "/claimers":
             return self.send(claimers_page(qs))
         if p == "/sponsor":
-            return self.send(sponsor_page(qs))
+            return self.send(sponsor_page(qs)) if SPONSORING else self.send("", 303, "/market")
         if p == "/setup" and has_pass(ME):                                # the Stable Manager's preview
             return self.send(setup_page())
         if p == "/studs":
@@ -4986,7 +4994,8 @@ class H(BaseHTTPRequestHandler):
         if p == "/admin/undo" and ME == ADMIN:
             return self.send(admin_page("Last race night undone." if undo_night() else "Nothing to undo."))
         if p == "/sponsor":                                               # a bid in the sponsorship auction
-            sponsor_bid(ME, q.get("s", "")); save()
+            if SPONSORING:
+                sponsor_bid(ME, q.get("s", "")); save()
             back = q.get("back", "")
             return self.send("", 303, (back if back.startswith("/sponsor") else "/sponsor") + "#list")
         if p == "/admin/sponsor" and ME == ADMIN:                         # dev: open the auction now, or close it now
