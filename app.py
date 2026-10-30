@@ -754,7 +754,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .retband{background:#b3261e;color:#fff;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;align-self:flex-start;border:2px solid #05070d}
 .ribbon.retired{background:#b3261e;color:#fff;letter-spacing:.12em;font-weight:700}
 .mkt.ret{border-color:#b3261e}.retchip{display:inline-block;background:#b3261e;color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;padding:1px 6px;margin-left:4px;vertical-align:middle}
-.fchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.fchips a{padding:4px 9px;border:2px solid var(--rule);font-size:13px;font-weight:700;color:var(--ink2);background:var(--well)}
+.fchips{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:7px 0}.fchips+.fchips{border-top:1px solid var(--rule2)}.fchips a{padding:4px 9px;border:2px solid var(--rule);font-size:13px;font-weight:700;color:var(--ink2);background:var(--well)}
 .fchips a.on{background:var(--led);color:var(--tote-ink);border-color:var(--led)}
 .race .rhead{display:flex;justify-content:space-between;align-items:baseline}.fhs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .fh button{padding:4px 8px;font-size:12px}span.fh{font-size:12px;color:var(--win)}span.fh.here{border:2px solid var(--win);padding:3px 8px;font-weight:700}.elsewhere{display:block;font-size:11px;color:var(--ink3);margin-top:2px}.fairnow{color:var(--led)}
