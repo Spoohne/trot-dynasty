@@ -1888,7 +1888,7 @@ TIP_SEQUENCE = [
     "Mile time is how fast a horse is expected to trot. Tier is the letter grade that comes with it: D up to S+.",
     "Two yearlings came with your barn, papers paid. Find them on the Training tab; they join your racers at two.",
     "Youngsters are yours to make. The Training tab is their day sheet: jog, train, school or turn out, one job a day.",
-    "Your mare is your way up. Buy the Breeder's License under Manage, Barn upgrades, and her foals can race for you.",
+    "Your mare is your way up. Buy the Breeder's License on the Breeding tab, and her foals can race for you.",
     "Every horse has a place it likes to race: on the lead, just off it, mid-pack, or coming from behind.",
     "Results are spoiler-free. Watch the replay first, or reveal each result when you're ready.",
     "Claiming races carry a price tag. Any barn can claim a horse in one, so be careful how cheap you go.",
@@ -3197,7 +3197,7 @@ def barn_page(qs=None):
         shed = next(i for i, L in enumerate(e.LEVELS) if L[2])
         cost = sum(e.LEVELS[i][3] for i in range(lv + 1, shed + 1))
         cards += (f"<div class='billrow wayup'><span>Your mare is your way up: the <b>Breeder's License</b> lets her foals race for you.</span>"
-                  f"<a href=/upgrade>${cost:,} to get it ›</a></div>")
+                  f"<a href=/studs>${cost:,} to get it ›</a></div>")
     cards += (
              f"<div class=stablehead><h2>Stable <span class='stallct {stall_tone(len(racers), e.stalls(ME))}'>{len(racers)}/{e.stalls(ME)}</span></h2>{toggle}</div>"
              + ("".join(horse_card(h) for h in racers) or "<p class=sub>No racers. Try the market.</p>"))
@@ -3989,6 +3989,22 @@ def market_page(qs=None):
     return page("Sale board", market_tabs("auction") + house + (body or "<p>Nothing else on the board tonight. Yearlings come up at the year tick.</p>"))
 
 
+def license_cost(o):
+    """What the Breeder's License costs barn o from where it stands: the license plus any barn below it not yet built."""
+    shed = next(i for i, L in enumerate(e.LEVELS) if L[2])
+    return sum(e.LEVELS[i][3] for i in range(e.level.get(o, 0) + 1, shed + 1))
+
+
+def license_offer():
+    """The Breeder's License for sale right on the Breeding tab, with the barn it needs first folded into one price."""
+    cost, short = license_cost(ME), e.LEVELS[e.level.get(ME, 0) + 1][0] != "breeder's license"
+    what = "Build the working barn and buy the Breeder's License" if short else "Buy the Breeder's License"
+    return (f"<div class=sub style='margin:6px 0'>The Breeder's License lets your mares be covered and your stallions stand at stud."
+            + (" It needs the working barn first, so both come together." if short else "") + "</div>"
+            + (f"<form method=post action=/license><button onclick=\"return ask(this,'{what} for ${cost:,}?')\">{what} · ${cost:,}</button></form>"
+               if e.cash.get(ME, 0) >= cost else f"<button disabled>{what} · ${cost:,}</button><div class=sub>Not enough cash yet.</div>"))
+
+
 def breeding_page(qs=None):
     """The Breeding tab: where your retired horses live. Stallions, broodmares and foals each on their own tab, ten to a
     page, sorted by age, tier or foals; each with seasons left, foals, and what it's doing this season."""
@@ -4012,7 +4028,7 @@ def breeding_page(qs=None):
                 f"<div>{now}</div></div><div>{act}</div></div></div>")
     body = (BREED_MENU("mine") + f"<div class=card><div class=row style='justify-content:space-between'><span>{len(stallions)} stallion{"s" if len(stallions) != 1 else ""} · {len(mares)} broodmare{"s" if len(mares) != 1 else ""}</span>"
             f"</div>"
-            + ("" if e.can_breed(ME) else "<div class=sub>The Breeder's License (Barn upgrades) lets your mares be covered.</div>") + "</div>")
+            + ("" if e.can_breed(ME) else license_offer()) + "</div>")
     def foal_row(f):
         if getattr(f, "unreg", False) and f.age >= 2:                            # old enough to race: register it or let it go
             nm = esc(f.name)
@@ -5170,6 +5186,9 @@ class H(BaseHTTPRequestHandler):
                 pass
         elif p == "/upgrade":
             e.upgrade(ME)
+        elif p == "/license" and not e.can_breed(ME) and e.cash.get(ME, 0) >= license_cost(ME):   # all of it or none of it
+            while not e.can_breed(ME) and e.upgrade(ME):
+                pass
         save()
         self.send("", 303, back)
 
