@@ -711,7 +711,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .mkt .row{align-items:flex-start}.mkt .sbars{grid-template-columns:1fr;max-width:none}.mkt .sbars .stat{min-width:0}   /* sale board: one column, so the grade and price keep their place */
 /* compact bars (sale board, stud book): too small for ten ticks, so a plain solid bar with its value as a number */
 .sbars .sv{display:block;min-width:14px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink)}
-.sbars .stat{height:8px;background-image:none}.sbars .stat:after{display:none}
+.sbars .stat{height:8px}.sbars .stat:after{display:none}
 .sbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px 12px;margin:6px 0 2px;width:100%;max-width:420px}.sbars .row{gap:6px;width:100%}.sbars .stat{flex:1;min-width:0}.sbars .sub{width:52px!important;font-size:12px}
 .sbrow td{border-top:0;padding-top:0}
 .kin{margin-top:6px;font-size:13px;color:#ffb38a}.kin b{color:#ff8a7a}.kin.ok{color:#7fd69a}.kin.bad{color:#ff8a7a;font-weight:700}
