@@ -538,15 +538,40 @@ def grow(f, d):
     f.developed = {t: f.ceiling(t, 2) - 2.0 + hand - 3.0 * (1 - g) for t in sim.RACE_TRAITS}
 
 
+BREAK_WEEKS, JOG_WEEKS = 2, 4   # a yearling is broken to harness, then jogged, before training miles open up
+
+
+def stage(f):
+    """Where a yearling stands: 'break', 'jog' or 'train'. Anything older is past it."""
+    if f not in nursery or f.age != 1:
+        return "train"
+    if not hasattr(f, "broke"):                                        # yearlings from before the stages: credit what they've done
+        h = getattr(f, "handled", 0)
+        f.broke, f.jogged = min(BREAK_WEEKS, h), min(JOG_WEEKS, max(0, h - BREAK_WEEKS))
+    return "break" if f.broke < BREAK_WEEKS else "jog" if f.jogged < JOG_WEEKS else "train"
+
+
+def open_jobs(f):
+    """The day-sheet jobs a horse can do at its stage."""
+    return {"break": {"school", "out"}, "jog": {"school", "jog", "out"}}.get(stage(f), set(c.JOBS) | {"out"})
+
+
 def handle(f, owner, day, job, focus):
     """A yearling's day on the sheet: one session a week, counted toward its start at 2, and shaped by your focus.
-    Turning out is a day off: counted for the stamp, nothing more."""
-    if f not in nursery or f.owner != owner or f.age != 1 or job not in c.JOBS and job != "out" or (getattr(f, "job", None) or (None,))[0] == day:
+    Turning out is a day off: counted for the stamp, nothing more. Breaking, then jogging, come before training."""
+    if f not in nursery or f.owner != owner or f.age != 1 or job not in open_jobs(f) or (getattr(f, "job", None) or (None,))[0] == day:
         return False
     f.job = (day, job, focus)
     if job == "out":
         return True
+    was = stage(f)
     f.handled = getattr(f, "handled", 0) + 1
+    if job == "school":
+        f.broke += 1
+    elif job == "jog" and was == "jog":
+        f.jogged += 1
+    if stage(f) != was:
+        f.stage_days = getattr(f, "stage_days", []) + [(day, stage(f))]   # the barn hears the day each stage opens
     focus = "gait" if job == "school" else focus
     d = min(c.JOBS[job][1] * 2.5, c.SHAPE_CAP - f.shape[focus])         # a yearling is the most moldable it will ever be
     if d > 0 and focus in c.SHAPED:
@@ -1034,10 +1059,19 @@ if __name__ == "__main__":
     # A yearling on the day sheet: handled through the year it comes to the races a point further along, shaped by its owner.
     yl = c.foal(sire_, dam_); yl.age, yl.owner = 1, 0; nursery.append(yl); grow(yl, 0)
     was = dict(yl.developed)
-    assert handle(yl, 0, 7, "train", "early_speed") and not handle(yl, 0, 7, "jog", "gait"), "one session a week"
-    assert yl.shape["early_speed"] > 0 and yl.developed["gait"] > was["gait"], "a session shapes and brings it along"
-    for d in range(8, 8 + HANDLED_FULL):
+    assert not handle(yl, 0, 7, "train", "early_speed") and not handle(yl, 0, 7, "jog", "gait"), "a yearling is broken first"
+    assert handle(yl, 0, 7, "school", "gait") and not handle(yl, 0, 7, "school", "gait"), "one session a week"
+    assert yl.developed["gait"] > was["gait"], "a session brings it along"
+    handle(yl, 0, 8, "school", "gait")
+    assert stage(yl) == "jog" and yl.stage_days == [(8, "jog")] and not handle(yl, 0, 9, "train", "early_speed"), "broke: jogging opens, not training"
+    for d in range(9, 9 + JOG_WEEKS):
         handle(yl, 0, d, "jog", "stamina")
+    assert stage(yl) == "train" and handle(yl, 0, 20, "train", "early_speed") and yl.shape["early_speed"] > 0, "jogged: training miles shape it"
+    for d in range(21, 21 + HANDLED_FULL - yl.handled):
+        handle(yl, 0, d, "jog", "stamina")
+    old = c.foal(sire_, dam_); old.age, old.owner, old.handled = 1, 0, 3; nursery.append(old)
+    assert stage(old) == "jog" and old.jogged == 1, "a yearling from before the stages keeps credit for its work"
+    nursery.remove(old)
     grow(yl, 0)
     assert all(abs(yl.developed[t] - (yl.ceiling(t, 2) - 1.0 - 3.0 * (1 - 0.5))) < 1e-9 for t in sim.RACE_TRAITS), "a full year's handling: one under, not two"
     yl.age = 2

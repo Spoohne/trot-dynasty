@@ -20,7 +20,7 @@ def week():
     for f in e.nursery:
         if f.age == 1 and hand(f):
             f.owner_was = f.owner
-            e.handle(f, f.owner, d, "train", "early_speed")
+            e.handle(f, f.owner, d, {"break": "school", "jog": "jog"}.get(e.stage(f), "train"), "early_speed")
     for h in G["horses"]:
         if not h.retired and h.age <= c.YOUNG and hand(h) and not getattr(h, "order", None) and h.freshness < 50:
             h.job = (d, "train" if h.freshness >= 35 else "jog", "early_speed")
