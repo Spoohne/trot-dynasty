@@ -2837,6 +2837,19 @@ def identity_card(h, context="owned", price=None):
     return card_header(h, context == "owned", price) + stats_block(h, context == "owned")
 
 
+def pbox(inner, count, n=10):
+    """A card whose items (each marked data-pi) are paged ten at a time on the page itself, with the house pager under them."""
+    if count <= n:
+        return f"<div class=card>{inner}</div>"
+    i = secrets.token_hex(3)
+    return (f"<div class=card id=pb{i}>{inner}<div class=pager></div>"
+            f"<script>(()=>{{const b=document.getElementById('pb{i}'),pg=b.querySelector('.pager'),rs=[...b.querySelectorAll('[data-pi]')],N={n},n=Math.ceil(rs.length/N);let p=1;"
+            "const show=()=>{rs.forEach((r,i)=>r.hidden=(i/N|0)!=p-1);"
+            "const k=(k,l)=>k<1||k>n||k==p?`<span class='pg${k==p?' on':''}'>${l}</span>`:`<a class=pg href=# data-p=${k}>${l}</a>`;"
+            "pg.innerHTML=k(p-1,'&laquo;')+[...Array(n)].map((_,i)=>k(i+1,i+1)).join('')+k(p+1,'&raquo;')};"
+            "pg.onclick=e=>{const k=e.target.dataset.p;if(k){e.preventDefault();p=+k;show()}};show()})()</script></div>")
+
+
 def section(title, inner, open_=False, sid=""):
     return f"<details{' open' if open_ else ''}{' id=' + sid if sid else ''}><summary>{title}</summary>{inner}</details>"
 
@@ -3561,8 +3574,8 @@ def trophy_case(h):
     if not items:
         return "<div class=card><span class=sub>No trophies yet. Stakes wins, championships and course records go here.</span></div>"
     art = {"cup": "cup", "crown": "crown", "clock": "clock", "medal": "medal", "money": "money", "laurel": "horseshoe"}   # SpriteCook trophy icons
-    tiles = "".join(f"<div class='tcase t{k}'><img class=ticon src=/mock/brand/trophies/{art[k]}.png alt=''><b>{esc(t)}</b><span>{esc(sub)}</span></div>" for k, t, sub in items)
-    return f"<div class=card><div class=tgrid>{tiles}</div></div>"
+    tiles = "".join(f"<div class='tcase t{k}' data-pi><img class=ticon src=/mock/brand/trophies/{art[k]}.png alt=''><b>{esc(t)}</b><span>{esc(sub)}</span></div>" for k, t, sub in items)
+    return pbox(f"<div class=tgrid>{tiles}</div>", len(items))
 
 
 def career_phase(h):
@@ -3669,11 +3682,11 @@ def horse_page(name, entering=False):
     body += section("Pedigree", "<div class=card style='padding:0;overflow:hidden'>" + pedigree(h) + "</div>")
     kids = sorted(kids_of(h), key=lambda k: -k.earnings)
     if kids:
-        rows = "".join(f"<tr><td><a href='/horse/{urlname(k.name)}'>{esc(k.name)}</a></td><td>{k.age}yo {sex_word(k)}</td><td>{k.tier}</td>"
+        rows = "".join(f"<tr data-pi><td><a href='/horse/{urlname(k.name)}'>{esc(k.name)}</a></td><td>{k.age}yo {sex_word(k)}</td><td>{k.tier}</td>"
                        f"<td>{k.starts}-{k.wins}</td><td>{best_time(k)}</td><td>${k.earnings:,.0f}</td></tr>" for k in kids)
-        body += section(f"Foal Stats · {len(kids)}", f"<div class=card><div class=sub>{sum(k.wins for k in kids)} wins, ${sum(k.earnings for k in kids):,.0f} earned, "
+        body += section(f"Foal Stats · {len(kids)}", pbox(f"<div class=sub>{sum(k.wins for k in kids)} wins, ${sum(k.earnings for k in kids):,.0f} earned, "
                         f"{sum(1 for k in kids if k.tier in 'SA')} rated A or better</div>"
-                        "<table><tr><th>Name</th><th></th><th>Tier</th><th>Record</th><th>Best</th><th>Earnings</th></tr>" + rows + "</table></div>")
+                        "<table><tr><th>Name</th><th></th><th>Tier</th><th>Record</th><th>Best</th><th>Earnings</th></tr>" + rows + "</table>", len(kids)))
     if not own or foal:
         return page(h.name, body)
     if h.retired:
