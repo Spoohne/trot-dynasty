@@ -748,17 +748,17 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .sbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px 12px;margin:6px 0 2px;width:100%;max-width:420px}.sbars .row{gap:6px;width:100%}.sbars .stat{flex:1;min-width:0}.sbars .sub{width:52px!important;font-size:12px}
 .sbrow td{border-top:0;padding-top:0}
 .kin{margin-top:6px;font-size:13px;color:#ffb38a}.kin b{color:#ff8a7a}.kin.ok{color:#7fd69a}.kin.bad{color:#ff8a7a;font-weight:700}
-.hc{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;align-items:start;padding-bottom:10px}
-.hc .pcol{grid-row:1}.hc .hr2{grid-row:1;min-width:0;align-self:center}
-.hc .bbars{grid-column:1/-1;margin:6px 0 2px}.hc .bbars .row{gap:10px;margin:3px 0}.hc .bbars .sub{width:62px;font-size:13px}.hc .bbars .stat{height:12px}
-.hc .sline{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;color:var(--ink2);font-size:14px;margin-top:4px}
-.hc .sline .cond b{font-size:14px}.hc .sline>span+span:before,.hc .sline>form+span:before{content:'· ';color:var(--ink3)}
-.hc .live{grid-column:1/-1;margin-top:6px;padding:7px 10px;border-left:3px solid var(--tote);background:#e8a33a14;font-size:14px;line-height:1.4}.hc .live b{color:var(--led)}
-.hc .act2{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}.hc .acts{display:inline-flex;align-items:center;gap:10px}
-.hc .go{display:inline-flex;align-items:center;gap:6px;font:800 16px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;padding:7px 16px;text-decoration:none;box-shadow:2px 2px 0 #05070d,inset 0 2px 0 #fff6}
-.hc .go:active{transform:translate(2px,2px);box-shadow:none}.hc .go.pause{color:#e8eefc;background:linear-gradient(#5b6b8c,#3a4762)}
-.hc .was{font:800 15px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}.hc .was b{color:var(--win)}
-.hc .act2 .sec{font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--panel);border:1px solid var(--rule);padding:7px 12px;text-decoration:none}
+.hc2{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;align-items:start;padding-bottom:10px}
+.hc2 .pcol{grid-row:1}.hc2 .hr2{grid-row:1;min-width:0;align-self:center}
+.hc2 .bbars{grid-column:1/-1;margin:6px 0 2px}.hc2 .bbars .row{gap:10px;margin:3px 0}.hc2 .bbars .sub{width:62px;font-size:13px}.hc2 .bbars .stat{height:12px}
+.hc2 .sline{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;color:var(--ink2);font-size:14px;margin-top:4px}
+.hc2 .sline .cond b{font-size:14px}.hc2 .sline>span+span:before,.hc2 .sline>form+span:before{content:'· ';color:var(--ink3)}
+.hc2 .live{grid-column:1/-1;margin-top:6px;padding:7px 10px;border-left:3px solid var(--tote);background:#e8a33a14;font-size:14px;line-height:1.4}.hc2 .live b{color:var(--led)}
+.hc2 .act2{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}.hc2 .acts{display:inline-flex;align-items:center;gap:10px}
+.hc2 .go{display:inline-flex;align-items:center;gap:6px;font:800 16px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;padding:7px 16px;text-decoration:none;box-shadow:2px 2px 0 #05070d,inset 0 2px 0 #fff6}
+.hc2 .go:active{transform:translate(2px,2px);box-shadow:none}.hc2 .go.pause{color:#e8eefc;background:linear-gradient(#5b6b8c,#3a4762)}
+.hc2 .was{font:800 15px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}.hc2 .was b{color:var(--win)}
+.hc2 .act2 .sec{font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--panel);border:1px solid var(--rule);padding:7px 12px;text-decoration:none}
 .enterplus{position:relative;width:30px;height:30px;display:grid;place-items:center;text-decoration:none;font:700 22px/1 'Barlow Condensed',sans-serif;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;box-shadow:2px 2px 0 #05070d,inset 0 2px 0 #fff6}
 .entercell{white-space:nowrap}.mates{display:inline-block;vertical-align:middle;margin-left:6px}.mates svg{width:24px!important;height:24px!important;min-width:24px;display:block;box-shadow:2px 2px 0 #05070d}
 .pcol{flex:0 0 auto;display:flex;flex-direction:column;align-items:center}
@@ -3016,7 +3016,7 @@ def horse_card(h, link=True):
                 act = corner.replace("class=enterplus", "class=go").replace("class='enterplus pause'", "class='go pause'").replace(">+</a>", ">Enter</a>")
                 act = act.replace("</svg></a>", "</svg> Enter</a>")
             act = f"<div class=act2><span class=acts>{act}</span><a class=sec href='/program?h={quote(h.name)}'>Program</a></div>"
-    return (f"<div class='card brow hc{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b></div></div><div class=hr2>"
+    return (f"<div class='card brow hc hc2{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b></div></div><div class=hr2>"
             f"<div class=bname>{name}</div>"
             f"<div class=facts><span class=chip>{h.age}yo {sex_word(h)}</span>"
             f"<span class=chip title='starts-wins'><b>S{h.starts}-W{h.wins}</b></span><span class='chip cash'>${h.earnings:,.0f}</span>"
