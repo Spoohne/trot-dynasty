@@ -11,12 +11,53 @@ orig = Image.open(os.path.join(HERE, "..", "..", "mockups", "pixel", "fe12_cycle
 
 
 def fit(i):
-    """SpriteCook's frame i on our cell: its content scaled to our content's height, left and bottom edges matched."""
-    o = orig.crop((i * W, 0, (i + 1) * W, H)); ob = o.getbbox()
+    """The better of the two fits for frame i: the horse's length matched, or the bike's size held."""
+    from anchors import drift
+    o = orig.crop((i * W, 0, (i + 1) * W, H))
+    return min((fit_length(i), fit_rig(i)), key=lambda c: drift(o, c))
+
+
+def fit_rig(i):
+    """The bike held at today's size: one scale from the wheel's width, moved onto today's wheel and saddle height."""
+    from anchors import anchors, wheel_w
+    o = orig.crop((i * W, 0, (i + 1) * W, H))
     s = Image.open(os.path.join(HERE, "sc", f"w{i:02d}.png")).convert("RGBA"); s = s.crop(s.getbbox())
-    k = (ob[3] - ob[1]) / s.height
-    s = s.resize((max(1, round(s.width * k)), ob[3] - ob[1]), Image.NEAREST)
-    cell = Image.new("RGBA", (W, H)); cell.alpha_composite(s.crop((0, 0, min(s.width, W - ob[0]), s.height)), (ob[0], ob[1]))
+    k = wheel_w(o) / wheel_w(s)
+    s = s.resize((max(1, round(s.width * k)), max(1, round(s.height * k))), Image.NEAREST)
+    (ow, op), (sw, sp) = anchors(o), anchors(s)
+    dx, dy = round(ow[0] - sw[0]), round((ow[1] + op[1]) / 2 - (sw[1] + sp[1]) / 2)
+    cell = Image.new("RGBA", (W, H)); cell.paste(s, (dx, dy), s)
+    return cell
+
+
+def fit_length(i):
+    """SpriteCook's frame i on our cell, pinned on steady points so the rig doesn't jump between frames: stretched so
+    its wheel and nose land on ours (length), its wheel-to-saddle-pad drop matched (height), then moved onto our wheel."""
+    from anchors import anchors, nose
+    o = orig.crop((i * W, 0, (i + 1) * W, H))
+    s = Image.open(os.path.join(HERE, "sc", f"w{i:02d}.png")).convert("RGBA"); s = s.crop(s.getbbox())
+    (ow, op), on = anchors(o), nose(o)
+    (sw, sp), sn = anchors(s), nose(s)
+    xs, xt = [sw[0], sp[0], sn[0]], [ow[0], op[0], on[0]]                 # length: least squares on wheel, saddle and nose together
+    mx, mt = sum(xs) / 3, sum(xt) / 3
+    kx = sum((a - mx) * (b - mt) for a, b in zip(xs, xt)) / sum((a - mx) ** 2 for a in xs)
+    ky = (op[1] - ow[1]) / (sp[1] - sw[1])
+    ky = min(max(ky, kx * .9), kx * 1.1)                                   # never squash the horse more than a little
+    s = s.resize((max(1, round(s.width * kx)), max(1, round(s.height * ky))), Image.NEAREST)
+    dx, dy = round(mt - mx * kx), round(ow[1] - sw[1] * ky)
+    cell = Image.new("RGBA", (W, H)); cell.alpha_composite(s, (dx, dy)) if dx >= 0 and dy >= 0 else cell.paste(s, (dx, dy), s)
+    return cell
+
+
+def steady(cell, i):
+    """Today's wheel and driver laid over SpriteCook's: they're the same on every horse, so they never pulse."""
+    o = orig.crop((i * W, 0, (i + 1) * W, H)); po, pc = o.load(), cell.load()
+    for y in range(H):
+        for x in range(70):
+            in_wheel = ((x - 30) ** 2 + (y - 75) ** 2) ** .5 <= 27
+            in_driver = x < 62 and y < 58
+            if in_wheel or in_driver:
+                pc[x, y] = po[x, y] if po[x, y][3] else (pc[x, y] if not in_driver else (0, 0, 0, 0))
     return cell
 
 
@@ -41,7 +82,7 @@ def tint(cell, mask, hx):
 
 
 if __name__ == "__main__":
-    cells = [fit(i) for i in range(N)]; masks = [wraps(c) for c in cells]
+    cells = [steady(fit(i), i) for i in range(N)]; masks = [wraps(c) for c in cells]
     for i, m in enumerate(masks):
         assert m.getbbox(), f"frame {i}: no wraps found"
     sheet, msheet = Image.new("RGBA", (W * N, H)), Image.new("L", (W * N, H))
