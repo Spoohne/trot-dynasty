@@ -72,9 +72,34 @@ def settle(cell, i):
     return out
 
 
+def size(cell, i):
+    """The horse held to today's size in this frame: scaled about its hooves' line until its area (right of the bike)
+    matches the stock runner's, so a wrapped horse never reads bigger than the rest of the field."""
+    import numpy as np
+    a = (np.array(orig.crop((i * W, 0, (i + 1) * W, H)))[:, 70:, 3] > 0).sum()
+    b = (np.array(cell)[:, 70:, 3] > 0).sum()
+    k = (a / b) ** .5
+    if abs(k - 1) < .005:
+        return cell
+    bb = cell.getbbox(); cx, by = (bb[0] + bb[2]) / 2, bb[3]
+    sc = cell.resize((round(W * k), round(H * k)), Image.NEAREST)
+    out = Image.new("RGBA", (W, H)); out.paste(sc, (round(cx - cx * k), round(by - by * k)), sc)
+    return out
+
+
 def steady(cell, i):
     """Today's wheel and driver laid over SpriteCook's: they're the same on every horse, so they never pulse."""
+    from anchors import anchors, wheel_w
     o = orig.crop((i * W, 0, (i + 1) * W, H)); po, pc = o.load(), cell.load()
+    a = anchors(cell)
+    if a:                                                               # SpriteCook's own wheel cleared first, so no second rim shows
+        (cx, cy), r = a[0], wheel_w(cell) / 2 + 3
+        for y in range(H):
+            for x in range(W):
+                p = pc[x, y]
+                warm = p[0] > p[1] + 12 and p[0] > p[2] + 25 and not p[2] > p[0] + 40      # the horse's own coat stays
+                if p[3] and not warm and ((x - cx) ** 2 + (y - cy) ** 2) ** .5 <= r:
+                    pc[x, y] = (0, 0, 0, 0)
     for y in range(H):
         for x in range(70):
             in_wheel = ((x - 30) ** 2 + (y - 75) ** 2) ** .5 <= 27
@@ -92,6 +117,12 @@ def wraps(cell):
             p = px[x, y]
             if ((x - 27) ** 2 + (y - 82) ** 2) ** .5 > 24 and p[3] and max(p[:3]) - min(p[:3]) < 38 and sum(p[:3]) > 360:
                 mp[x, y] = 255
+    pale = lambda p: p[3] and max(p[:3]) - min(p[:3]) < 45 and sum(p[:3]) > 250
+    for _ in range(3):                                                    # three rings out from the wraps
+        grow = [(x, y) for y in range(int(H * 0.5), H) for x in range(30, W) if not mp[x, y] and pale(px[x, y])
+                and any(0 <= x + dx < W and 0 <= y + dy < H and mp[x + dx, y + dy] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))]
+        for x, y in grow:
+            mp[x, y] = 255
     return m
 
 
@@ -105,7 +136,7 @@ def tint(cell, mask, hx):
 
 
 if __name__ == "__main__":
-    cells = [steady(settle(fit(i), i), i) for i in range(N)]; masks = [wraps(c) for c in cells]
+    cells = [steady(size(settle(fit(i), i), i), i) for i in range(N)]; masks = [wraps(c) for c in cells]
     for i, m in enumerate(masks):
         assert m.getbbox(), f"frame {i}: no wraps found"
     sheet, msheet = Image.new("RGBA", (W * N, H)), Image.new("L", (W * N, H))
