@@ -944,7 +944,7 @@ RACING = ("race", "stay")
 
 VISITOR = -1           # the owner of a horse shipped in for the night (no barn here)
 MIN_FIELD = 8          # every race goes to the gate with at least this many
-SHIPPERS = ("Cedar Downs", "Millbrook Raceway", "Lakeshore Park", "Pine Hollow", "Riverbend Downs", "Hartwell Fair",
+SHIPPERS = ("Cedar Downs", "Millbrook Raceway", "Ashford Downs", "Pine Hollow", "Riverbend Downs", "Hartwell Fair",
             "Stony Creek", "Willow Run")   # out-of-town tracks (invented) a visiting horse ships in from
 _visitor_ids = count(-1, -1)
 
@@ -1071,6 +1071,7 @@ def draw_card(day, horses, skip=()):
     for h in horses:
         if h.id in drafted:
             h.wk = "drafted"                                  # a filler: it races, no week's work for it
+    post_times(races)
     CARD.clear()
     CARD.update(day=day, races=races)
     return CARD
@@ -1106,64 +1107,95 @@ def pass_week(day, horses, raced):
         h.wk = None
 
 
+POST_FROM, POST_SPAN = 19 * 60, 230   # first post 7:00 PM New York time; each track's last post 230 minutes later (10:50)
+
+
+def post_times(races):
+    """Each track runs its own card through the evening: its races in program order, spaced evenly from first post
+    to last. r["post"] is minutes after midnight, New York time."""
+    by = {}
+    for r in sorted(races, key=lambda r: (r["key"][5], str(r["key"][0]), -r["key"][3])):
+        by.setdefault(r["v"]["name"], []).append(r)
+    for rs in by.values():
+        for k, r in enumerate(rs):
+            r["post"] = POST_FROM + (round(k * POST_SPAN / (len(rs) - 1)) if len(rs) > 1 else POST_SPAN // 2)
+
+
+def run_race(r, alive, log):
+    """One race off at its post time: the vet, the drive, the race, the result, the story and the claims."""
+    (group, sex, name, purse, tag, track), i, v = r["key"], r["i"], r["v"]
+    taken_ids, raced = CARD.setdefault("taken", {}), CARD.setdefault("raced", set())
+    field = [h for h in r["field"] if (id(h) in alive or getattr(h, "visitor", None)) and not h.retired and getattr(h, "order", None) != "stakes"]
+    if len(field) < 2:                                   # lost its field since the draw (a stake, a sale): no race
+        for h in field:
+            rest(h)
+            h.last = f"entered {race_title(group, name)}, the field came apart; rested"
+        r["done"] = True
+        return
+    vpurse = venue_purse(v, purse)
+    for h in field:                                        # the vet's visit: 2% of tonight's purse, then the tonic's in
+        if getattr(h, "tonic", None) and tonic_fee(h, round(TONIC_FEE * vpurse)):
+            h.tonic_on, h.tonic_used = h.tonic, True
+    drive(field, r.setdefault("drivers", {}), track)
+    order = race(field, track, v.get("passing", False))
+    for h in field:
+        h.tonic_on = None
+    field_est = st.mean(h.est for h in field)        # who you beat, not where you ran
+    if name in CLASS_RATING:                          # a card drawn before a class was retired still runs
+        CLASS_RATING[name] += 0.1 * (field_est - CLASS_RATING[name])   # what the class really is
+    base = f"{DAY[0]}-{v['id']}-{track}-{name.replace('$', '').replace('&', 'and')}"   # plain letters: it travels in a URL
+    rid = f"{base}-{taken_ids.setdefault(base, -1) + 1}"             # the same class for two age groups gets its own id
+    taken_ids[base] += 1
+    for place, h in enumerate(order):
+        record_result(h, race_title(group, name), track, place, vpurse, field_est, len(field))
+        h.results[-1]["race_id"] = rid
+        h.results[-1]["venue"] = v["name"]
+        raced.add(h.id)
+    STORIES[rid] = dict(_story.build(order, track, passing=v.get("passing", False)), id=rid, name=race_title(group, name), purse=vpurse, day=DAY[0], venue=v["name"],
+                        passing=v.get("passing", False))
+    STORIES[rid]["records"] = set_records(v["id"], STORIES[rid]["quarters"][1:])   # each track keeps its own records
+    drove(order, STORIES[rid]["horses"], year_of(DAY[0]))
+    line = tote_odds(field)
+    for row, h in zip(STORIES[rid]["horses"], order):              # the story is in finishing order, like order
+        row["odds"] = "%d-%d" % line[h.id]
+    for old in list(STORIES)[:-400]:
+        del STORIES[old]
+    if tag:
+        for h in field:
+            h.ran_claimer = 1
+        taken = set()
+        for h in field:                                    # a claim made off the program is binding: the horse
+            if h.id in CLAIMS and CLAIMS[h.id] != h.owner:  # is the claimant's once it races, whatever the result
+                player_claim(h, CLAIMS.pop(h.id), tag)
+                taken.add(h.id)
+        for h in [x for x in order[:3] if x.id not in taken and not getattr(x, "visitor", None)]:   # one claim per horse per race; a visitor ships home
+            if claim_decision(h, CLASS_RATING[name]) and (to := claimant(h, tag)) != h.owner:
+                h.owner, h.claimed, h.order = to, h.claimed + 1, None
+    log.append((group, sex, name, track, field, order[0]))
+    r["done"] = True
+
+
+def run_due(horses, minute, log=None):
+    """Every race on tonight's card whose post time has come: run now, in post order. Returns how many went off."""
+    alive = {id(h) for h in horses}
+    due = sorted((r for r in CARD.get("races", []) if not r.get("done") and r.get("post", 0) <= minute), key=lambda r: r["post"])
+    for r in due:
+        run_race(r, alive, [] if log is None else log)
+    return len(due)
+
+
 def race_day(day, horses, log):
-    """Post time: a mile card and a half-mile card run every night, from the program drawn at the cutoff (drawn
-    now if it wasn't). Each owner ships a horse to one of them (h.ship); the lazy default is whichever is nearer."""
+    """The close of race night: any race that hasn't gone off yet runs now (all of them, when the clock isn't running
+    races live), then the week goes by for everyone. The card is drawn now if it wasn't."""
     if CARD.get("day") != day:
         draw_card(day, horses)
     DAY[0] = day
     alive = {id(h) for h in horses}
-    races = CARD.get("races", [])
+    for r in sorted(CARD.get("races", []), key=lambda r: r.get("post", 0)):
+        if not r.get("done"):
+            run_race(r, alive, log)
+    raced = CARD.get("raced", set())
     CARD.clear()
-    taken_ids, raced = {}, set()
-    for r in races:
-        (group, sex, name, purse, tag, track), i, v = r["key"], r["i"], r["v"]
-        field = [h for h in r["field"] if (id(h) in alive or getattr(h, "visitor", None)) and not h.retired and getattr(h, "order", None) != "stakes"]
-        if len(field) < 2:                                   # lost its field since the draw (a stake, a sale): no race
-            for h in field:
-                rest(h)
-                h.last = f"entered {race_title(group, name)}, the field came apart; rested"
-            continue
-        vpurse = venue_purse(v, purse)
-        for h in field:                                        # the vet's visit: 2% of tonight's purse, then the tonic's in
-            if getattr(h, "tonic", None) and tonic_fee(h, round(TONIC_FEE * vpurse)):
-                h.tonic_on, h.tonic_used = h.tonic, True
-        drive(field, r.setdefault("drivers", {}), track)
-        order = race(field, track, v.get("passing", False))
-        for h in field:
-            h.tonic_on = None
-        field_est = st.mean(h.est for h in field)        # who you beat, not where you ran
-        if name in CLASS_RATING:                          # a card drawn before a class was retired still runs
-            CLASS_RATING[name] += 0.1 * (field_est - CLASS_RATING[name])   # what the class really is
-        base = f"{DAY[0]}-{v['id']}-{track}-{name.replace('$', '').replace('&', 'and')}"   # plain letters: it travels in a URL
-        rid = f"{base}-{taken_ids.setdefault(base, -1) + 1}"             # the same class for two age groups gets its own id
-        taken_ids[base] += 1
-        for place, h in enumerate(order):
-            record_result(h, race_title(group, name), track, place, vpurse, field_est, len(field))
-            h.results[-1]["race_id"] = rid
-            h.results[-1]["venue"] = v["name"]
-            raced.add(h.id)
-        STORIES[rid] = dict(_story.build(order, track, passing=v.get("passing", False)), id=rid, name=race_title(group, name), purse=vpurse, day=DAY[0], venue=v["name"],
-                            passing=v.get("passing", False))
-        STORIES[rid]["records"] = set_records(v["id"], STORIES[rid]["quarters"][1:])   # each track keeps its own records
-        drove(order, STORIES[rid]["horses"], year_of(DAY[0]))
-        line = tote_odds(field)
-        for row, h in zip(STORIES[rid]["horses"], order):              # the story is in finishing order, like order
-            row["odds"] = "%d-%d" % line[h.id]
-        for old in list(STORIES)[:-400]:
-            del STORIES[old]
-        if tag:
-            for h in field:
-                h.ran_claimer = 1
-            taken = set()
-            for h in field:                                    # a claim made off the program is binding: the horse
-                if h.id in CLAIMS and CLAIMS[h.id] != h.owner:  # is the claimant's once it races, whatever the result
-                    player_claim(h, CLAIMS.pop(h.id), tag)
-                    taken.add(h.id)
-            for h in [x for x in order[:3] if x.id not in taken and not getattr(x, "visitor", None)]:   # one claim per horse per race; a visitor ships home
-                if claim_decision(h, CLASS_RATING[name]) and (to := claimant(h, tag)) != h.owner:
-                    h.owner, h.claimed, h.order = to, h.claimed + 1, None
-        log.append((group, sex, name, track, field, order[0]))
     pass_week(day, horses, raced)                            # the card has run: the week goes by for everyone else
 
 

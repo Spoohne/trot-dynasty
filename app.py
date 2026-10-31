@@ -480,7 +480,7 @@ def tick():
             elif P(o).get("pass_missed", 0) < PASS_GRACE:
                 P(o)["pass_missed"] = P(o).get("pass_missed", 0) + 1
                 setup_tonight(o, auto=True)
-    day, before = G["day"], {h.id: (h.earnings, h.owner) for h in G["horses"] if h.owner in c.HUMAN}
+    day, before = G["day"], G.pop("night_before", None) or {h.id: (h.earnings, h.owner) for h in G["horses"] if h.owner in c.HUMAN}
     for o in G.get("players", {}):                            # the books going into tonight: the Earnings graphs, week by week
         hist = P(o).setdefault("hist", [])
         hist.append({"d": day, "cash": round(e.cash.get(o, 0)), "led": {k: round(v) for k, v in e.ledger.get(o, {}).items()}})
@@ -596,7 +596,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .pc:nth-child(3n){border-right:0} .pc small{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums} .pc.me{font-size:16px;font-weight:700} .pc .unk{color:var(--ink3);font-style:italic;font-size:13px}
 .pedt .pc.ps{background:#1f4fbf;border-color:#05070d}.pedt .pc.pd{background:#b8336a;border-color:#05070d}.pedt .pc.ps.g{background:#1f4fbf99}.pedt .pc.pd.g{background:#b8336a99}.pedt .pc.ps a,.pedt .pc.pd a{color:#fff}.pedt .pc.ps small,.pedt .pc.pd small{color:#ffffffbb}
 .tcase .ticon{width:44px;height:44px;display:block;margin:0 auto 4px;filter:drop-shadow(0 2px 3px #0009)}
-.mqe{display:inline-block;position:relative;border-radius:50%;padding:2px;background:conic-gradient(from var(--ang),var(--mqs));animation:holo 5s linear infinite;vertical-align:middle}.mqe .crest{display:block}.mqrow td{text-shadow:0 1px 0 #000,1px 0 0 #000,0 -1px 0 #000,-1px 0 0 #000,0 2px 4px #000}.mqrow td{border-top:1px solid #ffd36b55!important;border-bottom:1px solid #ffd36b55!important}.mqrow td:first-child{box-shadow:-4px 0 0 #ffd36b}.dsort th{cursor:pointer;user-select:none}.dsort td{vertical-align:middle;font-size:13px}.dsort td .sub{font-size:11px}.mqbar{margin:8px 0 0}h1+.mqbar{margin:0 0 10px}.mqsticky{position:sticky;top:env(safe-area-inset-top);z-index:5;margin:-4px -4px 12px}.mqsticky{background:#0b0e16;padding:4px 4px 0}.mqbar2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}.mqbar2 button{width:auto;padding:6px 14px;margin:0}.mqbar2 button:disabled{opacity:.4;cursor:default}.mqtabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--rule2)}.mqtabs button{flex:none;width:auto;margin:0;padding:8px 14px;background:none;border:0;border-bottom:3px solid transparent;color:var(--ink2);font-weight:700;box-shadow:none}.mqtabs button.on{color:var(--tote);border-bottom-color:var(--tote)}.mqpane{display:none;padding-top:10px}.mqpane.on{display:block}.mqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}@media(max-width:520px){.mqgrid{grid-template-columns:repeat(3,1fr)}}.mqtile{position:relative;display:flex;flex-direction:column;gap:2px;padding:4px;border:1px solid var(--rule2);cursor:pointer;font-size:12px;text-align:center}.mqtile input{position:absolute;opacity:0;pointer-events:none}.mqtile:has(input:checked){outline:2px solid var(--tote);background:#e8a33a22}.mqtile.locked .mqth{filter:grayscale(1) brightness(.55)}.mqlock{font-size:10px;color:var(--ink2);line-height:1.2}.mqnew{position:absolute;top:4px;right:4px;font:800 9px sans-serif;background:#e23d3d;color:#fff;padding:1px 4px;border-radius:6px}.mqth{display:flex;align-items:center;justify-content:center;height:52px;overflow:hidden}.mqsc{width:100%;height:100%;background:center/cover}.mqx.mqmini{min-height:0;width:100%;height:100%;padding:0;background:#1a1f2e}.pxhd{font:800 18px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--led)}.pbar{height:8px;background:var(--well);margin:6px 0 2px}.pbar i{display:block;height:100%;background:linear-gradient(90deg,#b45309,#ffd36b)}.thnum{position:absolute;top:2px;left:4px;font:800 12px 'Cinzel',serif;color:#ffe9a8;text-shadow:0 1px 2px #000}.mqth{position:relative}.bgrp{border:1px solid #3a4866;background:#ffffff05;border-radius:4px;padding:6px 10px 10px;margin:0 0 12px;min-width:0}.bgrp legend{padding:0 6px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led)}.mqtabs.slide{position:relative;scroll-snap-type:x proximity;scroll-behavior:smooth}.mqtabs.slide button{scroll-snap-align:center;padding:8px 11px;border-bottom-color:transparent!important}.mqink{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--tote);transition:transform .25s ease,width .25s ease}.mqpane.on.fromR{animation:pslideR .25s ease}.mqpane.on.fromL{animation:pslideL .25s ease}@keyframes pslideR{from{transform:translateX(24px);opacity:0}}@keyframes pslideL{from{transform:translateX(-24px);opacity:0}}@media (prefers-reduced-motion:reduce){.mqink,.mqpane.on{transition:none;animation:none!important}}.card.hc{background:linear-gradient(100deg,color-mix(in srgb,var(--tc) 34%,#1e2b46),#22304c 55%);border:2px solid #0a0f1c;border-left:5px solid var(--tc);box-shadow:inset 2px 2px 0 #4a5f8c,inset -2px -2px 0 #121a2b,0 3px 0 #05070d}.hc .bname{font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.02em;text-shadow:2px 2px 0 #000}.hc .sub{color:#c6cede}.hc .sv{color:#fff;text-shadow:1px 1px 0 #000}.hc .cond svg{filter:drop-shadow(1px 0 0 #04140a) drop-shadow(-1px 0 0 #04140a) drop-shadow(0 1px 0 #04140a) drop-shadow(0 -1px 0 #04140a) drop-shadow(0 0 4px #3fb96b88)}.hc .cond b{text-shadow:1px 1px 0 #000;font-size:15px}.hc .cond+.sub{display:block;width:100%;margin-top:4px;padding:4px 8px;background:#0b1120cc;border-left:3px solid var(--tote);color:#e6e8ec;font-weight:600}.hc .chart.starts{display:flex;flex-direction:column;gap:3px;margin-top:4px}.hc .chart.starts span{padding:4px 8px;background:#0b1120cc;border-left:3px solid #5ab7e6;color:#e6e8ec;font-weight:600}.hc .chart.starts b{color:#ffb347;text-transform:uppercase;font-size:11px;letter-spacing:.08em;margin-right:4px}body.themed .card.hc{background:linear-gradient(100deg,color-mix(in srgb,var(--tc) 34%,#1e2b46),#22304ce8 55%)}.vstrip{display:flex;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;scroll-snap-type:x proximity}.vstrip{overflow-x:auto!important}.vstrip button{flex:none;scroll-snap-align:center}.vdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--win);vertical-align:2px}.vpane{border:2px solid var(--rule);background:var(--well);padding:4px 8px;margin-top:6px}.vmeta2{font-size:13px;color:var(--ink2);padding:4px 0 6px;border-bottom:1px solid var(--rule2);display:flex;gap:8px;flex-wrap:wrap}.vmeta2 .vname{display:none}.sbarn .btag{font-size:13px}.skwk{margin:8px 0}.skwh{display:flex;justify-content:space-between;align-items:baseline;font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led);border-bottom:1px solid var(--rule);padding:4px 2px}.skwh span{font-size:12px;color:var(--ink2);letter-spacing:.04em}.skrow{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--rule);border-left:4px solid #5ab7e6;padding:6px 10px;margin-top:4px}.skrow.kfinal{border-left-color:var(--led)}.skrow.kclassic{border-left-color:#a78bfa}.skrow.kleg{border-left-color:#3fb96b}.skrow.ksignature{border-left-color:#e8a33a}.skrow.kinvitational{border-left-color:#f472b6}.skrow.kopener{border-left-color:#93c5fd}.skrow.mine{background:#e8a33a1a}.skl{display:flex;flex-direction:column;min-width:0}.skl b{font-size:15px}.skdiv{font-size:12px;color:var(--ink2)}.skyou{font-size:12px;color:var(--tote);font-weight:700}.skr{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}.sk{font-size:12px;color:var(--ink2)}.sk.nom{color:var(--win);font-weight:700}.sk.inv{color:var(--led)}.sk.won a{color:var(--ink);font-weight:700}.skpast summary{font-size:14px}.gpart{border:2px solid var(--rule);border-radius:4px;background:var(--panel);margin:6px 0}.gpart>summary{padding:10px 12px!important;border:0;display:flex;justify-content:space-between;align-items:center}.gpart[open]>summary{border-bottom:2px solid var(--rule)}.gcount{font-size:12px;color:var(--ink2);background:var(--well);padding:1px 7px;border-radius:9px;letter-spacing:0}.gbody{padding:0 12px 4px}.gbody .gtopic summary{font-family:'Barlow Semi Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);font-size:15px;padding:8px 2px}.upl{display:flex;flex-direction:column;gap:10px}.upc{display:flex;gap:10px;align-items:center;padding:10px;background:var(--panel);border:2px solid var(--um);box-shadow:inset 2px 2px 0 #ffffff10,inset -2px -2px 0 #0006,0 3px 0 #05070d}.upc img{flex:none;image-rendering:pixelated;filter:drop-shadow(0 3px 2px #000a)}.upm{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.upm b{font:800 19px 'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--um2);text-shadow:2px 2px 0 #000}.upk{display:flex;flex-wrap:wrap;gap:4px}.upk span{font-size:12px;padding:1px 6px;background:var(--well);border:1px solid var(--rule)}.upa{flex:none}.upa button{width:auto}.upst{font-weight:800;color:var(--um2);white-space:nowrap}.up0{--um:#5b4a38;--um2:#c8b89f}.up1{--um:#7a3b2a;--um2:#f2a28a}.up2{--um:#8a4a6a;--um2:#f6a8c8}.up3{--um:#8793a3;--um2:#e6ecf3}.up4{--um:#c9922e;--um2:#ffd36b}.up4.built,.up4.next{background:linear-gradient(100deg,#ffd36b22,var(--panel) 60%)}.upc.ahead{opacity:.55}.upc.ahead img{filter:grayscale(.8) brightness(.7)}.upc.next{outline:2px solid var(--tote);outline-offset:2px}.etiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}.etile{background:var(--panel);border:1px solid var(--rule);border-top:3px solid var(--led);padding:8px 10px;display:flex;flex-direction:column;gap:1px;min-width:0}.etl{font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}.etile b{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.etile .up{color:var(--win);font-size:12px;font-weight:700}.etile .dn{color:var(--loss);font-size:12px;font-weight:700}.echart{width:100%;height:120px;display:block;margin-top:6px;background:var(--well)}.chartax{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3)}.ebook td.money,.etable td.money{text-align:right}.ebook th{text-align:left;color:var(--led);padding-top:8px}.ebook .esub td{font-weight:700;border-top:1px solid var(--rule)}.ebook .enet td{font-weight:800;font-size:16px;border-top:2px solid var(--led)}.hmenu{display:flex;gap:3px;margin:6px 0 12px;padding:3px;background:#05070d;border:2px solid #0a0f1c;box-shadow:inset 2px 2px 0 #00000080,inset -1px -1px 0 #ffffff12,0 2px 0 #ffffff08;overflow-x:auto;scrollbar-width:none}.hmenu a,.hmenu button{flex:1 0 auto;text-align:center;white-space:nowrap;padding:8px 6px;margin:0;width:auto;border:0;border-radius:2px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#a4acb9;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008;transition:color .15s,background .15s}.hmenu a:hover,.hmenu button:hover{color:#e6e8ec}.hmenu a.on,.hmenu button.on{color:#2a1a03;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);text-shadow:0 1px 0 #ffe9a8;box-shadow:inset 1px 1px 0 #fff3b0,inset -1px -2px 0 #8a5a12,0 2px 4px #000a}.bidf{display:flex;flex-direction:column;gap:3px;margin-top:4px;text-align:left}.bidf input[type=number]{width:100%;font-size:15px;padding:5px 6px}.bidok{font-size:11px;display:flex;gap:4px;align-items:center;color:var(--ink2)}.bidf button{width:100%}.sortrow{display:flex;align-items:center;gap:6px;margin:-4px 0 10px}.sortrow a{font-size:13px;font-weight:700;padding:3px 9px;border:1px solid var(--rule);color:var(--ink2)}.sortrow a.on{background:var(--tote);color:var(--tote-ink);border-color:var(--tote)}.pgh.tk{background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 55%,#05070d));border-bottom:4px solid var(--ta)}.tkb{flex:none;align-self:center;image-rendering:pixelated;filter:drop-shadow(0 2px 2px #000a)}.tkn{font-size:20px;line-height:1.1;letter-spacing:.02em;text-shadow:2px 2px 0 #000}.vstrip button img{vertical-align:-4px;margin-right:4px}.vstrip button{border-bottom:3px solid var(--tp)!important}.vband{display:flex;gap:10px;align-items:center;margin:-4px -8px 4px;padding:8px 10px;background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 55%,#05070d));border-bottom:3px solid var(--ta);color:#fff}.vband b{display:block;font-size:22px;line-height:1;text-shadow:2px 2px 0 #000}.vband span{font-size:12px;opacity:.85}/* the stud book: nearly every stallion there is S+, so the holo stays but holds still */.calm .tSp:before,.calm .tSp:after,.calm .tier.Sp,.calm .sqt.tSp,.calm .badge.tSp,.calm .troph{animation:none!important}.mi{position:relative;margin:6px 0;padding:10px 34px 10px 12px;border:2px solid #0a0f1c!important;border-left:4px solid var(--tote)!important;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008,0 2px 0 #05070d;color:var(--ink);text-decoration:none}.mi:after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);font:800 26px 'Barlow Condensed',sans-serif;color:var(--tote)}.mi:hover,.mi:active{background:linear-gradient(#22304c,#18223a);border-color:#e8a33a!important}.mi:active{transform:translateY(1px)}.mi .sub{font-size:13px}.mi.off:after{content:none}.r10{flex-wrap:wrap}.r10v{flex-basis:100%;font-size:13px;font-weight:700;color:var(--tote);text-decoration:none;padding:2px 0 0 46px}.billrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink2);padding:6px 10px;margin:4px 0 8px;background:var(--well);border:1px solid var(--rule);border-left:3px solid var(--loss)}.billrow b{color:var(--ink)}.billrow a{margin-left:auto;color:var(--tote);font-weight:700}.billrow.wayup{border-left-color:var(--tote)}.ts .bname{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ts .bname .age{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:400;color:var(--ink2)}.sheet{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.sheet button{width:100%;margin:0;padding:8px 2px;font-size:13px;letter-spacing:.04em}.sheet button[disabled]{opacity:.35;box-shadow:none;transform:none}.sheet .foc{grid-column:1/-1;display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink2);flex-wrap:wrap}.sheet .foc label{color:var(--ink);background:var(--well);border:2px solid var(--rule);padding:1px 8px;cursor:pointer}.sheet .foc label:has(input:checked){border-color:var(--tote);color:var(--tote)}.sheet .foc input{position:absolute;opacity:0;width:0;height:0}.sheet .pick{display:block;margin:0;cursor:pointer}.sheet .pick input{position:absolute;opacity:0;width:0;height:0}.sheet .pick span{display:grid;place-items:center;height:100%;box-sizing:border-box;padding:8px 2px;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--panel);border:2px solid var(--edge);box-shadow:3px 3px 0 var(--edge)}.sheet .pick:has(input:checked) span{border-color:var(--tote);color:var(--tote);box-shadow:3px 3px 0 var(--edge),inset 0 0 0 1px var(--tote)}.sheet .pick:has(input:focus-visible) span{outline:2px solid var(--tote);outline-offset:2px}.sheet .pick:has(input[disabled]) span,.sheet .pick.lock span{opacity:.35;box-shadow:none;cursor:default}.didnote{font-size:13px;color:var(--ink2);margin-top:6px}.stageln{font-size:12.5px;color:var(--ink2);margin-top:6px}.stageln b{color:var(--ink)}.didnote b{color:var(--win)}.echart.tall{height:auto}.ct{font:600 10.5px 'Barlow Semi Condensed',sans-serif;fill:var(--ink2);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0}.ct.now{fill:var(--led);font-weight:700;font-size:12px}.ct.ctw{fill:#3fb96b}.ct.ctl{fill:#e0704f}.chartax b.won{color:#3fb96b}.chartax b.lost{color:#e0704f}.tabs a{position:relative}.tabs a .tbadge{position:absolute;top:3px;right:8px;background:var(--tote);color:var(--tote-ink);font-size:10px;font-weight:800;line-height:1;padding:2px 4px;border-radius:8px;border:2px solid var(--edge);min-width:8px;text-align:center}.tabs a.on .tbadge{display:none}.tabs{gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:#05070d!important;box-shadow:0 -2px 0 var(--rule),0 -4px 0 var(--edge)}.tabs a{flex:0 1 100px;border:2px solid #0a0f1c;border-radius:3px;color:#a4acb9;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008,0 2px 0 #000;transition:background .15s,color .15s}.tabs a:active{transform:translateY(1px);box-shadow:inset 1px 1px 0 #0008}.tabs a.on{color:#2a1a03!important;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);text-shadow:0 1px 0 #ffe9a8;box-shadow:inset 1px 1px 0 #fff3b0,inset -1px -2px 0 #8a5a12,0 2px 4px #000a}.stallct{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:1.05em;margin-left:4px;letter-spacing:0}.st-grn{color:#4ade80;text-shadow:0 0 6px #4ade8066}.st-yel{color:#facc15;text-shadow:0 0 6px #facc1566}.st-red{color:#f87171;text-shadow:0 0 6px #f8717166}.vseal{vertical-align:-3px;margin-left:4px;flex:none}.mqnl{display:flex;align-items:center;gap:4px;max-width:100%;min-width:0}.mqnl .mqn{min-width:0}.lgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px}.lpick{width:auto;margin:0;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--btn2);box-shadow:none;font-size:12px}.lpick.on{outline:2px solid var(--tote)}.pxchip{font:800 10px 'Cinzel',serif;padding:0 4px;border:1px solid var(--led);border-radius:3px;color:var(--led);vertical-align:1px}.mqdot{width:18px;height:18px;border-radius:50%}.mqaa{font-size:26px}.mqtile[hidden]{display:none}.mqpg .pg{cursor:pointer}.mqshim{font-size:28px;color:#fff;text-shadow:0 0 6px #fff,0 0 14px #ffd36b}.pager{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:14px 0}.pager .pg,.card .pager a.pg{flex:0 0 auto;display:inline-block;padding:4px 6px;width:auto;min-width:22px;margin:0}.pg{min-width:30px;padding:6px 8px;text-align:center;border:1px solid var(--rule2);text-decoration:none;color:inherit}.pg.on{background:var(--tote);color:#2a1a03;font-weight:800}span.pg:not(.on){opacity:.35}.crest{vertical-align:middle;flex:none}.btag{color:inherit;text-decoration:none;white-space:nowrap}.btitle{font-size:11px;color:var(--tote);letter-spacing:.04em}.pchip{font-size:10px;padding:1px 5px;border:1px solid var(--tote);border-radius:3px;color:var(--tote)}td.own{font-size:13px;max-width:140px;overflow:hidden;text-overflow:ellipsis}.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-bottom:8px}.cpick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:var(--card,#0002);border:1px solid var(--rule2);text-align:center;font-size:13px}.swr{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.sw{width:26px;height:26px;border:2px solid #05070d;display:inline-block}.sw input{opacity:0;width:100%;height:100%;margin:0}.sw:has(input:checked){outline:3px solid var(--tote)}.silk{display:inline-block;vertical-align:-2px;border:1px solid #05070d;border-radius:2px}.drow{display:flex;align-items:center;gap:10px;margin:6px 0}.drow b{width:18px}.drow select{flex:1}.drv{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--rule2)}.drvm{flex:1;min-width:0}.drvr{display:flex;flex-direction:column;align-items:flex-end;font-size:13px}.dstand{width:100%}.dstand td,.dstand th{padding:3px 4px;text-align:left}
+.mqe{display:inline-block;position:relative;border-radius:50%;padding:2px;background:conic-gradient(from var(--ang),var(--mqs));animation:holo 5s linear infinite;vertical-align:middle}.mqe .crest{display:block}.mqrow td{text-shadow:0 1px 0 #000,1px 0 0 #000,0 -1px 0 #000,-1px 0 0 #000,0 2px 4px #000}.mqrow td{border-top:1px solid #ffd36b55!important;border-bottom:1px solid #ffd36b55!important}.mqrow td:first-child{box-shadow:-4px 0 0 #ffd36b}.dsort th{cursor:pointer;user-select:none}.dsort td{vertical-align:middle;font-size:13px}.dsort td .sub{font-size:11px}.mqbar{margin:8px 0 0}h1+.mqbar{margin:0 0 10px}.mqsticky{position:sticky;top:env(safe-area-inset-top);z-index:5;margin:-4px -4px 12px}.mqsticky{background:#0b0e16;padding:4px 4px 0}.mqbar2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}.mqbar2 button{width:auto;padding:6px 14px;margin:0}.mqbar2 button:disabled{opacity:.4;cursor:default}.mqtabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--rule2)}.mqtabs button{flex:none;width:auto;margin:0;padding:8px 14px;background:none;border:0;border-bottom:3px solid transparent;color:var(--ink2);font-weight:700;box-shadow:none}.mqtabs button.on{color:var(--tote);border-bottom-color:var(--tote)}.mqpane{display:none;padding-top:10px}.mqpane.on{display:block}.mqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}@media(max-width:520px){.mqgrid{grid-template-columns:repeat(3,1fr)}}.mqtile{position:relative;display:flex;flex-direction:column;gap:2px;padding:4px;border:1px solid var(--rule2);cursor:pointer;font-size:12px;text-align:center}.mqtile input{position:absolute;opacity:0;pointer-events:none}.mqtile:has(input:checked){outline:2px solid var(--tote);background:#e8a33a22}.mqtile.locked .mqth{filter:grayscale(1) brightness(.55)}.mqlock{font-size:10px;color:var(--ink2);line-height:1.2}.mqnew{position:absolute;top:4px;right:4px;font:800 9px sans-serif;background:#e23d3d;color:#fff;padding:1px 4px;border-radius:6px}.mqth{display:flex;align-items:center;justify-content:center;height:52px;overflow:hidden}.mqsc{width:100%;height:100%;background:center/cover}.mqx.mqmini{min-height:0;width:100%;height:100%;padding:0;background:#1a1f2e}.pxhd{font:800 18px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--led)}.pbar{height:8px;background:var(--well);margin:6px 0 2px}.pbar i{display:block;height:100%;background:linear-gradient(90deg,#b45309,#ffd36b)}.thnum{position:absolute;top:2px;left:4px;font:800 12px 'Cinzel',serif;color:#ffe9a8;text-shadow:0 1px 2px #000}.mqth{position:relative}.bgrp{border:1px solid #3a4866;background:#ffffff05;border-radius:4px;padding:6px 10px 10px;margin:0 0 12px;min-width:0}.bgrp legend{padding:0 6px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led)}.mqtabs.slide{position:relative;scroll-snap-type:x proximity;scroll-behavior:smooth}.mqtabs.slide button{scroll-snap-align:center;padding:8px 11px;border-bottom-color:transparent!important}.mqink{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--tote);transition:transform .25s ease,width .25s ease}.mqpane.on.fromR{animation:pslideR .25s ease}.mqpane.on.fromL{animation:pslideL .25s ease}@keyframes pslideR{from{transform:translateX(24px);opacity:0}}@keyframes pslideL{from{transform:translateX(-24px);opacity:0}}@media (prefers-reduced-motion:reduce){.mqink,.mqpane.on{transition:none;animation:none!important}}.card.hc{background:linear-gradient(100deg,color-mix(in srgb,var(--tc) 34%,#1e2b46),#22304c 55%);border:2px solid #0a0f1c;border-left:5px solid var(--tc);box-shadow:inset 2px 2px 0 #4a5f8c,inset -2px -2px 0 #121a2b,0 3px 0 #05070d}.hc .bname{font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.02em;text-shadow:2px 2px 0 #000}.hc .sub{color:#c6cede}.hc .sv{color:#fff;text-shadow:1px 1px 0 #000}.hc .cond svg{filter:drop-shadow(1px 0 0 #04140a) drop-shadow(-1px 0 0 #04140a) drop-shadow(0 1px 0 #04140a) drop-shadow(0 -1px 0 #04140a) drop-shadow(0 0 4px #3fb96b88)}.hc .cond b{text-shadow:1px 1px 0 #000;font-size:15px}.hc .cond+.sub{display:block;width:100%;margin-top:4px;padding:4px 8px;background:#0b1120cc;border-left:3px solid var(--tote);color:#e6e8ec;font-weight:600}.hc .chart.starts{display:flex;flex-direction:column;gap:3px;margin-top:4px}.hc .chart.starts span{padding:4px 8px;background:#0b1120cc;border-left:3px solid #5ab7e6;color:#e6e8ec;font-weight:600}.hc .chart.starts b{color:#ffb347;text-transform:uppercase;font-size:11px;letter-spacing:.08em;margin-right:4px}body.themed .card.hc{background:linear-gradient(100deg,color-mix(in srgb,var(--tc) 34%,#1e2b46),#22304ce8 55%)}.vstrip{display:flex;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;scroll-snap-type:x proximity}.vstrip{overflow-x:auto!important}.vstrip button{flex:none;scroll-snap-align:center}.vdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--win);vertical-align:2px}.vpane{border:2px solid var(--rule);background:var(--well);padding:4px 8px;margin-top:6px}.vmeta2{font-size:13px;color:var(--ink2);padding:4px 0 6px;border-bottom:1px solid var(--rule2);display:flex;gap:8px;flex-wrap:wrap}.vmeta2 .vname{display:none}.sbarn .btag{font-size:13px}.skwk{margin:8px 0}.skwh{display:flex;justify-content:space-between;align-items:baseline;font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--led);border-bottom:1px solid var(--rule);padding:4px 2px}.skwh span{font-size:12px;color:var(--ink2);letter-spacing:.04em}.skrow{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--rule);border-left:4px solid #5ab7e6;padding:6px 10px;margin-top:4px}.skrow.kfinal{border-left-color:var(--led)}.skrow.kclassic{border-left-color:#a78bfa}.skrow.kleg{border-left-color:#3fb96b}.skrow.ksignature{border-left-color:#e8a33a}.skrow.kinvitational{border-left-color:#f472b6}.skrow.kopener{border-left-color:#93c5fd}.skrow.mine{background:#e8a33a1a}.skl{display:flex;flex-direction:column;min-width:0}.skl b{font-size:15px}.skdiv{font-size:12px;color:var(--ink2)}.skyou{font-size:12px;color:var(--tote);font-weight:700}.skr{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}.sk{font-size:12px;color:var(--ink2)}.sk.nom{color:var(--win);font-weight:700}.sk.inv{color:var(--led)}.sk.won a{color:var(--ink);font-weight:700}.skpast summary{font-size:14px}.gpart{border:2px solid var(--rule);border-radius:4px;background:var(--panel);margin:6px 0}.gpart>summary{padding:10px 12px!important;border:0;display:flex;justify-content:space-between;align-items:center}.gpart[open]>summary{border-bottom:2px solid var(--rule)}.gcount{font-size:12px;color:var(--ink2);background:var(--well);padding:1px 7px;border-radius:9px;letter-spacing:0}.gbody{padding:0 12px 4px}.gbody .gtopic summary{font-family:'Barlow Semi Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);font-size:15px;padding:8px 2px}.upl{display:flex;flex-direction:column;gap:10px}.upc{display:flex;gap:10px;align-items:center;padding:10px;background:var(--panel);border:2px solid var(--um);box-shadow:inset 2px 2px 0 #ffffff10,inset -2px -2px 0 #0006,0 3px 0 #05070d}.upc img{flex:none;image-rendering:pixelated;filter:drop-shadow(0 3px 2px #000a)}.upm{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.upm b{font:800 19px 'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--um2);text-shadow:2px 2px 0 #000}.upk{display:flex;flex-wrap:wrap;gap:4px}.upk span{font-size:12px;padding:1px 6px;background:var(--well);border:1px solid var(--rule)}.upa{flex:none}.upa button{width:auto}.upst{font-weight:800;color:var(--um2);white-space:nowrap}.up0{--um:#5b4a38;--um2:#c8b89f}.up1{--um:#7a3b2a;--um2:#f2a28a}.up2{--um:#8a4a6a;--um2:#f6a8c8}.up3{--um:#8793a3;--um2:#e6ecf3}.up4{--um:#c9922e;--um2:#ffd36b}.up4.built,.up4.next{background:linear-gradient(100deg,#ffd36b22,var(--panel) 60%)}.upc.ahead{opacity:.55}.upc.ahead img{filter:grayscale(.8) brightness(.7)}.upc.next{outline:2px solid var(--tote);outline-offset:2px}.etiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}.etile{background:var(--panel);border:1px solid var(--rule);border-top:3px solid var(--led);padding:8px 10px;display:flex;flex-direction:column;gap:1px;min-width:0}.etl{font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}.etile b{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.etile .up{color:var(--win);font-size:12px;font-weight:700}.etile .dn{color:var(--loss);font-size:12px;font-weight:700}.echart{width:100%;height:120px;display:block;margin-top:6px;background:var(--well)}.chartax{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3)}.ebook td.money,.etable td.money{text-align:right}.ebook th{text-align:left;color:var(--led);padding-top:8px}.ebook .esub td{font-weight:700;border-top:1px solid var(--rule)}.ebook .enet td{font-weight:800;font-size:16px;border-top:2px solid var(--led)}.hmenu{display:flex;gap:3px;margin:6px 0 12px;padding:3px;background:#05070d;border:2px solid #0a0f1c;box-shadow:inset 2px 2px 0 #00000080,inset -1px -1px 0 #ffffff12,0 2px 0 #ffffff08;overflow-x:auto;scrollbar-width:none}.hmenu a,.hmenu button{flex:1 0 auto;text-align:center;white-space:nowrap;padding:8px 6px;margin:0;width:auto;border:0;border-radius:2px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#a4acb9;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008;transition:color .15s,background .15s}.hmenu a:hover,.hmenu button:hover{color:#e6e8ec}.hmenu a.on,.hmenu button.on{color:#2a1a03;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);text-shadow:0 1px 0 #ffe9a8;box-shadow:inset 1px 1px 0 #fff3b0,inset -1px -2px 0 #8a5a12,0 2px 4px #000a}.bidf{display:flex;flex-direction:column;gap:3px;margin-top:4px;text-align:left}.bidf input[type=number]{width:100%;font-size:15px;padding:5px 6px}.bidok{font-size:11px;display:flex;gap:4px;align-items:center;color:var(--ink2)}.bidf button{width:100%}.nextup{display:flex;flex-direction:column;gap:4px;margin:6px 0 10px}.nuh{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--led)}.nu{display:grid;grid-template-columns:1fr auto;gap:0 8px;padding:6px 10px;background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--tote);color:var(--ink);text-decoration:none}.nu span{grid-column:1;font-size:12px;color:var(--ink2)}.nu em{grid-row:1/3;grid-column:2;align-self:center;font-style:normal;font-weight:700;color:var(--led);font-variant-numeric:tabular-nums}.nu.done{border-left-color:var(--win)}.nu.done em{color:var(--win)}.pgoff{color:#3fb96b}.sortrow{display:flex;align-items:center;gap:6px;margin:-4px 0 10px}.sortrow a{font-size:13px;font-weight:700;padding:3px 9px;border:1px solid var(--rule);color:var(--ink2)}.sortrow a.on{background:var(--tote);color:var(--tote-ink);border-color:var(--tote)}.pgh.tk{background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 55%,#05070d));border-bottom:4px solid var(--ta)}.tkb{flex:none;align-self:center;image-rendering:pixelated;filter:drop-shadow(0 2px 2px #000a)}.tkn{font-size:20px;line-height:1.1;letter-spacing:.02em;text-shadow:2px 2px 0 #000}.vstrip button img{vertical-align:-4px;margin-right:4px}.vstrip button{border-bottom:3px solid var(--tp)!important}.vband{display:flex;gap:10px;align-items:center;margin:-4px -8px 4px;padding:8px 10px;background:linear-gradient(100deg,var(--tp),color-mix(in srgb,var(--tp) 55%,#05070d));border-bottom:3px solid var(--ta);color:#fff}.vband b{display:block;font-size:22px;line-height:1;text-shadow:2px 2px 0 #000}.vband span{font-size:12px;opacity:.85}/* the stud book: nearly every stallion there is S+, so the holo stays but holds still */.calm .tSp:before,.calm .tSp:after,.calm .tier.Sp,.calm .sqt.tSp,.calm .badge.tSp,.calm .troph{animation:none!important}.mi{position:relative;margin:6px 0;padding:10px 34px 10px 12px;border:2px solid #0a0f1c!important;border-left:4px solid var(--tote)!important;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008,0 2px 0 #05070d;color:var(--ink);text-decoration:none}.mi:after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);font:800 26px 'Barlow Condensed',sans-serif;color:var(--tote)}.mi:hover,.mi:active{background:linear-gradient(#22304c,#18223a);border-color:#e8a33a!important}.mi:active{transform:translateY(1px)}.mi .sub{font-size:13px}.mi.off:after{content:none}.r10{flex-wrap:wrap}.r10v{flex-basis:100%;font-size:13px;font-weight:700;color:var(--tote);text-decoration:none;padding:2px 0 0 46px}.billrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink2);padding:6px 10px;margin:4px 0 8px;background:var(--well);border:1px solid var(--rule);border-left:3px solid var(--loss)}.billrow b{color:var(--ink)}.billrow a{margin-left:auto;color:var(--tote);font-weight:700}.billrow.wayup{border-left-color:var(--tote)}.ts .bname{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ts .bname .age{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:400;color:var(--ink2)}.sheet{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.sheet button{width:100%;margin:0;padding:8px 2px;font-size:13px;letter-spacing:.04em}.sheet button[disabled]{opacity:.35;box-shadow:none;transform:none}.sheet .foc{grid-column:1/-1;display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink2);flex-wrap:wrap}.sheet .foc label{color:var(--ink);background:var(--well);border:2px solid var(--rule);padding:1px 8px;cursor:pointer}.sheet .foc label:has(input:checked){border-color:var(--tote);color:var(--tote)}.sheet .foc input{position:absolute;opacity:0;width:0;height:0}.sheet .pick{display:block;margin:0;cursor:pointer}.sheet .pick input{position:absolute;opacity:0;width:0;height:0}.sheet .pick span{display:grid;place-items:center;height:100%;box-sizing:border-box;padding:8px 2px;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--panel);border:2px solid var(--edge);box-shadow:3px 3px 0 var(--edge)}.sheet .pick:has(input:checked) span{border-color:var(--tote);color:var(--tote);box-shadow:3px 3px 0 var(--edge),inset 0 0 0 1px var(--tote)}.sheet .pick:has(input:focus-visible) span{outline:2px solid var(--tote);outline-offset:2px}.sheet .pick:has(input[disabled]) span,.sheet .pick.lock span{opacity:.35;box-shadow:none;cursor:default}.didnote{font-size:13px;color:var(--ink2);margin-top:6px}.stageln{font-size:12.5px;color:var(--ink2);margin-top:6px}.stageln b{color:var(--ink)}.didnote b{color:var(--win)}.echart.tall{height:auto}.ct{font:600 10.5px 'Barlow Semi Condensed',sans-serif;fill:var(--ink2);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0}.ct.now{fill:var(--led);font-weight:700;font-size:12px}.ct.ctw{fill:#3fb96b}.ct.ctl{fill:#e0704f}.chartax b.won{color:#3fb96b}.chartax b.lost{color:#e0704f}.tabs a{position:relative}.tabs a .tbadge{position:absolute;top:3px;right:8px;background:var(--tote);color:var(--tote-ink);font-size:10px;font-weight:800;line-height:1;padding:2px 4px;border-radius:8px;border:2px solid var(--edge);min-width:8px;text-align:center}.tabs a.on .tbadge{display:none}.tabs{gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:#05070d!important;box-shadow:0 -2px 0 var(--rule),0 -4px 0 var(--edge)}.tabs a{flex:0 1 100px;border:2px solid #0a0f1c;border-radius:3px;color:#a4acb9;background:linear-gradient(#1a2338,#121a2b);box-shadow:inset 1px 1px 0 #ffffff14,inset -1px -1px 0 #0008,0 2px 0 #000;transition:background .15s,color .15s}.tabs a:active{transform:translateY(1px);box-shadow:inset 1px 1px 0 #0008}.tabs a.on{color:#2a1a03!important;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);text-shadow:0 1px 0 #ffe9a8;box-shadow:inset 1px 1px 0 #fff3b0,inset -1px -2px 0 #8a5a12,0 2px 4px #000a}.stallct{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:1.05em;margin-left:4px;letter-spacing:0}.st-grn{color:#4ade80;text-shadow:0 0 6px #4ade8066}.st-yel{color:#facc15;text-shadow:0 0 6px #facc1566}.st-red{color:#f87171;text-shadow:0 0 6px #f8717166}.vseal{vertical-align:-3px;margin-left:4px;flex:none}.mqnl{display:flex;align-items:center;gap:4px;max-width:100%;min-width:0}.mqnl .mqn{min-width:0}.lgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px}.lpick{width:auto;margin:0;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--btn2);box-shadow:none;font-size:12px}.lpick.on{outline:2px solid var(--tote)}.pxchip{font:800 10px 'Cinzel',serif;padding:0 4px;border:1px solid var(--led);border-radius:3px;color:var(--led);vertical-align:1px}.mqdot{width:18px;height:18px;border-radius:50%}.mqaa{font-size:26px}.mqtile[hidden]{display:none}.mqpg .pg{cursor:pointer}.mqshim{font-size:28px;color:#fff;text-shadow:0 0 6px #fff,0 0 14px #ffd36b}.pager{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:14px 0}.pager .pg,.card .pager a.pg{flex:0 0 auto;display:inline-block;padding:4px 6px;width:auto;min-width:22px;margin:0}.pg{min-width:30px;padding:6px 8px;text-align:center;border:1px solid var(--rule2);text-decoration:none;color:inherit}.pg.on{background:var(--tote);color:#2a1a03;font-weight:800}span.pg:not(.on){opacity:.35}.crest{vertical-align:middle;flex:none}.btag{color:inherit;text-decoration:none;white-space:nowrap}.btitle{font-size:11px;color:var(--tote);letter-spacing:.04em}.pchip{font-size:10px;padding:1px 5px;border:1px solid var(--tote);border-radius:3px;color:var(--tote)}td.own{font-size:13px;max-width:140px;overflow:hidden;text-overflow:ellipsis}.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-bottom:8px}.cpick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:var(--card,#0002);border:1px solid var(--rule2);text-align:center;font-size:13px}.swr{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.sw{width:26px;height:26px;border:2px solid #05070d;display:inline-block}.sw input{opacity:0;width:100%;height:100%;margin:0}.sw:has(input:checked){outline:3px solid var(--tote)}.silk{display:inline-block;vertical-align:-2px;border:1px solid #05070d;border-radius:2px}.drow{display:flex;align-items:center;gap:10px;margin:6px 0}.drow b{width:18px}.drow select{flex:1}.drv{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--rule2)}.drvm{flex:1;min-width:0}.drvr{display:flex;flex-direction:column;align-items:flex-end;font-size:13px}.dstand{width:100%}.dstand td,.dstand th{padding:3px 4px;text-align:left}
 .clr summary{padding:0;border:0;font-size:inherit;font-weight:400;display:block}.clr summary::after{content:none}.clrow{display:flex;gap:10px;align-items:center}.cltag{flex:none;min-width:48px;text-align:center;font:800 15px 'Barlow Condensed',sans-serif;color:var(--led);text-shadow:0 0 6px var(--ledglow)}.clid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.clid .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.clact{flex:none}.clact button{width:auto;margin:0;padding:6px 10px}.clr.mine{background:#e8a33a14;border-left:3px solid var(--tote)}.clr .pglines{margin-top:8px;background:#f4f1e8;color:#111;border-radius:4px;padding:4px 6px;font-family:'Barlow Semi Condensed',Arial Narrow,sans-serif}.tier.sm{font-size:12px;width:auto;padding:0 5px;display:inline-block;line-height:16px}
 .spon{color:var(--mk)}.skr .mk{font-size:14px}
 .mk{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:var(--mk,#7fd66a);text-shadow:0 0 8px #7fd66a55;font-variant-numeric:tabular-nums}.mkic{image-rendering:pixelated;vertical-align:middle}.mkbar{margin-left:10px;text-decoration:none}
@@ -946,7 +946,7 @@ OFFLINE_PAGE = ("<!doctype html><html><head><meta charset=utf-8><meta name=viewp
                 "right where you left off.</p><button onclick='location.reload()'>Try again</button>"
                 "<script>addEventListener('online',()=>location.reload())</script></body></html>")
 MANIFEST = json.dumps({"id": "/", "name": "Trot Dynasty", "short_name": "Trot Dynasty",
-                       "description": "A harness racing management sim: build a barn, breed champions, race for the Crown. Race night every night at 8 PM ET.",
+                       "description": "A harness racing management sim: build a barn, breed champions, race for the Crown. Racing every night from 7 to 11 PM ET.",
                        "start_url": "/welcome", "scope": "/", "display": "standalone", "orientation": "any",   # any: replays turn sideways
                        "background_color": "#070a14", "theme_color": "#070a14", "categories": ["games", "sports"],
                        "icons": [{"src": f"/mock/brand/app_{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any"} for n in (192, 512)]
@@ -976,15 +976,27 @@ def ny_now():
     return n
 
 
+CLOSE_HOUR = 23   # the night closes at 11 PM New York time: the books, the year, tomorrow's draw
+
+
+def fmt_post(m):
+    """Minutes after midnight as a post time: 7:24 PM."""
+    h, mm = divmod(int(m), 60)
+    return f"{(h - 1) % 12 + 1}:{mm:02d} {'PM' if h >= 12 else 'AM'}"
+
+
+assert fmt_post(19 * 60 + 4) == "7:04 PM" and fmt_post(23 * 60) == "11:00 PM"
+
+
 def last_slot():
-    """The most recent 8 PM in New York (naive, New York time)."""
+    """The most recent 11 PM close in New York (naive, New York time)."""
     n = ny_now()
-    s = n.replace(hour=20, minute=0, second=0, microsecond=0)
+    s = n.replace(hour=CLOSE_HOUR, minute=0, second=0, microsecond=0)
     return s if n >= s else s - timedelta(days=1)
 
 
 def entries_closed():
-    """Entries never close now: an entry made today is drawn into tomorrow's card at 8 PM, when tonight's has run."""
+    """Entries never close now: an entry made today is drawn into tomorrow's card at 11 PM, when tonight's has run."""
     return False
 
 
@@ -994,6 +1006,31 @@ def draw_program():
     skip = {h.id for s in sk.CALENDAR if s.week == day % c.YEAR and not s.result for h in s.noms}
     c.draw_card(day, G["horses"], skip)
     save()
+
+
+def run_live():
+    """Tonight's races whose post time has come go off now (the clock calls this through the evening). The books
+    before the first one are kept, so the close can tell each barn what its horses won tonight."""
+    if HELD[0] or c.CARD.get("day") != G["day"]:
+        return 0
+    if any("post" not in r for r in c.CARD.get("races", [])):            # a card drawn before post times: give it some
+        c.post_times(c.CARD["races"])
+    n = ny_now()
+    m = n.hour * 60 + n.minute
+    if not (c.POST_FROM <= m < CLOSE_HOUR * 60):
+        return 0
+    if not any(not r.get("done") and r.get("post", 0) <= m for r in c.CARD.get("races", [])):
+        return 0
+    G.setdefault("night_before", {h.id: (h.earnings, h.owner) for h in G["horses"] if h.owner in c.HUMAN})
+    c.DAY[0] = G["day"]
+    k = c.run_due(G["horses"], m)
+    save()
+    return k
+
+
+def race_off(r):
+    """True once this race has gone off: its field is set, its result is in."""
+    return bool(r and r.get("done"))
 
 
 def on_card(h):
@@ -1052,6 +1089,10 @@ def checked_tick():
 def race_nights():
     """The circuit's clock, on its own thread: once its 8 PM has passed, tonight's card runs. A server that was down
     runs one night when it comes back; the other missed nights are skipped."""
+    with LOCK:                                                # the night used to close at 8 PM: the same night closes at 11 now
+        ln = G.get("last_night")
+        if ln and ln.endswith("T20:00:00"):
+            G["last_night"] = ln[:-8] + f"{CLOSE_HOUR}:00:00"
     while True:
         try:
             with LOCK:
@@ -1059,6 +1100,8 @@ def race_nights():
                 if G.setdefault("last_night", slot) < slot and not HELD[0]:
                     G["last_night"] = slot
                     checked_tick()
+                else:
+                    run_live()                                         # tonight's races, each at its post time
         except Exception:
             traceback.print_exc()
         time.sleep(30)
@@ -1067,10 +1110,18 @@ def race_nights():
 def countdown():
     """Top bar: time to post time, when tonight's card runs and tomorrow's is drawn. The page's script keeps it ticking."""
     n = ny_now()
-    at = n.replace(hour=20, minute=0, second=0, microsecond=0)
-    if n >= at:
-        at += timedelta(days=1)
-    label = "Race night"
+    m = n.hour * 60 + n.minute
+    nxt = sorted(r["post"] for r in c.CARD.get("races", []) if not r.get("done") and r.get("post", 0) > m) if c.CARD.get("day") == G["day"] else []
+    if c.POST_FROM <= m < CLOSE_HOUR * 60:
+        if nxt:
+            at, label = n.replace(hour=nxt[0] // 60, minute=nxt[0] % 60, second=0, microsecond=0), "Racing live · next post"
+        else:
+            at, label = n.replace(hour=CLOSE_HOUR, minute=0, second=0, microsecond=0), "Racing live · card closes"
+    else:
+        at = n.replace(hour=c.POST_FROM // 60, minute=c.POST_FROM % 60, second=0, microsecond=0)
+        if n >= at:
+            at += timedelta(days=1)
+        label = "First post"
     left = int((at - n).total_seconds())
     ms = int((datetime.now(timezone.utc).timestamp() + left) * 1000)
     return (f"<small class=cd data-t={ms} data-l='{label}'>{label} in {left // 3600}h {left % 3600 // 60}m</small>"
@@ -1803,7 +1854,7 @@ GUIDE = [
          "Your retired stock boards at the farm for less. Both bills come out of your cash each race night. A good horse pays its own "
          "way many times over; a slow one costs you to keep, so sell, retire or drop down the ones that aren't earning. If the bills "
          "ever run past your cash, they come out of your next purses."),
-        ("Race night", "The circuit races once a day, at 8:00 PM Eastern. Each race night is a week of the season, and the season "
+        ("Race night", "The circuit races every evening from 7 to 11 PM Eastern, each track running its own card with its own post times. Each race night is a week of the season, and the season "
          "builds to the Crown, which closes it. On this circuit you enter a day ahead: the moment tonight's card has "
          "run, tomorrow's program is drawn from the entries and posted, so you have all day to read the form, make your claims and "
          "scratch if you need to. The countdown at the top of the screen tells you where you are in the day."),
@@ -1863,9 +1914,9 @@ GUIDE = [
         ("Claiming", "In a claiming race any other barn can put in a claim on your horse before post time, and you can claim theirs. "
          "A claim is binding: if the horse races, it changes hands at the tag whatever the result, and the purse goes to the old owner. "
          "Drop a horse into a cheap claimer and it may win easily, but you may lose it."),
-        ("The program", "Tonight's program is drawn and posted at 8 PM the night before: fields filled out, race numbers, post "
+        ("The program", "Tonight's program is drawn and posted at 11 PM the night before: fields filled out, race numbers, post "
          "positions by random draw, the morning line, each horse's recent form and the handicapper's pick. Those exact fields go "
-         "to the gate at 8:00, less any scratches. Your races are shown first. A horse on the program can still be entered "
+         "to the gate at their post times, less any scratches; you can scratch or claim right up until a race goes off. Your races are shown first. A horse on the program can still be entered "
          "for the next night."),
         ("Drivers", "Every horse goes to the gate with a driver, and every driver wears his own colors. Pick your barn's top three "
          "on the Drivers tab. Your horses get your first choice; when he's already driving one of your better horses in the same race, "
@@ -2029,7 +2080,7 @@ BOOK_CSS = ("<link href='https://fonts.googleapis.com/css2?family=IM+Fell+Englis
 # A new player's first tips teach the game in order; after that they come at random. A message from the team is shown
 # once to each player and then retired; a reminder that applies tonight comes before a tip.
 TIP_SEQUENCE = [
-    "Race night is every night at 8:00 PM Eastern. Enter today and your horse races tomorrow night; the program is posted at 8 PM for the next day.",
+    "Racing runs every night from 7 to 11 PM Eastern. Enter before 11 PM and your horse races tomorrow night; the program is posted at 11 PM for the next day.",
     "Nothing in your barn races unless you enter it. Tap the + on a horse's card to enter it.",
     "A horse needs to be fresh to run its best. Rest it, or use a grooming slot to get it back sooner.",
     "Mile time is how fast a horse is expected to trot. Tier is the letter grade that comes with it: D up to S+.",
@@ -2078,7 +2129,7 @@ def next_card():
         return ("From the barn", msg["text"])
     idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
     if idle:
-        return ("Reminder", f"You have {len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow night. Entries are drawn at 8 PM.")
+        return ("Reminder", f"You have {len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow night. Entries are drawn at 11 PM.")
     if p.get("hide_tips"):
         return None
     i = p.get("tip_i", 0)
@@ -3159,13 +3210,35 @@ def next_start(h):
     return "—"
 
 
+def next_up():
+    """Your horses on tonight's card, by post time: a countdown for the ones still to go, the result for the ones home."""
+    if c.CARD.get("day") != G["day"]:
+        return ""
+    rows = sorted(((r, h) for r in c.CARD.get("races", []) for h in r["field"] if h.owner == ME), key=lambda x: x[0].get("post", 0))
+    if not rows:
+        return ""
+    now = ny_now()
+    m = now.hour * 60 + now.minute
+    out = []
+    for r, h in rows:
+        where = f"{esc(r['v']['name'])} · {fmt_post(r.get('post', 0))}"
+        if race_off(r):
+            out.append(f"<a class='nu done' href='/results'><b>{esc(h.name)}</b><span>{where}</span><em>Result in · watch</em></a>")
+        else:
+            left = r.get("post", 0) - m
+            when = f"post in {left // 60}h {left % 60}m" if left >= 60 else f"post in {left}m" if left > 0 else "going to post"
+            out.append(f"<a class=nu href='/program?h={quote(h.name)}'><b>{esc(h.name)}</b><span>{where}</span>"
+                       f"<em>{when if c.POST_FROM - 60 <= m < CLOSE_HOUR * 60 else 'tonight'}</em></a>")
+    return "<div class=nextup><div class=nuh>Next up tonight</div>" + "".join(out) + "</div>"
+
+
 def tonight(h):
     """What this horse is doing at post time, for the barn sheet."""
     o = getattr(h, "order", None)
     if h.retired:
         return "retired"
     if (r := on_card(h)):                                     # on the posted program; maybe entered again for the night after
-        return (f"<b>Tonight: {esc(c.race_title(r['key'][0], r['key'][2]))} at {esc(r['v']['name'])}, post {h.post}</b>"
+        return (f"<b>Tonight: {esc(c.race_title(r['key'][0], r['key'][2]))} at {esc(r['v']['name'])}, {fmt_post(r.get('post', 0))}, post {h.post}</b>"
                 + (f"<br>Tomorrow: {esc(order_text(h))}" if o else ""))
     if o:
         return f"<b>Tomorrow: {esc(order_text(h))}</b>"
@@ -3174,7 +3247,7 @@ def tonight(h):
         return f"<b>Tonight: the {esc(cr[0].name)}</b> <span class=sub>(invited)</span>"
     stake = next((s for s in sk.CALENDAR if h in s.noms and not s.result), None)
     if stake:
-        return (f"<b>Tonight: the {esc(stake.name)}</b>" if stake.week == G["day"] % c.YEAR
+        return (f"<b>Tonight: the {esc(stake.name)}, {fmt_post(CLOSE_HOUR * 60)}</b>" if stake.week == G["day"] % c.YEAR
                 else f"nominated: {esc(stake.name)} in {stake.week - G['day'] % c.YEAR} wks" + ("; " if h.freshness >= 50 else "") +
                 ("<span style='color:var(--tote)'>not entered tonight</span>" if h.freshness >= 50 else ""))
     if h.freshness < 50:
@@ -3408,7 +3481,7 @@ def barn_page(qs=None):
         cards += (f"<div class='billrow wayup'><span>Your mare is your way up: the <b>Breeder's License</b> lets her foals race for you.</span>"
                   f"<a href=/studs>${cost:,} to get it ›</a></div>")
     cards += (
-             f"<div class=stablehead><h2>Stable <span class='stallct {stall_tone(len(racers), e.stalls(ME))}'>{len(racers)}/{e.stalls(ME)}</span></h2>{toggle}</div><div class=cadence>Entries you make today race tomorrow night. Tonight's program was drawn at 8 PM last night.</div>"
+             f"<div class=stablehead><h2>Stable <span class='stallct {stall_tone(len(racers), e.stalls(ME))}'>{len(racers)}/{e.stalls(ME)}</span></h2>{toggle}</div><div class=cadence>Racing runs 7 to 11 PM. Entries you make before 11 PM race tomorrow night.</div>{next_up()}"
              + ("".join(horse_card(h) for h in racers) or "<p class=sub>No racers. Try the market.</p>"))
     view = qs.get("view", "stable")
     menu = ("<div class=hmenu>" + "".join(f"<a href='/?view={k}' class='{'on' if view == k else ''}'>{label}</a>"
@@ -3436,7 +3509,7 @@ def entries_page(qs=None):
     racers = [h for h in mine() if not h.retired]
     open_ = sum(1 for h in racers if not getattr(h, "order", None) and h.freshness >= 50)
     head = (f"<div class=card><b>{open_} fit horse{'s' if open_ != 1 else ''} not entered for tomorrow night.</b> Find a race below, "
-            "or let the trainer enter them and change any you like. Entries are drawn into tomorrow's card at 8 PM."
+            "or let the trainer enter them and change any you like. Entries are drawn into tomorrow's card at 11 PM."
             "<form method=post action=/entries style='margin-top:10px'><button class=big>Take the trainer's entries</button></form></div>"
             if open_ else "<div class=card>Every fit horse is entered for tomorrow night.</div>")
     link = lambda **kw: "/entries?" + "&".join(f"{k}={v}" for k, v in {"v": vid, "k": kind, "min": floor, **kw}.items())
@@ -3518,7 +3591,7 @@ def entry_box():
             + ("<a class='btn sec' href=/setup>Set up tonight</a>" if has_pass(ME) else "") + "<a class='btn sec' href=/entries>Find a race</a></div>"
             + ("<div class=sub>Your manager enters the trainer's picks every night, and works the standing orders, on nights you're away.</div>" if has_pass(ME) else ""))
     return (f"<div class='card hc mgr' id=entrybox style='--tc:#c9922e'><div class=mhead><b>Entry box</b><span class='pchip{' lit' if open_ else ''}'>{open_} to enter</span></div>"
-            "<div class=sub>Tomorrow night's entries, drawn into the card at 8 PM. Change or scratch any until then.</div>"
+            "<div class=sub>Tomorrow night's entries, drawn into the card at 11 PM. Change or scratch any until then.</div>"
             f"<div class=mgrid>{entry_rows(racers)}</div>{acts}</div>")
 
 
@@ -3594,7 +3667,7 @@ def results_page(qs=None):
     nav = ("<div class=rnav>"
            + (f"<a class='btn sec' href='/results?day={nights[k + 1]}'>‹ Earlier</a>" if k + 1 < len(nights) else "<span class='btn sec off'>‹ Earlier</span>")
            + "<form method=get action=/results class=inline><select name=day onchange='this.form.submit()'>"
-           + "".join(f"<option value={d}{' selected' if d == day else ''}>{lbl(d)}{' (last night)' if d == nights[0] else ''}</option>" for d in nights)
+           + "".join(f"<option value={d}{' selected' if d == day else ''}>{lbl(d)}{' (tonight)' if d == G['day'] else ' (last night)' if d == nights[0] else ''}</option>" for d in nights)
            + "</select></form>"
            + (f"<a class='btn sec' href='/results?day={nights[k - 1]}'>Later ›</a>" if k > 0 else "<span class='btn sec off'>Later ›</span>")
            + "</div>")
@@ -3997,7 +4070,7 @@ def claimers_page(qs=None):
             f"You can claim {max(0, room)} more tonight.</p>")
     body = (f"<style>{PP_CSS}</style><style>.pgm{{margin:10px 0}}.pgm .pgh{{cursor:default}}</style>" + market_tabs("claimers") + note + head
             + f"<p class=sub id=list style='scroll-margin-top:8px'>{len(rows)} claimer{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>"
-            + (out or "<p class=sub>No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 8 PM") + ".</p>") + pager)
+            + (out or "<p class=sub>No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 11 PM") + ".</p>") + pager)
     return page("Claimers", body)
 
 
@@ -4639,7 +4712,7 @@ def claim_tag(h):
         return 0
     for r_ in (c.CARD.get("races", []) if c.CARD.get("day") == G["day"] else []):
         if h in r_["field"]:
-            return r_["key"][4]
+            return 0 if race_off(r_) else r_["key"][4]
     o = getattr(h, "order", None)
     return o[1] if isinstance(o, tuple) and o[0] == "claim" else 0
 
@@ -4667,7 +4740,7 @@ def program_entry(h, tag, odds, drawn, room, note=True):                  # note
                f"<div class=pgname><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>{tagl}</div>")
             + f"<div class=pgped>{COAT_ABBR.get(coat, coat)} {sex_abbr(h)} {h.age} · {ped}</div>"
             + (f"<div class=pgown>Driver – {silks(drv)} <b>{esc(drv)}</b></div>" if (drv := next((r_["drivers"].get(h.id) for r_ in c.CARD.get("races", []) if h.id in r_.get("drivers", {})), None)) and drawn else "")
-            + ("" if drawn or not note else "<div class='pgown sub'>Post and driver drawn at 8 PM</div>")
+            + ("" if drawn or not note else "<div class='pgown sub'>Post and driver drawn at 11 PM</div>")
             + (f"<div class=pgown>Shipped in from <b>{esc(h.visitor)}</b></div>" if getattr(h, "visitor", None) else "")
             + ("" if getattr(h, "visitor", None) else f"<div class=pgown>Owner/Trainer – <b>{barn_tag(h.owner, 14)}</b>{' · Breeder – ' + esc(barn_name(breeder)) if isinstance(breeder, int) else ''}</div>")
             +            f"{career_box(h)}</div></div>{pp_lines(h)}{act}</div>")
@@ -4677,7 +4750,7 @@ def program_races():
     """Tonight's races as (number, key, venue, field, odds), numbered through each venue's card. Before the draw: what's
     entered so far, by class and track, unnumbered."""
     if c.CARD.get("day") == G["day"]:
-        rs = sorted(c.CARD["races"], key=lambda r: (r["v"]["name"], r["key"][5], str(r["key"][0]), -r["key"][3]))
+        rs = sorted(c.CARD["races"], key=lambda r: (r["v"]["name"], r.get("post", 0)))
         out, n = [], {}
         for r in rs:
             n[r["v"]["name"]] = n.get(r["v"]["name"], 0) + 1
@@ -4741,6 +4814,15 @@ def vlook(name):
     return TI.look(v["id"]) if v else None
 
 
+def post_label(key, venue, field):
+    """The race's post time on the program, or OFFICIAL once it has run."""
+    r = next((r for r in c.CARD.get("races", []) if r["key"] == key and r["v"]["name"] == venue and r["field"] is field), None) \
+        if c.CARD.get("day") == G["day"] else None
+    if not r or "post" not in r:
+        return ""
+    return "<b class=pgoff>OFFICIAL</b><br>" if race_off(r) else f"POST <b>{fmt_post(r['post'])}</b><br>"
+
+
 def program_race(num, key, venue, field, odds, drawn, open_):
     group, sex, name, purse, tag, track = key
     title = f"{c.race_title(group, name)}{' F&amp;M' if sex == 'F&M' else ''}"
@@ -4756,7 +4838,7 @@ def program_race(num, key, venue, field, odds, drawn, open_):
             + (f"<img class=tkb src={lk[4]} width=40 height=40 alt=''>" if lk else "")
             + f"<div class=pgt>{tk_name}"
             f"TROT – {'1 MILE' if track == 'mile' else '½ MILE TRACK, 1 MILE'}{' · PASSING LANE' if lane else ''}<br><b>{title}</b>{vs}</div>"
-            f"<div class=pgp>PURSE<br><b>${purse:,}</b><br>{len(field)} {'starters' if drawn else 'in'}</div></summary>")
+            f"<div class=pgp>{post_label(key, venue, field)}PURSE<br><b>${purse:,}</b><br>{len(field)} {'starters' if drawn else 'in'}</div></summary>")
     inner = program_race_body(drawn, key, field, odds) if open_ else f"<div class=pgload data-k='{esc(repr((key, venue, num)))}'>Loading…</div>"
     names = "|" + "|".join(h.name for h in field) + "|"                   # the card's Program link lands on the horse's race
     return f"<details class=pgm{' open' if open_ else ''} data-h='{esc(names)}'>{head}{inner}</details>"
@@ -4773,8 +4855,8 @@ def program_page(qs=None):
         return program_race_body(drawn, r[1], r[3], r[4]) if r else "<div class=pgpick>This race has changed. Reload the program.</div>"
     day = G["day"]
     head = (f"<style>{PP_CSS}</style><div class=proghead><span>Year {c.year_of(day)}, week {day % c.YEAR + 1}</span><span>"
-            + ("Final program · post time 8:00 PM" if drawn else "Preview · the draw posts at 8:00 PM for tomorrow") + "</span></div>")
-    note = "" if drawn else ("<p class=sub>Who's entered so far. At the 8 PM draw fields are filled out and split, and race numbers, posts and "
+            + ("Final program · first post 7:00 PM" if drawn else "Preview · the draw posts at 11:00 PM for tomorrow") + "</span></div>")
+    note = "" if drawn else ("<p class=sub>Who's entered so far. At the 11 PM draw fields are filled out and split, and race numbers, posts and "
                              "morning lines go up for tomorrow night. A claim is binding if the horse races; claims stay open until post time.</p>")
     mine_ = [r for r in races if any(h.owner == ME for h in r[3])]
     tracks = sorted({r[2] for r in races if drawn and r[2]})               # the posted card, track by track, as a spectator buys it
@@ -5502,7 +5584,9 @@ class H(BaseHTTPRequestHandler):
         elif p == "/scratch" and h and h.owner == ME:
             if getattr(h, "tonic", None):                       # scratched: the tonic goes back on the shelf
                 shelf()[h.tonic] += 1; h.tonic = None
-            if (r := on_card(h)):                                # off tonight's program: it rests, and any claim on it is void
+            if (r := on_card(h)) and race_off(r):                # its race has gone off: nothing to scratch
+                pass
+            elif r:                                              # off tonight's program: it rests, and any claim on it is void
                 r["field"].remove(h); c.CLAIMS.pop(h.id, None); h.wk = "rest"; h.last = "scratched"
             else:
                 h.order = h.ship = None
