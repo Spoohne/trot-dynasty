@@ -1495,13 +1495,16 @@ def picks_page(msg=""):
     Program page lays them out), a pick under each, and one Submit for the slip. Picks change until the stake runs."""
     day = G["day"]; mine = G.setdefault("picks", {}).setdefault(ME, {})
     room = e.stalls(ME) - e.barn_size.get(ME, 0)
-    out = ""
+    out, done = "", ""
     for s in stakes_tonight():
         noms = nominees(s)
         if len(noms) < 2:
             continue
         line = c.tote_odds(noms); noms = sorted(noms, key=lambda h: line[h.id][0] / line[h.id][1])
         picked = next((h for h in noms if h.id == mine.get(s.id)), None)
+        if picked:                                                       # picked: off the slip, one line in Your picks
+            done += f"<div class=pkdone><span>{esc(s.name)}</span><b>{esc(picked.name)}</b></div>"
+            continue
         head = (f"<div class=pgh><div class=pgn>&#9733;</div><div class=pgt>{KIND_WORD.get(s.kind, 'Stakes')} · {sk.DIVISION[(s.group, s.sex)]} · HARNESS PARK · TROT – 1 MILE<br><b>{esc(s.name)}</b></div>"
                 f"<div class=pgp>PURSE<br><b>${s.purse:,.0f}</b><br>{len(noms)} nominated</div></div>")
         entries = "".join(program_entry(h, 0, line, False, room, note=False) for h in noms)
@@ -1513,12 +1516,13 @@ def picks_page(msg=""):
     yr = c.year_of(day); tally = G.get("pickers", {}).get(yr, {})
     table = "".join(f"<tr{brow(o)}><td>{k + 1}</td><td class=sbarn>{barn_tag(o)}{' &#127942;' * len(P(o).get('hcap', []))}</td><td>{t[0]}</td><td>{t[1]}</td><td>{100 * t[0] // t[1] if t[1] else 0}%</td></tr>"
                     for k, (o, t) in enumerate(sorted(tally.items(), key=lambda x: (-x[1][0], x[1][1]))))
-    body = (f"<style>{PP_CSS}</style><style>.pkst{{padding:4px 0 6px;font-size:15px}}.pk .pkrow{{padding:8px 0}}</style>"
+    body = (f"<style>{PP_CSS}</style><style>.pkst{{padding:4px 0 6px;font-size:15px}}.pk .pkrow{{padding:8px 0}}.pkdone{{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--rule2)}}.pkdone b{{color:var(--tote)}}</style>"
             f"<p class=sub>Pick the winner of each stake before it runs; a winner pays a ${PICK_PRIZE:,} prize, and the season's best handicapper is named at the Crown. "
             "Free to play; picks lock at post time. Read the program, then mark your slip and submit it.</p>"
             + (f"<div class=ev>{esc(msg)}</div>" if msg else "")
+            + (f"<div class=card><b>Your picks tonight</b>{done}</div>" if done else "")
             + (f"<form method=post action=/pick>{out}<button class='btn big' style='margin:10px 0'>Submit picks</button></form>" if out
-               else "<div class=card>No stakes tonight. <a href=/stakes>The calendar</a> has the next ones.</div>")
+               else "" if done else "<div class=card>No stakes tonight. <a href=/stakes>The calendar</a> has the next ones.</div>")
             + (f"<div class=card><b>Year {yr} handicappers</b><table><tr><th>#</th><th>Barn</th><th>Winners</th><th>Picks</th><th>Rate</th></tr>{table}</table></div>" if table else ""))
     return page("The handicapper's game", body)
 
@@ -3043,7 +3047,9 @@ def horse_card(h, link=True):
             elif corner:
                 act = corner.replace("class=enterplus", "class=go").replace("class='enterplus pause'", "class='go pause'").replace(">+</a>", ">Enter</a>")
                 act = act.replace("</svg></a>", "</svg> Enter</a>")
-            act = f"<div class=act2><span class=acts>{act}</span><a class=sec href='/program?h={quote(h.name)}'>Program</a></div>"
+            o_ = getattr(h, "order", None)
+            racing = on_card(h) or (isinstance(o_, tuple) and o_[0] in ("enter", "claim"))   # on tonight's program, or entered for tomorrow's
+            act = f"<div class=act2><span class=acts>{act}</span>" + (f"<a class=sec href='/program?h={quote(h.name)}'>Program</a>" if racing else "") + "</div>"
     return (f"<div class='card brow hc hc2{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b></div></div><div class=hr2>"
             f"<div class=bname>{name}</div>"
             f"<div class=facts><span class=chip>{h.age}yo {sex_word(h)}</span>"
@@ -3342,15 +3348,18 @@ assert stall_tone(7, 40) == "st-grn" and stall_tone(31, 40) == "st-yel" and stal
 def barn_page(qs=None):
     # race results live on Results; the barn keeps only notices about the barn itself (retirements, the new year)
     qs = qs or {}
-    if qs.get("sort") in ("age", "class"):
+    if qs.get("sort") in ("age", "class", "open"):
         P()["barn_sort"] = qs["sort"]                                            # remembered: the barn opens the way you last sorted it
     by = P().get("barn_sort", "class")
     ev = "".join(f"<div class=ev>{esc(x)}</div>" for x in P()["events"] if " for $" not in x)
     racers = [h for h in mine() if not h.retired]
     rated = lambda h: c.mile_secs(h.est)                                     # fastest first
-    racers.sort(key=(lambda h: (h.age, TIER_RANK[tier_label(h)], rated(h))) if by == "age" else (lambda h: (TIER_RANK[tier_label(h)], rated(h))))
+    idle = lambda h: h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)   # fit and not entered for tomorrow
+    racers.sort(key=(lambda h: (h.age, TIER_RANK[tier_label(h)], rated(h))) if by == "age"
+                else (lambda h: (not idle(h), TIER_RANK[tier_label(h)], rated(h))) if by == "open"
+                else (lambda h: (TIER_RANK[tier_label(h)], rated(h))))
     toggle = ("<div class=sortby><span>Sort by</span>"
-              + "".join(f"<a href='/?sort={k}' class='{'on' if by == k else ''}'>{label}</a>" for k, label in (("age", "Age"), ("class", "Class"))) + "</div>")
+              + "".join(f"<a href='/?sort={k}' class='{'on' if by == k else ''}'>{label}</a>" for k, label in (("age", "Age"), ("class", "Class"), ("open", "Unentered"))) + "</div>")
     tb, fb = e.bills(ME, G["horses"])
     cards = ""
     if not e.can_breed(ME) and any(h.retired and h.sex == "f" for h in mine()):   # the way up, until the barn can breed
@@ -4107,9 +4116,9 @@ def shop_page(msg=""):
     t = shelf()
     inv = "".join(f"<div class=inv>{bottle(k, 26)}<b>{t[k]}</b><span class=sub>{l_}</span></div>" for k, l_, *_ in TONICS)
     items = "".join(
-        f"<div class='card titem{' tprem' if k == 'premium' else ''}'><div class=tbig>{bottle(k, 44)}</div><div class=tmid><b>{l_} Tonic</b>"
+        f"<div class='card titem{' tprem' if k == 'premium' else ''}' id=t_{k} style='scroll-margin-top:90px'><div class=tbig>{bottle(k, 44)}</div><div class=tmid><b>{l_} Tonic</b>"
         f"<div class=sub>{esc(what)}</div></div>"
-        f"<form method=post action=/buytonic class=inline><input type=hidden name=k value={k}>"
+        f"<form method=post action=/buytonic#t_{k} class=inline><input type=hidden name=k value={k}>"
         f"<button{' disabled' if e.cash.get(ME, 0) < TONIC_PRICE[k] else ''}>${TONIC_PRICE[k]:,}</button></form></div>"
         for k, l_, _, what in TONICS)
     streak, log = P().get("streak", 0), P().get("mk_log", [])[-6:][::-1]
