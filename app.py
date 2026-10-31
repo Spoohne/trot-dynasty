@@ -2412,7 +2412,7 @@ def top_art(h):
     if t not in ("S", "S+") or not os.path.exists(os.path.join(TOP_DIR, f"{h.id}.png")):
         return None
     loop = t == "S+" and os.path.exists(os.path.join(TOP_DIR, f"{h.id}_loop.webp"))
-    return t, f"/mock/portraits/top/{h.id}.png?v=1", f"/mock/portraits/top/{h.id}_loop.webp?v=1" if loop else None
+    return t, f"/mock/portraits/top/{h.id}.png?v=2", f"/mock/portraits/top/{h.id}_loop.webp?v=2" if loop else None
 
 
 def top_html(h, size, img):
