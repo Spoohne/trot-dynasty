@@ -44,6 +44,33 @@ def stills():
         print("needs loop:", h.id, h.name)
 
 
+BASE_LOOP = os.path.join(ROOT, "art", "portrait_mock", "base_loop")          # 12 frames of the base head, keyed, 1024px (base_NN.png)
+
+
+def loops():
+    """Every S+ horse's idle loop from the one animated base head: each frame recolored to its coat and marking the way
+    recolor.portrait does the still, laid on its scene, saved as a 12-frame WebP strip. Free: no generation per horse."""
+    import numpy as np
+    sys.path.insert(0, ROOT); sys.path.insert(0, os.path.join(ROOT, "art")); os.chdir(ROOT)
+    import app, recolor
+    if len(sys.argv) > 2:
+        app.SAVE = sys.argv[2]
+    app.load()
+    frames = [np.asarray(Image.open(os.path.join(BASE_LOOP, f"base_{i:02d}.png")).convert("RGBA").resize((S, S), Image.LANCZOS)).astype(np.float32) for i in range(12)]
+    n = 0
+    for h in app.G["horses"]:
+        if h.retired or app.tier_label(h) != "S+" or (os.path.exists(os.path.join(TOP, f"{h.id}_loop.webp")) and "--redo" not in sys.argv):
+            continue
+        coat, marking = app.looks(h); seed = app.pattern(h)
+        bg = Image.open(os.path.join(SC, f"{scene_of(h.name)}.png")).convert("RGBA")
+        strip = Image.new("RGB", (S * 12, S))
+        for i, f in enumerate(frames):
+            out = recolor.dapple_grey(f, seed % 1000) if coat == "grey" else recolor.COATS.get(coat, recolor.chestnut)(f)
+            fr = bg.copy(); fr.alpha_composite(Image.fromarray(recolor.mark(f, out, marking))); strip.paste(fr.convert("RGB"), (i * S, 0))
+        strip.save(os.path.join(TOP, f"{h.id}_loop.webp"), quality=82, method=6); n += 1
+    print(n, "loops")
+
+
 if __name__ == "__main__":
-    {"scenes": scenes, "stills": stills}[sys.argv[1]]()
+    {"scenes": scenes, "stills": stills, "loops": loops}[sys.argv[1]]()
     assert len({scene_of(f"Horse {i}") for i in range(60)}) == len(SCENES)   # every scene gets used
