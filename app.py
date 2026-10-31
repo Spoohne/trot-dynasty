@@ -3791,7 +3791,9 @@ def horse_page(name, entering=False):
         body = retired_header(h, own)
     else:
         body = card_header(h, own, listed[1] if listed and not own else None) + sim + stats_block(h, own)
-    if own and getattr(h, "unreg", False) or own and h in e.nursery:          # its name is the breeder's to change until it's registered
+    if own and getattr(h, "unnamed", False):                                  # born and not yet named: back to its nameplate
+        body += (f"<a class='card mi' href='/reveal/{urlname(h.name)}'><b>Name your foal</b><div class=sub>It hasn't got a name yet. Meet it and give it one.</div></a>")
+    elif own and getattr(h, "unreg", False) or own and h in e.nursery:          # its name is the breeder's to change until it's registered
         body += (f"<form method=post action=/rename class='card rename'><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='/horse/{urlname(h.name)}'>"
                  f"<input name=n maxlength={_names.MAXLEN} pattern='[A-Za-z ]+' placeholder='New name' aria-label='New name'><button class=sec>Rename</button></form>")
     if own and not h.retired and h not in e.nursery:                          # its gear: straight to this horse in the Tack Room
@@ -4914,27 +4916,51 @@ body.reveal{background:#0f0e0c;color:#eee;overflow-x:clip}
 .grade{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#bbb;margin:14px 0 6px;opacity:0;transition:opacity .4s .5s}
 .cardwrap.in+.grade{opacity:1}
 .take{margin-top:16px;opacity:0;transition:opacity .4s 1s} .take.in{opacity:1}
+.cardwrap .plate{margin:10px 0}
+.plate{display:flex;flex-direction:column;gap:10px;align-items:stretch;padding:16px 16px 14px;border:2px solid #e8a33a;border-radius:6px;
+  background:linear-gradient(#1a2338,#0b1430);box-shadow:inset 0 0 0 1px #ffd36b44,0 0 0 2px #05070d,0 10px 30px #000a,0 0 40px #e8a33a33}
+.plk{font:800 15px 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#ffb347;text-align:center;text-shadow:0 1px 2px #000}
+.plate input#fname{font:italic 900 24px 'Playfair Display',serif;text-align:center;color:#ffe9a8;background:#05070d;border:1px solid #e8a33a88;
+  padding:10px 8px;border-radius:4px;text-shadow:0 0 10px #ffb34766}
+.plate input#fname::placeholder{color:#6f7886;font-style:italic}
+.plsug{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.plsug button{width:auto;margin:0;padding:4px 10px;font-size:13px;background:#121a2b;color:#e6e8ec;border:1px solid #2b3a55;box-shadow:none}
+.plsug button:hover{border-color:#e8a33a;color:#ffb347}
+.plgo{margin:0;font-size:16px}
+.plnote{font-size:12px;color:#a4acb9;text-align:center}
+.plerr{font-size:13px;color:#e0704f;text-align:center;font-weight:700}
 """
 
 SPARKS = {"common": 0, "uncommon": 12, "rare": 30, "epic": 55, "legendary": 100}   # the flourish follows the grade
 
 
-def reveal_page(name):
+def reveal_page(name, taken=False):
     h = next((x for x in G["horses"] + e.nursery if x.name == name and x.owner == ME), None)
     if not h:
         return page("Reveal", "<p>Nothing to reveal.</p>")
     foal = h in e.nursery
+    unnamed = foal and getattr(h, "unnamed", False)
     g = grade(h)
     color, sparks, line = GRADE_COLOR[g], SPARKS[g], GRADE_LINE[g]
     import math
+    plate = (f"<form method=post action=/rename class=plate>"
+             f"<input type=hidden name=h value='{esc(h.name)}'>"
+             f"<div class=plk>Name your foal</div>"
+             f"<input id=fname name=n required maxlength={_names.MAXLEN} pattern='[A-Za-z ]+' placeholder='Its racing name' aria-label='Foal name' autocomplete=off>"
+             + ("<div class=plerr>That name is taken or isn't a name. Letters and spaces only.</div>" if taken else "")
+             + "<div class=plsug>" + "".join(f"<button type=button onclick=\"pick(this)\">{esc(n)}</button>" for n in getattr(h, "suggest", [])) + "</div>"
+             f"<button class=plgo>Register the name</button>"
+             f"<div class=plnote>It races under this name. You can change it until it's registered.</div></form>") if unnamed else ""
+    inner = card_header(h, True) + plate + stats_block(h, True) if unnamed else identity_card(h)
     bits = "".join(f"<i style='--x:{math.cos(i / sparks * 6.283) * (120 + (i * 37) % 90):.0f}px;--y:{math.sin(i / sparks * 6.283) * (120 + (i * 53) % 90):.0f}px;"
                    f"animation-delay:{(i * 7) % 40 * 10}ms'></i>" for i in range(sparks))
     return (f"<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
             f"<title>{esc(h.name)}</title>{FONTS}<style>{CSS}{SKIN}{REVEAL_CSS}</style>{ASK_JS}</head><body class='reveal'><div class=stage style='--c:{color}'>"
             f"<div class=slot><div class=pack id=pack onclick='go()'><img class=door src=/mock/brand/reveal/door.png?v=1 alt=''><div class=hint>{'A foal is born · tap to meet it' if foal else 'tap to open'}</div></div>"
             f"<div class=burst id=burst><div class=glow></div><div class=ring></div>{bits}</div>"
-            f"<div class=cardwrap id=card>{identity_card(h)}</div></div><div class=grade><b style='color:{color}'>{g}</b> · {line}</div>"
-            + (f"<div class=take id=take><form method=post action=/rename class=namefoal><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='/horse/{urlname(h.name)}'>"
+            f"<div class=cardwrap id=card>{inner}</div></div><div class=grade><b style='color:{color}'>{g}</b> · {line}</div>"
+            + ("<div class=take id=take></div></div>" if unnamed else
+               f"<div class=take id=take><form method=post action=/rename class=namefoal><input type=hidden name=h value='{esc(h.name)}'>"
                f"<label>Name your foal</label><input name=n maxlength={_names.MAXLEN} pattern='[A-Za-z ]+' value='{esc(h.name)}' aria-label='Foal name'>"
                f"<button>Keep this name</button></form><div class=sub style='margin-top:6px'>Changeable on its page until it's registered.</div></div></div>" if foal else
                f"<div class=take id=take><a class=btn href='/horse/{urlname(h.name)}'>Take to the barn</a>"
@@ -4944,7 +4970,11 @@ def reveal_page(name):
             "setTimeout(()=>{document.getElementById('burst').classList.add('on');p.style.transform='scale(0)';p.style.opacity='0';},650);"
             "setTimeout(()=>{p.style.display='none';document.getElementById('card').classList.add('in');},1050);"
             "setTimeout(()=>document.getElementById('take').classList.add('in'),1500);}"
-            + ("" if foal else "setTimeout(go,2200);") + "</script></body></html>")
+            + "function pick(b){const i=document.getElementById('fname');i.value=b.textContent;i.dispatchEvent(new Event('input'));i.focus();}"
+            + (f"const fn=document.getElementById('fname'),ph={json.dumps(esc(h.name))};"
+               "if(fn){const els=[...document.querySelectorAll('#card *')].filter(e=>e.children.length==0&&e.textContent.trim()==ph.replace(/&amp;/g,'&'));"
+               "els.forEach(e=>e.textContent='Your foal');fn.addEventListener('input',()=>els.forEach(e=>e.textContent=fn.value.trim()||'Your foal'));}" if unnamed else "")
+            + ("setTimeout(go,300);" if taken else "" if foal else "setTimeout(go,2200);") + "</script></body></html>")
 
 
 # ---------------------------------------------------------------- server
@@ -5121,7 +5151,7 @@ class H(BaseHTTPRequestHandler):
             self.end_headers()
             return self.wfile.write(data)
         if p.startswith("/reveal/"):
-            return self.send(reveal_page(unquote(p.split("/")[2])))
+            return self.send(reveal_page(unquote(p.split("/")[2]), "taken=1" in self.path))
         qs = {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items()}
         if p == "/archive":                                   # the live stud book: every horse, searchable and filtered
             return self.send(archive_page(qs))
@@ -5405,10 +5435,11 @@ class H(BaseHTTPRequestHandler):
         if p == "/rename":                                                # a youngster's name is yours to change until it's registered
             f = next((x for x in e.nursery if x.name == q.get("h", "") and x.owner == ME), None)
             n = " ".join(q.get("n", "").split())[:_names.MAXLEN]
-            if f and n and n != f.name and n.replace(" ", "").isalpha() and n not in _names.USED:
-                _names.USED.discard(f.name); _names.USED.add(n); f.name = n; save()
-            back = q.get("back", "")
-            return self.send("", 303, back if back.startswith("/horse/") else f"/horse/{urlname(f.name if f else '')}" if f else "/studs?v=foals")
+            if f and n and n != f.name and n.replace(" ", "").isalpha() and n not in _names.USED and not n.lower().startswith("unnamed"):
+                _names.USED.discard(f.name); _names.USED.add(n); f.name, f.unnamed = n, False; save()
+            elif f and getattr(f, "unnamed", False):
+                return self.send("", 303, f"/reveal/{urlname(f.name)}?taken=1")   # taken or not a name: back to the nameplate
+            return self.send("", 303, f"/horse/{urlname(f.name)}" if f else "/studs?v=foals")
         if p == "/stablename":
             n, fee = q.get("n", "").strip()[:28], CR.RENAME_FEE if P().get("named") else 0   # the first name is free
             if n and n != P().get("stable") and e.cash.get(ME, 0) >= fee:
@@ -5506,6 +5537,10 @@ class H(BaseHTTPRequestHandler):
         elif p == "/breed" and h and h.owner == ME:
             s = by_name.get(q.get("s", ""))
             if s and e.book_mare(h, s, ME, G["horses"], day=G["day"]) is not None:
+                f = e.nursery[-1]                                       # born unnamed: its owner names it at the reveal
+                f.suggest = [f.name] + [_names.make(f.sire, f.dam, f.sex) for _ in range(2)]
+                _names.USED.difference_update(f.suggest)
+                f.name, f.unnamed = f"Unnamed Foal {f.id}", True
                 save()
                 return self.send("", 303, f"/reveal/{urlname(e.nursery[-1].name)}")     # the foal's birth: the stall door, then its bars, then its name
         elif p == "/bid" and h:
