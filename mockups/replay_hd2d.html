@@ -996,35 +996,35 @@ const wc = document.getElementById("wc"); let wcDrawn = false;
 const gazeboImg = new Image(); gazeboImg.src = P("/mock/pixel/infield/gazebo.png");
 const panoImg = new Image(); panoImg.src = P("/mock/pixel/panorama.png");
 const grassImg = new Image(); grassImg.src = P("/mock/pixel/infield/grass.png");
-// ---- the winner's circle: the winner's portrait in a blanket of roses, beside the barn's emblem (a placeholder for now)
-// ---- the winner's circle: the winner, in its own coat, under the rose arch (art in pixel/wc: circle, horse, blanket)
-const wcScene = new Image(); wcScene.src = P("/mock/pixel/wc/circle.png");
-const wcHorse = new Image(); wcHorse.src = P("/mock/pixel/wc/horse.png");
-const wcBlanket = new Image(); wcBlanket.src = P("/mock/pixel/wc/blanket.png");
+// ---- the winner's circle: the track photographer's win photo (art in pixel/wc): the scene with the groom and the owner's party,
+// and the rig (horse, sulky, driver) standing hitched in front of it, in the winner's own coat, silks and pad number
+const wcScene = new Image(); wcScene.src = P("/mock/pixel/wc/scene.png?v=1");
+const wcRig = new Image(); wcRig.src = P("/mock/pixel/wc/rig.png?v=1");
+const RIG_AT = [172, 90], RIG_W = 296, RIG_H = 181, RIG_PAD = [114, 48, 27, 26];   // where the groom's hand meets the bridle; the pad on the rig
 function drawWinnersCircle() {
   const win = RACE.H.map((h, i) => ({ h, i })).sort((a, b) => a.h[2][6] - b.h[2][6])[0], h = win.h;
   const c = document.getElementById("wcc"), g = c.getContext("2d"); g.imageSmoothingEnabled = false;
   const paint = () => {
     g.fillStyle = "#0b1430"; g.fillRect(0, 0, 640, 300);
-    if (wcScene.complete) g.drawImage(wcScene, 0, 20, 320, 150, 0, 0, 640, 300);                    // the scene at 2x, the sky trimmed
-    if (wcHorse.complete && wcBlanket.complete) {
-      const W = 182 * 1.45, H = 182 * 1.45, x = 100, y = 300 - H + 6;          // standing under the arch
-      g.fillStyle = "rgba(0,0,0,.4)"; g.beginPath(); g.ellipse(x + W * .5, 292, W * .42, 9, 0, 0, 7); g.fill();
-      g.drawImage(coat(wcHorse, h.coat), x, y, W, H);                                                   // the winner's own coat
-      g.drawImage(wcBlanket, x, y, W, H);                                                               // the roses stay red
+    if (wcScene.complete) g.drawImage(wcScene, 0, 0, 640, 300);
+    if (wcRig.complete) {
+      const [x, y] = RIG_AT;
+      g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x + RIG_W * .5, y + RIG_H - 3, RIG_W * .46, 7, 0, 0, 7); g.fill();
+      g.drawImage(dye(coat(wcRig, h.coat), RACE.SILK[win.i], win.i + 1, RACE.DARK.includes(win.i + 1), RACE.PAD[win.i], RIG_W, RIG_PAD, null, 1, 1, RIG_H), x, y);
     }
-    // the photographer's date stamp, on a dark plate so it reads over the lit dirt
-    const stamp = new Date().toLocaleDateString(); g.font = "bold 14px monospace";
-    const tw = g.measureText(stamp).width, sx = 630 - tw - 16, sy = 270;
-    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(sx + 3, sy + 3, tw + 16, 24);                       // drop shadow
-    g.fillStyle = "rgba(10,12,22,.82)"; g.fillRect(sx, sy, tw + 16, 24);
-    g.strokeStyle = "rgba(232,163,58,.8)"; g.lineWidth = 1; g.strokeRect(sx + .5, sy + .5, tw + 15, 23);
-    g.fillStyle = "#ffb347"; g.fillText(stamp, sx + 8, sy + 17);
+    // the photographer's typed caption, a white card in the corner the way the old track studios did it
+    const parts = RACE.title.split(" · "), lines = [RACE.venue.toUpperCase(), `${h[0]}  ${RACE.fmt(RACE.FIN)}`, `Driver: ${h.driver || "—"}`, `Owner: ${h.owner || "—"}`,
+      new Date().toLocaleDateString(), parts[0]];
+    g.font = "bold 11px monospace"; const lh = 13, pw = Math.max(...lines.map(t => g.measureText(t).width)) + 18, ph = lines.length * lh + 12, sx = 640 - pw - 12, sy = 300 - ph - 10;
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(sx + 3, sy + 3, pw, ph);
+    g.fillStyle = "#f3efe4"; g.fillRect(sx, sy, pw, ph);
+    g.fillStyle = "#1a1a1a"; lines.forEach((t, k) => g.fillText(t, sx + 9, sy + 15 + k * lh));
+    g.font = "8px monospace"; g.fillStyle = "#6a655a"; g.fillText("TROT DYNASTY PHOTO", sx + 9, sy + ph - 3);
   };
   const em = document.getElementById("wcem"); em.hidden = !h.emblem; if (h.emblem) em.src = h.emblem;   // the barn's emblem, bottom right of the caption
   document.getElementById("wcmq").innerHTML = h.marquee || "";                       // a Marquee barn's banner hangs over the photo
   paint();
-  for (const im of [wcScene, wcHorse, wcBlanket]) if (!im.complete) im.addEventListener("load", paint);
+  for (const im of [wcScene, wcRig]) if (!im.complete) im.addEventListener("load", paint);
   const parts = RACE.title.split(" · ");
   document.getElementById("wcn").textContent = h[0];
   document.getElementById("wco").innerHTML = h.owner ? `Owner &middot; <b></b>` : "";
