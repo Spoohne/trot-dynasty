@@ -13,7 +13,10 @@ if ($WithSave) {
 }
 
 $exclude = @("--exclude=./exports", "--exclude=./snapshots", "--exclude=./.claude", "--exclude=./.git", "--exclude=__pycache__",
-             "--exclude=*.bak*", "--exclude=./save.before-*.pkl", "--exclude=./save.pkl")
+             "--exclude=*.bak*", "--exclude=./save.before-*.pkl", "--exclude=./save.pkl",
+             # work files the game never reads: art pipelines (it needs only art/*.py, art/hero, art/cache), previews, 3D tests
+             "--exclude=./art/astra_run", "--exclude=./art/barns", "--exclude=./art/blender", "--exclude=./art/day", "--exclude=./art/emblem", "--exclude=./art/legcode", "--exclude=./art/letters", "--exclude=./art/local", "--exclude=./art/marquee2", "--exclude=./art/overhead", "--exclude=./art/portrait_mock", "--exclude=./art/reference", "--exclude=./art/rig", "--exclude=./art/seedance_in", "--exclude=./art/seedance_out", "--exclude=./art/social", "--exclude=./art/spritelab", "--exclude=./art/styles", "--exclude=./art/styles2", "--exclude=./art/tack_layers", "--exclude=./art/top", "--exclude=./art/tracks", "--exclude=./art/wc_mock",
+             "--exclude=./review", "--exclude=./mockups/*.glb", "--exclude=./mockups/*.gif")
 if ($WithSave) { $exclude = $exclude | Where-Object { $_ -ne "--exclude=./save.pkl" } }
 # every deploy is a commit, so what's on the server is always a commit you can go back to
 Push-Location $root
