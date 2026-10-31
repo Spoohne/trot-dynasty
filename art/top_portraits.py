@@ -26,15 +26,22 @@ def scenes():
 def stills():
     sys.path.insert(0, ROOT); os.chdir(ROOT)
     import app, recolor
+    if len(sys.argv) > 2:
+        app.SAVE = sys.argv[2]                                          # another save (the live world's copy)
     app.load(); os.makedirs(TOP, exist_ok=True); n = 0
     for h in app.G["horses"]:
         if h.retired or app.tier_label(h) not in ("S", "S+"):
+            continue
+        if os.path.exists(os.path.join(TOP, f"{h.id}.png")) and "--redo" not in sys.argv:
             continue
         coat, marking = app.looks(h)
         horse = Image.open(recolor.portrait(coat, marking, app.pattern(h), S)).convert("RGBA").resize((S, S), Image.LANCZOS)
         bg = Image.open(os.path.join(SC, f"{scene_of(h.name)}.png")).convert("RGBA")
         bg.alpha_composite(horse); bg.convert("RGB").save(os.path.join(TOP, f"{h.id}.png")); n += 1
-    print(n, "top portraits")
+    print(n, "new top portraits")
+    need = [h for h in app.G["horses"] if not h.retired and app.tier_label(h) == "S+" and not os.path.exists(os.path.join(TOP, f"{h.id}_loop.webp"))]
+    for h in need:
+        print("needs loop:", h.id, h.name)
 
 
 if __name__ == "__main__":
