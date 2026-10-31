@@ -1133,9 +1133,6 @@ def run_race(r, alive, log):
         r["done"] = True
         return
     vpurse = venue_purse(v, purse)
-    for h in field:                                        # the vet's visit: 2% of tonight's purse, then the tonic's in
-        if getattr(h, "tonic", None) and tonic_fee(h, round(TONIC_FEE * vpurse)):
-            h.tonic_on, h.tonic_used = h.tonic, True
     drive(field, r.setdefault("drivers", {}), track)
     order = race(field, track, v.get("passing", False))
     for h in field:

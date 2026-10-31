@@ -216,24 +216,29 @@ def buy_house_horse(owner, horses, rig=None):
     return h, rarity
 
 
-SCRAP = 20_000           # the least the house pays for any horse you hand it
+SCRAP = 2_500            # what the house pays for any horse you hand it: a stall cleared, never a profit
 HOUSE_SHARE = 0.4        # of a proven racer's projected career net: the house buys on the record, never on the card
 BOARD_SHARE = 0.6        # what the sale board asks of that same net: above the house, with room for the buyer to profit
 MIN_PRICE = 50_000       # nothing goes on the sale board for less
 
 
 def house_offer(h):
-    """What the house pays for a horse tonight: 40% of its projected career net, from its own record (its last two
-    seasons' purses less cuts and board, carried over the five seasons ahead with the market's decline from age 4),
-    never under $20k. An unraced or losing horse gets the floor: the card alone buys nothing."""
+    """What the house pays for any horse: a flat token. Since 2026-10-31 it never buys on the record; a horse worth
+    more is sold on the board, where other barns set the price."""
+    return SCRAP
+
+
+def record_net(h):
+    """A proven racer's projected career net from its own record: its last two seasons' purses less cuts and board,
+    carried over the five seasons ahead with the market's decline from age 4. 0 for an unraced or losing horse."""
     share = 1 - c.DRIVER - st.mean(t.cut for t in c.ROSTER)
     seasons = getattr(h, "seasons", {}) or {}
     rows = [seasons[y] for y in sorted(seasons)[-2:]]          # its two latest seasons on the books (c.DAY is only set in a tick)
     if h.retired or sum(r[0] for r in rows) < 8:
-        return SCRAP
+        return 0
     season = st.mean(r[4] * share - c.YEAR * UPKEEP for r in rows)
     ahead = sum(max(0.3, 1 - 0.12 * max(0, h.age + k - 4)) for k in range(min(5, sim.RETIRE_AGE - h.age)))
-    return max(SCRAP, round(HOUSE_SHARE * season * ahead, -3))
+    return max(0, round(season * ahead, -3))
 
 
 def scrap(h, owner, horses):
@@ -264,7 +269,7 @@ def value(h):
         return max(1_000, 1_200 * max(0, c.peak_est(h) - 45) * years * 0.1)   # a mare: a foal a year
     v = max(2_000, 1_500 * (c.on_aged_scale(h.est, c.age_group(h)) - 35)) * max(0.3, 1 - 0.12 * max(0, h.age - 4))
     # a proven earner is worth its record: the board asks 60% of the projected career net the house pays 40% of
-    return max(v, house_offer(h) * BOARD_SHARE / HOUSE_SHARE) if house_offer(h) > SCRAP else v
+    return max(v, round(BOARD_SHARE * record_net(h), -3))
 
 
 def expected_foal_net(s):
@@ -1059,7 +1064,7 @@ if __name__ == "__main__":
     # the board's rules: the reserve is never under the house offer, a sale is logged and stamps the horse, and it's held
     seller = got[2][0]; seller.seasons = {9: [20, 8, 4, 2, 400_000, 110.0], 8: [18, 6, 3, 2, 300_000, 111.0]}
     TODAY[0] = 100; open_auction(seller, now=0); auctions[seller.id]["proxies"] = {}   # no computer barn bidding against the test
-    assert auctions[seller.id]["open"] >= house_offer(seller) > SCRAP, "bidding never opens under what the house pays"
+    assert auctions[seller.id]["open"] >= house_offer(seller) == SCRAP, "bidding never opens under what the house pays"
     cash[1] = 10_000_000; human.add(1); level[1] = 1; barn_size[1] = 0; n = len(trades)
     assert bid(seller, 1, now=1, amount=auctions[seller.id]["open"]) and (settle_auctions(horses, now=10 ** 9) or True)
     assert seller.owner == 1 and seller.bought == 100 and len(trades) == n + 1 and trades[-1][1:3] == (0, 1), "a sale is logged"
@@ -1069,10 +1074,11 @@ if __name__ == "__main__":
     human.discard(1)
     star = got[1][0]
     star.seasons = {9: [20, 8, 4, 2, 400_000, 110.0], 8: [18, 6, 3, 2, 300_000, 111.0], 7: [20, 0, 0, 0, 0, 999.0]}
-    assert house_offer(star) > SCRAP and house_offer(star) == round(HOUSE_SHARE * st.mean(
+    assert house_offer(star) == SCRAP, "the house pays its flat floor, whatever the record"
+    assert record_net(star) == round(st.mean(
         p * (1 - c.DRIVER - st.mean(t.cut for t in c.ROSTER)) - c.YEAR * UPKEEP for p in (400_000, 300_000)) * (1 + 1 + .88 + .76 + .64), -3)
     star.seasons[9][4] = star.seasons[8][4] = 20_000
-    assert house_offer(star) == SCRAP, "a record that didn't cover its board gets the floor"
+    assert record_net(star) == 0, "a record that didn't cover its board is worth nothing extra"
     # A yearling on the day sheet: handled through the year it comes to the races a point further along, shaped by its owner.
     yl = c.foal(sire_, dam_); yl.age, yl.owner = 1, 0; nursery.append(yl); grow(yl, 0)
     was = dict(yl.developed)
@@ -1096,7 +1102,8 @@ if __name__ == "__main__":
     assert not handle(yl, 0, 99, "jog", "stamina"), "the nursery sheet is for yearlings"
     nursery.remove(yl)
     star.seasons[9][4] = star.seasons[8][4] = 400_000
-    assert abs(value(star) - house_offer(star) * 1.5) < 1, "the board asks half again what the house pays for a proven earner"
+    assert value(star) == max(value(star), round(BOARD_SHARE * record_net(star), -3)) and value(star) >= BOARD_SHARE * record_net(star) - 500, \
+        "the board values a proven earner on its record"
     got[1][0].starts = 1
     assert scrap(mare, 1, horses) is None, "only the owner can sell a horse to the house"
     print(f"scrap: a house horse hands back ${SCRAP:,.0f} unraced; a pack-ripper nets {rtp:.0%}-{SCRAP / HOUSE_HORSE:.0%} of price per roll")
