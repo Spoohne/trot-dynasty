@@ -1490,28 +1490,45 @@ def sponsor_page(qs=None):
     return page("Sponsor a stake", body)
 
 
-def picks_section():
-    """The handicapper's game on the Stakes page: tonight's stakes with a pick per stake, and the season's table."""
-    day, wk = G["day"], G["day"] % c.YEAR
-    mine = G.setdefault("picks", {}).setdefault(ME, {})
-    cards = ""
+def picks_page(msg=""):
+    """The handicapper's game, its own page: each of tonight's stakes as a program (the nominees' past performances, as the
+    Program page lays them out), a pick under each, and one Submit for the slip. Picks change until the stake runs."""
+    day = G["day"]; mine = G.setdefault("picks", {}).setdefault(ME, {})
+    room = e.stalls(ME) - e.barn_size.get(ME, 0)
+    out = ""
     for s in stakes_tonight():
         noms = nominees(s)
         if len(noms) < 2:
             continue
-        line = c.tote_odds(noms)
-        rows = "".join(f"<label class='pkrow{' on' if mine.get(s.id) == h.id else ''}'><input type=radio name=h value={h.id}{' checked' if mine.get(s.id) == h.id else ''} onchange='this.form.submit()'>"
-                       f"<b>{esc(h.name)}</b><span class=sub>{barn_tag(h.owner, 14)}</span><span class=money>{'%d-%d' % line[h.id]}</span></label>"
-                       for h in sorted(noms, key=lambda h: line[h.id][0] / line[h.id][1]))
-        cards += (f"<form method=post action=/pick class='card pk'><input type=hidden name=s value={s.id}><div class=row style='justify-content:space-between'>"
-                  f"<b>{esc(s.name)}</b><span class=sub>${s.purse:,.0f} · tonight</span></div>{rows}</form>")
+        line = c.tote_odds(noms); noms = sorted(noms, key=lambda h: line[h.id][0] / line[h.id][1])
+        picked = next((h for h in noms if h.id == mine.get(s.id)), None)
+        head = (f"<div class=pgh><div class=pgn>&#9733;</div><div class=pgt>{KIND_WORD.get(s.kind, 'Stakes')} · {sk.DIVISION[(s.group, s.sex)]} · HARNESS PARK · TROT – 1 MILE<br><b>{esc(s.name)}</b></div>"
+                f"<div class=pgp>PURSE<br><b>${s.purse:,.0f}</b><br>{len(noms)} nominated</div></div>")
+        entries = "".join(program_entry(h, 0, line, False, room, note=False) for h in noms)
+        slip = "".join(f"<label class='pkrow{' on' if picked is h else ''}'><input type=radio name=s_{s.id} value={h.id}{' checked' if picked is h else ''}>"
+                       f"<b>{esc(h.name)}</b><span class=sub>{barn_tag(h.owner, 14)}</span><span class=money>{'%d-%d' % line[h.id]}</span></label>" for h in noms)
+        status = (f"<div class=pkst>Picked: <b>{esc(picked.name)}</b> <span class=sub>· change below until it runs</span></div>" if picked
+                  else "<div class='pkst sub'>No pick yet</div>")
+        out += f"<div class=pgm style='margin:14px 0 4px'>{head}{entries}</div><div class='card pk'>{status}{slip}</div>"
     yr = c.year_of(day); tally = G.get("pickers", {}).get(yr, {})
     table = "".join(f"<tr{brow(o)}><td>{k + 1}</td><td class=sbarn>{barn_tag(o)}{' &#127942;' * len(P(o).get('hcap', []))}</td><td>{t[0]}</td><td>{t[1]}</td><td>{100 * t[0] // t[1] if t[1] else 0}%</td></tr>"
                     for k, (o, t) in enumerate(sorted(tally.items(), key=lambda x: (-x[1][0], x[1][1]))))
-    return ("<h2 id=picks>The handicapper's game</h2>"
-            f"<p class=sub>Pick the winner of each stake before it runs; a winner pays a ${PICK_PRIZE:,} prize, and the season's best handicapper is named at the Crown. Free to play; picks lock at post time.</p>"
-            + (cards or "<p class=sub>No stakes tonight. The next ones are below.</p>")
+    body = (f"<style>{PP_CSS}</style><style>.pkst{{padding:4px 0 6px;font-size:15px}}.pk .pkrow{{padding:8px 0}}</style>"
+            f"<p class=sub>Pick the winner of each stake before it runs; a winner pays a ${PICK_PRIZE:,} prize, and the season's best handicapper is named at the Crown. "
+            "Free to play; picks lock at post time. Read the program, then mark your slip and submit it.</p>"
+            + (f"<div class=ev>{esc(msg)}</div>" if msg else "")
+            + (f"<form method=post action=/pick>{out}<button class='btn big' style='margin:10px 0'>Submit picks</button></form>" if out
+               else "<div class=card>No stakes tonight. <a href=/stakes>The calendar</a> has the next ones.</div>")
             + (f"<div class=card><b>Year {yr} handicappers</b><table><tr><th>#</th><th>Barn</th><th>Winners</th><th>Picks</th><th>Rate</th></tr>{table}</table></div>" if table else ""))
+    return page("The handicapper's game", body)
+
+
+def picks_section():
+    """On the Stakes page: a line to the handicapper's game, with tonight's count."""
+    n = sum(1 for s in stakes_tonight() if len(nominees(s)) >= 2)
+    done = sum(1 for s in stakes_tonight() if s.id in G.get("picks", {}).get(ME, {}))
+    return (f"<h2 id=picks>The handicapper's game</h2><a class='btn big' href=/picks>{f'Pick tonight&#39;s winners · {done} of {n} picked' if n else 'The handicapper&#39;s game'}</a>"
+            f"<div class=sub style='margin:4px 0 12px'>A program for each stake on tonight's card, a pick under each, one slip to submit.</div>")
 
 
 def tonight_card():
@@ -1524,16 +1541,10 @@ def tonight_card():
         n = sum(1 for r in c.CARD["races"] if any(h.owner == ME for h in r["field"]))
         if n:
             rows += row(f"{n} race{'s' if n != 1 else ''}", "of yours on tonight's program", "/program", "Program", True)
-    idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
-    closed = entries_closed()
-    if idle and not closed:
-        rows += row(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''}", "not entered for tomorrow", "/entries", "Enter")
-    sets = len(unworked())
-    if sets and not closed:
-        rows += row(f"{sets} youngster{'s' if sets != 1 else ''}", "not worked today", "/training", "Work the sets", True)
+    closed = entries_closed()                                                        # entering is done from each horse's card, not here
     open_picks = [s_ for s_ in stakes_tonight() if s_.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s_)) >= 2]
     if open_picks:
-        rows += row(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''}", "tonight, picks open", "/stakes#picks", "Pick", True)
+        rows += row(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''}", "tonight, picks open", "/picks", "Pick", True)
     note = ""
     if has_pass(ME):
         log = P().get("pass_log")
@@ -1542,7 +1553,7 @@ def tonight_card():
     left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
     chip = "entries closed" if closed else f"draw in {left // 3600}h {left % 3600 // 60:02d}m"
     if not rows:
-        rows = "<div class=sub style='padding:6px 0'>All entered and every set worked. Nothing owed before the draw.</div>"
+        rows = "<div class=sub style='padding:6px 0'>Nothing owed before the draw.</div>"
     return (f"<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Tonight</b><span class=pchip>{chip}</span></div>{rows}{note}</div>")
 
 
@@ -1565,13 +1576,9 @@ def race_banner():
         n = sum(1 for r in c.CARD["races"] if any(h.owner == ME for h in r["field"]))
         if n:
             out += bar(f"Tonight's program is up. Your races: {n}", "/program")
-    idle = [h for h in mine() if not h.retired and h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)]
-    if idle:
-        left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
-        out += bar(f"{len(idle)} fit horse{'s' if len(idle) != 1 else ''} not entered for tomorrow. Entries drawn in {left // 3600}h {left % 3600 // 60}m", "/entries")
     open_picks = [s for s in stakes_tonight() if s.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s)) >= 2]
     if open_picks:
-        out += bar(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''} tonight: make your picks", "/stakes#picks")
+        out += bar(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''} tonight: make your picks", "/picks")
     if has_pass(ME):                                                           # the Season Pass: one tap does the chores
         log = P().get("pass_log")
         if log and log[0] == G["day"]:
@@ -1900,8 +1907,9 @@ GUIDE = [
          "Your own claimers show on the board too, so you know who's exposed tonight."),
         ("The handicapper's game", "Every stake on the calendar is also a contest for the barns: pick its winner from the nominees "
          "before it runs, one pick a stake, free. A winner earns a small prize from the track, the same for every stake, and the "
-         "season's best handicapper is named at the Crown. It's a prize for reading the form, not a wager: nothing is staked and "
-         "nothing can be lost."),
+         "season's best handicapper is named at the Crown. Each stake comes with its own program, the nominees' past performances laid "
+         "out the way the night's program is, and the picks go in on one slip. It's a prize for reading the form, not a wager: "
+         "nothing is staked and nothing can be lost."),
         ("The Stable Manager", "What the Season Pass buys: a manager who does your chores in one tap. The trainer's entries for "
          "every fit horse, and every youngster's standing orders from the Training tab: the last set you gave each one, "
          "saved from its day sheet, which you change any time by working it by hand. Miss a night and the manager covers you, for a few nights in a row, then waits for you. It never "
@@ -1939,7 +1947,7 @@ GUIDE = [
         ("Lines and nicks", "Every horse belongs to a family line, and some lines cross better than others. A pedigree scout can rate "
          "how a stallion's line crosses with a mare's, from a poor nick up to a golden cross."),
         ("Foals", "A foal is born into your nursery and grows up through its weanling and yearling years. As a yearling it goes on "
-         "your Training day sheet, and a yearling worked through its year comes to the races further along. At two it can be registered "
+         "your Training day sheet, and a yearling worked through its year comes to the races further along. Its name is yours to change until it's registered. At two it can be registered "
          "to race, for a flat fee, and moves into your racing barn. Until then it keeps its place in the shed, and the house will take "
          "an unregistered horse off your hands for a token price. Its early rating is a guess from its pedigree until it gets to the races."),
     ]),
@@ -4276,6 +4284,7 @@ def breeding_page(qs=None):
             return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
                     f"<a href='/horse/{urlname(f.name)}' class=bname>{nm}</a> <span class=sub>{f.age}yo {sex_word(f)} · {f.tier} · unregistered</span>"
                     f"<div class=sub>by {esc(f.sire.name)} out of {esc(f.dam.name)}</div>"
+                    + f"<form method=post action=/rename class=rename style='margin:6px 0 2px'><input type=hidden name=h value='{esc(f.name)}'>"f"<input name=n maxlength={_names.MAXLEN} placeholder='New name' aria-label='New name'><button class=sec>Rename</button></form>"
                     f"<div class=row style='gap:8px;flex-wrap:wrap;margin-top:6px'>"
                     f"<form method=post action=/register class=inline><input type=hidden name=h value='{nm}'>"
                     f"<button onclick=\"return ask(this,'Register {nm} to race for ${e.REG_FEE:,}?')\">Register to race · ${e.REG_FEE:,}</button></form>"
@@ -4286,6 +4295,7 @@ def breeding_page(qs=None):
         return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(f.name)}' class=bname>{esc(f.name)}</a> <span class=sub>{'weanling' if f.age == 0 else 'yearling'} {'colt' if f.sex == 'm' else 'filly'} · {f.tier}</span>"
                 f"<div class=sub>by {esc(f.sire.name)} out of {esc(f.dam.name)}</div>"
+                + f"<form method=post action=/rename class=rename style='margin:6px 0 2px'><input type=hidden name=h value='{esc(f.name)}'>"f"<input name=n maxlength={_names.MAXLEN} placeholder='New name' aria-label='New name'><button class=sec>Rename</button></form>"
                 f"<div>{''.join(stat_bar(f.developed[t], f, k.capitalize(), 90, trait=t, goal=f.ceiling(t, 2) - 2.0) for k, t in FOCUS.items())}</div>"
                 f"<div class=sub>{'ready to register' if getattr(f, 'unreg', False) else 'joins the barn to race'} in {wk} weeks</div></div></div></div>")
     young = [f for f in e.nursery if f.owner == ME]
@@ -4581,7 +4591,7 @@ def claim_tag(h):
     return o[1] if isinstance(o, tuple) and o[0] == "claim" else 0
 
 
-def program_entry(h, tag, odds, drawn, room):
+def program_entry(h, tag, odds, drawn, room, note=True):                  # note: the "drawn at 8 PM" line (a stake draws at post time)
     post = getattr(h, "post", 0) if drawn else 0
     coat, _ = looks(h)
     sire, dam = getattr(h, "sire", None), getattr(h, "dam", None)
@@ -4603,7 +4613,7 @@ def program_entry(h, tag, odds, drawn, room):
             f"<div class=pgname><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>{tagl}</div>"
             f"<div class=pgped>{COAT_ABBR.get(coat, coat)} {sex_abbr(h)} {h.age} · {ped}</div>"
             + (f"<div class=pgown>Driver – {silks(drv)} <b>{esc(drv)}</b></div>" if (drv := next((r_["drivers"].get(h.id) for r_ in c.CARD.get("races", []) if h.id in r_.get("drivers", {})), None)) and drawn else "")
-            + ("" if drawn else "<div class='pgown sub'>Post and driver drawn at 8 PM</div>")
+            + ("" if drawn or not note else "<div class='pgown sub'>Post and driver drawn at 8 PM</div>")
             + f"<div class=pgown>Owner/Trainer – <b>{barn_tag(h.owner, 14)}</b>{' · Breeder – ' + esc(barn_name(breeder)) if isinstance(breeder, int) else ''}</div>"
             f"{career_box(h)}</div></div>{pp_lines(h)}{act}</div>")
 
@@ -4987,6 +4997,7 @@ class H(BaseHTTPRequestHandler):
                     r["emblem"] = CR.svg(emblem_of(h.owner)).split("src=")[1].split()[0] if h else ""   # the PNG's path
                     r["marquee"] = marquee_html(h.owner, mq_) if h and (mq_ := marquee_of(h.owner)) else ""
                     r["wraps"] = kit_of(h)["wraps"] if h and "wraps" in fitted(h) else ""   # shortcut: the gear it wears now, not on race night
+                    r["mask"] = kit_of(h)["mask"] if h and "mask" in fitted(h) else ""
                     if h:                                                  # the handicapper's pick, on what was known before the race
                         form = [x["place"] == 1 for x in getattr(h, "results", []) if x["day"] < st_["day"]][-5:]
                         score = h.est + 1.5 * sum(form) - 0.4 * r["post"]
@@ -5096,6 +5107,8 @@ class H(BaseHTTPRequestHandler):
             return self.send("", 303, tack_model(pieces, dict(barn_kit(ME), **kit)))   # shortcut: one PNG per kit, never swept; sweep the cache if it grows
         if p.startswith("/tonic/"):
             return self.send(tonic_page(unquote(p.split("/")[2])))
+        if p == "/picks":
+            return self.send(picks_page())
         if p == "/stakes":
             return self.send(stakes_page({k: v[0] for k, v in parse_qs(urlparse(self.path).query).items()}))
         if p == "/program":
@@ -5282,12 +5295,16 @@ class H(BaseHTTPRequestHandler):
             if o in G["players"]:
                 P(o)["pass"] = not P(o).get("pass"); save()
             return self.send(admin_page(f"Season Pass {'on' if P(o).get('pass') else 'off'} for {G['players'][o].get('user')}." if o in G["players"] else "Pick a player."))
-        if p == "/pick":                                                  # the handicapper's game: one pick per stake, changeable until it runs
-            s = next((s for s in stakes_tonight() if s.id == q.get("s")), None)
-            hid = int(q["h"]) if str(q.get("h", "")).isdigit() else None
-            if s and any(h.id == hid for h in nominees(s)):
-                G.setdefault("picks", {}).setdefault(ME, {})[s.id] = hid; save()
-            return self.send("", 303, "/stakes#picks")
+        if p == "/pick":                                                  # the handicapper's game: the slip, one pick per stake, changeable until it runs
+            n = 0
+            for s in stakes_tonight():
+                v = q.get(f"s_{s.id}", q.get("h") if q.get("s") == s.id else "")
+                hid = int(v) if str(v).isdigit() else None
+                if hid is not None and any(h.id == hid for h in nominees(s)):
+                    G.setdefault("picks", {}).setdefault(ME, {})[s.id] = hid; n += 1
+            if n:
+                save()
+            return self.send(picks_page(f"Slip submitted: {n} pick{'s' if n != 1 else ''} in." if n else "Mark a horse in at least one stake, then submit."))
         if p == "/admin/review" and ME == ADMIN:                        # the stewards' call on a flagged pair
             a, b, do = (int(q.get(k, -1)) if str(q.get(k, "")).isdigit() else -1 for k in ("a", "b")), q.get("do")
             a, b = a
@@ -5322,6 +5339,12 @@ class H(BaseHTTPRequestHandler):
                     P(o).pop("verified", None)
                 save()
             return self.send("", 303, f"/barn/{o}")
+        if p == "/rename":                                                # a youngster's name is yours to change until it's registered
+            f = next((x for x in e.nursery if x.name == q.get("h", "") and x.owner == ME), None)
+            n = " ".join(q.get("n", "").split())[:_names.MAXLEN]
+            if f and n and n != f.name and n.replace(" ", "").isalpha() and n not in _names.USED:
+                _names.USED.discard(f.name); _names.USED.add(n); f.name = n; save()
+            return self.send("", 303, "/studs?v=foals")
         if p == "/stablename":
             n, fee = q.get("n", "").strip()[:28], CR.RENAME_FEE if P().get("named") else 0   # the first name is free
             if n and n != P().get("stable") and e.cash.get(ME, 0) >= fee:

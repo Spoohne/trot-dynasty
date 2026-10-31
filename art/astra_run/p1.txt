@@ -1,0 +1,13 @@
+The attached image is a 12-frame side-view animation of a harness racing pacer, laid out as a 4-column by 3-row grid on a solid flat green (#00FF00) background (frames 1-4 top row left to right, 5-8 middle row, 9-12 bottom row). Each frame sits centered in its grid cell at the same position.
+
+Redraw ONLY the horse's four legs so the 12 frames form one correct, smooth PACING stride. Keep every other pixel exactly as it is: horse body, head, neck, mane, tail, harness, saddle pad, shafts, sulky, wheel, driver, colors, size, position and art style. Same grid, same cells, same solid flat green background, nothing else in it.
+
+PACING GAIT RULES:
+- A pacer moves its legs in lateral pairs: the near (viewer-side) front leg and near hind leg move forward and back TOGETHER, at the same time; the far front and far hind move together, opposite to the near pair. Never pair diagonal legs (that is a trot).
+- Frame 1: near pair fully extended forward, about to land; far pair fully extended backward, pushing off.
+- Frames 2-3: near pair lands and takes the weight, passing under the body; far pair lifts and folds (knee and hock bent, hoof tucked up) as it swings forward.
+- Frames 4-6: near pair sweeps back under and behind the body; far pair reaches forward.
+- Frame 7: mirror of frame 1 (far pair extended forward, near pair extended back).
+- Frames 8-12: mirror of frames 2-6, ending so frame 12 flows smoothly into frame 1.
+- Every frame is a distinct, evenly spaced step; no repeated or skipped poses.
+- Supporting hooves rest exactly on the same ground line in every frame; legs keep the same length and thickness; knees and hocks bend naturally; black lower legs with small white marks above the hooves, as in the original.

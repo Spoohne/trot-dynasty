@@ -1,0 +1,85 @@
+{
+  "frameCount": 12,
+  "frameSize": [
+    480,
+    304
+  ],
+  "maskAlphaEquality": true,
+  "outsideGearPixelIdentity": true,
+  "wheelRegistration": "integer translation using silver hub template",
+  "anatomicalPacingValidated": false,
+  "frames": [
+    {
+      "frame": 0,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1493,
+      "hoodPixels": 1691
+    },
+    {
+      "frame": 1,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1720,
+      "hoodPixels": 1665
+    },
+    {
+      "frame": 2,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1599,
+      "hoodPixels": 1691
+    },
+    {
+      "frame": 3,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1670,
+      "hoodPixels": 1609
+    },
+    {
+      "frame": 4,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1638,
+      "hoodPixels": 1566
+    },
+    {
+      "frame": 5,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1620,
+      "hoodPixels": 1565
+    },
+    {
+      "frame": 6,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1581,
+      "hoodPixels": 1413
+    },
+    {
+      "frame": 7,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1480,
+      "hoodPixels": 1481
+    },
+    {
+      "frame": 8,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1501,
+      "hoodPixels": 1490
+    },
+    {
+      "frame": 9,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1717,
+      "hoodPixels": 1462
+    },
+    {
+      "frame": 10,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1623,
+      "hoodPixels": 1507
+    },
+    {
+      "frame": 11,
+      "changedPixelsOutsideGear": 0,
+      "wrapPixels": 1553,
+      "hoodPixels": 1501
+    }
+  ]
+}

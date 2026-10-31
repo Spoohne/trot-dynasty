@@ -24,7 +24,8 @@ def wrapped0():
     """Frame 0 in SpriteCook's wraps, and the mask of the wrap pixels."""
     if not _wrapped:
         im, m = Image.open(WRAPPED).convert("RGBA"), Image.open(WMASK).convert("L")
-        _wrapped.append((im.crop((0, 0, 208, 101)), m.crop((0, 0, 208, 101))))   # frame 0, whatever the sheet's length
+        f = frame0().copy(); f.alpha_composite(im.crop((0, 0, f.width, f.height)))          # frame 0 with the wraps overlay on
+        _wrapped.append((f, m.crop((0, 0, f.width, f.height))))
     return _wrapped[0]
 
 
@@ -44,13 +45,13 @@ def paint(pieces, cols, c1, c2):
     col = lambda k: rgb(cols[k]) if str(cols.get(k, "")).startswith("#") else rgb(c1 if cols.get(k, "p") == "p" else c2)   # a hex: the horse's own
     im = (wrapped0()[0] if "wraps" in pieces else frame0()).copy(); px = im.load(); W, H = im.size
     blue = lambda p: p[3] > 0 and p[2] > p[0] + 40 and p[2] > p[1] + 30
-    cx, cy = 27, 82
+    cx, cy = 23, 95
     for y in range(H):
         for x in range(W):
             p = px[x, y]
             if not blue(p):
                 continue
-            if x < 60 and y < 58:                                     # the driver: a neutral grey, drivers wear their own silks
+            if x < 60 and y < 70:                                     # the driver: a neutral grey, drivers wear their own silks
                 px[x, y] = shade(p, (150, 150, 158))
             elif math.hypot(x - cx, y - cy) <= 19:
                 px[x, y] = shade(p, col("bike") if "bike" in pieces else (150, 150, 158))
@@ -67,13 +68,13 @@ def paint(pieces, cols, c1, c2):
                         px[x, y] = shade((120, 120, 120, 255), col("bike"))
                     elif d < 17:
                         px[x, y] = col("bike") + (255,)
-    if "mask" in pieces:                                              # over the head, muzzle bare, the ear tips in the other color
-        other = rgb(cols["mask2"]) if "mask2" in cols else rgb(c2 if cols.get("mask", "p") == "p" else c1)
-        for y in range(9, 34):
-            for x in range(176, 201):
-                p = px[x, y]
-                if p[3] and ((p[0] > p[1] > p[2] and p[0] > 60) or (sum(p[:3]) < 150 and y < 16)):
-                    px[x, y] = other + (255,) if y < 15 else shade(p, col("mask"))
+    if "mask" in pieces:                                              # the hood overlay, dyed like the wraps
+        hood = Image.open(WRAPPED.replace("wraps12", "hood12")).convert("RGBA").crop((0, 0, W, H)); im.alpha_composite(hood); px = im.load()
+        hm, c = Image.open(WMASK.replace("wraps12", "hood12")).convert("L").crop((0, 0, W, H)).load(), col("mask")
+        for y in range(H):
+            for x in range(W):
+                if hm[x, y] > 128 and px[x, y][3]:
+                    px[x, y] = shade(px[x, y], c)
     if "wraps" in pieces:                                             # SpriteCook's wraps dyed like fabric (art/tack_layers/wrap_tint.py, same numbers)
         m, c = wrapped0()[1].load(), col("wraps")
         avg = sum(c) / 3; c = tuple(v * .88 + avg * .12 for v in c)
@@ -90,7 +91,7 @@ def paint(pieces, cols, c1, c2):
 def render(pieces, cols, c1, c2):
     """The model's PNG at 3x, cached like the emblems; returns its path under /mock."""
     pieces = tuple(p for p in PIECES if p in pieces)
-    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v14"
+    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v20"
     name = hashlib.md5(key.encode()).hexdigest()[:12] + ".png"
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):

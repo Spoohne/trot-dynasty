@@ -1,0 +1,5 @@
+This is one frame of our game sprite: a harness racing pacer pulling a sulky, side view, on a solid flat green (#00FF00) background.
+
+Add exactly one piece of equipment, in plain WHITE with soft light-grey shading and a thin dark outline: a racing hood, a fitted cloth hood covering the horse's head and ears, with openings around the eyes, worn under the existing bridle straps.
+
+Change nothing else at all: same legs, same pose, same body, mane, tail, bridle, harness, shafts, sulky, wheel, driver, colors, position and size. Same canvas, same solid flat green background with nothing else in it.

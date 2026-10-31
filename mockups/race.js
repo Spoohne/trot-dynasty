@@ -106,7 +106,7 @@ RACE.load = async (id, myName) => {
   // older saved stories carry no coat: give each horse one from its name, in the breed's proportions
   const COATS = ["bay", "bay", "bay", "bay", "bay", "brown", "brown", "black", "black", "chestnut", "chestnut", "grey"];
   const pick = n => COATS[[...n].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) % COATS.length];
-  RACE.H = horses.map(h => Object.assign([h.name, "#5a3420", h.behind, h.lane], { stamina: h.stamina || 0, early: h.early || 0, coat: h.coat || pick(h.name), odds: h.odds || "", owner: h.owner || "", stable: h.stable || "", player: !!h.player, silks: h.silks || null, wraps: h.wraps || "", driver: h.driver || "", emblem: h.emblem || "", marquee: h.marquee || "" }));
+  RACE.H = horses.map(h => Object.assign([h.name, "#5a3420", h.behind, h.lane], { stamina: h.stamina || 0, early: h.early || 0, coat: h.coat || pick(h.name), odds: h.odds || "", owner: h.owner || "", stable: h.stable || "", player: !!h.player, silks: h.silks || null, wraps: h.wraps || "", mask: h.mask || "", driver: h.driver || "", emblem: h.emblem || "", marquee: h.marquee || "" }));
   RACE.PICK = s.pick || ""; RACE.HERO = s.hero ? horses.findIndex(h => h.name === s.hero) : -1;   // a scripted showcase: its hero runs exactly as written
   RACE.MATINEE = !!s.matinee;                                              // a daytime track: the replay draws it in daylight
   RACE.PASSING = !!s.passing; RACE.DIVER = horses.findIndex(h => (h.trip || "").includes("passing lane"));   // a passing-lane track, and who goes up it

@@ -1,0 +1,7 @@
+This is one frame of our game sprite: a harness racing pacer pulling a sulky, side view, on a solid flat green (#00FF00) background.
+
+Add exactly two pieces of equipment, both in plain WHITE with soft light-grey shading and thin dark outlines:
+1. Leg wraps: padded polo wraps on all four lower legs, from just below the knee and hock down to just above the hoof. They follow each leg exactly as it is drawn now, including bends; the hooves stay bare and black.
+2. A racing hood: a fitted cloth hood covering the horse's head and ears, with openings around the eyes, under the existing bridle straps.
+
+Change nothing else at all: same legs, same pose, same body, mane, tail, bridle, harness, shafts, sulky, wheel, driver, colors, position and size. Same canvas, same solid flat green background with nothing else in it.

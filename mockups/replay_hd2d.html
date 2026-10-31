@@ -657,17 +657,24 @@ const flatGeo = new THREE.PlaneGeometry(TOP_LEN, TOP_LEN * TFH / TFW).rotateX(-M
 const DFW = 251, DPAD = [118, 26, 18, 21];
 const driveGeo = new THREE.PlaneGeometry(LEN_FT * DFW / FW, H_FT).translate(LEN_FT * DFW / FW * (.5 - NOSE), H_FT / 2, 0);
 let driveImg = null; const driveLoaded = new Promise(r => { const i = new Image(); i.onload = () => { driveImg = i; r(); }; i.src = P("/mock/pixel/drive/drive12.png"); });
-const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => { cycleImg = i; r(); }; i.src = RIG ? P("/mock/pixel/rig_cycle.png") : P("/mock/pixel/fe12_cycle.png"); });
+const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => { cycleImg = i; r(); }; i.src = RIG ? P("/mock/pixel/rig_cycle.png") : P("/mock/pixel/fe12_cycle.png"); });   // the original runner; gear (wraps, hood) rides on it as overlays
 // Tack Room leg wraps: SpriteCook's wrapped cycle (same 12 cells) and the mask of its wrap pixels, tinted to each horse's color.
 // Side view only for now; the angle, overhead and drive-cam sheets stay bare.
 const WRAPS_OK = !RIG && !PAINTED;                                    // the race data may not be in yet: load the sheet, pick per horse later
 let wrapImg = null, wrapMask = null, wrapMeta = { frames: FR, cols: FR };    // the wrapped sheet's own frame count and row width (wraps12.json)
 const wrapMetaLoaded = WRAPS_OK ? fetch(P("/mock/pixel/tack/wraps12.json?v=" + Date.now())).then(r => r.ok ? r.json() : null).then(j => { if (j && j.frames) wrapMeta = { frames: j.frames, cols: j.cols || j.frames }; }).catch(() => {}) : Promise.resolve();
-const wrapLoaded = WRAPS_OK ? Promise.all(["wraps12", "wraps12_mask"].map(n => new Promise(r => { const i = new Image(); i.onload = () => { if (n === "wraps12") wrapImg = i; else wrapMask = i; r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=12`); }))) : Promise.resolve();
-function wrapTint(c, hex) {
-  if (!wrapMask) return c;
-  if (!wrapTint.m) { const k = document.createElement("canvas"); k.width = wrapMask.width; k.height = wrapMask.height; const kg = k.getContext("2d"); kg.drawImage(wrapMask, 0, 0); wrapTint.m = kg.getImageData(0, 0, k.width, k.height).data; }
-  const m = wrapTint.m, g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, Wd = c.width;
+let hoodImg = null, hoodMask = null;                                   // the hood overlay and its mask, same sheet layout
+const GEAR = { wraps12: i => wrapImg = i, wraps12_mask: i => wrapMask = i, hood12: i => hoodImg = i, hood12_mask: i => hoodMask = i };
+const wrapLoaded = WRAPS_OK ? Promise.all(Object.keys(GEAR).map(n => new Promise(r => { const i = new Image(); i.onload = () => { GEAR[n](i); r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=18`); }))) : Promise.resolve();
+function overlay(base, layers) {                                        // the coated runner with its gear overlays drawn on, one canvas
+  const c = document.createElement("canvas"); c.width = base.width; c.height = base.height; const g = c.getContext("2d");
+  g.drawImage(base, 0, 0); for (const l of layers) if (l) g.drawImage(l, 0, 0); return c;
+}
+const maskData = new Map();
+function wrapTint(c, hex, mask = wrapMask) {                             // mask: which overlay's pixels take the color
+  if (!mask || !hex) return c;
+  if (!maskData.has(mask)) { const k = document.createElement("canvas"); k.width = mask.width; k.height = mask.height; const kg = k.getContext("2d"); kg.drawImage(mask, 0, 0); maskData.set(mask, kg.getImageData(0, 0, k.width, k.height).data); }
+  const m = maskData.get(mask), g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, Wd = c.width;
   // dyed like fabric (art/tack_layers/wrap_tint.py keeps the same numbers): the wrap's light stretched so its turns show,
   // the color muted a touch and never brighter than itself, the edges darker so it sits on the leg
   const raw = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)), avg = (raw[0] + raw[1] + raw[2]) / 3, rgb = raw.map(v => v * .88 + avg * .12);
@@ -684,10 +691,10 @@ function wrapTint(c, hex) {
 function buildRunners() {
   runners.forEach(r => { scene.remove(r.drive); scene.remove(r.card); scene.remove(r.shadow); scene.remove(r.flat); Object.values(r.ang).forEach(a => scene.remove(a.m)); });
   runners = RACE.H.map((h, i) => {
-    const wr = WRAPS_OK && wrapImg && h.wraps;                                     // in wraps: the wrapped cycle, dyed, then the wraps in its color
-    const fr = wr ? wrapMeta.frames : FR, cols = wr ? wrapMeta.cols : FR, rows = Math.ceil(fr / cols);   // a wrapped sheet may run longer than 12
-    const sil = dye(coat(wr ? wrapImg : cycleImg, h.coat), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null, fr, cols);
-    const t = new THREE.CanvasTexture(grit(wr ? wrapTint(sil, h.wraps) : sil, FW, FH));
+    const wr = WRAPS_OK && wrapImg && h.wraps, hd = WRAPS_OK && hoodImg && h.mask;   // gear: overlays on the coated runner, each dyed in its own color
+    const fr = wrapMeta.frames, cols = wrapMeta.cols, rows = Math.ceil(fr / cols);   // the side sheet's own length (wraps12.json): the real stride is 13 frames
+    const sil = dye(overlay(coat(cycleImg, h.coat), [wr && wrapImg, hd && hoodImg]), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null, fr, cols);
+    const t = new THREE.CanvasTexture(grit(wrapTint(wrapTint(sil, wr && h.wraps), hd && h.mask, hoodMask), FW, FH));
     sharp(t); t.repeat.set(1 / cols, 1 / rows);
     const card = new THREE.Mesh(cardGeo, new THREE.MeshBasicMaterial({ map: t, color: 0xece6dc, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false }));
     const shadow = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));

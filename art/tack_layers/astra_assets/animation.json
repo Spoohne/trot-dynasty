@@ -1,0 +1,409 @@
+{
+  "schemaVersion": 1,
+  "status": "integration prototype; inherited generated poses require gait cleanup",
+  "frameSize": {
+    "width": 480,
+    "height": 304
+  },
+  "frameCount": 12,
+  "frameOrder": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "sheet": {
+    "columns": 12,
+    "rows": 1,
+    "width": 5760,
+    "height": 304,
+    "padding": 0
+  },
+  "coordinateSystem": {
+    "origin": "top-left",
+    "x": "right",
+    "y": "down",
+    "units": "pixels"
+  },
+  "playback": {
+    "driver": "distance",
+    "strideFeet": 17,
+    "frameFormula": "floor((distanceFeet % 17) / 17 * 12)",
+    "previewOnlyFps": 35
+  },
+  "alpha": "straight/unpremultiplied",
+  "maskSemantics": "8-bit L; equals corresponding overlay alpha; do not apply twice",
+  "tint": "multiply overlay RGB by tint RGB / 255; preserve overlay alpha",
+  "layerOrder": [
+    "base",
+    "wraps",
+    "hood"
+  ],
+  "layers": {
+    "base": {
+      "sheet": "base-sheet.png",
+      "frames": "base/{index:02d}.png"
+    },
+    "wraps": {
+      "sheet": "wraps-sheet.png",
+      "frames": "wraps/{index:02d}.png"
+    },
+    "hood": {
+      "sheet": "hood-sheet.png",
+      "frames": "hood/{index:02d}.png"
+    },
+    "wraps-mask": {
+      "sheet": "wraps-mask-sheet.png",
+      "frames": "wraps-mask/{index:02d}.png"
+    },
+    "hood-mask": {
+      "sheet": "hood-mask-sheet.png",
+      "frames": "hood-mask/{index:02d}.png"
+    }
+  },
+  "rig": {
+    "type": "baked",
+    "separateWheel": false,
+    "separateStillRig": false,
+    "wheelAxle": [
+      84,
+      220
+    ],
+    "nearHitchCoordinates": "measured visible silver hitch centers; may move between frames",
+    "farHitchCoordinates": "not visible; null"
+  },
+  "frames": [
+    {
+      "index": 0,
+      "sourceIndex": 0,
+      "registrationTranslation": [
+        14,
+        17
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        293,
+        100
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          0,
+          0
+        ],
+        "hood": [
+          -2,
+          -1
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "sourceIndex": 1,
+      "registrationTranslation": [
+        14,
+        17
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        293,
+        100
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          0,
+          0
+        ],
+        "hood": [
+          -2,
+          -1
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "sourceIndex": 2,
+      "registrationTranslation": [
+        15,
+        17
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        295,
+        100
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          -1,
+          0
+        ],
+        "hood": [
+          -4,
+          0
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "sourceIndex": 3,
+      "registrationTranslation": [
+        13,
+        13
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        292,
+        98
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          -2,
+          0
+        ],
+        "hood": [
+          -4,
+          0
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "sourceIndex": 4,
+      "registrationTranslation": [
+        14,
+        15
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        292,
+        102
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          0,
+          0
+        ],
+        "hood": [
+          -3,
+          0
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "sourceIndex": 5,
+      "registrationTranslation": [
+        14,
+        15
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        291,
+        102
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          0,
+          0
+        ],
+        "hood": [
+          -4,
+          0
+        ]
+      }
+    },
+    {
+      "index": 6,
+      "sourceIndex": 6,
+      "registrationTranslation": [
+        14,
+        15
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        292,
+        103
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          -1,
+          0
+        ],
+        "hood": [
+          -4,
+          0
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "sourceIndex": 7,
+      "registrationTranslation": [
+        14,
+        14
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        291,
+        101
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          -2,
+          0
+        ],
+        "hood": [
+          -4,
+          0
+        ]
+      }
+    },
+    {
+      "index": 8,
+      "sourceIndex": 8,
+      "registrationTranslation": [
+        13,
+        10
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        291,
+        98
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          0,
+          0
+        ],
+        "hood": [
+          -2,
+          -2
+        ]
+      }
+    },
+    {
+      "index": 9,
+      "sourceIndex": 9,
+      "registrationTranslation": [
+        15,
+        11
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        293,
+        99
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          0,
+          0
+        ],
+        "hood": [
+          -3,
+          -1
+        ]
+      }
+    },
+    {
+      "index": 10,
+      "sourceIndex": 10,
+      "registrationTranslation": [
+        17,
+        11
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        294,
+        99
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          -1,
+          0
+        ],
+        "hood": [
+          -4,
+          -2
+        ]
+      }
+    },
+    {
+      "index": 11,
+      "sourceIndex": 11,
+      "registrationTranslation": [
+        15,
+        14
+      ],
+      "wheelAxle": [
+        84,
+        220
+      ],
+      "nearHitch": [
+        291,
+        100
+      ],
+      "farHitch": null,
+      "gearSourceTranslations": {
+        "wraps": [
+          -1,
+          0
+        ],
+        "hood": [
+          -3,
+          -2
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "frameWidth": 458,
+  "frameHeight": 287,
+  "columns": 4,
+  "rows": 3,
+  "frameCount": 12,
+  "frameDurationMs": 60,
+  "order": "row-major",
+  "loop": true,
+  "variants": [
+    "01-no-wraps-no-mask",
+    "02-wraps-no-mask",
+    "03-wraps-and-mask"
+  ]
+}

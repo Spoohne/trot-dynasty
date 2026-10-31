@@ -1,0 +1,10 @@
+Image 1: one frame of our game sprite, a harness racing pacer pulling a sulky, side view facing right, on a solid flat green (#00FF00) background.
+Image 2: a real video frame of a modern pacer at the same moment of its stride, also side view facing right.
+
+Redraw ONLY the horse's four legs in image 1 so they copy the real leg positions in image 2, leg by leg and side by side:
+- Near-side legs (the two on the viewer's side, drawn in front and lit in image 2) become the near-side legs in image 1, drawn in front and slightly brighter.
+- Far-side legs (the two on the far side, partly behind and darker in image 2) become the far-side legs in image 1, drawn behind and slightly darker.
+- Copy each leg's angle, the knee and hock bends, the hoof positions, which hooves are on the ground and how high the lifted legs are folded.
+- Do NOT draw the hobbles, boots or any straps from the photo, and copy nothing else from the photo.
+
+Keep the legs in image 1's own art style, size, thickness and coloring (bay upper legs, black lower legs, small white marks above the hooves), with hooves on the same ground line. Keep every other pixel of image 1 exactly as it is: body, head, mane, tail, harness, saddle pad, shafts, sulky, wheel, driver, position and size. Same canvas, same solid flat green background with nothing else in it.

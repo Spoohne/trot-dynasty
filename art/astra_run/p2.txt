@@ -1,0 +1,11 @@
+Image 1 is a 12-frame side-view animation of a harness racing pacer, laid out as a 4-column by 3-row grid on a solid flat green (#00FF00) background (frames 1-4 top row left to right, 5-8 middle row, 9-12 bottom row). Each frame sits centered in its grid cell at the same position.
+
+Image 2 is a real photograph sequence (Eadweard Muybridge, 1887, the pacer "Pronto" in a sulky): photos 1 to 6, numbered in red, are ONE complete pacing stride, in order.
+
+Redraw ONLY the horse's four legs in image 1 so they copy the real leg positions in image 2:
+- Frame 1 = photo 1, frame 3 = photo 2, frame 5 = photo 3, frame 7 = photo 4, frame 9 = photo 5, frame 11 = photo 6.
+- Frames 2, 4, 6, 8, 10 and 12 are exactly halfway between their neighbors (frame 12 is halfway between photo 6 and photo 1, so the loop closes smoothly).
+- Match each photo's leg angles, which legs are on the ground, how high the folded legs are tucked, and the knee and hock bends. In a pace the two legs on the same side move together.
+- Supporting hooves rest on the same ground line in every frame. Legs keep the same length, thickness, coloring and art style as image 1 (bay upper legs, black lower legs, small white marks above the hooves).
+
+Keep every other pixel of image 1 exactly as it is: horse body, head, neck, mane, tail, harness, saddle pad, shafts, sulky, wheel and its stripe, driver, colors, size, position and art style. Same grid, same cells, same solid flat green background with nothing else in it. Do not copy anything else from the photographs.

@@ -1,0 +1,2144 @@
+[
+ {
+  "t": 1793399502,
+  "secs": 76,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r1.png",
+  "usage": {
+   "input_tokens": 5092,
+   "input_tokens_details": {
+    "cache_write_tokens": 2492,
+    "cached_tokens": 0
+   },
+   "output_tokens": 618,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5710
+  },
+  "images": 1
+ },
+ {
+  "t": 1793399633,
+  "secs": 80,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2.png",
+  "usage": {
+   "input_tokens": 5651,
+   "input_tokens_details": {
+    "cache_write_tokens": 3020,
+    "cached_tokens": 0
+   },
+   "output_tokens": 649,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6300
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400204,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_01.png",
+  "usage": {
+   "input_tokens": 5983,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 420,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6403
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400204,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_03.png",
+  "usage": {
+   "input_tokens": 6040,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 477,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6517
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400204,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_00.png",
+  "usage": {
+   "input_tokens": 5992,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 429,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6421
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400204,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_02.png",
+  "usage": {
+   "input_tokens": 5985,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 422,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6407
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400277,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_06.png",
+  "usage": {
+   "input_tokens": 6046,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 483,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6529
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400275,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_04.png",
+  "usage": {
+   "input_tokens": 5967,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 404,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6371
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400286,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_08.png",
+  "usage": {
+   "input_tokens": 6004,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 441,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6445
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400287,
+  "secs": 78,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_09.png",
+  "usage": {
+   "input_tokens": 5994,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 431,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6425
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400346,
+  "secs": 76,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_10.png",
+  "usage": {
+   "input_tokens": 5965,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 402,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6367
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400347,
+  "secs": 76,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_11.png",
+  "usage": {
+   "input_tokens": 6007,
+   "input_tokens_details": {
+    "cache_write_tokens": 3581,
+    "cached_tokens": 0
+   },
+   "output_tokens": 444,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6451
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400430,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_05.png",
+  "usage": {
+   "input_tokens": 5923,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 3581
+   },
+   "output_tokens": 360,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6283
+  },
+  "images": 1
+ },
+ {
+  "t": 1793400498,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\pf\\out_07.png",
+  "usage": {
+   "input_tokens": 5984,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 3581
+   },
+   "output_tokens": 421,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 6405
+  },
+  "images": 1
+ },
+ {
+  "t": 1793403636,
+  "secs": 76,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_00.png",
+  "usage": {
+   "input_tokens": 5164,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 575,
+   "output_tokens_details": {
+    "reasoning_tokens": 87
+   },
+   "total_tokens": 5739
+  },
+  "images": 1
+ },
+ {
+  "t": 1793403712,
+  "secs": 76,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_01.png",
+  "usage": {
+   "input_tokens": 5180,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 591,
+   "output_tokens_details": {
+    "reasoning_tokens": 91
+   },
+   "total_tokens": 5771
+  },
+  "images": 1
+ },
+ {
+  "t": 1793403787,
+  "secs": 77,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_02.png",
+  "usage": {
+   "input_tokens": 5200,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 611,
+   "output_tokens_details": {
+    "reasoning_tokens": 137
+   },
+   "total_tokens": 5811
+  },
+  "images": 1
+ },
+ {
+  "t": 1793403864,
+  "secs": 78,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_03.png",
+  "usage": {
+   "input_tokens": 5199,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 610,
+   "output_tokens_details": {
+    "reasoning_tokens": 89
+   },
+   "total_tokens": 5809
+  },
+  "images": 1
+ },
+ {
+  "t": 1793403942,
+  "secs": 75,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_04.png",
+  "usage": {
+   "input_tokens": 5190,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 601,
+   "output_tokens_details": {
+    "reasoning_tokens": 75
+   },
+   "total_tokens": 5791
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404016,
+  "secs": 78,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_05.png",
+  "usage": {
+   "input_tokens": 5279,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 690,
+   "output_tokens_details": {
+    "reasoning_tokens": 152
+   },
+   "total_tokens": 5969
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404094,
+  "secs": 77,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_06.png",
+  "usage": {
+   "input_tokens": 5120,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 531,
+   "output_tokens_details": {
+    "reasoning_tokens": 46
+   },
+   "total_tokens": 5651
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404171,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_07.png",
+  "usage": {
+   "input_tokens": 5081,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 492,
+   "output_tokens_details": {
+    "reasoning_tokens": 56
+   },
+   "total_tokens": 5573
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404242,
+  "secs": 78,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_08.png",
+  "usage": {
+   "input_tokens": 5228,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 639,
+   "output_tokens_details": {
+    "reasoning_tokens": 113
+   },
+   "total_tokens": 5867
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404320,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_09.png",
+  "usage": {
+   "input_tokens": 5105,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 516,
+   "output_tokens_details": {
+    "reasoning_tokens": 66
+   },
+   "total_tokens": 5621
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404394,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_10.png",
+  "usage": {
+   "input_tokens": 5226,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 637,
+   "output_tokens_details": {
+    "reasoning_tokens": 107
+   },
+   "total_tokens": 5863
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404468,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\vid\\out_11.png",
+  "usage": {
+   "input_tokens": 5159,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 570,
+   "output_tokens_details": {
+    "reasoning_tokens": 88
+   },
+   "total_tokens": 5729
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404598,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_00.png",
+  "usage": {
+   "input_tokens": 4597,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 364,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4961
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404667,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_01.png",
+  "usage": {
+   "input_tokens": 4619,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 386,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5005
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404737,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_02.png",
+  "usage": {
+   "input_tokens": 4551,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 318,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4869
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404806,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_03.png",
+  "usage": {
+   "input_tokens": 4588,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 355,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4943
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404876,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_04.png",
+  "usage": {
+   "input_tokens": 4571,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 338,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4909
+  },
+  "images": 1
+ },
+ {
+  "t": 1793404947,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_05.png",
+  "usage": {
+   "input_tokens": 4546,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 313,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4859
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405015,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_06.png",
+  "usage": {
+   "input_tokens": 4597,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 364,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4961
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405084,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_07.png",
+  "usage": {
+   "input_tokens": 4608,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 375,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4983
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405152,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_08.png",
+  "usage": {
+   "input_tokens": 4553,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 320,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4873
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405221,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_09.png",
+  "usage": {
+   "input_tokens": 4581,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 348,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4929
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405289,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_10.png",
+  "usage": {
+   "input_tokens": 4561,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 328,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4889
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405359,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\gear\\out_11.png",
+  "usage": {
+   "input_tokens": 4579,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 346,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4925
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405904,
+  "secs": 82,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_legs\\out_12.png",
+  "usage": {
+   "input_tokens": 5340,
+   "input_tokens_details": {
+    "cache_write_tokens": 2607,
+    "cached_tokens": 0
+   },
+   "output_tokens": 751,
+   "output_tokens_details": {
+    "reasoning_tokens": 209
+   },
+   "total_tokens": 6091
+  },
+  "images": 1
+ },
+ {
+  "t": 1793405986,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_00.png",
+  "usage": {
+   "input_tokens": 4826,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 338,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5164
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406057,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_01.png",
+  "usage": {
+   "input_tokens": 4891,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 403,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5294
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406128,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_02.png",
+  "usage": {
+   "input_tokens": 4877,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 389,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5266
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406201,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_03.png",
+  "usage": {
+   "input_tokens": 4904,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 416,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5320
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406273,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_04.png",
+  "usage": {
+   "input_tokens": 4855,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 367,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5222
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406343,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_05.png",
+  "usage": {
+   "input_tokens": 4836,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 348,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5184
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406415,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_06.png",
+  "usage": {
+   "input_tokens": 4871,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 383,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5254
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406489,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_07.png",
+  "usage": {
+   "input_tokens": 4873,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 385,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5258
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406557,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_08.png",
+  "usage": {
+   "input_tokens": 4865,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 377,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5242
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406626,
+  "secs": 75,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_09.png",
+  "usage": {
+   "input_tokens": 4895,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 407,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5302
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406701,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_10.png",
+  "usage": {
+   "input_tokens": 4906,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 418,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5324
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406772,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_11.png",
+  "usage": {
+   "input_tokens": 4850,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 362,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5212
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406843,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_head\\out_12.png",
+  "usage": {
+   "input_tokens": 4874,
+   "input_tokens_details": {
+    "cache_write_tokens": 2506,
+    "cached_tokens": 0
+   },
+   "output_tokens": 386,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5260
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406914,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_00.png",
+  "usage": {
+   "input_tokens": 4574,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 341,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4915
+  },
+  "images": 1
+ },
+ {
+  "t": 1793406985,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_01.png",
+  "usage": {
+   "input_tokens": 4549,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 316,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4865
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407055,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_02.png",
+  "usage": {
+   "input_tokens": 4594,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 361,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4955
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407123,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_03.png",
+  "usage": {
+   "input_tokens": 4572,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 339,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4911
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407191,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_04.png",
+  "usage": {
+   "input_tokens": 4603,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 370,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4973
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407261,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_05.png",
+  "usage": {
+   "input_tokens": 4611,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 378,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4989
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407331,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_06.png",
+  "usage": {
+   "input_tokens": 4549,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 316,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4865
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407399,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_07.png",
+  "usage": {
+   "input_tokens": 4592,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 359,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4951
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407469,
+  "secs": 67,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_08.png",
+  "usage": {
+   "input_tokens": 4541,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 308,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4849
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407536,
+  "secs": 66,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_09.png",
+  "usage": {
+   "input_tokens": 4601,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 368,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4969
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407603,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_10.png",
+  "usage": {
+   "input_tokens": 4581,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 348,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4929
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407673,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_11.png",
+  "usage": {
+   "input_tokens": 4571,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 338,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4909
+  },
+  "images": 1
+ },
+ {
+  "t": 1793407744,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\r2_gear\\out_12.png",
+  "usage": {
+   "input_tokens": 4575,
+   "input_tokens_details": {
+    "cache_write_tokens": 2251,
+    "cached_tokens": 0
+   },
+   "output_tokens": 342,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4917
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408274,
+  "secs": 67,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_00.png",
+  "usage": {
+   "input_tokens": 4578,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 288,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4866
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408341,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_01.png",
+  "usage": {
+   "input_tokens": 4592,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 302,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4894
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408415,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_02.png",
+  "usage": {
+   "input_tokens": 4610,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 320,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4930
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408483,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_03.png",
+  "usage": {
+   "input_tokens": 4598,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 308,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4906
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408552,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_04.png",
+  "usage": {
+   "input_tokens": 4637,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 347,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4984
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408620,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_05.png",
+  "usage": {
+   "input_tokens": 4615,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 325,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4940
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408690,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_06.png",
+  "usage": {
+   "input_tokens": 4652,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 362,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5014
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408759,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_07.png",
+  "usage": {
+   "input_tokens": 4641,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 351,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4992
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408827,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_08.png",
+  "usage": {
+   "input_tokens": 4612,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 322,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4934
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408895,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_09.png",
+  "usage": {
+   "input_tokens": 4621,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 331,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4952
+  },
+  "images": 1
+ },
+ {
+  "t": 1793408964,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_10.png",
+  "usage": {
+   "input_tokens": 4628,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 338,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4966
+  },
+  "images": 1
+ },
+ {
+  "t": 1793409034,
+  "secs": 66,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear\\out_11.png",
+  "usage": {
+   "input_tokens": 4623,
+   "input_tokens_details": {
+    "cache_write_tokens": 2308,
+    "cached_tokens": 0
+   },
+   "output_tokens": 333,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4956
+  },
+  "images": 1
+ },
+ {
+  "t": 1793409637,
+  "secs": 67,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear2\\out_00.png",
+  "usage": {
+   "input_tokens": 4602,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 254,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4856
+  },
+  "images": 1
+ },
+ {
+  "t": 1793409704,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear2\\out_01.png",
+  "usage": {
+   "input_tokens": 4704,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 356,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5060
+  },
+  "images": 1
+ },
+ {
+  "t": 1793409797,
+  "secs": 75,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_00.png",
+  "usage": {
+   "input_tokens": 5228,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 524,
+   "output_tokens_details": {
+    "reasoning_tokens": 45
+   },
+   "total_tokens": 5752
+  },
+  "images": 1
+ },
+ {
+  "t": 1793409872,
+  "secs": 77,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_01.png",
+  "usage": {
+   "input_tokens": 5276,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 572,
+   "output_tokens_details": {
+    "reasoning_tokens": 95
+   },
+   "total_tokens": 5848
+  },
+  "images": 1
+ },
+ {
+  "t": 1793409949,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_02.png",
+  "usage": {
+   "input_tokens": 5232,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 528,
+   "output_tokens_details": {
+    "reasoning_tokens": 83
+   },
+   "total_tokens": 5760
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410022,
+  "secs": 78,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_03.png",
+  "usage": {
+   "input_tokens": 5272,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 568,
+   "output_tokens_details": {
+    "reasoning_tokens": 110
+   },
+   "total_tokens": 5840
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410100,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_04.png",
+  "usage": {
+   "input_tokens": 5276,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 572,
+   "output_tokens_details": {
+    "reasoning_tokens": 81
+   },
+   "total_tokens": 5848
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410173,
+  "secs": 78,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_05.png",
+  "usage": {
+   "input_tokens": 5379,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 675,
+   "output_tokens_details": {
+    "reasoning_tokens": 136
+   },
+   "total_tokens": 6054
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410250,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_06.png",
+  "usage": {
+   "input_tokens": 5326,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 622,
+   "output_tokens_details": {
+    "reasoning_tokens": 71
+   },
+   "total_tokens": 5948
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410324,
+  "secs": 77,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_07.png",
+  "usage": {
+   "input_tokens": 5258,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 554,
+   "output_tokens_details": {
+    "reasoning_tokens": 66
+   },
+   "total_tokens": 5812
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410401,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_08.png",
+  "usage": {
+   "input_tokens": 5288,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 584,
+   "output_tokens_details": {
+    "reasoning_tokens": 102
+   },
+   "total_tokens": 5872
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410475,
+  "secs": 79,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_09.png",
+  "usage": {
+   "input_tokens": 5303,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 599,
+   "output_tokens_details": {
+    "reasoning_tokens": 110
+   },
+   "total_tokens": 5902
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410554,
+  "secs": 75,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_10.png",
+  "usage": {
+   "input_tokens": 5334,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 630,
+   "output_tokens_details": {
+    "reasoning_tokens": 89
+   },
+   "total_tokens": 5964
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410630,
+  "secs": 78,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\out_11.png",
+  "usage": {
+   "input_tokens": 5296,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 592,
+   "output_tokens_details": {
+    "reasoning_tokens": 129
+   },
+   "total_tokens": 5888
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410840,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\seam\\out_08.png",
+  "usage": {
+   "input_tokens": 5242,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 538,
+   "output_tokens_details": {
+    "reasoning_tokens": 50
+   },
+   "total_tokens": 5780
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410914,
+  "secs": 75,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\seam\\out_09.png",
+  "usage": {
+   "input_tokens": 5325,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 621,
+   "output_tokens_details": {
+    "reasoning_tokens": 100
+   },
+   "total_tokens": 5946
+  },
+  "images": 1
+ },
+ {
+  "t": 1793410989,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\seam\\out_10.png",
+  "usage": {
+   "input_tokens": 5145,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 441,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5586
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411061,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_legs\\seam\\out_11.png",
+  "usage": {
+   "input_tokens": 5242,
+   "input_tokens_details": {
+    "cache_write_tokens": 2722,
+    "cached_tokens": 0
+   },
+   "output_tokens": 538,
+   "output_tokens_details": {
+    "reasoning_tokens": 83
+   },
+   "total_tokens": 5780
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411188,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_00.png",
+  "usage": {
+   "input_tokens": 4669,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 2366
+   },
+   "output_tokens": 321,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4990
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411256,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_01.png",
+  "usage": {
+   "input_tokens": 4656,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 308,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4964
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411325,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_02.png",
+  "usage": {
+   "input_tokens": 4654,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 306,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4960
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411396,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_03.png",
+  "usage": {
+   "input_tokens": 4694,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 346,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5040
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411465,
+  "secs": 83,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_04.png",
+  "usage": {
+   "input_tokens": 4653,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 305,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4958
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411548,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_05.png",
+  "usage": {
+   "input_tokens": 4673,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 325,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4998
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411618,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_06.png",
+  "usage": {
+   "input_tokens": 4670,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 322,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4992
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411688,
+  "secs": 66,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_07.png",
+  "usage": {
+   "input_tokens": 4688,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 340,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5028
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411754,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_08.png",
+  "usage": {
+   "input_tokens": 4651,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 303,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4954
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411825,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_09.png",
+  "usage": {
+   "input_tokens": 4700,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 352,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5052
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411893,
+  "secs": 68,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_10.png",
+  "usage": {
+   "input_tokens": 4671,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 323,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4994
+  },
+  "images": 1
+ },
+ {
+  "t": 1793411961,
+  "secs": 69,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\sc_gear3\\out_11.png",
+  "usage": {
+   "input_tokens": 4618,
+   "input_tokens_details": {
+    "cache_write_tokens": 2366,
+    "cached_tokens": 0
+   },
+   "output_tokens": 270,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4888
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412377,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_00.png",
+  "usage": {
+   "input_tokens": 4437,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 256,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4693
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412450,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_01.png",
+  "usage": {
+   "input_tokens": 4403,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 222,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4625
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412523,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_02.png",
+  "usage": {
+   "input_tokens": 4403,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 222,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4625
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412595,
+  "secs": 77,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_03.png",
+  "usage": {
+   "input_tokens": 4417,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 236,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4653
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412671,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_04.png",
+  "usage": {
+   "input_tokens": 4411,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 230,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4641
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412744,
+  "secs": 70,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_05.png",
+  "usage": {
+   "input_tokens": 4417,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 236,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4653
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412814,
+  "secs": 75,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_06.png",
+  "usage": {
+   "input_tokens": 4424,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 243,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4667
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412890,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_07.png",
+  "usage": {
+   "input_tokens": 4400,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 219,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4619
+  },
+  "images": 1
+ },
+ {
+  "t": 1793412962,
+  "secs": 73,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_08.png",
+  "usage": {
+   "input_tokens": 4399,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 218,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4617
+  },
+  "images": 1
+ },
+ {
+  "t": 1793413035,
+  "secs": 72,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_09.png",
+  "usage": {
+   "input_tokens": 4402,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 221,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4623
+  },
+  "images": 1
+ },
+ {
+  "t": 1793413107,
+  "secs": 74,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_10.png",
+  "usage": {
+   "input_tokens": 4426,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 245,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4671
+  },
+  "images": 1
+ },
+ {
+  "t": 1793413182,
+  "secs": 71,
+  "out": "C:\\Users\\spooh\\HarnessSim\\art\\astra_run\\hood_orig\\out_11.png",
+  "usage": {
+   "input_tokens": 4430,
+   "input_tokens_details": {
+    "cache_write_tokens": 2199,
+    "cached_tokens": 0
+   },
+   "output_tokens": 249,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 4679
+  },
+  "images": 1
+ }
+]

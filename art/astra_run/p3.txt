@@ -1,0 +1,6 @@
+Image 1: one frame of a harness racing pacer pulling a sulky, side view, on a solid flat green (#00FF00) background.
+Image 2: the same moment of the stride from our earlier sprite of this horse. Its LEG POSE is correct.
+
+Redraw ONLY the horse's four legs in image 1 so they exactly copy the leg pose in image 2: the same angle of each of the four legs, the same knee and hock bends, the same hoof positions, which hooves touch the ground, and how high the folded legs are tucked. Match each leg in image 2 to the same leg in image 1 (near front, near hind, far front, far hind).
+
+Keep the legs in image 1's own art style, size, thickness and coloring (bay upper legs, black lower legs, small white marks above the hooves). Keep every other pixel of image 1 exactly as it is: body, head, mane, tail, harness, saddle pad, shafts, sulky, wheel, driver, position and size. Same canvas, same solid flat green background with nothing else in it. Do not copy the earlier sprite's art style, only its leg pose.

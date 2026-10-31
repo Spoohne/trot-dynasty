@@ -1,0 +1,6 @@
+Image 1: one frame of our game sprite, a harness racing pacer pulling a sulky, side view facing right, on a solid flat green (#00FF00) background.
+Image 2: a real video frame of a modern pacer at the same moment of its stride.
+
+Redraw ONLY the horse's head, neck, mane and tail in image 1 so they copy image 2's motion at this moment: the head's height and nod (how far the nose is stretched forward or tucked), the neck's angle, the mane streaming back, and the tail's lift and flow. Keep the head and neck's size, shape, colors, bridle, blinker and art style from image 1; only their pose changes. The reins still run from the driver's hands to the bit.
+
+Keep every other pixel of image 1 exactly as it is: all four legs, hooves, body, saddle pad, harness, shafts, sulky, wheel, driver, position and size. Same canvas, same solid flat green background with nothing else in it. Do not copy anything else from the photo.

@@ -1,0 +1,17 @@
+{
+ "frameSize": [
+  480,
+  304
+ ],
+ "frames": 12,
+ "layers": [
+  "base",
+  "wraps",
+  "hood"
+ ],
+ "masks": [
+  "wraps-mask",
+  "hood-mask"
+ ],
+ "source": "Astra gpt-6-astra API, legs from user's Meadowlands clip, gear lifted by code"
+}
