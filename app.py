@@ -1851,8 +1851,10 @@ GUIDE = [
          "Nothing in your barn races unless you enter it."),
         ("Race classes", "<b>Opens</b> are for the best of each age; an older horse climbs from the Aged Open through the Open and the "
          "Preferred to the Invitational at the top of the ladder, the circuit's free-for-all, where the best meet whatever "
-         "their age or their bankroll. The top races take only horses that belong in them: a short field runs short rather "
-         "than being padded out, and a race too thin to run folds into the class below it. "
+         "their age or their bankroll. The top races take only horses that belong in them, and a race too thin to run folds into "
+         "the class below it. Every race goes to the gate with a full field: the race office brings fit horses off the bench, and "
+         "when the circuit can't fill a race, horses ship in from out-of-town tracks for the night. A shipper is marked on the "
+         "program, can't be claimed, and goes home after the race. Your own horses may meet each other, as stablemates do. "
          "<b>Conditioned races</b> keep horses with like records together: NW1 is for non-winners of a race, NW2L6 for horses that "
          "haven't won two of their last six, NW$20k for horses that haven't earned a set amount, and so on. "
          "<b>Claiming races</b> (CLM) carry a price tag: every horse in one is for sale at that price. The ladder runs from cheap "
@@ -3955,7 +3957,8 @@ def claimers_page(qs=None):
             if not tag:
                 continue
             for h in r["field"]:
-                rows.append((h, tag, r))
+                if not getattr(h, "visitor", None):
+                    rows.append((h, tag, r))
     bands = {"lo": (0, 60_000), "mid": (90_000, 200_000), "hi": (300_000, 10 ** 9)}
     if band in bands:
         rows = [x for x in rows if bands[band][0] <= x[1] <= bands[band][1]]
@@ -4559,7 +4562,7 @@ PP_CSS = """
 .pgpp{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:38px}
 .pgml{font-size:13px;font-weight:700}.pgcl{font-size:24px;font-weight:800;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid #111}
 .pgid{flex:1;min-width:0}.pgname{font-size:19px;font-weight:800;text-transform:uppercase;line-height:1.05}.pgname a{color:#111;text-decoration:none}
-.pgped,.pgown{font-size:13px;line-height:1.35;color:#222;font-weight:500}.pgtag{font-size:10px;font-weight:700;padding:0 4px;border-radius:2px;background:#111;color:#fff;margin-left:4px;vertical-align:2px}.pgtag.pl{background:#1e4fb5}
+.pgped,.pgown{font-size:13px;line-height:1.35;color:#222;font-weight:500}.pgtag{font-size:10px;font-weight:700;padding:0 4px;border-radius:2px;background:#111;color:#fff;margin-left:4px;vertical-align:2px}.pgtag.pl{background:#1e4fb5}.pgtag.ship{background:#6b5a3a}
 .pgcar{width:auto!important;font-size:13px;font-weight:500;border-collapse:collapse;margin-top:4px;font-variant-numeric:tabular-nums}.pgcar td{padding:0 10px 0 0!important;border:0!important;white-space:nowrap}.pgcar td:first-child{font-weight:700}
 .pglines{margin-top:6px}.pglines table{border-collapse:collapse;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;width:100%;table-layout:fixed}.pglines td{overflow:hidden;text-overflow:ellipsis}
 .pglines td{padding:3px 6px 1px 0;border-top:1px solid #0002}.pglines .w{font-weight:800}.pglines sup{font-size:9px}.pglines .pph td{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#555;border-top:0}.pglines .ppc{max-width:130px;overflow:hidden;text-overflow:ellipsis}.pglines .ppt td{border-top:0;padding:0 0 4px;font-size:12px;font-style:italic;color:#555;white-space:normal}.pglines .pptk{font-style:normal;font-weight:700;color:#333}
@@ -4629,7 +4632,9 @@ def career_box(h):
 
 def claim_tag(h):
     """The price a horse can be claimed for tonight, or 0: drawn into a claiming card (the posted program), or entered
-    in a claimer before the draw. Claims stay open until post time."""
+    in a claimer before the draw. Claims stay open until post time. A visitor ships home: never claimable."""
+    if getattr(h, "visitor", None):
+        return 0
     for r_ in (c.CARD.get("races", []) if c.CARD.get("day") == G["day"] else []):
         if h in r_["field"]:
             return r_["key"][4]
@@ -4656,12 +4661,14 @@ def program_entry(h, tag, odds, drawn, room, note=True):                  # note
     cloth = (f"<div class=pgcl style='background:var(--p{post});color:{'#111' if post in (3, 6, 8, 10, 11) else '#fff'}'>{post}</div>" if post else "")
     ml = f"<div class=pgml>{'%d/%d' % odds[h.id]}</div>" if h.id in odds else ""
     return (f"<div class='pgr{' mine' if h.owner == ME else ''}'><div class=pgtop><div class=pgpp>{ml}{cloth}</div><div class=pgid>"
-            f"<div class=pgname><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>{tagl}</div>"
-            f"<div class=pgped>{COAT_ABBR.get(coat, coat)} {sex_abbr(h)} {h.age} · {ped}</div>"
+            + (f"<div class=pgname>{esc(h.name)}<span class='pgtag ship'>SHIPPER</span></div>" if getattr(h, "visitor", None) else
+               f"<div class=pgname><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>{tagl}</div>")
+            + f"<div class=pgped>{COAT_ABBR.get(coat, coat)} {sex_abbr(h)} {h.age} · {ped}</div>"
             + (f"<div class=pgown>Driver – {silks(drv)} <b>{esc(drv)}</b></div>" if (drv := next((r_["drivers"].get(h.id) for r_ in c.CARD.get("races", []) if h.id in r_.get("drivers", {})), None)) and drawn else "")
             + ("" if drawn or not note else "<div class='pgown sub'>Post and driver drawn at 8 PM</div>")
-            + f"<div class=pgown>Owner/Trainer – <b>{barn_tag(h.owner, 14)}</b>{' · Breeder – ' + esc(barn_name(breeder)) if isinstance(breeder, int) else ''}</div>"
-            f"{career_box(h)}</div></div>{pp_lines(h)}{act}</div>")
+            + (f"<div class=pgown>Shipped in from <b>{esc(h.visitor)}</b></div>" if getattr(h, "visitor", None) else "")
+            + ("" if getattr(h, "visitor", None) else f"<div class=pgown>Owner/Trainer – <b>{barn_tag(h.owner, 14)}</b>{' · Breeder – ' + esc(barn_name(breeder)) if isinstance(breeder, int) else ''}</div>")
+            +            f"{career_box(h)}</div></div>{pp_lines(h)}{act}</div>")
 
 
 def program_races():

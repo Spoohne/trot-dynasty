@@ -8,6 +8,7 @@ per horse: race, train (with a focus), or rest. A freshness meter ties the
 three together; durability sets how fast it drains and refills. No injuries:
 nothing random ever damages a horse.
 """
+import copy
 import statistics as st
 from itertools import count
 from sim import GAIT_CAP, GAIT_W, W_FINISH, W_SPEED, W_STAM, HALF_SLOWER, RACE_TRAITS, RETIRE_AGE, Horse, founder, breed, race, rng
@@ -152,10 +153,7 @@ def make_splits(name, track, entries):
         if w in ids and w not in asked:
             asked.append(w)
     n = max(n, min(len(asked), len(entries) // 4))             # a race per requested track, if each can field four
-    stack = max(Counter(h.owner for h in entries if h.owner in HUMAN).values(), default=0)
-    n = max(n, min(stack, len(entries) // 6))                  # a player's horses each get a race of their own, fields of six+
-    extra = asked or ids                                          # more races than tracks asked for: the asked tracks run two
-    seats = asked[:n] + [(extra if stack > 1 else ids)[(k + DAY[0]) % len(extra if stack > 1 else ids)] for k in range(n - len(asked[:n]))]
+    seats = asked[:n] + [ids[(k + DAY[0]) % len(ids)] for k in range(n - len(asked[:n]))]   # a player's horses may meet, like stablemates
     races = [(VENUE_BY[v], []) for v in seats]
     cap = -(-len(entries) // n)
     rng.shuffle(entries)
@@ -944,6 +942,47 @@ CARD = {}           # tonight's drawn program: {"day", "races": [{key, i, v, fie
 RACING = ("race", "stay")
 
 
+VISITOR = -1           # the owner of a horse shipped in for the night (no barn here)
+MIN_FIELD = 8          # every race goes to the gate with at least this many
+SHIPPERS = ("Cedar Downs", "Millbrook Raceway", "Lakeshore Park", "Pine Hollow", "Riverbend Downs", "Hartwell Fair",
+            "Stony Creek", "Willow Run")   # out-of-town tracks (invented) a visiting horse ships in from
+_visitor_ids = count(-1, -1)
+
+
+def visitor(key, field, everyone):
+    """A horse shipped in for one night to fill a short field: a copy of a horse of the same age and sex whose rating
+    sits nearest the class, under a new name and no owner here. It races, takes its purse home and is gone."""
+    group, sex, name, purse, tag, track = key
+    level = CLASS_RATING.get(name) or (st.mean(h.est for h in field) if field else 60)
+    pool = [h for h in everyone if not h.retired and (group == "all" or age_group(h) == group) and (sex != "F&M" or h.sex == "f")]         or [h for h in everyone if not h.retired]
+    t = min(rng.sample(pool, min(30, len(pool))), key=lambda h: abs(h.est - level))
+    v = copy.copy(t)                                              # shallow: a deep copy would drag the whole pedigree along
+    for k, x in vars(v).items():
+        if isinstance(x, (dict, list, set)):
+            setattr(v, k, copy.copy(x))                           # its own record and development, never the original's
+    v.id, v.owner, v.visitor = next(_visitor_ids), VISITOR, rng.choice(SHIPPERS)
+    v.name = _names.make(sex=v.sex); _names.USED.discard(v.name)   # a visitor's name isn't kept off the book
+    v.sire = v.dam = v.breeder = None
+    v.order = v.tonic = v.tonic_on = v.ship = None
+    v.freshness, v.results, v.form, v.seasons = 100, [], [], {}
+    return v
+
+
+def top_up(key, field, idle_all, drafted):
+    """No short fields: fit AI horses of the same age group come off the bench (any class, but never into a top
+    class), then visitors ship in for whatever's still short."""
+    group, sex, name, purse, tag, track = key
+    if name not in ALL_AGES:
+        for h in idle_all:
+            if len(field) >= MIN_FIELD:
+                break
+            if h.id not in drafted and (group == "all" or age_group(h) == group) and (sex != "F&M" or h.sex == "f"):
+                field.append(h); drafted.add(h.id)
+    everyone = idle_all or field
+    while len(field) < MIN_FIELD:
+        field.append(visitor(key, field, everyone))
+
+
 def draw_card(day, horses, skip=()):
     """The draw for the card of `day`: every entry is carded, short fields are filled, splits are made and posts drawn.
     Done right after the previous card runs, so the program is up all day; race_day then runs exactly these fields.
@@ -991,8 +1030,7 @@ def draw_card(day, horses, skip=()):
     drafted = set()
     for key, entries in cards.items():
         asked = {wanted(h) for h in entries} & {v["id"] for v in hosts(key[2], key[5])}
-        stack = max(Counter(h.owner for h in entries if h.owner in HUMAN).values(), default=0)   # a player's horses in one class
-        short = max((-len(entries)) % FIELD[key[5]], max(len(asked), stack) * 7 - len(entries))   # a race for each, so they don't meet
+        short = max((-len(entries)) % FIELD[key[5]], len(asked) * MIN_FIELD - len(entries))
         for strict in ((0,) if key[2] in ALL_AGES else (0, 1, 2)):   # top classes take only horses that meet the condition; below, same group+sex, then same group
             for h in (idle if strict < 2 else idle_all):
                 if short == 0:
@@ -1013,14 +1051,12 @@ def draw_card(day, horses, skip=()):
             or [k for k in cards if k != key and len(cards[k]) >= 2]   # nobody its age racing: any card
         if others:
             cards[max(others, key=lambda k: len(cards[k]))].extend(cards.pop(key))
-    for h in horses:
-        if h.id in drafted:
-            h.wk = "drafted"                                  # a filler: it races, no week's work for it
     races = []
     for key, entries in cards.items():
         group, sex, name, purse, tag, track = key
         for i, (v, field) in enumerate(make_splits(name, track, entries)):   # balanced, by track, stablemates apart
-            if len(field) < 2:                               # a walkover isn't a race
+            top_up(key, field, idle_all, drafted)
+            if len(field) < 2:                               # a walkover isn't a race (can't happen once topped up)
                 UNFILLED.append((group, sex, name, track))
                 for h in field:
                     rest(h)
@@ -1032,6 +1068,9 @@ def draw_card(day, horses, skip=()):
                 if h.owner in HUMAN and getattr(h, "order", None) not in (None, "sell", "retire", "rest"):
                     h.order = h.ship = None                  # the entry is used: it's on the program (tomorrow's is a new one)
             races.append({"key": key, "i": i, "v": v, "field": field, "odds": tote_odds(field), "drivers": assign_drivers(field)})
+    for h in horses:
+        if h.id in drafted:
+            h.wk = "drafted"                                  # a filler: it races, no week's work for it
     CARD.clear()
     CARD.update(day=day, races=races)
     return CARD
@@ -1079,7 +1118,7 @@ def race_day(day, horses, log):
     taken_ids, raced = {}, set()
     for r in races:
         (group, sex, name, purse, tag, track), i, v = r["key"], r["i"], r["v"]
-        field = [h for h in r["field"] if id(h) in alive and not h.retired and getattr(h, "order", None) != "stakes"]
+        field = [h for h in r["field"] if (id(h) in alive or getattr(h, "visitor", None)) and not h.retired and getattr(h, "order", None) != "stakes"]
         if len(field) < 2:                                   # lost its field since the draw (a stake, a sale): no race
             for h in field:
                 rest(h)
@@ -1121,7 +1160,7 @@ def race_day(day, horses, log):
                 if h.id in CLAIMS and CLAIMS[h.id] != h.owner:  # is the claimant's once it races, whatever the result
                     player_claim(h, CLAIMS.pop(h.id), tag)
                     taken.add(h.id)
-            for h in [x for x in order[:3] if x.id not in taken]:   # one claim per horse per race
+            for h in [x for x in order[:3] if x.id not in taken and not getattr(x, "visitor", None)]:   # one claim per horse per race; a visitor ships home
                 if claim_decision(h, CLASS_RATING[name]) and (to := claimant(h, tag)) != h.owner:
                     h.owner, h.claimed, h.order = to, h.claimed + 1, None
         log.append((group, sex, name, track, field, order[0]))
