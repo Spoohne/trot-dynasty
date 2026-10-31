@@ -630,6 +630,15 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .rname{font-size:14px;font-weight:600} .rname b{font-weight:700} .rtrip{font-size:12px;color:var(--ink2)} .rright{text-align:right} .rtime{font-variant-numeric:tabular-nums;font-size:14px} .won{font-size:12px;color:var(--win);font-weight:600}
 .brow{display:flex;gap:12px;align-items:flex-start} .bname{font-size:16px;font-weight:700} .bname .sub{font-weight:400}
 .bbars{margin:6px 0 4px} .bbars .row{gap:8px;margin:2px 0} .bbars .sub{width:52px;font-size:12px}
+.tp{position:relative;overflow:hidden;flex:0 0 auto;border-radius:4px}.tp img,.tploop{display:block;image-rendering:auto}
+.tploop{background-size:1200% 100%;animation:tploop 1.5s steps(12) infinite}@keyframes tploop{to{background-position:100% 0}}
+.tpsweep{position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,#fff0c826 47%,#fff0c84d 50%,#fff0c826 53%,transparent 65%);background-size:300% 100%;animation:tpsweep 4.5s ease-in-out infinite}
+@keyframes tpsweep{from{background-position:120% 0}to{background-position:-60% 0}}
+.tpmotes{position:absolute;inset:0;background-image:radial-gradient(#ffd75acc 1px,transparent 1.6px),radial-gradient(#ffe9a8aa 1px,transparent 1.6px);background-size:23px 29px,37px 41px;background-position:0 0,11px 7px;animation:tpmotes 9s linear infinite;opacity:.7}
+@keyframes tpmotes{to{background-position:0 290px,11px 417px}}
+.tpsp{box-shadow:0 0 0 3px transparent;outline:3px solid;animation:tpholo 6s linear infinite}@keyframes tpholo{0%{outline-color:#f9a8d4}25%{outline-color:#93c5fd}50%{outline-color:#86efac}75%{outline-color:#fde68a}100%{outline-color:#f9a8d4}}
+.tps{outline:3px solid #e8a33a}
+@media (prefers-reduced-motion:reduce){.tploop,.tpsweep,.tpmotes,.tpsp{animation:none}.tpsweep,.tpmotes{display:none}}
 .sq{position:relative;flex:0 0 auto;border:3px solid;border-radius:6px;background:#1c2430;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .sq img{display:block;width:100%;height:100%;object-fit:cover} .pimg{display:block;border:3px solid;border-radius:50%;background:#1c2430;object-fit:cover} .sqt{position:absolute;right:0;bottom:0;color:#fff;font-size:12px;font-weight:700;padding:1px 5px;border-radius:4px 0 0 0}
 .cond{display:inline-flex;align-items:center;gap:5px;font-size:13px} .cond svg{display:block}
@@ -823,7 +832,9 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .sortby{display:flex;align-items:center;gap:0;font-size:13px}.sortby span{color:var(--ink2);margin-right:8px;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
 .sortby a{padding:4px 10px;border:2px solid var(--rule);color:var(--ink2);text-decoration:none;font-weight:700;background:var(--well)}
 .sortby a+a{border-left:0}.sortby a.on{color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border-color:#05070d}
-.groombtn button{padding:2px 8px;font-size:12px;line-height:1.4}
+.groombtn button{padding:2px 8px;font-size:12px;line-height:1.4}.groombtn button:disabled{opacity:.4;cursor:default}
+.hc2 .fresh{display:flex;align-items:center;gap:8px;margin-top:6px}.hc2 .fresh .cond b{font-size:14px}
+.condl{color:var(--ink2);font-weight:600}.cadence{color:var(--ink3);font-size:13px;margin:-4px 0 10px}.tlbl{color:var(--ink2);font-size:13px;font-weight:600;margin:0 4px 0 10px}
 .prog{padding:0;overflow:hidden}.proghd{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;padding:8px 12px;
   background:linear-gradient(90deg,#e8a33a,#c47a17);color:#140c00;font-size:14px}.proghd b{letter-spacing:.06em;text-transform:uppercase}
 .pg{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:start;padding:9px 12px;border-top:1px solid var(--rule2)}
@@ -2392,12 +2403,36 @@ def pattern(h):
     return getattr(h, "pattern", None) or h.id * 7919 % 1000
 
 
+TOP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mockups", "portraits", "top")
+
+
+def top_art(h):
+    """An S/S+ horse's scene portrait and, for S+, its idle loop (made by art/top_portraits.py); None for the rest."""
+    t = tier_label(h)
+    if t not in ("S", "S+") or not os.path.exists(os.path.join(TOP_DIR, f"{h.id}.png")):
+        return None
+    loop = t == "S+" and os.path.exists(os.path.join(TOP_DIR, f"{h.id}_loop.webp"))
+    return t, f"/mock/portraits/top/{h.id}.png?v=1", f"/mock/portraits/top/{h.id}_loop.webp?v=1" if loop else None
+
+
+def top_html(h, size, img):
+    """The standout portrait: the scene still (or the S+ loop), a light sweep and drifting motes over it; static under
+    reduced motion. img is the plain portrait to fall back to."""
+    a = top_art(h)
+    if not a:
+        return img
+    t, still, loop = a
+    face = (f"<div class=tploop style='background-image:url({loop});width:{size}px;height:{size}px'></div>" if loop
+            else f"<img src='{still}' width={size} height={size} loading=lazy alt=''>")
+    return f"<div class='tp tp{'sp' if t == 'S+' else 's'}' style='width:{size}px;height:{size}px'>{face}<i class=tpsweep></i><i class=tpmotes></i></div>"
+
+
 def portrait(h, size=96):
     """The painted portrait in the horse's coat, marking and pattern, framed in its grade color.
     The PNG is built once per look by art/recolor.py and served from /portrait."""
     coat, marking = looks(h)
-    return (f"<img class=pimg src='/portrait/{urlname(h.name)}.png' width={size} height={size} loading=lazy "
-            f"style='border-color:{GRADE_COLOR[grade(h)]}' alt='{coat} {h.sex}, {marking if marking != 'none' else 'no'} marking'>")
+    return top_html(h, size, f"<img class=pimg src='/portrait/{urlname(h.name)}.png' width={size} height={size} loading=lazy "
+                    f"style='border-color:{GRADE_COLOR[grade(h)]}' alt='{coat} {h.sex}, {marking if marking != 'none' else 'no'} marking'>")
 
 
 def best_time(h):
@@ -2978,7 +3013,7 @@ def trophy(h, count=True):
 def square_portrait(h, size=88):
     """The barn-row portrait: square, in the coat, with the tier as a colored edge."""
     return (f"<div class='sq t{tier_cls(h)}' style='width:{size}px;height:{size}px;border-color:{TIER_RGB[tier_base(h)]}'>"
-            f"<img src='/portrait/{urlname(h.name)}.png' width={size} height={size} loading=lazy alt=''><span class='sqt t{tier_cls(h)}' style='background:{TIER_RGB[tier_base(h)]}'>{tier_label(h)}</span>{trophy(h, count=False)}</div>")   # the barn row: just the cup
+            + top_html(h, size, f"<img src='/portrait/{urlname(h.name)}.png' width={size} height={size} loading=lazy alt=''>") + f"<span class='sqt t{tier_cls(h)}' style='background:{TIER_RGB[tier_base(h)]}'>{tier_label(h)}</span>{trophy(h, count=False)}</div>")   # the barn row: just the cup
 
 
 def weeks_to_stake(h):
@@ -3018,14 +3053,15 @@ def horse_card(h, link=True):
     name = f"<a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>" if link else esc(h.name)
     bars = "".join(stat_bar(h.developed[t], h, k.capitalize(), trait=t) for k, t in FOCUS.items())
     last = h.form[-1] if getattr(h, "form", None) and isinstance(getattr(h, "last", None), tuple) else (getattr(h, "last", None) or "")
-    live, act = "", ""
+    live, act, fresh = "", "", ""
     if h.retired:
         status = f"<div class=sline><span>Retired, {'at stud' if h.sex == 'm' else 'broodmare'}</span></div>"
     else:
         groom = ""
-        if h.owner == ME and h.freshness < e.GROOMED_TO and e.groom_left(ME, G["day"]) > 0:   # next to the condition it fixes
+        if h.owner == ME and h.freshness < e.GROOMED_TO:                         # next to the condition it fixes; greyed out when the week's slots are spent
+            left = e.groom_left(ME, G["day"])
             groom = (f"<form method=post action=/groom class='inline groombtn'><input type=hidden name=h value='{esc(h.name)}'>"
-                     f"<button class=sec title='Uses 1 of {e.groom_left(ME, G['day'])} grooming slots left this week'>Groom</button></form>")
+                     f"<button class=sec{'' if left > 0 else ' disabled'} title='{f'Uses 1 of {left} grooming slots left this week' if left > 0 else 'No grooming slots left this week'}'>Groom</button></form>")
         tn = getattr(h, "tonic", None)
         ton = f"<span class=tline style='--tc2:{dict((k, c_) for k, _, c_, _ in TONICS)[tn] or "#c084fc"}'>{bottle(tn, 13)} {dict((k, l_) for k, l_, *_ in TONICS)[tn]} Tonic</span>" if tn and h.owner == ME else ""
         tn_ = tonight(h)
@@ -3038,12 +3074,13 @@ def horse_card(h, link=True):
         nx = next_start(h)
         if not getattr(h, "order", None) and nx != "—" and not on_card(h):
             items.append(f"next: {nx}")
-        status = f"<div class=sline>{condition(h)}{groom}{''.join(f'<span>{x}</span>' for x in items if x)}</div>"
+        fresh = f"<div class=fresh>{condition(h)}{groom}</div>"
+        status = f"<div class=sline>{''.join(f'<span>{x}</span>' for x in items if x)}</div>" if any(items) else ""
         if h.owner == ME:
             corner = corner_action(h)
             o = getattr(h, "order", None)
             if isinstance(o, tuple) and o[0] == "enter":
-                act = f"<span class=was><b>Entered</b></span>{corner}"
+                act = f"<span class=was><b>Entered</b></span><span class=tlbl>Pre-Race Tonic:</span>{corner}"
             elif corner:
                 act = corner.replace("class=enterplus", "class=go").replace("class='enterplus pause'", "class='go pause'").replace(">+</a>", ">Enter</a>")
                 act = act.replace("</svg></a>", "</svg> Enter</a>")
@@ -3054,7 +3091,7 @@ def horse_card(h, link=True):
             f"<div class=bname>{name}</div>"
             f"<div class=facts><span class=chip>{h.age}yo {sex_word(h)}</span>"
             f"<span class=chip title='starts-wins'><b>S{h.starts}-W{h.wins}</b></span><span class='chip cash'>${h.earnings:,.0f}</span>"
-            f"</div></div><div class=bbars>{bars}</div>{live}{status}{act}</div>")
+            f"</div>{fresh}</div><div class=bbars>{bars}</div>{live}{status}{act}</div>")
 
 
 def order_text(h):
@@ -3071,7 +3108,7 @@ def condition(h):
     f = max(0, min(100, h.freshness))
     color, word = ("#3fb96b", "Fit") if f >= 65 else ("#e8a33a", "Fair") if f >= 50 else ("#e0704f", "Tired")
     hid = f"hc{h.id}"
-    return (f"<span class=cond title='freshness {f:.0f}'><svg viewBox='0 0 24 24' width='20' height='20' aria-label='{word}'>"
+    return (f"<span class=cond title='freshness {f:.0f}'><span class=condl>Freshness:</span><svg viewBox='0 0 24 24' width='20' height='20' aria-label='{word}'>"
             f"<defs><clipPath id='{hid}'><rect x='0' y='{24 - 24 * f / 100:.1f}' width='24' height='24'/></clipPath></defs>"
             f"<path d='M12 21s-7-4.6-9.3-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.3 5.6C19 16.4 12 21 12 21z' fill='none' stroke='{color}' stroke-width='1.8'/>"
             f"<path d='M12 21s-7-4.6-9.3-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.3 5.6C19 16.4 12 21 12 21z' fill='{color}' clip-path='url(#{hid})'/>"
@@ -3369,7 +3406,7 @@ def barn_page(qs=None):
         cards += (f"<div class='billrow wayup'><span>Your mare is your way up: the <b>Breeder's License</b> lets her foals race for you.</span>"
                   f"<a href=/studs>${cost:,} to get it ›</a></div>")
     cards += (
-             f"<div class=stablehead><h2>Stable <span class='stallct {stall_tone(len(racers), e.stalls(ME))}'>{len(racers)}/{e.stalls(ME)}</span></h2>{toggle}</div>"
+             f"<div class=stablehead><h2>Stable <span class='stallct {stall_tone(len(racers), e.stalls(ME))}'>{len(racers)}/{e.stalls(ME)}</span></h2>{toggle}</div><div class=cadence>Entries you make today race tomorrow night. Tonight's program was drawn at 8 PM last night.</div>"
              + ("".join(horse_card(h) for h in racers) or "<p class=sub>No racers. Try the market.</p>"))
     view = qs.get("view", "stable")
     menu = ("<div class=hmenu>" + "".join(f"<a href='/?view={k}' class='{'on' if view == k else ''}'>{label}</a>"
@@ -3752,6 +3789,9 @@ def horse_page(name, entering=False):
         body = retired_header(h, own)
     else:
         body = card_header(h, own, listed[1] if listed and not own else None) + sim + stats_block(h, own)
+    if own and getattr(h, "unreg", False) or own and h in e.nursery:          # its name is the breeder's to change until it's registered
+        body += (f"<form method=post action=/rename class='card rename'><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='/horse/{urlname(h.name)}'>"
+                 f"<input name=n maxlength={_names.MAXLEN} pattern='[A-Za-z ]+' placeholder='New name' aria-label='New name'><button class=sec>Rename</button></form>")
     if own and not h.retired and h not in e.nursery:                          # its gear: straight to this horse in the Tack Room
         on = fitted(h)
         body += (f"<div class='card row' style='justify-content:space-between;gap:8px'><span class=sub>{'Wearing ' + ', '.join(TACK[k][0].lower() for k in on) if on else 'No gear fitted'}</span>"
@@ -4293,7 +4333,6 @@ def breeding_page(qs=None):
             return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
                     f"<a href='/horse/{urlname(f.name)}' class=bname>{nm}</a> <span class=sub>{f.age}yo {sex_word(f)} · {f.tier} · unregistered</span>"
                     f"<div class=sub>by {esc(f.sire.name)} out of {esc(f.dam.name)}</div>"
-                    + f"<form method=post action=/rename class=rename style='margin:6px 0 2px'><input type=hidden name=h value='{esc(f.name)}'>"f"<input name=n maxlength={_names.MAXLEN} placeholder='New name' aria-label='New name'><button class=sec>Rename</button></form>"
                     f"<div class=row style='gap:8px;flex-wrap:wrap;margin-top:6px'>"
                     f"<form method=post action=/register class=inline><input type=hidden name=h value='{nm}'>"
                     f"<button onclick=\"return ask(this,'Register {nm} to race for ${e.REG_FEE:,}?')\">Register to race · ${e.REG_FEE:,}</button></form>"
@@ -4304,7 +4343,6 @@ def breeding_page(qs=None):
         return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(f.name)}' class=bname>{esc(f.name)}</a> <span class=sub>{'weanling' if f.age == 0 else 'yearling'} {'colt' if f.sex == 'm' else 'filly'} · {f.tier}</span>"
                 f"<div class=sub>by {esc(f.sire.name)} out of {esc(f.dam.name)}</div>"
-                + f"<form method=post action=/rename class=rename style='margin:6px 0 2px'><input type=hidden name=h value='{esc(f.name)}'>"f"<input name=n maxlength={_names.MAXLEN} placeholder='New name' aria-label='New name'><button class=sec>Rename</button></form>"
                 f"<div>{''.join(stat_bar(f.developed[t], f, k.capitalize(), 90, trait=t, goal=f.ceiling(t, 2) - 2.0) for k, t in FOCUS.items())}</div>"
                 f"<div class=sub>{'ready to register' if getattr(f, 'unreg', False) else 'joins the barn to race'} in {wk} weeks</div></div></div></div>")
     young = [f for f in e.nursery if f.owner == ME]
@@ -4354,7 +4392,6 @@ def breed_page(name):
         close = e.too_close(s, m)
         btn = (f"<span class='btn big off'>{close}</span>" if close else "<span class='btn big off'>book full</span>" if full else "" if why else
                f"<form method=post action=/breed><input type=hidden name=h value='{esc(m.name)}'><input type=hidden name=s value='{esc(s.name)}'>"
-               f"<input name=n placeholder='Name the foal' maxlength={_names.MAXLEN} pattern='[A-Za-z ]+' title='Letters and spaces, up to {_names.MAXLEN}' style='width:100%;margin:0 0 4px'>"
                f"<button onclick=\"return ask(this,'Book {m.name} to {s.name}{'' if own else f' for ${fee:,.0f}'}?')\">Book{'' if own else f' ${fee:,.0f}'}</button></form>")
         return (f"<div class=card><div class=brow><a href='/horse/{urlname(s.name)}'>{portrait(s, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(s.name)}' class=bname>{esc(s.name)}</a> <span class=sub>{s.tier} · {s.starts}-{s.wins} · ${s.earnings:,.0f}</span>"
@@ -4846,7 +4883,13 @@ REVEAL_CSS = """
 body.reveal{background:#0f0e0c;color:#eee;overflow-x:clip}
 .stage{position:relative;max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 .pack{position:relative;width:230px;height:300px;border-radius:16px;background:linear-gradient(160deg,#2a2622,#141210);box-shadow:0 20px 60px #000c;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .3s}
-.pack .sil img{filter:brightness(0);border-color:#1d1a17 !important;background:#1d1a17}
+.pack{width:240px!important;height:360px!important;overflow:hidden;background:#0b1430!important;box-shadow:0 0 0 2px #e8a33a55,0 20px 60px #000c,0 0 70px #e8a33a33!important;animation:doorglow 2.4s ease-in-out infinite}
+.slot{position:relative;display:grid;width:100%;place-items:start center}.slot>.pack,.slot>.cardwrap{grid-area:1/1}.slot>.pack{margin-top:22px}   /* the door stands where the card will be */
+.pack .door{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
+.pack .hint{background:#0b1430cc;padding:4px 10px;border-radius:4px;color:#ffb347!important;z-index:1}
+@keyframes doorglow{50%{box-shadow:0 0 0 2px #e8a33a99,0 20px 60px #000c,0 0 110px #e8a33a66}}
+@media (prefers-reduced-motion:reduce){.pack{animation:none}}
+.namefoal{display:flex;flex-direction:column;gap:6px;align-items:stretch;width:100%}.namefoal label{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#ffb347}
 .pack .hint{position:absolute;bottom:14px;font-size:13px;color:#aaa;letter-spacing:.08em;text-transform:uppercase}
 .pack.shake{animation:shake .7s ease-in-out}
 @keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-4deg) scale(1.02)}40%{transform:rotate(4deg) scale(1.04)}60%{transform:rotate(-5deg) scale(1.06)}80%{transform:rotate(5deg) scale(1.08)}}
@@ -4860,7 +4903,7 @@ body.reveal{background:#0f0e0c;color:#eee;overflow-x:clip}
 @keyframes fly{to{transform:translate(var(--x),var(--y)) rotate(540deg);opacity:0}}
 .cardwrap{width:100%;opacity:0;transform:rotateY(90deg) scale(.9);transition:transform .6s cubic-bezier(.2,.8,.3,1),opacity .4s}
 .cardwrap.in{opacity:1;transform:none}
-.cardwrap .card{color:#222}
+.cardwrap .card{color:var(--ink)}
 .grade{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#bbb;margin:14px 0 6px;opacity:0;transition:opacity .4s .5s}
 .cardwrap.in+.grade{opacity:1}
 .take{margin-top:16px;opacity:0;transition:opacity .4s 1s} .take.in{opacity:1}
@@ -4870,9 +4913,10 @@ SPARKS = {"common": 0, "uncommon": 12, "rare": 30, "epic": 55, "legendary": 100}
 
 
 def reveal_page(name):
-    h = next((x for x in G["horses"] if x.name == name and x.owner == ME), None)
+    h = next((x for x in G["horses"] + e.nursery if x.name == name and x.owner == ME), None)
     if not h:
         return page("Reveal", "<p>Nothing to reveal.</p>")
+    foal = h in e.nursery
     g = grade(h)
     color, sparks, line = GRADE_COLOR[g], SPARKS[g], GRADE_LINE[g]
     import math
@@ -4880,17 +4924,20 @@ def reveal_page(name):
                    f"animation-delay:{(i * 7) % 40 * 10}ms'></i>" for i in range(sparks))
     return (f"<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
             f"<title>{esc(h.name)}</title>{FONTS}<style>{CSS}{SKIN}{REVEAL_CSS}</style>{ASK_JS}</head><body class='reveal'><div class=stage style='--c:{color}'>"
-            f"<div class=pack id=pack onclick='go()'><div class=sil>{portrait(h, 150)}</div><div class=hint>tap to open</div></div>"
+            f"<div class=slot><div class=pack id=pack onclick='go()'><img class=door src=/mock/brand/reveal/door.png?v=1 alt=''><div class=hint>{'A foal is born · tap to meet it' if foal else 'tap to open'}</div></div>"
             f"<div class=burst id=burst><div class=glow></div><div class=ring></div>{bits}</div>"
-            f"<div class=cardwrap id=card>{identity_card(h)}</div><div class=grade><b style='color:{color}'>{g}</b> · {line}</div>"
-            f"<div class=take id=take><a class=btn href='/horse/{urlname(h.name)}'>Take to the barn</a>"
-            f" <form method=post action=/scrap class=inline style='margin-left:10px'><input type=hidden name=h value='{esc(h.name)}'>"
-            f"<button class=sec onclick=\"return ask(this,'Sell {h.name} to the house for ${e.SCRAP:,.0f}? Gone for good.')\">Sell to the house · ${e.SCRAP:,.0f}</button></form></div></div>"
-            "<script>let done=false;function go(){if(done)return;done=true;const p=document.getElementById('pack');p.classList.add('shake');"
+            f"<div class=cardwrap id=card>{identity_card(h)}</div></div><div class=grade><b style='color:{color}'>{g}</b> · {line}</div>"
+            + (f"<div class=take id=take><form method=post action=/rename class=namefoal><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=back value='/horse/{urlname(h.name)}'>"
+               f"<label>Name your foal</label><input name=n maxlength={_names.MAXLEN} pattern='[A-Za-z ]+' value='{esc(h.name)}' aria-label='Foal name'>"
+               f"<button>Keep this name</button></form><div class=sub style='margin-top:6px'>Changeable on its page until it's registered.</div></div></div>" if foal else
+               f"<div class=take id=take><a class=btn href='/horse/{urlname(h.name)}'>Take to the barn</a>"
+               f" <form method=post action=/scrap class=inline style='margin-left:10px'><input type=hidden name=h value='{esc(h.name)}'>"
+               f"<button class=sec onclick=\"return ask(this,'Sell {h.name} to the house for ${e.SCRAP:,.0f}? Gone for good.')\">Sell to the house · ${e.SCRAP:,.0f}</button></form></div></div>")
+            + "<script>let done=false;function go(){if(done)return;done=true;const p=document.getElementById('pack');p.classList.add('shake');"
             "setTimeout(()=>{document.getElementById('burst').classList.add('on');p.style.transform='scale(0)';p.style.opacity='0';},650);"
             "setTimeout(()=>{p.style.display='none';document.getElementById('card').classList.add('in');},1050);"
             "setTimeout(()=>document.getElementById('take').classList.add('in'),1500);}"
-            "setTimeout(go,2200);</script></body></html>")
+            + ("" if foal else "setTimeout(go,2200);") + "</script></body></html>")
 
 
 # ---------------------------------------------------------------- server
@@ -5045,7 +5092,7 @@ class H(BaseHTTPRequestHandler):
             name = path
             if not path.startswith(root + os.sep) or not os.path.isfile(path):   # nothing outside mockups/
                 return self.send("not found", 404)
-            kind = {".html": "text/html; charset=utf-8", ".png": "image/png", ".js": "text/javascript", ".css": "text/css", ".jpg": "image/jpeg", ".json": "application/json", ".wav": "audio/wav", ".mp3": "audio/mpeg"}.get(os.path.splitext(name)[1], "application/octet-stream")
+            kind = {".html": "text/html; charset=utf-8", ".png": "image/png", ".js": "text/javascript", ".css": "text/css", ".jpg": "image/jpeg", ".json": "application/json", ".wav": "audio/wav", ".mp3": "audio/mpeg", ".webp": "image/webp"}.get(os.path.splitext(name)[1], "application/octet-stream")
             with open(path, "rb") as f:
                 data = f.read()
             self.send_response(200)
@@ -5353,7 +5400,8 @@ class H(BaseHTTPRequestHandler):
             n = " ".join(q.get("n", "").split())[:_names.MAXLEN]
             if f and n and n != f.name and n.replace(" ", "").isalpha() and n not in _names.USED:
                 _names.USED.discard(f.name); _names.USED.add(n); f.name = n; save()
-            return self.send("", 303, "/studs?v=foals")
+            back = q.get("back", "")
+            return self.send("", 303, back if back.startswith("/horse/") else f"/horse/{urlname(f.name if f else '')}" if f else "/studs?v=foals")
         if p == "/stablename":
             n, fee = q.get("n", "").strip()[:28], CR.RENAME_FEE if P().get("named") else 0   # the first name is free
             if n and n != P().get("stable") and e.cash.get(ME, 0) >= fee:
@@ -5451,11 +5499,8 @@ class H(BaseHTTPRequestHandler):
         elif p == "/breed" and h and h.owner == ME:
             s = by_name.get(q.get("s", ""))
             if s and e.book_mare(h, s, ME, G["horses"], day=G["day"]) is not None:
-                n = " ".join(q.get("n", "").split())                       # the breeder names the foal; the registry's rules, else the house name stands
-                if n and n.replace(" ", "").isalpha() and len(n) <= _names.MAXLEN and n not in _names.USED and not find_horse(n):
-                    e.nursery[-1].name = n; _names.USED.add(n)
                 save()
-                return self.send("", 303, f"/horse/{urlname(e.nursery[-1].name)}")      # straight to the new foal
+                return self.send("", 303, f"/reveal/{urlname(e.nursery[-1].name)}")     # the foal's birth: the stall door, then its bars, then its name
         elif p == "/bid" and h:
             amt = q.get("amt", "")
             if not P().get("frozen"):

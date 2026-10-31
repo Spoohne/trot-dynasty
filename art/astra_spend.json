@@ -2230,5 +2230,185 @@
    "total_tokens": 4772
   },
   "images": 1
+ },
+ {
+  "t": 1793419182,
+  "secs": 114,
+  "out": "C:\\Users\\spooh\\HarnessSim\\mockups\\brand\\reveal\\door_raw.png",
+  "usage": {
+   "input_tokens": 2823,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0
+   },
+   "output_tokens": 386,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 3209
+  },
+  "images": 1
+ },
+ {
+  "t": 1793419566,
+  "secs": 117,
+  "out": "bg0.png",
+  "usage": {
+   "input_tokens": 3158,
+   "input_tokens_details": {
+    "cache_write_tokens": 1551,
+    "cached_tokens": 0
+   },
+   "output_tokens": 240,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 3398
+  },
+  "images": 1
+ },
+ {
+  "t": 1793419683,
+  "secs": 121,
+  "out": "bg1.png",
+  "usage": {
+   "input_tokens": 3174,
+   "input_tokens_details": {
+    "cache_write_tokens": 1553,
+    "cached_tokens": 0
+   },
+   "output_tokens": 254,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 3428
+  },
+  "images": 1
+ },
+ {
+  "t": 1793419803,
+  "secs": 124,
+  "out": "bg2.png",
+  "usage": {
+   "input_tokens": 3144,
+   "input_tokens_details": {
+    "cache_write_tokens": 1546,
+    "cached_tokens": 0
+   },
+   "output_tokens": 231,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 3375
+  },
+  "images": 1
+ },
+ {
+  "t": 1793420824,
+  "secs": 125,
+  "out": "C:\\Users\\spooh\\HarnessSim\\mockups\\portraits\\scenes\\circle_raw.png",
+  "usage": {
+   "input_tokens": 2074,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0
+   },
+   "output_tokens": 306,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 2380
+  },
+  "images": 1
+ },
+ {
+  "t": 1793420949,
+  "secs": 122,
+  "out": "C:\\Users\\spooh\\HarnessSim\\mockups\\portraits\\scenes\\sunrise_raw.png",
+  "usage": {
+   "input_tokens": 2055,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0
+   },
+   "output_tokens": 287,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 2342
+  },
+  "images": 1
+ },
+ {
+  "t": 1793421070,
+  "secs": 127,
+  "out": "C:\\Users\\spooh\\HarnessSim\\mockups\\portraits\\scenes\\trophy_raw.png",
+  "usage": {
+   "input_tokens": 2121,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0
+   },
+   "output_tokens": 354,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 2475
+  },
+  "images": 1
+ },
+ {
+  "t": 1793421198,
+  "secs": 117,
+  "out": "C:\\Users\\spooh\\HarnessSim\\mockups\\portraits\\scenes\\rain_raw.png",
+  "usage": {
+   "input_tokens": 2105,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0
+   },
+   "output_tokens": 343,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 2448
+  },
+  "images": 1
+ },
+ {
+  "t": 1793421315,
+  "secs": 123,
+  "out": "C:\\Users\\spooh\\HarnessSim\\mockups\\portraits\\scenes\\paddock_raw.png",
+  "usage": {
+   "input_tokens": 2067,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0
+   },
+   "output_tokens": 308,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 2375
+  },
+  "images": 1
+ },
+ {
+  "t": 1793421438,
+  "secs": 123,
+  "out": "C:\\Users\\spooh\\HarnessSim\\mockups\\portraits\\scenes\\snow_raw.png",
+  "usage": {
+   "input_tokens": 2059,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0
+   },
+   "output_tokens": 302,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 2361
+  },
+  "images": 1
  }
 ]

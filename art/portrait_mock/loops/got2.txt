@@ -1,0 +1,4 @@
+5382 https://api.spritecook.ai/v1/assets/993d3094-8994-4187-9e2f-fc90c19562ec/signed-content/raw?sig=YyLW1sx3CbxyFjNZ5mngv5QzJvn_xtHikW-P-Fdaqeo&exp=1793425651
+7478 https://api.spritecook.ai/v1/assets/fc546c10-d26f-42f8-b969-fc2f07808bdd/signed-content/raw?sig=TVXhl88OuFTUrPjF0GC6A2PLWwhM0fFJ16rYi4xYmMA&exp=1793425663
+7732 https://api.spritecook.ai/v1/assets/a0792aa7-7b36-4b54-af6a-31747ca94bcc/signed-content/raw?sig=kpVon6OqOWLrNEjU89P3ImCPas_J6CB87NmXmMHW-38&exp=1793425657
+7752 https://api.spritecook.ai/v1/assets/ae9aa5d0-1a05-41a0-a82c-8cef10689271/signed-content/raw?sig=HYEBnzoVq7aZFi2mao2MH_HhM2nRUQzbgo3joy6iTsA&exp=1793425666
