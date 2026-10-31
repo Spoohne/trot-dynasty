@@ -631,7 +631,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .brow{display:flex;gap:12px;align-items:flex-start} .bname{font-size:16px;font-weight:700} .bname .sub{font-weight:400}
 .bbars{margin:6px 0 4px} .bbars .row{gap:8px;margin:2px 0} .bbars .sub{width:52px;font-size:12px}
 .tp{position:relative;overflow:hidden;flex:0 0 auto;border-radius:4px}.tp img,.tploop{display:block;image-rendering:auto}
-.tploop{background-size:1200% 100%;animation:tploop 1.5s steps(12) infinite}@keyframes tploop{to{background-position:100% 0}}
+.tploop{background-size:1200% 100%;animation:tploop 1.5s steps(12,jump-none) infinite}@keyframes tploop{to{background-position:100% 0}}
 .tpsweep{position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,#fff0c826 47%,#fff0c84d 50%,#fff0c826 53%,transparent 65%);background-size:300% 100%;animation:tpsweep 4.5s ease-in-out infinite}
 @keyframes tpsweep{from{background-position:120% 0}to{background-position:-60% 0}}
 .tpmotes{position:absolute;inset:0;background-image:radial-gradient(#ffd75acc 1px,transparent 1.6px),radial-gradient(#ffe9a8aa 1px,transparent 1.6px);background-size:23px 29px,37px 41px;background-position:0 0,11px 7px;animation:tpmotes 9s linear infinite;opacity:.7}
