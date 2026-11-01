@@ -73,6 +73,8 @@
 #tv.on{display:flex;animation:tvin .45s cubic-bezier(.2,.9,.3,1.2)}@keyframes tvin{from{transform:scaleY(.04);opacity:0}}
 #tv .tvp{width:min(94%,860px);max-height:94%;display:flex;flex-direction:column;background:linear-gradient(#111a2e,#0a0f1c);border:3px solid #e8a33a;box-shadow:0 0 0 3px #05070d,0 10px 40px #000c}
 #tv .tvh{display:flex;align-items:center;gap:12px;padding:6px 14px;background:linear-gradient(#ffd36b,#e8a33a 55%,#c27c1c);color:#2a1a03}
+#tv .tvh b{font-size:22px}#tv .tvh span{font-size:14px}#tv table{font-size:15px}#wcp{width:min(100%,560px)}   /* older phones without container units keep these */
+
 #tv .tvh b{font-size:clamp(18px,4.2cqh,30px);font-weight:800;letter-spacing:.12em}#tv .tvh span{margin-left:auto;font-weight:700;font-size:clamp(12px,2.6cqh,17px);text-align:right}
 #tv .tvb{display:flex;gap:12px;padding:10px 14px;min-height:0;overflow-y:auto;overflow-x:hidden}
 #tv table{border-collapse:collapse;width:100%;font-size:clamp(13px,3cqh,19px)}#tv td,#tv th{padding:3px 6px;white-space:nowrap}
@@ -132,6 +134,12 @@
 @container (max-height:460px){#mm{top:6px;right:6px;width:84px;height:50px}}
 .views{top:90px!important}   /* the minimap has the corner; the camera buttons sit under it */
 #sndBtn{display:none}   /* replays are silent for now */
+
+@media (max-width:600px){#tv .tvb{flex-direction:column;gap:8px}#tv .tvp{width:96%;max-height:96%}#tv .tvm{flex:none}}   /* narrow: payoffs under the order */
+@media (max-height:440px){#tv .tvp{max-height:98%}#tv .tvh{padding:3px 10px}#tv .tvh b{font-size:17px}#tv .tvh span{font-size:12px}
+  #tv .tvb{padding:5px 10px;gap:8px}#tv table{font-size:12px}#tv td,#tv th{padding:1px 4px}#tv .tvm td,#tv .tvm th{padding:1px 3px}
+  #tv .tvf{padding:3px 10px 5px;font-size:10px;line-height:1.2}#tv .tvf a,#tv .tvf button{padding:4px 12px;font-size:13px;white-space:nowrap}
+  #tv td{line-height:1.15}#tv .pd{line-height:1.2;min-width:1.4em}#tv .tvo{flex:1}#tv .tvm{flex:1.1;padding:2px 4px}#tv .tvm td:nth-child(n+2),#tv .tvm th:nth-child(n+2){padding:1px 2px}}   /* a phone held sideways: everything fits without scrolling */
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <link rel="stylesheet" href="/mock/brand/marquee/marquee.css?v=14"></head><body><div class="wrap">
