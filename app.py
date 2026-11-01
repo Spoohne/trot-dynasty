@@ -668,7 +668,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .tpmotes{position:absolute;inset:0;background-image:radial-gradient(#ffd75acc 1px,transparent 1.6px),radial-gradient(#ffe9a8aa 1px,transparent 1.6px);background-size:23px 29px,37px 41px;background-position:0 0,11px 7px;animation:tpmotes 9s linear infinite;opacity:.7}
 @keyframes tpmotes{to{background-position:0 290px,11px 417px}}
 .tpsp{box-shadow:0 0 0 3px transparent;outline:3px solid;animation:tpholo 6s linear infinite}@keyframes tpholo{0%{outline-color:#f9a8d4}25%{outline-color:#93c5fd}50%{outline-color:#86efac}75%{outline-color:#fde68a}100%{outline-color:#f9a8d4}}
-.tps{outline:3px solid #e8a33a}.port:has(.tp){background:none!important}.port .tp{outline:none;animation:none;display:block;position:absolute;inset:0;width:auto!important;height:auto!important}.port .tp img,.port .tp .tploop{width:100%!important;height:100%!important;object-fit:cover}
+.tps{outline:3px solid #e8a33a}.port:has(.tp){background:none!important}.tier.ped,.sqt.ped{background:#0b1430e6!important;color:#e6e8ec!important;box-shadow:none!important;outline:2px dashed #e6e8ecb3;outline-offset:-4px;animation:none!important}.tier.ped.badge::after{content:'PEDIGREE';position:absolute;right:0;bottom:100%;margin-bottom:3px;font:800 8px 'Barlow Condensed',sans-serif;letter-spacing:.08em;color:#a4acb9;text-shadow:0 1px 2px #000;white-space:nowrap}.port .tp{outline:none;animation:none;display:block;position:absolute;inset:0;width:auto!important;height:auto!important}.port .tp img,.port .tp .tploop{width:100%!important;height:100%!important;object-fit:cover}
 @media (prefers-reduced-motion:reduce){.tploop,.tpsweep,.tpmotes,.tpsp{animation:none}.tpsweep,.tpmotes{display:none}}
 .sq{position:relative;flex:0 0 auto;border:3px solid;border-radius:6px;background:#1c2430;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .sq img{display:block;width:100%;height:100%;object-fit:cover} .pimg{display:block;border:3px solid;border-radius:50%;background:#1c2430;object-fit:cover} .sqt{position:absolute;right:0;bottom:0;color:#fff;font-size:12px;font-weight:700;padding:1px 5px;border-radius:4px 0 0 0}
@@ -1955,7 +1955,8 @@ GUIDE = [
          "come late, some know the half-mile tracks, some settle a rank horse. The standings show who's winning this season."),
         ("The vet's appraisal", "A young horse shows what it is over its starts. If you'd rather know sooner, the vet will "
          "appraise one of yours for a few Markers: the grade it should reach at its peak, told to you and nobody else. It "
-         "changes nothing on the track; it only saves you the wait."),
+         "changes nothing on the track; it only saves you the wait. Until a horse has raced a few times, its letter is drawn "
+         "hollow: that's the pedigree's guess, and a well-bred foal often comes out below its parents."),
     ]),
     ("On the track", [
         ("How a race is run", "Every race on this circuit is run the same way for every barn, the house's horses included. Nothing "
@@ -2113,6 +2114,7 @@ TIP_SEQUENCE = [
     "Nothing in your barn races unless you enter it. Tap the + on a horse's card to enter it.",
     "A horse needs to be fresh to run its best. Rest it, or use a grooming slot to get it back sooner.",
     "Mile time is how fast a horse is expected to trot. Tier is the letter grade that comes with it: D up to S+.",
+    "A hollow, dashed letter is a pedigree's guess. A horse earns its own grade once it has raced a few times.",
     "Two yearlings came with your barn, papers paid. Find them on the Training tab; they join your racers at two.",
     "Youngsters are yours to make. The Training tab is their day sheet: jog, train, school or turn out, one job a day.",
     "Your mare is your way up. Buy the Breeder's License on the Breeding tab, and her foals can race for you.",
@@ -3042,7 +3044,25 @@ MILE_TIERS = tuple((sim.retime(x), t) for x, t in ((107.5, "S+"), (109.5, "S"), 
 # seconds for a mile, slower is D: the original cuts, moved exactly onto the 2026-10-27 clock (S+ ~1:50.9 ... C ~2:00.1)
 
 
+PED_STARTS = 5                 # under this many starts a bred horse's grade is its pedigree's guess, shown hollow
+PED_FIT = -92.32, 2.027        # foal's peak rating ~ A + B x parents' average peak, fitted 2026-10-31 on 598 bred racers (r 0.58)
+
+
+def is_pedigree(h):
+    """A bred horse that hasn't raced enough to earn a grade: its badge is the pedigree's realistic guess."""
+    return not h.retired and h.starts < PED_STARTS and getattr(h, "sire", None) is not None and getattr(h, "dam", None) is not None
+
+
+def pedigree_grade(h):
+    a, b = PED_FIT
+    est = max(30.0, min(80.0, a + b * (c.peak_est(h.sire) + c.peak_est(h.dam)) / 2))
+    secs = c.mile_secs(est)
+    return next((t for cut, t in MILE_TIERS if secs <= cut), "D")
+
+
 def tier_label(h):
+    if is_pedigree(h):
+        return pedigree_grade(h)
     if h.age < 2 or c.age_group(h) not in c.GROUP_STATS:                       # a foal hasn't raced: no rating yet
         return h.tier
     secs = c.mile_secs(c.peak_est(h) if h.retired else h.est)                 # a retired horse keeps the rating of its prime
@@ -3055,7 +3075,7 @@ def tier_base(h):
 
 
 def tier_cls(h):
-    return "Sp" if tier_label(h) == "S+" else tier_base(h)
+    return ("Sp" if tier_label(h) == "S+" else tier_base(h)) + (" ped" if is_pedigree(h) else "")
 
 
 STABLEMATE = ("<svg class=mate viewBox='0 0 28 28' width=24 height=24 aria-hidden=true>"   # a plain square tile, two black heads
