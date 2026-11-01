@@ -1,0 +1,157 @@
+{
+ "reset": {
+  "slope": 0.461,
+  "s_end": 0.329,
+  "frozen_drift": 0.1,
+  "edge": 1.797,
+  "top5": 0.486
+ },
+ "pkg": {
+  "histories": 8,
+  "level": {
+   "slope": 0.424,
+   "s_end": 0.362,
+   "frozen_drift": 0.106,
+   "edge": 1.55,
+   "top5": 0.481
+  },
+  "slope_minus_reset": {
+   "mean": -0.037,
+   "upper95": 0.133,
+   "passes": false
+  },
+  "s_end_minus_reset": {
+   "mean": 0.033,
+   "upper95": 0.051,
+   "passes": false
+  },
+  "edge_share_of_reset": {
+   "value": 0.862,
+   "passes": true
+  },
+  "frozen_drift_minus_reset": {
+   "mean": 0.0067,
+   "se": 0.0166
+  },
+  "matches_reset": false,
+  "selection_stages_season100_mean": {
+   "males2": -0.373,
+   "retired_m": 0.228,
+   "eligible": 6.312,
+   "n_eligible": 25,
+   "fem2": -0.379,
+   "retired_f": 0.092
+  }
+ },
+ "pkg_q00": {
+  "histories": 8,
+  "level": {
+   "slope": 0.389,
+   "s_end": 0.338,
+   "frozen_drift": 0.107,
+   "edge": 1.386,
+   "top5": 0.286
+  },
+  "slope_minus_reset": {
+   "mean": -0.072,
+   "upper95": 0.162,
+   "passes": false
+  },
+  "s_end_minus_reset": {
+   "mean": 0.009,
+   "upper95": 0.031,
+   "passes": false
+  },
+  "edge_share_of_reset": {
+   "value": 0.771,
+   "passes": false
+  },
+  "frozen_drift_minus_reset": {
+   "mean": 0.0072,
+   "se": 0.0226
+  },
+  "matches_reset": false,
+  "selection_stages_season100_mean": {
+   "males2": -0.684,
+   "retired_m": -0.177,
+   "eligible": 5.73,
+   "n_eligible": 25,
+   "fem2": -0.765,
+   "retired_f": -0.086
+  }
+ },
+ "pkg_all": {
+  "histories": 8,
+  "level": {
+   "slope": 0.433,
+   "s_end": 0.303,
+   "frozen_drift": 0.095,
+   "edge": 2.064,
+   "top5": 0.261
+  },
+  "slope_minus_reset": {
+   "mean": -0.028,
+   "upper95": 0.087,
+   "passes": true
+  },
+  "s_end_minus_reset": {
+   "mean": -0.026,
+   "upper95": -0.002,
+   "passes": true
+  },
+  "edge_share_of_reset": {
+   "value": 1.148,
+   "passes": true
+  },
+  "frozen_drift_minus_reset": {
+   "mean": -0.0045,
+   "se": 0.0184
+  },
+  "matches_reset": true,
+  "selection_stages_season100_mean": {
+   "males2": -0.394,
+   "retired_m": 0.078,
+   "eligible": 0.078,
+   "n_eligible": 635.625,
+   "fem2": -0.306,
+   "retired_f": 0.049
+  }
+ },
+ "pkg_all_q00": {
+  "histories": 8,
+  "level": {
+   "slope": 0.081,
+   "s_end": 0.196,
+   "frozen_drift": 0.013,
+   "edge": 1.886,
+   "top5": 0.098
+  },
+  "slope_minus_reset": {
+   "mean": -0.38,
+   "upper95": -0.274,
+   "passes": true
+  },
+  "s_end_minus_reset": {
+   "mean": -0.132,
+   "upper95": -0.12,
+   "passes": true
+  },
+  "edge_share_of_reset": {
+   "value": 1.049,
+   "passes": true
+  },
+  "frozen_drift_minus_reset": {
+   "mean": -0.0868,
+   "se": 0.0206
+  },
+  "matches_reset": true,
+  "selection_stages_season100_mean": {
+   "males2": -1.587,
+   "retired_m": -0.956,
+   "eligible": -0.956,
+   "n_eligible": 561.75,
+   "fem2": -1.904,
+   "retired_f": -1.063
+  }
+ }
+}

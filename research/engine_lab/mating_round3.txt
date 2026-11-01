@@ -1,0 +1,24 @@
+pkg 8 histories {'slope': 0.561, 'est_end': 59.599, 's_end': 0.301, 'top5_end': 0.498, 'nick_minus_ordinary': 2.464, 'ai_selection_diff': None}
+pkg_reset 8 histories {'slope': 0.277, 'est_end': 58.319, 's_end': 0.259, 'top5_end': 0.487, 'nick_minus_ordinary': 2.736, 'ai_selection_diff': None}
+pkg_q03 8 histories {'slope': 0.869, 'est_end': 59.729, 's_end': 0.296, 'top5_end': 0.372, 'nick_minus_ordinary': 2.813, 'ai_selection_diff': 1.162}
+pkg_q00 8 histories {'slope': 0.85, 'est_end': 59.182, 's_end': 0.285, 'top5_end': 0.289, 'nick_minus_ordinary': 2.706, 'ai_selection_diff': -0.011}
+pkg_q03-pkg       slope                +0.308 se 0.209  (3/8 below 0)
+pkg_q03-pkg       s_end                -0.005 se 0.008  (4/8 below 0)
+pkg_q03-pkg       est_end              +0.130 se 0.406  (4/8 below 0)
+pkg_q03-pkg       top5_end             -0.127 se 0.023  (8/8 below 0)
+pkg_q03-pkg       nick_minus_ordinary  +0.349 se 0.208  (1/8 below 0)
+pkg_q00-pkg       slope                +0.288 se 0.193  (4/8 below 0)
+pkg_q00-pkg       s_end                -0.015 se 0.010  (5/8 below 0)
+pkg_q00-pkg       est_end              -0.416 se 0.368  (5/8 below 0)
+pkg_q00-pkg       top5_end             -0.209 se 0.020  (8/8 below 0)
+pkg_q00-pkg       nick_minus_ordinary  +0.242 se 0.262  (4/8 below 0)
+pkg_q03-pkg_reset slope                +0.593 se 0.266  (1/8 below 0)
+pkg_q03-pkg_reset s_end                +0.037 se 0.012  (1/8 below 0)
+pkg_q03-pkg_reset est_end              +1.410 se 0.538  (1/8 below 0)
+pkg_q03-pkg_reset top5_end             -0.116 se 0.029  (7/8 below 0)
+pkg_q03-pkg_reset nick_minus_ordinary  +0.077 se 0.336  (2/8 below 0)
+pkg_q00-pkg_reset slope                +0.573 se 0.244  (0/8 below 0)
+pkg_q00-pkg_reset s_end                +0.027 se 0.015  (2/8 below 0)
+pkg_q00-pkg_reset est_end              +0.864 se 0.570  (2/8 below 0)
+pkg_q00-pkg_reset top5_end             -0.198 se 0.021  (8/8 below 0)
+pkg_q00-pkg_reset nick_minus_ordinary  -0.031 se 0.336  (5/8 below 0)

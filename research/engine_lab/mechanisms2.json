@@ -1,0 +1,72 @@
+{
+ "1_pace_response_by_leader_early_speed": {
+  "-1.0": {
+   "field_gap_at_half": 6.25,
+   "field_energy_75": 45.9,
+   "leader_energy_75": 27.7,
+   "leader_win": 0.217
+  },
+  "0.0": {
+   "field_gap_at_half": 6.88,
+   "field_energy_75": 44.7,
+   "leader_energy_75": 20.5,
+   "leader_win": 0.15
+  },
+  "1.0": {
+   "field_gap_at_half": 7.48,
+   "field_energy_75": 42.6,
+   "leader_energy_75": 14.2,
+   "leader_win": 0.163
+  },
+  "2.0": {
+   "field_gap_at_half": 7.96,
+   "field_energy_75": 40.1,
+   "leader_energy_75": 8.5,
+   "leader_win": 0.21
+  }
+ },
+ "1b_duel_openings": {
+  "unchallenged": {
+   "subject_win": 0.14,
+   "subject_energy_75": 25.2
+  },
+  "pressed alongside": {
+   "subject_win": 0.562,
+   "subject_energy_75": 12.4
+  },
+  "rival clears": {
+   "subject_win": 0.463,
+   "subject_energy_75": 12.5
+  }
+ },
+ "2_scripted_forced_box": {
+  "blocked": {
+   "subject_time_from_three_quarters": 27.026,
+   "leader_time": 28.266,
+   "boxed_s": 12.62,
+   "finished_ahead_of_leader": true,
+   "lane_at_finish": 1
+  },
+  "open (blocker is a ghost)": {
+   "subject_time_from_three_quarters": 26.567,
+   "leader_time": 28.266,
+   "boxed_s": 0.0,
+   "finished_ahead_of_leader": true,
+   "lane_at_finish": 1
+  }
+ },
+ "3_step_size_vs_1_32": {
+  "DT 0.0625 vs 1/32": {
+   "same_winner": 0.915,
+   "flips": 17,
+   "flips_with_margin_under_0p1s": 12,
+   "mean_abs_time_diff": 0.023
+  },
+  "DT 0.125 vs 1/32": {
+   "same_winner": 0.865,
+   "flips": 27,
+   "flips_with_margin_under_0p1s": 18,
+   "mean_abs_time_diff": 0.081
+  }
+ }
+}

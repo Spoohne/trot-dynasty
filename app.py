@@ -661,7 +661,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .tpmotes{position:absolute;inset:0;background-image:radial-gradient(#ffd75acc 1px,transparent 1.6px),radial-gradient(#ffe9a8aa 1px,transparent 1.6px);background-size:23px 29px,37px 41px;background-position:0 0,11px 7px;animation:tpmotes 9s linear infinite;opacity:.7}
 @keyframes tpmotes{to{background-position:0 290px,11px 417px}}
 .tpsp{box-shadow:0 0 0 3px transparent;outline:3px solid;animation:tpholo 6s linear infinite}@keyframes tpholo{0%{outline-color:#f9a8d4}25%{outline-color:#93c5fd}50%{outline-color:#86efac}75%{outline-color:#fde68a}100%{outline-color:#f9a8d4}}
-.tps{outline:3px solid #e8a33a}
+.tps{outline:3px solid #e8a33a}.port:has(.tp){background:none!important}.port .tp{outline:none;animation:none;display:block;position:absolute;inset:0;width:auto!important;height:auto!important}.port .tp img,.port .tp .tploop{width:100%!important;height:100%!important;object-fit:cover}
 @media (prefers-reduced-motion:reduce){.tploop,.tpsweep,.tpmotes,.tpsp{animation:none}.tpsweep,.tpmotes{display:none}}
 .sq{position:relative;flex:0 0 auto;border:3px solid;border-radius:6px;background:#1c2430;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .sq img{display:block;width:100%;height:100%;object-fit:cover} .pimg{display:block;border:3px solid;border-radius:50%;background:#1c2430;object-fit:cover} .sqt{position:absolute;right:0;bottom:0;color:#fff;font-size:12px;font-weight:700;padding:1px 5px;border-radius:4px 0 0 0}

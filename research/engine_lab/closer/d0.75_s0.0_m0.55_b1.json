@@ -1,0 +1,21 @@
+{
+ "drive_all": 0.75,
+ "surplus_k": 0.0,
+ "move_late": 0.55,
+ "style_wins": {
+  "stalk": 0.49,
+  "front": 0.31,
+  "mid": 0.15,
+  "late": 0.05
+ },
+ "style_win_over_share": {
+  "stalk": 1.47,
+  "front": 1.86,
+  "mid": 0.45,
+  "late": 0.3
+ },
+ "closer_behind_at_75": 3.7,
+ "closer_energy_at_finish": 15.1,
+ "closer_boxed_s": 10.44,
+ "closer_mean_place": 5.6
+}

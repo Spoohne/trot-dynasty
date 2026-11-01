@@ -1,0 +1,88 @@
+{
+ "base": {
+  "est_slope": "0.608 \u00b1 0.426 (n=8)",
+  "est_end": "56.532 \u00b1 1.821 (n=8)",
+  "s_end": "0.227 \u00b1 0.042 (n=8)",
+  "top5_end": "0.733 \u00b1 0.045 (n=8)",
+  "nick_minus_ordinary": "1.537 \u00b1 0.526 (n=8)",
+  "late_useful_fixed": "0.588 \u00b1 0.044 (n=8)",
+  "late_great_fixed": "0.079 \u00b1 0.019 (n=8)"
+ },
+ "fixed_thresholds": {
+  "useful": -2.861,
+  "exceptional": 3.195
+ },
+ "pkg minus base": {
+  "est_slope": "-0.047 \u00b1 0.469 (n=8)",
+  "est_end": "+3.066 \u00b1 1.438 (n=8)",
+  "s_end": "+0.074 \u00b1 0.034 (n=8)",
+  "top5_end": "-0.235 \u00b1 0.060 (n=8)",
+  "nick_minus_ordinary": "+0.927 \u00b1 0.552 (n=8)",
+  "late_useful_fixed": "+0.099 \u00b1 0.031 (n=8)",
+  "late_great_fixed": "+0.054 \u00b1 0.016 (n=8)"
+ },
+ "pkg level": {
+  "est_slope": "0.561 \u00b1 0.272 (n=8)",
+  "est_end": "59.599 \u00b1 1.003 (n=8)",
+  "s_end": "0.301 \u00b1 0.027 (n=8)",
+  "top5_end": "0.498 \u00b1 0.057 (n=8)",
+  "nick_minus_ordinary": "2.464 \u00b1 0.498 (n=8)",
+  "late_useful_fixed": "0.687 \u00b1 0.017 (n=8)",
+  "late_great_fixed": "0.133 \u00b1 0.013 (n=8)"
+ },
+ "pkg_dim minus base": {
+  "est_slope": "+0.090 \u00b1 0.603 (n=8)",
+  "est_end": "+2.989 \u00b1 1.953 (n=8)",
+  "s_end": "+0.073 \u00b1 0.051 (n=8)",
+  "top5_end": "-0.257 \u00b1 0.108 (n=8)",
+  "nick_minus_ordinary": "+0.522 \u00b1 0.856 (n=8)",
+  "late_useful_fixed": "+0.118 \u00b1 0.054 (n=8)",
+  "late_great_fixed": "+0.052 \u00b1 0.026 (n=8)",
+  "note": "potential scale compressed under dim: fixed-threshold and nick figures aren't comparable"
+ },
+ "pkg_dim level": {
+  "est_slope": "0.699 \u00b1 0.603 (n=8)",
+  "est_end": "59.521 \u00b1 0.625 (n=8)",
+  "s_end": "0.300 \u00b1 0.023 (n=8)",
+  "top5_end": "0.477 \u00b1 0.083 (n=8)",
+  "nick_minus_ordinary": "2.059 \u00b1 0.620 (n=8)",
+  "late_useful_fixed": "0.706 \u00b1 0.028 (n=8)",
+  "late_great_fixed": "0.131 \u00b1 0.010 (n=8)"
+ },
+ "pkg_reset minus base": {
+  "est_slope": "-0.332 \u00b1 0.496 (n=8)",
+  "est_end": "+1.786 \u00b1 1.454 (n=8)",
+  "s_end": "+0.032 \u00b1 0.036 (n=8)",
+  "top5_end": "-0.246 \u00b1 0.061 (n=8)",
+  "nick_minus_ordinary": "+1.199 \u00b1 0.483 (n=8)",
+  "late_useful_fixed": "+0.078 \u00b1 0.037 (n=8)",
+  "late_great_fixed": "+0.034 \u00b1 0.022 (n=8)"
+ },
+ "pkg_reset level": {
+  "est_slope": "0.277 \u00b1 0.401 (n=8)",
+  "est_end": "58.319 \u00b1 1.088 (n=8)",
+  "s_end": "0.259 \u00b1 0.030 (n=8)",
+  "top5_end": "0.487 \u00b1 0.066 (n=8)",
+  "nick_minus_ordinary": "2.736 \u00b1 0.645 (n=8)",
+  "late_useful_fixed": "0.667 \u00b1 0.016 (n=8)",
+  "late_great_fixed": "0.114 \u00b1 0.016 (n=8)"
+ },
+ "pkg_both minus base": {
+  "est_slope": "+0.312 \u00b1 0.697 (n=8)",
+  "est_end": "+2.976 \u00b1 2.484 (n=8)",
+  "s_end": "+0.064 \u00b1 0.063 (n=8)",
+  "top5_end": "-0.238 \u00b1 0.029 (n=8)",
+  "nick_minus_ordinary": "+1.288 \u00b1 0.809 (n=8)",
+  "late_useful_fixed": "+0.113 \u00b1 0.045 (n=8)",
+  "late_great_fixed": "+0.055 \u00b1 0.024 (n=8)"
+ },
+ "pkg_both level": {
+  "est_slope": "0.920 \u00b1 0.477 (n=8)",
+  "est_end": "59.509 \u00b1 1.392 (n=8)",
+  "s_end": "0.291 \u00b1 0.044 (n=8)",
+  "top5_end": "0.495 \u00b1 0.057 (n=8)",
+  "nick_minus_ordinary": "2.826 \u00b1 0.451 (n=8)",
+  "late_useful_fixed": "0.701 \u00b1 0.025 (n=8)",
+  "late_great_fixed": "0.135 \u00b1 0.021 (n=8)"
+ }
+}

@@ -1,0 +1,420 @@
+{
+ "A_fixed_cases": {
+  "catch: fast closer behind a slow leader, same lane": {
+   "seq 0.5": {
+    "order": [
+     "slow",
+     "fast"
+    ],
+    "crossings": 0,
+    "times": [
+     110.78,
+     111.0
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "seq 0.25": {
+    "order": [
+     "slow",
+     "fast"
+    ],
+    "crossings": 0,
+    "times": [
+     110.8,
+     111.01
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "seq 0.125": {
+    "order": [
+     "slow",
+     "fast"
+    ],
+    "crossings": 0,
+    "times": [
+     110.82,
+     111.02
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.5": {
+    "order": [
+     "slow",
+     "fast"
+    ],
+    "crossings": 0,
+    "times": [
+     110.78,
+     111.0
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.25": {
+    "order": [
+     "slow",
+     "fast"
+    ],
+    "crossings": 0,
+    "times": [
+     110.8,
+     111.0
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.125": {
+    "order": [
+     "slow",
+     "fast"
+    ],
+    "crossings": 0,
+    "times": [
+     110.82,
+     111.01
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "box: rail horse behind a leader, horse outside": {
+   "seq 0.5": {
+    "order": [
+     "lead",
+     "boxed",
+     "outside"
+    ],
+    "crossings": 0,
+    "times": [
+     110.56,
+     110.64,
+     111.32
+    ],
+    "boxed": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "seq 0.25": {
+    "order": [
+     "lead",
+     "outside",
+     "boxed"
+    ],
+    "crossings": 0,
+    "times": [
+     110.61,
+     111.14,
+     111.29
+    ],
+    "boxed": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "seq 0.125": {
+    "order": [
+     "lead",
+     "outside",
+     "boxed"
+    ],
+    "crossings": 0,
+    "times": [
+     110.64,
+     111.15,
+     111.26
+    ],
+    "boxed": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.5": {
+    "order": [
+     "lead",
+     "boxed",
+     "outside"
+    ],
+    "crossings": 0,
+    "times": [
+     110.6,
+     110.75,
+     110.86
+    ],
+    "boxed": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.25": {
+    "order": [
+     "lead",
+     "boxed",
+     "outside"
+    ],
+    "crossings": 0,
+    "times": [
+     110.61,
+     111.09,
+     111.13
+    ],
+    "boxed": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.125": {
+    "order": [
+     "lead",
+     "boxed",
+     "outside"
+    ],
+    "crossings": 0,
+    "times": [
+     110.64,
+     111.1,
+     111.14
+    ],
+    "boxed": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "pass: a faster horse with room outside": {
+   "seq 0.5": {
+    "order": [
+     "lead",
+     "passer"
+    ],
+    "crossings": 0,
+    "times": [
+     110.94,
+     110.97
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "seq 0.25": {
+    "order": [
+     "passer",
+     "lead"
+    ],
+    "crossings": 0,
+    "times": [
+     110.97,
+     110.98
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "seq 0.125": {
+    "order": [
+     "passer",
+     "lead"
+    ],
+    "crossings": 0,
+    "times": [
+     110.97,
+     111.0
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.5": {
+    "order": [
+     "lead",
+     "passer"
+    ],
+    "crossings": 0,
+    "times": [
+     110.94,
+     110.96
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.25": {
+    "order": [
+     "passer",
+     "lead"
+    ],
+    "crossings": 0,
+    "times": [
+     110.96,
+     110.98
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   },
+   "sim 0.125": {
+    "order": [
+     "passer",
+     "lead"
+    ],
+    "crossings": 0,
+    "times": [
+     110.97,
+     111.0
+    ],
+    "boxed": [
+     0.0,
+     0.0
+    ]
+   }
+  }
+ },
+ "B_step_size": {
+  "seq 0.5": {
+   "style_wins": {
+    "front": 0.52,
+    "late": 0.043,
+    "stalk": 0.158,
+    "mid": 0.28
+   },
+   "median_win_time": 110.9,
+   "crossings_per_race": 0.0
+  },
+  "seq 0.25": {
+   "style_wins": {
+    "front": 0.495,
+    "late": 0.037,
+    "stalk": 0.175,
+    "mid": 0.292
+   },
+   "median_win_time": 110.85,
+   "crossings_per_race": 0.0
+  },
+  "seq 0.125": {
+   "style_wins": {
+    "front": 0.367,
+    "late": 0.055,
+    "stalk": 0.255,
+    "mid": 0.323
+   },
+   "median_win_time": 110.96,
+   "crossings_per_race": 0.0
+  },
+  "sim 0.5": {
+   "style_wins": {
+    "front": 0.29,
+    "late": 0.083,
+    "stalk": 0.355,
+    "mid": 0.273
+   },
+   "median_win_time": 110.68,
+   "crossings_per_race": 0.0
+  },
+  "sim 0.25": {
+   "style_wins": {
+    "front": 0.287,
+    "late": 0.12,
+    "stalk": 0.292,
+    "mid": 0.3
+   },
+   "median_win_time": 110.64,
+   "crossings_per_race": 0.0
+  },
+  "sim 0.125": {
+   "style_wins": {
+    "front": 0.28,
+    "late": 0.115,
+    "stalk": 0.315,
+    "mid": 0.29
+   },
+   "median_win_time": 110.57,
+   "crossings_per_race": 0.0
+  },
+  "seq: same winner at DT 0.25 and 0.125": 0.352,
+  "sim: same winner at DT 0.25 and 0.125": 0.372
+ },
+ "C_paired_scenarios_[A,B]_win_share": {
+  "duel: leader alone vs a second leaver (subject = leader)": {
+   "seq 0.5": [
+    0.672,
+    0.712
+   ],
+   "sim 0.5": [
+    0.375,
+    0.602
+   ],
+   "sim 0.25": [
+    0.337,
+    0.595
+   ]
+  },
+  "duel: closer, calm pace vs a duel ahead (subject = closer)": {
+   "seq 0.5": [
+    0.143,
+    0.207
+   ],
+   "sim 0.5": [
+    0.233,
+    0.23
+   ],
+   "sim 0.25": [
+    0.183,
+    0.17
+   ]
+  },
+  "cover: same move point, follows cover vs refuses it": {
+   "seq 0.5": [
+    0.363,
+    0.363
+   ],
+   "sim 0.5": [
+    0.208,
+    0.195
+   ],
+   "sim 0.25": [
+    0.192,
+    0.193
+   ]
+  },
+  "move: same horse, moves at 0.3 vs 0.72 (follow off both)": {
+   "seq 0.5": [
+    0.585,
+    0.12
+   ],
+   "sim 0.5": [
+    0.193,
+    0.16
+   ],
+   "sim 0.25": [
+    0.183,
+    0.153
+   ]
+  }
+ }
+}

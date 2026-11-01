@@ -1,0 +1,130 @@
+{
+ "0_convergence": {
+  "DT 0.0625": {
+   "same_winner_as_finest": 1.0,
+   "mean_abs_time_diff": 0.0,
+   "style_wins": {
+    "front": 0.28,
+    "stalk": 0.395,
+    "mid": 0.255,
+    "late": 0.07
+   }
+  },
+  "DT 0.125": {
+   "same_winner_as_finest": 0.88,
+   "mean_abs_time_diff": 0.044,
+   "style_wins": {
+    "front": 0.305,
+    "stalk": 0.39,
+    "mid": 0.235,
+    "late": 0.07
+   }
+  },
+  "DT 0.25": {
+   "same_winner_as_finest": 0.765,
+   "mean_abs_time_diff": 0.121,
+   "style_wins": {
+    "front": 0.29,
+    "stalk": 0.41,
+    "mid": 0.21,
+    "late": 0.09
+   }
+  },
+  "DT 0.5": {
+   "same_winner_as_finest": 0.595,
+   "mean_abs_time_diff": 0.213,
+   "style_wins": {
+    "front": 0.295,
+    "stalk": 0.44,
+    "mid": 0.2,
+    "late": 0.065
+   }
+  }
+ },
+ "1_forced_box": {
+  "with rival outside": {
+   "order": [
+    "S",
+    "lead",
+    "rival"
+   ],
+   "subject_boxed_s": 11.5,
+   "subject_time": 26.51
+  },
+  "rival removed": {
+   "order": [
+    "lead",
+    "S"
+   ],
+   "subject_boxed_s": 0.0,
+   "subject_time": 27.07
+  }
+ },
+ "2a_energy_dose_last_quarter_time": {
+  "0": 28.849,
+  "15": 28.177,
+  "30": 27.433,
+  "45": 26.933,
+  "75": 26.158
+ },
+ "2b_energy_at_three_quarters": {
+  "sheltered >= 20s": {
+   "n": 2341,
+   "mean": 63.0,
+   "p10": 30.9,
+   "share_above_45": 0.796
+  },
+  "sheltered < 20s": {
+   "n": 859,
+   "mean": 41.6,
+   "p10": 16.8,
+   "share_above_45": 0.409
+  },
+  "moved before 0.55": {
+   "n": 284,
+   "mean": 38.5,
+   "p10": 12.0,
+   "share_above_45": 0.373
+  },
+  "moved after 0.7": {
+   "n": 1130,
+   "mean": 71.6,
+   "p10": 54.1,
+   "share_above_45": 0.951
+  }
+ },
+ "3_shelter_on_vs_off": {
+  "on": {
+   "win": 0.2,
+   "energy_75": 47.5,
+   "sheltered_s": 22.1,
+   "mean_place": 2.77
+  },
+  "off": {
+   "win": 0.156,
+   "energy_75": 43.9,
+   "sheltered_s": 0.0,
+   "mean_place": 3.09
+  }
+ },
+ "4_duel_openings": {
+  "unchallenged": {
+   "subject_win": 0.276,
+   "subject_energy_75": 33.0,
+   "first_quarter_s": 27.05,
+   "subject_leads_at_quarter": 1
+  },
+  "pressed alongside": {
+   "subject_win": 0.986,
+   "subject_energy_75": 14.7,
+   "first_quarter_s": 26.19,
+   "subject_leads_at_quarter": 1
+  },
+  "rival clears": {
+   "subject_win": 0.702,
+   "subject_energy_75": 16.0,
+   "first_quarter_s": 25.94,
+   "subject_leads_at_quarter": 0.62
+  }
+ }
+}

@@ -1,0 +1,207 @@
+Engine Review
+
+Trot Dynasty · race and breeding engines · diagnostic batch
+
+Engine Review
+
+Third version. Every finding comes from simulation on a copy of the live world; the live game is unchanged. 48 independent 50-season histories (6 variants × 8 seeds, matched seeds across variants), about 300,000 recorded births, plus a training test on cloned horses and a prototype step-by-step race engine.
+
+Answers to the three questions:
+
+Do informed breeding choices improve outcomes? Yes, already. Matching bloodlines (nicks) beats average AI breeding by about eight rating points per foal under today's rules. Strengthening nicks doubles that edge.
+
+Do management and tactics matter? Barely, today. Six training programs on identical horses produce near-identical race results. The race formula has no tactics to choose.
+
+Does the population stay varied? Partly. Running styles and sibling variety hold steady. Sires do not: five stallions sire about 73% of racers in every history.
+
+Corrections to the second version.
+
+Foal potential isn't flat. Over 50 seasons it rises slowly, and comparing crops at the same age shows that rise accounts for all of the rating gain. Inflation is genetic, from steady selection, not from development or retirement. The 30-season, two-seed runs were too short to see it.
+
+Nicks aren't negligible. A nick moves each trait only a little, but every trait at once, so the total is large. I understated it.
+
+Strategic breeders do gain. The earlier runs measured whole racing stables, which mixes in bought and old horses. Measured foal by foal, informed breeding wins.
+
+Definitions
+
+Potential
+A horse's fixed genetic peak: its race score at age 4 from its inherited genes, before any training or racing. One point of potential is about six rating points.
+
+True rating
+The engine's internal 0–99 measure of a horse today. It counts unfinished development in full, even though races count only a small share of it, so it isn't used here to judge ability.
+
+Public estimate
+What the game shows players, learned from results. Tiers (S, A, B…) are graded from it on a fixed scale of projected mile times.
+
+Midparent
+The average potential of a foal's sire and dam.
+
+Inheritance slope
+How much a foal's potential rises per point of midparent potential, across all births. 1 would mean foals average their parents; 0 would mean parents don't matter.
+
+Useful / exceptional
+A foal above the median potential of all births in its variant / in the top 5%.
+
+The variants
+
+Each variant changes one rule; "combined" changes all four. Every variant also has 12 strategy barns with the same $6M budget, two for each plan: top sire, speed, cover the mare's weakness, best nick, close breeding, and ordinary (a random affordable sire).
+
+VariantThe single change
+
+ | Today | Current rules.
+
+ | Small books | Stallion books of 30 covers instead of 100.
+
+ | Spread mares | AI barns weigh each stallion's quality and nick instead of sending 70% of mares to the leader.
+
+ | Strong nicks | Bloodline pairings three times as strong.
+
+ | Strong heredity | Foals show more of their inheritance, and fewer genes reset to average.
+
+ | Combined | All four.
+
+Inflation
+
+After 50 seasons (mean ± spread of 8 histories)TodaySmall booksSpread maresStrong nicksStrong heredityCombined
+
+ | Racers' potential (start −2.37) | −1.76 ± 0.55 | −1.45 ± 0.31 | −1.03 ± 0.32 | −1.79 ± 0.81 | −0.99 ± 0.76 | +0.90 ± 0.56
+
+ | Public estimate (start 54.1) | 56.5 ± 1.8 | 57.5 ± 0.9 | 58.4 ± 0.8 | 56.3 ± 2.8 | 61.3 ± 2.1 | 66.0 ± 2.0
+
+ | Racers graded S or S+ (start 19%) | 23% | 24% | 26% | 26% | 36% | 49%
+
+ | Potential at age 4, early crops vs late crops | −3.0 → −2.2 | −2.8 → −1.9 | −1.9 → −1.4 | −4.0 → −2.4 | −2.9 → −1.4 | −1.4 → +0.3
+
+Today's rules inflate slowly and steadily. About one rating point per decade, still rising at season 50, though the rise is slowing. The comparison at age 4 shows it is genetic.
+
+Every change that makes breeding more effective also speeds inflation. Strong heredity alone reaches 36% S or S+. All four changes together reach 49%, which is runaway.
+
+The cause is consistent selection. AI and players breed the best to the best every season. Nothing in the rules pulls the herd back except genes resetting to average, and that is too weak to hold the line once breeding improves.
+
+Breeding
+
+MeasureTodaySmall booksSpread maresStrong nicksStrong heredityCombined
+
+ | Inheritance slope | 0.18 | 0.17 | 0.13 | 0.34 | 0.23 | 0.32
+
+ | Useful foals, worst vs best fifth of pairings | 45% → 55% | 44% → 56% | 46% → 54% | 42% → 60% | 43% → 58% | 42% → 61%
+
+ | Exceptional foals, worst vs best fifth | 4.5% → 5.2% | 4.7% → 5.4% | 4.8% → 4.9% | 4.6% → 5.9% | 3.6% → 6.3% | 3.7% → 6.8%
+
+ | Full-sibling spread (potential) | 3.2 | 3.0 | 3.1 | 3.2 | 3.3 | 3.0
+
+What each plan's foals gain over the average AI foal (potential)
+
+PlanTodaySmall booksSpread maresStrong nicksStrong heredityCombined
+
+ | Best nick | +1.40 | +1.05 | +0.38 | +3.26 | +1.09 | +1.14
+
+ | Cover the weakness | +1.00 | +0.69 | −0.37 | +2.04 | +0.82 | −0.17
+
+ | Speed | +0.71 | +0.64 | −0.36 | +2.14 | +0.25 | −0.62
+
+ | Top sire | +0.69 | +0.46 | −0.35 | +1.46 | +0.70 | −0.61
+
+ | Close breeding | +0.39 | +0.61 | −0.37 | +1.21 | +0.69 | −1.12
+
+ | Ordinary | −0.13 | −0.21 | −1.05 | −0.70 | −0.06 | −2.44
+
+Informed breeding already pays, and nicks are the best lever. Today the best-nick plan beats average AI foals by 1.4 potential, about eight rating points. Strong nicks more than double that, and widen the gap from ordinary breeders. That's your "find the best fit for your best" skill.
+
+"Best to best" works but leaves room for luck. The best fifth of pairings gives useful foals 55% of the time against 45% for the worst fifth. Exceptional foals stay rare everywhere, about 5%, and full siblings vary just as much under every rule. Breeding is never solved.
+
+Spreading mares narrows the edge. When the AI breeds smarter, the average AI foal improves, so every player plan gains less relative to it.
+
+Sire diversity
+
+After 50 seasonsTodaySmall booksSpread maresStrong nicksStrong heredityCombined
+
+ | Racers by the top 5 sires (start 73%) | 73% | 66% | 53% | 72% | 75% | 43%
+
+ | Same, at season 30 | 74% | 65% | 47% | 75% | 75% | 47%
+
+ | Sires with a racer on the track | 37 | 39 | 42 | 39 | 43 | 42
+
+ | Relatedness among the 12 leading sires (0–1) | 0.20 | 0.10 | 0.14 | 0.21 | 0.23 | 0.10
+
+How the AI picks mates is the main cause. Spreading AI mares alone cuts the top-five share from 73% to about 50%. Small books alone cut it to 66%, and they also halve how related the leading sires are.
+
+Sire lines collapsed long ago. In every variant, more than 99% of racers trace their top sire line to three founders. That happened in the world's simulated history, before launch. Because traits are spread over many genes, it doesn't limit variety the way a single gene would, but it means "outside blood" isn't a story the game can tell yet.
+
+Training and management
+
+Program, ages 2–4, same horse cloned (30 horses × 200 races)WinsWhat changed
+
+ | Idle | 16.1% | Nothing developed. Internal true rating near 3, yet it races almost as well.
+
+ | Jog | 17.3% | Same result as hard speed work.
+
+ | Speed focus | 17.0% | Speed up about 1.3; other traits unchanged.
+
+ | Finish focus | 16.2% | Finish up about 1.3.
+
+ | Stamina focus | 17.0% | Stamina up about 1.3.
+
+ | Manners focus | 16.4% | Manners up about 1.3.
+
+Six identical horses would each win 16.7% by chance. Training changes the targeted trait, but the race formula counts only a small share of unfinished development, so the choice barely shows in results. That's a gameplay gap, not an inflation source. It also means the internal true rating can't be used as an ability measure.
+
+The race engine
+
+Today's engine
+
+One formula gives each horse a time, the trip is a text label, and the replay builds positions afterward. That's confirmed in the code. The rating favorite wins about 56% of real races in every variant, and the result in a close field comes down to one random roll.
+
+The prototype
+
+A separate module, not used by the game, runs the mile in half-second steps. Each horse has a position, lane, speed and energy. Drivers choose moves from style, instructions and traffic, and a horse can't pass through the horse in front. The finish order is whoever reaches the wire first, and every race returns a call-by-call record a replay can draw directly.
+
+Scenario: one decision changed, 800 races each waySubject winsReading
+
+ | Lone speed horse: leads vs is asked to sit | 61% vs 3% | Controlling an uncontested pace pays, as it should. Too strongly for now.
+
+ | Same leader alone vs in a speed duel | 61% vs 41% | A duel costs the leader. Correct direction.
+
+ | Closer with or without a duel ahead | 2% vs 1% | Closers don't yet benefit from a hot pace. Wrong.
+
+ | Follows cover vs goes first-over | 7% vs 15% | Cover saves energy, but not enough to pay off yet. Wrong.
+
+ | Pocket horse waits vs pulls early | 10% vs 4% | Box-ins now happen, about 4 seconds on average.
+
+ | Mid-pack horse moves at the quarter vs waits | 32% vs 3% | Waiting is punished too hard by traffic. Wrong.
+
+ | A much stronger horse moves at the quarter | 94% | Class survives a poor trip, though too easily.
+
+ | Matched random fields: best-rated horse wins | 23% | More decisive than today's 17% in matched fields.
+
+ | Wins by style: front / mid / stalk / late | 53 / 25 / 19 / 4% | Front-runners far too strong; closers too weak.
+
+ | Races where the lead changes hands | 70% | Varied shapes, with first moves anywhere from about 55 to 73 seconds.
+
+The structure works: decisions and traffic change outcomes for reasons a replay can show. Its calibration doesn't. I stopped hand-tuning after five rounds. The next step is an automated fitting loop that tunes about a dozen settings toward style balance, closer viability and the scenario directions above.
+
+Recommendations
+
+1. Spread AI mares
+The strongest single fix for sire concentration, from 73% to about 50%. Pair it with recommendation 4, because a smarter AI breeds the herd up faster.
+
+2. Books of 30
+A modest diversity gain, and it halves relatedness among the leading sires. It also limits stud income for the economy work.
+
+3. Stronger nicks, about double
+The cleanest skill lever: the best-nick plan's edge grows most, ordinary breeders fall behind, and inflation barely moves on its own. Test double, not triple, together with 1 and 2.
+
+Don't raise heredity yet
+Heredity drove the fastest inflation of any single change, and it added little skill edge beyond what nicks give.
+
+4. A stable counterweight to inflation
+Not a secret nerf, and not a cap on any horse. Candidates to test openly: stronger diminishing returns at the top of each trait, and slightly more genes resetting toward the breed average. Keep absolute ability tracked, and show players both an ability measure and their current standing.
+
+5. Make training count
+Let unfinished development show more on the track for young horses, so a well-trained 2- or 3-year-old races closer to its potential sooner. That fits "reach potential faster", not "exceed it".
+
+6. Fit the race prototype automatically
+Tune it toward balanced styles, viable closers and sensible scenario directions, then re-run the breeding tests on it, since the traits that win races decide which breeding pays.
+
+Limits: strategy barns don't price stallions, trade or race differently from the AI; stud-fee income wasn't measured; "useful" and "exceptional" are relative to each variant's own births; the race prototype is uncalibrated and runs outside the game.
+
