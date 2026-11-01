@@ -131,9 +131,16 @@ def refund_tonics():
 APPRAISE = 5   # Markers for the vet's appraisal: what a young horse will be at its peak, seen now instead of over its starts
 
 
+APPRAISE_FIT = 51.93, 3.007   # displayed rating ~ A + B x genetic score, fitted 2026-10-31 on 598 racers with 30+ starts (r 0.89)
+
+
 def appraisal(h):
-    """The vet's read of a horse's peak, as a grade (no numbers): its ceiling at four, on the circuit's scale."""
-    return c.tier_of(max(0, min(99, 70 + 6 * h.race_score(4))))
+    """The vet's read of a horse's peak, as the grade it should show on the track: its genetic score at its best age,
+    put on the same scale the badges use (projected mile time). No numbers."""
+    a, b = APPRAISE_FIT
+    est = a + b * max(h.race_score(age) for age in range(3, 9))
+    secs = c.mile_secs(est)
+    return next((t for cut, t in MILE_TIERS if secs <= cut), "D")
 
 
 def shelf(o=None):
