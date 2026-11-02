@@ -738,7 +738,7 @@ let wrapImg = null, wrapMask = null, wrapMeta = { frames: FR, cols: FR };    // 
 const wrapMetaLoaded = WRAPS_OK ? fetch(P("/mock/pixel/tack/wraps12.json?v=" + Date.now())).then(r => r.ok ? r.json() : null).then(j => { if (j && j.frames) wrapMeta = { frames: j.frames, cols: j.cols || j.frames }; }).catch(() => {}) : Promise.resolve();
 let hoodImg = null, hoodMask = null;                                   // the hood overlay and its mask, same sheet layout
 const GEAR = { wraps12: i => wrapImg = i, wraps12_mask: i => wrapMask = i, hood12: i => hoodImg = i, hood12_mask: i => hoodMask = i };
-const wrapLoaded = WRAPS_OK ? Promise.all(Object.keys(GEAR).map(n => new Promise(r => { const i = new Image(); i.onload = () => { GEAR[n](i); r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=19`); }))) : Promise.resolve();
+const wrapLoaded = WRAPS_OK ? Promise.all(Object.keys(GEAR).map(n => new Promise(r => { const i = new Image(); i.onload = () => { GEAR[n](i); r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=20`); }))) : Promise.resolve();
 // the bridle runs over the hood: those straps are leather, not the driver's silks, so on and just around the hood they go
 // dark before the silks are dyed (the dye repaints every blue pixel, which left the driver's color striped across the mask)
 function leatherStraps(c, mask) {
