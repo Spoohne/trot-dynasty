@@ -1,0 +1,210 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trot Dynasty Encyclopedia</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--rule2:#1b2539;--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--led:#ffb347;--win:#3fb96b}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(#0b1430,var(--paper) 360px) var(--paper);color:var(--ink);font:400 15px/1.4 'Barlow Semi Condensed',system-ui,sans-serif}
+a{color:var(--led);text-decoration:none}a:hover{text-decoration:underline}
+header{position:sticky;top:0;z-index:5;background:#070a14ee;border-bottom:1px solid var(--rule);padding:10px max(16px,env(safe-area-inset-left,0px));display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+h1{margin:0;font:800 24px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;text-shadow:2px 2px 0 #000}
+h1 span{color:var(--tote)}
+.meta{color:var(--ink3);font-size:13px}
+nav{display:flex;gap:4px;margin-left:auto}
+nav button,.seg button{background:none;border:0;border-bottom:3px solid transparent;color:var(--ink2);font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;cursor:pointer}
+nav button.on,.seg button.on{color:var(--ink);border-color:var(--tote)}
+main{padding:14px max(16px,env(safe-area-inset-left,0px)) 40px;max-width:1500px;margin:0 auto}
+.lay{display:grid;grid-template-columns:270px minmax(0,1fr);gap:16px;align-items:start}.lay>*{min-width:0}
+@media(max-width:820px){.lay{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:12px}
+.filters{display:grid;gap:9px;position:sticky;top:64px}
+.filters label{display:grid;gap:3px;font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.filters input,.filters select,textarea{background:#0c1322;border:1px solid var(--rule);color:var(--ink);font:15px 'Barlow Semi Condensed',sans-serif;padding:5px 7px;border-radius:3px;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.chk{display:flex!important;align-items:center;gap:6px;text-transform:none!important;letter-spacing:0!important;font:600 14px 'Barlow Semi Condensed'!important;color:var(--ink2)!important}
+.chk input{width:auto}
+.bar-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.count{color:var(--ink2)}.count b{color:var(--led)}
+.pager{display:flex;gap:4px;margin-left:auto}.pager button,.btn{background:#26324c;border:0;color:var(--ink);padding:5px 11px;border-radius:3px;cursor:pointer;font:700 14px 'Barlow Semi Condensed'}
+.btn.gold{background:var(--tote);color:#2a1a03}
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:#16203a;text-align:left;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);padding:7px 8px;cursor:pointer;white-space:nowrap}
+th.on{color:var(--led)}td{padding:6px 8px;border-top:1px solid var(--rule2);white-space:nowrap}
+tr:hover td{background:#16203a;cursor:pointer}
+.money{color:var(--led);font-weight:700}
+.g{display:inline-block;min-width:24px;text-align:center;font:800 12px 'Barlow Condensed',sans-serif;padding:1px 5px;border-radius:2px;color:#fff}
+.gD{background:#5b6270}.gC{background:#3f7d5b}.gB{background:#2f6fb5}.gA{background:#7c4bc4}.gS{background:#c8781a}.gSp{color:#111;background:linear-gradient(135deg,#f0abfc,#67e8f9,#fde68a)}.gGalaxy{background:radial-gradient(circle at 30% 30%,#c084fc,#3b1d6e 60%,#0a0d22);font-size:10px}.gx{background:#26324c;color:var(--ink3)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:10px;display:grid;gap:7px;cursor:pointer}
+.card:hover{border-color:var(--tote)}
+.ct{display:flex;gap:9px;align-items:center}.ct img{width:52px;height:52px;border:2px solid #4b5b7d;image-rendering:pixelated;flex:none;object-fit:cover}
+.cn{font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.sub{color:var(--ink2);font-size:13px}
+.br{display:grid;grid-template-columns:56px minmax(0,1fr) 44px;gap:7px;align-items:center;font-size:13px;color:var(--ink2)}
+.st{height:9px;background:var(--rule2);position:relative;background-image:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),#000 calc(10% - 1px) 10%)}
+.st i{display:block;height:100%;box-shadow:inset 0 -2px 0 #0004,inset 0 1px 0 #fff4}
+.br .g{justify-self:end}
+.car{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink2)}.car b{color:var(--ink)}
+#drawer{position:fixed;inset:0 0 0 auto;width:min(640px,100%);background:#0b1222;border-left:1px solid var(--rule);z-index:20;overflow-y:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 40px 16px;transform:translateX(100%);transition:transform .25s}
+#drawer.on{transform:none}
+#shade{position:fixed;inset:0;background:#0009;z-index:19;display:none}#shade.on{display:block}
+.dh{display:flex;gap:12px;align-items:center}.dh img{width:96px;height:96px;border:2px solid #4b5b7d;image-rendering:pixelated}
+.dh h2{margin:0;font:800 26px 'Barlow Condensed',sans-serif;text-transform:uppercase;text-shadow:2px 2px 0 #000}
+.sec{margin:16px 0 6px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--tote)}
+.pills{display:flex;flex-wrap:wrap;gap:5px}.pill{background:#16203a;border:1px solid var(--rule);border-radius:3px;padding:2px 7px;font-size:13px}
+.close{position:sticky;top:0;float:right;background:#26324c;border:0;color:var(--ink);font-size:20px;width:36px;height:36px;border-radius:3px;cursor:pointer}
+.chart{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.chart table td,.chart table th{padding:5px 7px}
+.hbar{height:10px;background:var(--tote);border-radius:1px}
+canvas{width:100%;height:auto;background:#0c1322;border:1px solid var(--rule);border-radius:4px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-top:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.hidden{display:none!important}
+.note-saved{color:var(--win);font-size:12px;margin-left:8px}
+p.lead{color:var(--ink2);max-width:80ch;margin:0 0 12px}
+</style></head><body>
+<header><h1>Trot Dynasty <span>Encyclopedia</span></h1><span class=meta id=meta>loading…</span>
+<nav id=tabs><button data-t=horses class=on>Horses</button><button data-t=surprises>Surprises</button><button data-t=charts>Looks vs results</button><button data-t=notes>Notes</button></nav></header>
+<main>
+<section id=t-horses><div class=lay>
+  <form class="panel filters" id=f onsubmit="return false">
+    <label>Name<input name=name placeholder="search"></label>
+    <label>Card at age<select name=age><option value=2>2</option><option value=3 selected>3</option><option value=4>4</option><option value=5>5</option><option value=peak>Peak</option></select></label>
+    <label>Look<select name=look><option value="">Any</option><option value=elite>Elite: 2+ bars S or better</option><option value=plain>Plain: no bar above B</option></select></label>
+    <div class=two><label>Speed ≥<select name=g_speed></select></label><label>Stamina ≥<select name=g_stamina></select></label></div>
+    <div class=two><label>Grit ≥<select name=g_grit></select></label><label>Manners ≥<select name=g_manners></select></label></div>
+    <div class=two><label>Sex<select name=sex><option value="">Both</option><option value=m>Colts</option><option value=f>Fillies</option></select></label>
+      <label>Style<select name=style><option value="">Any</option><option value=front>Wants the lead</option><option value=stalk>Off the pace</option><option value=mid>Mid-pack</option><option value=late>Closes late</option></select></label></div>
+    <div class=two><label>Foaled from<input name=from inputmode=numeric placeholder="Year"></label><label>to<input name=to inputmode=numeric placeholder="Year"></label></div>
+    <label>Peak tier<select name=tier><option value="">Any</option><option>Galaxy</option><option>S+</option><option>S</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
+    <div class=two><label>Min purses<input name=min_earn inputmode=numeric placeholder="$"></label><label>Min wins<input name=min_wins inputmode=numeric></label></div>
+    <label class=chk><input type=checkbox name=stake value=1>Won a stake</label>
+    <label class=chk><input type=checkbox name=title value=1>Won a Crown title</label>
+    <label class=chk><input type=checkbox name=done value=1 checked>Complete careers only</label>
+    <button type=button class=btn id=reset>Clear filters</button>
+  </form>
+  <div>
+    <div class=bar-top><span class=count id=count></span><div class=seg id=view><button data-v=table class=on>Table</button><button data-v=cards>Cards</button></div>
+      <div class=pager><button id=prev>‹</button><span class=sub id=pg></span><button id=next>›</button></div></div>
+    <div id=list></div>
+  </div>
+</div></section>
+
+<section id=t-surprises class=hidden>
+  <p class=lead>Complete careers only, judged by the card at the age you pick. <b>Plain cards, big careers:</b> no bar above B, but career purses in the top 5%. <b>Elite looks, flops:</b> two or more bars graded S or better, but career purses under the median. Either list is a gap between how a horse looks and what it does.</p>
+  <div class=bar-top><label class=sub>Card at age <select id=s_age><option>2</option><option selected>3</option><option>4</option></select></label><span class=sub id=s_info></span></div>
+  <div class=chart><div><div class=sec>Plain cards, big careers</div><div id=s_plain class=cards></div></div><div><div class=sec>Elite looks, flops</div><div id=s_flops class=cards></div></div></div>
+</section>
+
+<section id=t-charts class=hidden>
+  <p class=lead>Complete careers only. For each bar, every grade at the age you pick against the career that followed: how many horses, their average career purses, and how often they won a stake or a Crown title. If the grades tell the story, each table climbs from D to S+. Below: each horse's card total at that age against its career purses, colored by the best tier it reached.</p>
+  <div class=bar-top><label class=sub>Card at age <select id=c_age><option>2</option><option selected>3</option><option>4</option><option value=peak>Peak</option></select></label></div>
+  <div class=chart id=c_tables></div>
+  <div class=sec>Card total vs career purses</div><canvas id=sc width=1400 height=560></canvas>
+  <div class=legend id=sc_key></div>
+</section>
+
+<section id=t-notes class=hidden>
+  <p class=lead>Your general notes, saved on this PC (research/encyclopedia/notes.json) as you type. Notes on single horses are on each horse's page and listed below.</p>
+  <textarea id=gnote rows=14 placeholder="What you're seeing…"></textarea><span class=note-saved id=gsaved></span>
+  <div class=sec>Horse notes</div><div id=hnotes></div>
+</section>
+</main>
+<div id=shade></div><aside id=drawer></aside>
+<script>
+const GR = ["D","C","B","A","S","S+","Galaxy"], TIER_COL = {Galaxy:"#c084fc","S+":"#67e8f9",S:"#e8a33a",A:"#7c4bc4",B:"#2f6fb5",C:"#3f7d5b",D:"#5b6270"};
+const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = v => "$" + Math.round(v || 0).toLocaleString(), mt = t => t && t < 900 ? `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}` : "–";
+const gchip = g => g ? `<span class="g g${g.replace("+", "p")}">${g}</span>` : `<span class="g gx">–</span>`;
+const barCol = b => b < 4 ? "#5b6270" : b < 7 ? "#d4c13a" : b < 9 ? "#3fb96b" : "linear-gradient(90deg,#8b5cf6,#38bdf8 70%,#67e8f9)";
+const fill = b => 25 + 75 * b / 10;                                   // the game card's fill (BAR_FLOOR)
+const portrait = r => `/portrait/${encodeURIComponent(r.coat || "bay")}/${encodeURIComponent(r.marking || "none")}.png`;
+const LABEL = {speed: "Speed", stamina: "Stamina", grit: "Grit", manners: "Manners"};
+const bars = r => Object.keys(LABEL).map(k => r[k] == null ? "" : `<div class=br><span>${LABEL[k]}</span><div class=st><i style="width:${fill(r[k]).toFixed(1)}%;background:${barCol(r[k])}"></i></div>${gchip(r["g_" + k])}</div>`).join("");
+document.querySelectorAll("#f select[name^=g_]").forEach(s => s.innerHTML = `<option value="">Any</option>` + GR.map(g => `<option>${g}</option>`).join(""));
+let page = 0, sort = "earnings", dir = "desc", view = "table", per = 60, notes = {general: "", horses: {}};
+
+async function meta() { const m = await (await fetch("/api/meta")).json();
+  $("#meta").textContent = `${m.season_done || 0} of ${m.seasons_planned || 100} seasons · ${(+m.horses).toLocaleString()} horses · ${(+m.stories).toLocaleString()} replays${m.finished ? "" : " · still running"}`; }
+function params() { const p = new URLSearchParams(new FormData($("#f"))); p.set("sort", sort); p.set("dir", dir); p.set("page", page); p.set("per", per); return p; }
+async function load() {
+  const d = await (await fetch("/api/horses?" + params())).json(), age = $("#f").age.value;
+  $("#count").innerHTML = `<b>${d.total.toLocaleString()}</b> horses`; $("#pg").textContent = `${page + 1} / ${Math.max(1, Math.ceil(d.total / per))}`;
+  if (view === "cards") { $("#list").innerHTML = `<div class=cards>${d.rows.map(card).join("")}</div>`; }
+  else {
+    const H = [["name","Horse"],["foaled","Foaled"],[null,"Speed"],[null,"Stamina"],[null,"Grit"],[null,"Manners"],["card","Card total"],["peak","Peak"],["starts","Starts"],["wins","Wins"],["winpct","Win %"],["earnings","Purses"],["stakes","Stakes"],["titles","Titles"],["best","Best"]];
+    $("#list").innerHTML = `<div class=tw><table><tr>${H.map(([k, t]) => `<th ${k ? `data-s=${k}` : ""} class="${k === sort ? "on" : ""}">${t}${k === sort ? (dir === "desc" ? " ▾" : " ▴") : ""}</th>`).join("")}</tr>` +
+      d.rows.map(r => `<tr data-id=${r.id}><td><b>${esc(r.name)}</b> <span class=sub>${r.sex === "m" ? "c" : "f"}</span></td><td>${r.foaled}</td>` +
+        ["speed","stamina","grit","manners"].map(k => `<td>${gchip(r["g_" + k])} <span class=sub>${(+r[k]).toFixed(1)}</span></td>`).join("") +
+        `<td>${(r.speed + r.stamina + r.grit + r.manners).toFixed(1)}</td><td>${gchip(r.peak_tier)}</td><td>${r.starts}</td><td>${r.wins}</td><td>${r.starts ? Math.round(100 * r.wins / r.starts) : 0}%</td>` +
+        `<td class=money>${money(r.earnings)}</td><td>${r.stakes || ""}</td><td>${r.titles || ""}</td><td>${mt(r.best)}</td></tr>`).join("") + `</table></div>`;
+    document.querySelectorAll("th[data-s]").forEach(th => th.onclick = () => { if (sort === th.dataset.s) dir = dir === "desc" ? "asc" : "desc"; else { sort = th.dataset.s; dir = sort === "name" || sort === "best" ? "asc" : "desc"; } page = 0; load(); });
+  }
+  document.querySelectorAll("[data-id]").forEach(el => el.onclick = () => open_(el.dataset.id));
+}
+const card = r => `<div class=card data-id=${r.id}><div class=ct><img src="${portrait(r)}" alt="" loading=lazy><div><div class=cn>${esc(r.name)}</div><div class=sub>${r.sex === "m" ? "Colt" : "Filly"}${r.age != null ? ` · card at ${r.age}` : ""}${r.peak_tier ? " · peak " + r.peak_tier : ""}</div></div></div>${bars(r)}<div class=car><span><b>${r.starts}</b>-<b>${r.wins}</b></span><span class=money>${money(r.earnings)}</span>${r.stakes ? `<span>${r.stakes} stakes</span>` : ""}${r.titles ? `<span>${r.titles} titles</span>` : ""}</div></div>`;
+
+async function open_(id) {
+  const d = await (await fetch("/api/horse/" + id)).json(), note = notes.horses[id] || "";
+  const S = d.seasons.filter(s => s.age >= 2 && !s.retired);   // its racing seasons
+  $("#drawer").innerHTML = `<button class=close onclick="shut()">×</button><div class=dh><img src="${portrait(d)}" alt=""><div><h2>${esc(d.name)}</h2>
+    <div class=sub>${d.sex === "m" ? "Colt/horse" : "Filly/mare"} · ${esc(d.coat)} · foaled Year ${d.foaled}${d.foundation ? " · foundation stock" : ""}</div>
+    <div class=sub>${d.sire_name ? `by <a href="#" onclick="open_(${d.sire});return false">${esc(d.sire_name)}</a>` : ""}${d.dam_name ? ` out of <a href="#" onclick="open_(${d.dam});return false">${esc(d.dam_name)}</a>` : ""}</div>
+    <div class=car style="margin-top:4px"><span><b>${d.starts}</b> starts, <b>${d.wins}</b> wins</span><span class=money>${money(d.earnings)}</span><span>best ${mt(d.best)}</span><span>style: ${esc(d.style)}</span></div></div></div>
+    <div class=sec>The card, season by season</div><div class=tw><table><tr><th>Year</th><th>Age</th><th>Speed</th><th>Stamina</th><th>Grit</th><th>Manners</th><th>Tier</th><th>Starts</th><th>Wins</th><th>Season</th></tr>` +
+    S.map(s => `<tr><td>${s.season}</td><td>${s.age}${s.retired ? " (ret.)" : ""}</td>${["speed","stamina","grit","manners"].map(k => `<td>${gchip(s["g_" + k])} <span class=sub>${(+s[k]).toFixed(1)}</span></td>`).join("")}<td>${gchip(s.tier)}</td><td>${s.starts}</td><td>${s.wins}</td><td class=money>${money(s.season_earn)}</td></tr>`).join("") + `</table></div>
+    ${S.length ? `<div class=sec>Card at its best season</div><div class=card style="cursor:default">${bars(S.reduce((a, b) => b.rating > a.rating ? b : a))}</div>` : ""}
+    <div class=sec>Kept replays</div>${d.races.length ? `<div class=pills>${d.races.map(r => `<a class=pill target=_blank href="/replay/${encodeURIComponent(r.rid)}">${esc(r.name)} · Year ${r.season} · ${r.place === 1 ? "won" : ordinal(r.place)} · ${money(r.purse)}</a>`).join("")}</div>` : `<div class=sub>None kept.</div>`}
+    ${d.titles.length ? `<div class=sec>Crown titles</div><div class=pills>${d.titles.map(t => `<span class=pill>${esc(t)}</span>`).join("")}</div>` : ""}
+    ${d.trophies.length ? `<div class=sec>Stakes won (${d.trophies.length})</div><div class=pills>${d.trophies.map(t => `<span class=pill>${esc(t)}</span>`).join("")}</div>` : ""}
+    ${d.foals.length ? `<div class=sec>Best foals</div><div class=pills>${d.foals.map(f => `<a class=pill href="#" onclick="open_(${f.id});return false">${esc(f.name)} · ${money(f.earnings)}${f.titles ? " · ★" : ""}</a>`).join("")}</div>` : ""}
+    <div class=sec>Your notes</div><textarea id=hnote rows=5 placeholder="Notes on ${esc(d.name)}…">${esc(note)}</textarea><span class=note-saved id=hsaved></span>`;
+  $("#drawer").classList.add("on"); $("#shade").classList.add("on"); $("#drawer").scrollTop = 0;
+  let t; $("#hnote").oninput = e => { clearTimeout(t); t = setTimeout(() => save(id, e.target.value, "#hsaved", d.name), 500); };
+}
+const ordinal = n => n + (["th","st","nd","rd"][(n % 100 - 20) % 10] || ["th","st","nd","rd"][n % 100] || "th");
+function shut() { $("#drawer").classList.remove("on"); $("#shade").classList.remove("on"); }
+$("#shade").onclick = shut; document.addEventListener("keydown", e => e.key === "Escape" && shut());
+async function save(id, text, el, name) {
+  notes = await (await fetch("/api/notes", {method: "POST", body: JSON.stringify({id, text})})).json();
+  if (name) notes.names = Object.assign(notes.names || {}, {[id]: name});
+  $(el).textContent = "saved"; setTimeout(() => $(el) && ($(el).textContent = ""), 1200); }
+
+async function surprises() {
+  const d = await (await fetch("/api/surprises?age=" + $("#s_age").value)).json();
+  $("#s_info").textContent = `top 5% of career purses: ${money(d.top5)} and up · median: ${money(d.median)}`;
+  $("#s_plain").innerHTML = d.plain.map(card).join("") || "<div class=sub>None yet.</div>";
+  $("#s_flops").innerHTML = d.flops.map(card).join("") || "<div class=sub>None yet.</div>";
+  document.querySelectorAll("#t-surprises [data-id]").forEach(el => el.onclick = () => open_(el.dataset.id));
+}
+async function charts() {
+  const d = await (await fetch("/api/charts?age=" + $("#c_age").value)).json();
+  $("#c_tables").innerHTML = Object.entries(d.bars).map(([b, rows]) => { const mx = Math.max(1, ...rows.map(r => r.avg));
+    return `<div class=panel><div class=sec style="margin-top:0">${LABEL[b]}</div><table><tr><th>Grade</th><th>Horses</th><th style="width:40%">Avg career purses</th><th>Stake</th><th>Title</th></tr>` +
+      rows.map(r => `<tr><td>${gchip(r.g)}</td><td>${r.n.toLocaleString()}</td><td><div class=hbar style="width:${(100 * r.avg / mx).toFixed(0)}%"></div><span class=sub>${money(r.avg)}</span></td><td>${Math.round(100 * r.stake)}%</td><td>${(100 * r.title).toFixed(1)}%</td></tr>`).join("") + `</table></div>`; }).join("");
+  const cv = $("#sc"), g = cv.getContext("2d"), W = cv.width, H = cv.height, P = 50;
+  g.clearRect(0, 0, W, H); const pts = d.points; if (!pts.length) return;
+  const xs = pts.map(p => p[0]), x0 = Math.min(...xs), x1 = Math.max(...xs), ly = v => Math.log10(Math.max(1000, v)), y1 = Math.max(...pts.map(p => ly(p[1])));
+  const X = v => P + (v - x0) / (x1 - x0 || 1) * (W - 2 * P), Y = v => H - P - (ly(v) - 3) / (y1 - 3 || 1) * (H - 2 * P);
+  g.strokeStyle = "#2b3a55"; g.fillStyle = "#6f7886"; g.font = "20px Barlow Semi Condensed";
+  for (let e = 3; e <= Math.ceil(y1); e++) { const y = Y(10 ** e); g.beginPath(); g.moveTo(P, y); g.lineTo(W - P, y); g.stroke(); g.fillText("$" + (10 ** e).toLocaleString(), 4, y - 4); }
+  g.fillText("card total at " + $("#c_age").value + " (four bars, 4 to 40) →", P, H - 12);
+  for (const [x, y, t] of pts) { g.fillStyle = (TIER_COL[t] || "#5b6270") + "bb"; g.beginPath(); g.arc(X(x), Y(y), 3.2, 0, 7); g.fill(); }
+  $("#sc_key").innerHTML = Object.entries(TIER_COL).map(([t, c]) => `<span><i style="background:${c}"></i>peak ${t}</span>`).join("");
+}
+async function loadNotes() { notes = await (await fetch("/api/notes")).json(); $("#gnote").value = notes.general || "";
+  const ids = Object.keys(notes.horses || {});
+  $("#hnotes").innerHTML = ids.length ? ids.map(id => `<div class=panel style="margin-bottom:6px"><a href="#" onclick="open_(${id});return false">Horse #${id}</a><div class=sub style="white-space:pre-wrap">${esc(notes.horses[id])}</div></div>`).join("") : "<div class=sub>None yet.</div>"; }
+let gt; $("#gnote").oninput = e => { clearTimeout(gt); gt = setTimeout(() => save("general", e.target.value, "#gsaved"), 600); };
+
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("main > section").forEach(s => s.classList.toggle("hidden", s.id !== "t-" + b.dataset.t));
+  if (b.dataset.t === "surprises") surprises(); if (b.dataset.t === "charts") charts(); if (b.dataset.t === "notes") loadNotes(); });
+document.querySelectorAll("#view button").forEach(b => b.onclick = () => { view = b.dataset.v; document.querySelectorAll("#view button").forEach(x => x.classList.toggle("on", x === b)); load(); });
+let ft; $("#f").oninput = () => { clearTimeout(ft); ft = setTimeout(() => { page = 0; load(); }, 300); };
+$("#reset").onclick = () => { $("#f").reset(); page = 0; load(); };
+$("#prev").onclick = () => { if (page) { page--; load(); } }; $("#next").onclick = () => { page++; load(); };
+$("#s_age").onchange = surprises; $("#c_age").onchange = charts;
+meta(); setInterval(meta, 30000); loadNotes(); load();
+</script></body></html>

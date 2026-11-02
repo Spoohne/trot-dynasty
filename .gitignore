@@ -24,3 +24,6 @@ archive.html
 
 # generated at run time
 mockups/brand/emblem/cache/
+
+# the encyclopedia's 100-season world: rebuilt by research/encyclopedia/sim100.py
+research/encyclopedia/*.db*
