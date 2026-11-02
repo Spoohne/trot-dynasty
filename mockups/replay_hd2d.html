@@ -727,7 +727,7 @@ const flatGeo = new THREE.PlaneGeometry(TOP_LEN, TOP_LEN * TFH / TFW).rotateX(-M
 const DFW = 251, DPAD = [118, 26, 18, 21];
 const driveGeo = new THREE.PlaneGeometry(LEN_FT * DFW / FW, H_FT).translate(LEN_FT * DFW / FW * (.5 - NOSE), H_FT / 2, 0);
 let driveImg = null; const driveLoaded = new Promise(r => { const i = new Image(); i.onload = () => { driveImg = i; r(); }; i.src = P("/mock/pixel/drive/drive12.png"); });
-const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => { cycleImg = i; r(); }; i.src = RIG ? P("/mock/pixel/rig_cycle.png") : P("/mock/pixel/fe12_cycle.png"); });   // the original runner; gear (wraps, hood) rides on it as overlays
+const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => { cycleImg = i; r(); }; i.src = RIG ? P("/mock/pixel/rig_cycle.png") : P("/mock/pixel/fe12_cycle.png?v=2"); });   // the original runner; gear (wraps, hood) rides on it as overlays
 // Tack Room leg wraps: SpriteCook's wrapped cycle (same 12 cells) and the mask of its wrap pixels, tinted to each horse's color.
 // Side view only for now; the angle, overhead and drive-cam sheets stay bare.
 const WRAPS_OK = !RIG && !PAINTED;                                    // the race data may not be in yet: load the sheet, pick per horse later
