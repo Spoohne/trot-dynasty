@@ -1171,6 +1171,8 @@ def run_race(r, alive, log):
     drove(order, STORIES[rid]["horses"], year_of(DAY[0]))
     for row, h in zip(STORIES[rid]["horses"], order):              # the story is in finishing order, like order
         row["odds"] = "%d-%d" % line[h.id]
+        if ENGINE == "outcome":                                    # RaceGod's ledger (racegod/audit.py): what the engine decided
+            row["why"] = dict(h.why, margin=round(h.margin_l, 2))
     for old in list(STORIES)[:-400]:
         del STORIES[old]
     if tag:

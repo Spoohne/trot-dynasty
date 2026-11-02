@@ -150,6 +150,8 @@ def race(field, track="mile", passing=False):
             trip += ", broke stride"
         h.trip = trip
         h.margin_l = (perf[order[0].id] - perf[h.id]) * p["s_margin"]   # lengths behind the winner: the story shows these as run
+        h.why = dict(out=out.index(h) + 1, role=ROLES[r], depth=depth[h.id], perf=round(perf[h.id], 3),   # RaceGod's ledger: what decided it
+                     form=round(form[h.id], 3), broke=broke[h.id], model_l=round(h.margin_l, 2))
     prev = prev0 = None
     for h in order:                                            # the speed limit, then the order: a horse pushed back carries the delay
         t0 = win_raw + h.margin_l * SEC_PER_LENGTH             # to those behind it, who keep their gaps (at least a nose)
@@ -159,6 +161,7 @@ def race(field, track="mile", passing=False):
         h.raw_time, prev, prev0 = t, t, t0
         h.margin_l = (t - win_raw) / SEC_PER_LENGTH
         h.last_time = sim.clock(t, half)
+        h.why["limited"] = t > t0 + 1e-9                         # the speed limit, not the model, set this horse's time
     return order
 
 
