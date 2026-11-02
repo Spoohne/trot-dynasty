@@ -124,7 +124,7 @@ def paths(beh, lane, lead_s):
             elif s >= 700 and want > y + 0.5 and (s < STRETCH_FAN or not FAN):   # moving out: whole moves only, once the strip is clear (the stretch fan drifts)
                 if abs(want - dest[i]) > 1.0 and abs(y - dest[i]) < 0.5:
                     mine = (y + WIDE / 2 + 0.5, want + WIDE / 2)                # the new strip, not the lane I am leaving
-                    if not any(j != i and abs(S0[j] - s) < BODY + 2 and hit(mine, band(Y0[j], dest[j])) for j in range(n)):
+                    if not any(j != i and abs(S0[j] - s) < BODY + 0.5 and hit(mine, band(Y0[j], dest[j])) for j in range(n)):   # a sulky's length clear, ahead or behind
                         dest[i] = want
                 want = None
             nd = want                                                   # folding in (and the start): as far as room allows

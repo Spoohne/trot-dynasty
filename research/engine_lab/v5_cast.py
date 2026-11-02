@@ -62,7 +62,7 @@ def formations(res, rng, at34=None):
     sl = {}
     for rank, h in enumerate(order):
         l = lane[h, 8]
-        beaten_near = [x for x in order[rank + 1:] if beh[x, 8] < beh[h, 8] + 1.0 and abs(beh[x, 8] - beh[h, 8]) < 6]   # ahead, or alongside within a length
+        beaten_near = [x for x in order[rank + 1:] if beh[x, 8] < beh[h, 8] + 1.0]   # ahead (however far), or alongside within a length
         if h == pocket and lead in beaten_near and all(lane[x, 8] > 0 or x == lead for x in beaten_near):
             l = -1.0
         else:                                                       # outside everyone it beats that's ahead or alongside
@@ -72,11 +72,14 @@ def formations(res, rng, at34=None):
             l = min(l, 4.0)
         sl[h] = l
     late = {h for h in order if sl[h] >= 2 and beh[h, 8] - min(beh[:, 8]) > 6}  # coming from far back: swing out at the 3/4
+    diver = next((h for h in order if sl[h] < 0), None)
     for h in range(n):
         f = fin[order.index(h)]; b8 = beh[h, 8]
         if h in late:
             lane[h, 8] = sl[h] - 1
-        for c, frac in ((9, 0.33), (10, 0.62), (11, 0.83), (12, 1.0)):
+        # a leader with the pocket horse diving under it holds on until the passing lane opens, then gives way
+        fr = ((9, 0.1), (10, 0.4), (11, 0.78), (12, 1.0)) if diver is not None and h in (lead, diver) else ((9, 0.33), (10, 0.62), (11, 0.83), (12, 1.0))
+        for c, frac in fr:
             beh[h, c] = b8 + (f - b8) * frac; lane[h, c] = sl[h]
     return beh, lane
 

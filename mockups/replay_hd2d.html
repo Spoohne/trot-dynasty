@@ -142,6 +142,7 @@
   #tv .tvf{padding:3px 10px 5px;font-size:10px;line-height:1.2}#tv .tvf a,#tv .tvf button{padding:4px 12px;font-size:13px;white-space:nowrap}
   #tv td{line-height:1.15}#tv .pd{line-height:1.2;min-width:1.4em}#tv .tvo{flex:1}#tv .tvm{flex:1.1;padding:2px 4px}#tv .tvm td:nth-child(n+2),#tv .tvm th:nth-child(n+2){padding:1px 2px}}   /* a phone held sideways: everything fits without scrolling */
 .stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:24%;pointer-events:none;opacity:0;transition:opacity .5s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);background:linear-gradient(transparent,rgba(5,7,13,.35));z-index:0;-webkit-mask:linear-gradient(transparent,#000 45%);mask:linear-gradient(transparent,#000 45%)}.stage.acrossup::after{opacity:1}.stage>.bot,.stage>.lt2,.stage>.lt,.stage>#intro,.stage>#field{z-index:3}   /* the across shot: the near side of the infield out of focus, like a long lens */
+.stage.acrossup #cv{filter:saturate(1.25) contrast(1.06) brightness(1.06);transition:filter .5s}.stage::before{content:'';position:absolute;left:0;right:0;top:18%;height:34%;pointer-events:none;opacity:0;transition:opacity .5s;z-index:0;background:radial-gradient(ellipse 70% 60% at 50% 70%,rgba(255,179,71,.22),rgba(232,163,58,.08) 55%,transparent 75%);mix-blend-mode:screen}.stage.acrossup::before{opacity:1}   /* the across shot: the barn lamps glowing along the far side */
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <link rel="stylesheet" href="/mock/brand/marquee/marquee.css?v=14"></head><body><div class="wrap">
@@ -377,14 +378,15 @@ let hedgeMesh = null, lineHidden = [];
 // the across shot: whatever stands in the infield between the lens and the field (the tote and odds boards, trees) steps
 // out of the way while it's up; everything else stays
 function clearLine(p, a) {
+  if (p && lineHidden.length) return;                                            // already cleared for this shot: nothing pops as the lens pans
   lineHidden.forEach(o => o.visible = true); lineHidden = [];
   if (!p) return;
   const ax = a.x - p.x, az = a.z - p.z, L2 = ax * ax + az * az;
   for (const o of [...infield, ...around, ...(screen ? [screen] : [])]) {   // the infield video screen too
     if (!o.visible || o === hedgeMesh || o.position.lengthSq() < 1) continue;     // the lawn and hedge are handled on their own
     const u = Math.max(0, Math.min(1, ((o.position.x - p.x) * ax + (o.position.z - p.z) * az) / L2));
-    const sz = new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3());   // its own size (boards are a placeholder until their art loads)
-    if (Math.hypot(o.position.x - p.x - u * ax, o.position.z - p.z - u * az) < 25 + Math.max(sz.x, sz.z) / 2) { o.visible = false; lineHidden.push(o); }
+    if (around.includes(o) && Math.hypot(o.position.x - p.x - u * ax, o.position.z - p.z - u * az) > 120) continue;   // outside the infield: only what's in the line
+    { o.visible = false; lineHidden.push(o); }
   }
 }                                                            // the infield hedge: the across shot opens it up
 const cardTex = {};
@@ -844,7 +846,7 @@ function aimCamera(t, st, dt) {
     // on the backstretch as one compressed line. The camera stands opposite the field on the homestretch, outside the rail,
     // up in the stand, and pans with it
     const c = RACE.camS(st), cm = ((c % RACE.L) + RACE.L) % RACE.L, opp = 2 * RACE.S + Math.PI * RACE.R - cm;   // the homestretch point straight across from the field
-    p = V(opp, 110, 30); a = V(c, mo, 5); fov = 4.5;
+    p = V(opp, 110, 30); a = V(c, mo, 13); fov = 4.5;   // aimed a little high: the field in the lower third, the lit barns above
     clearLine(p, a);
   }
   else if (shot === "reverse") {                                               // the TV pan mirrored: same height, distance and lens, but from

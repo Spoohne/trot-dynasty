@@ -2388,3 +2388,19 @@ Newest at the bottom. **M** = measured (experiment named), **H** = hypothesis (n
      by 2.2–3 lengths so the winner can angle back to the rail as the lane closes past the wire; the overlap check now
      runs to 150 ft past the wire. Measured: every horse in every kept variant stays at least 3.75 ft off the inside rail
      from 3,000 ft on.
+229. **Casting v1 (Patrick: "Casting real results").** `v5_cast.py`: the outcome model decides the race; the caster
+     choreographs exactly that race. The model's trips set the formation (single file on the rail; first-over pulls out
+     after the quarter, its followers a call later); its finish order and margins set the stretch, planned from where
+     the horses really are at the 3/4 (two-pass), each horse going a lane wider than anyone ahead or alongside that it
+     beats; the pocket horse that beats the leader uses the passing lane. Kept only if it passes the library checks AND
+     finishes in the model's exact order.
+     **Measured:** 12/30 and 10/30 fresh half-mile races cast exactly (about 35-40%), about 7 s each. Races cast on the
+     first try or not at all: success depends on the result, not on luck. Weakest: photos (0/3, then 1/3), pocket and
+     sweep (1/5 each). Burst check now starts past the gate fold (400 ft); quarter spread limit 15 L (single file).
+     **Tried and dropped:** easing horses onto exact marks over the last 300 ft (pulled horses into the one in front;
+     5/30). Review page: artifact HpXtajpZRDZJv2Z3sjKxA2.
+     **Open, Patrick's call:** what race night shows when a race can't be cast.
+     **Larger sample (60 races, seed 607):** 18/60 cast (30%). By the winner's story: wire 8/19, pocket 7/15,
+     first-over 1/11, sweep 1/6, photo 1/6, from last 0/3. First-over is the weakest here, unlike the 30-race batches.
+230. **Patrick: "Fallback, keep improving."** On race night a race the caster can draw gets its cast replay; any other
+     race keeps today's replay. Casting keeps improving, off-the-pace trips first (first-over 1/11 is the biggest gap).
