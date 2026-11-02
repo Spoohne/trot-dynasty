@@ -2491,3 +2491,21 @@ Newest at the bottom. **M** = measured (experiment named), **H** = hypothesis (n
      model's margins, so board, clock and picture agree); the clock floor goes just past Northern Star's best, so only
      he can approach it: his runs set each track's record, and those records are the marks the rest of the world
      chases (shown as the track record to beat). Ordinary top horses stay well clear of the floor.
+240. **Outcome engine LIVE (Patrick: "Just make it live now", option A), deployed 2026-11-02 06:36 UTC, commit 442fd36
+     (engine change in 1390fb6).** Shadow week skipped at Patrick's call.
+     - Race night decided by `outcome.py` (circuit.ENGINE default "outcome"; rollback: TD_ENGINE=live and restart).
+     - Times: the bars estimate the mile time: winner = 130.94 − 2.733 × rating (+ a night's variation, + 2 s on a
+       half), the rest = winner + margin at 0.2 s/L. The story shows true margins (no 7-lengths compression).
+     - Clock floor 107.4 → 100.5: Northern Star wins his last field 499/500 by ~9½ L in 1:42.3–1:45.1 (median 1:43.6);
+       nobody else gets near the floor. Today's tier counts identical under either floor.
+     - Tote prices off the card's rating: weight e^(1.9 × rating), fitted by likelihood to outcome-engine winners on
+       339 real fields.
+     - Dry run on a live save copy: tonight's 84 races, the close, tomorrow's draw (79) and those 79: night checks
+       passed both nights. Winning margins median 1.9 L, 7 photos in 84; winning times median 1:55.0.
+     - Shipped with it: breeding-shed tier icons, entry sheet (own races first, claimers under their own heading).
+     - Backups: server /opt/trotdynasty/save.before-outcome-engine-20261102-0134.pkl and a copy in the scratchpad.
+     - Verified: login page 200, service active, engine "outcome" and floor 100.5 on the server, clean start log.
+     **Not yet:** the big-four card and new tiers on the pages (horses still show today's bars/tiers), breeding on
+     the new stats (the engine converts live stats each race, so breeding still works), cast replays (replays are the
+     story system's, now with true margins). The deploy commit also carried the whip-overlay session's untracked
+     runner2 art (unused by the game).
