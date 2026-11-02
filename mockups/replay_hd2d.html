@@ -291,7 +291,7 @@ const ART_SET = new Set(ART_SETS[ART] || []);
 let DAY = new URLSearchParams(location.search).has("day");
 const DAY_SET = new Set(["top/track_tile.png", "infield/grass.png", "panorama.png"]);
 const P = src => { const k = src.slice("/mock/pixel/".length); if (DAY && DAY_SET.has(k)) return src.replace(/\.png$/, "_day.png"); return ART && ART_SET.has(k) ? src.replace("/mock/pixel/", `/mock/art_${ART}/`) : src; };
-const QS = new URLSearchParams(location.search), SMOOTH = QS.has("smooth"), NOGRIT = QS.has("nogrit");   // test switches: ?smooth (filtered sprites), ?nogrit (no grain)
+const QS = new URLSearchParams(location.search), SMOOTH = !QS.has("crisp"), NOGRIT = QS.has("nogrit");   // sprites softened (filtered) by default: it hides the AI art's pixel noise; ?crisp for the old hard pixels, ?nogrit (no grain)
 const sharp = t => { if (PAINTED || SMOOTH || (t.image && /\/art_/.test(t.image.src || ""))) return crisp(t); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; return t; };   // sprites: every pixel kept, near or far
 const crisp = t => { t.magFilter = PAINTED || SMOOTH || (t.image && /\/art_/.test(t.image.src || "")) ? THREE.LinearFilter : THREE.NearestFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = ANISO; t.colorSpace = THREE.SRGBColorSpace; return t; };
 const tex = (src, fn) => new THREE.TextureLoader().load(src, t => { crisp(t); t.needsUpdate = true; fn && fn(t); });
