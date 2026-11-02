@@ -1,0 +1,77 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Potential Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Mockup: a young horse's card that shows today AND what he becomes, how rare each bar is, and a trainer's headline.
+   Numbers are Hickory Spring's from the live save, 2026-11-02 (mockups/hickory_card.json). */
+:root{color-scheme:dark;--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--rule2:#1b2539;--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--led:#ffb347}
+body{margin:0;background:linear-gradient(#0b1430,var(--paper) 420px) var(--paper);color:var(--ink);font:400 15px/1.4 'Barlow Semi Condensed',sans-serif}
+.w{max-width:420px;margin:0 auto;padding:18px 16px 36px;display:grid;gap:14px}
+.hd{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:14px;display:grid;gap:12px}
+.top{display:flex;gap:12px;align-items:center}
+.por{position:relative;width:76px;height:76px;flex:none;border:2px solid #4b5b7d}
+.por img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block}
+.chip{position:absolute;right:-3px;bottom:-3px;font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.06em;padding:2px 5px;background:#26324c;color:var(--ink2);box-shadow:-2px -2px 0 #05070d}
+h2{margin:0;font:800 23px 'Barlow Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;text-shadow:2px 2px 0 #000}
+.sub{color:var(--ink2);font-size:13px}
+.say{margin:0;padding:10px 12px;border-left:3px solid var(--tote);background:#0c1322;font-size:15px;line-height:1.35}
+.say b{color:var(--led)}
+.say small{display:block;margin-top:4px;color:var(--ink3);font-size:12px;letter-spacing:.04em}
+.bars{display:grid;gap:9px}
+.b{display:grid;grid-template-columns:62px minmax(0,1fr) 58px;gap:10px;align-items:center}
+.b .l{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.st{position:relative;height:14px;background:var(--rule2)}
+.st:after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),#05070d88 calc(10% - 1px) 10%);pointer-events:none}
+.st .pk{position:absolute;inset:0 auto 0 0;border:1.5px dashed #c9d2e3aa;border-left:0;background:#c9d2e314}
+.st .now{position:absolute;inset:0 auto 0 0;box-shadow:inset 0 -2px 0 #0004,inset 0 1px 0 #fff4}
+.g{justify-self:end;font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.05em;padding:1px 7px;border-radius:2px;color:#fff;min-width:22px;text-align:center}
+.gD{background:#5b6270}.gC{background:#3f7d5b}.gB{background:#2f6fb5}.gA{background:#7c4bc4}.gS{background:#c8781a}
+.gSp{color:#111;background:linear-gradient(135deg,#f0abfc,#67e8f9,#fde68a)}
+.gGx{color:#fff;background:radial-gradient(circle at 30% 30%,#c084fc,#3b1d6e 60%,#0a0d22);box-shadow:0 0 10px #a78bfa;font-size:12px}
+.note{margin:-5px 0 0 72px;font-size:12.5px;color:var(--ink2)}
+.note b{background:linear-gradient(90deg,#c084fc,#67e8f9,#fde68a);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+.key{display:flex;gap:16px;font-size:12px;color:var(--ink3);align-items:center}
+.key i{display:inline-block;width:22px;height:9px;vertical-align:-1px;margin-right:5px}
+.foot{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);padding-top:10px;text-align:center}
+.foot div{display:grid;gap:1px}.foot span{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.foot b{font:700 18px 'Barlow Semi Condensed',sans-serif;font-variant-numeric:tabular-nums}
+.foot .t{color:var(--led);text-shadow:0 0 8px rgba(255,179,71,.55)}
+.old .b{grid-template-columns:62px minmax(0,1fr) 22px}.old .sv{font-weight:700;text-align:right}
+.old .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff}
+.cap{font-size:12.5px;color:var(--ink3);margin:-4px 0 0}
+</style></head><body><div class="w">
+
+<div class="hd">New: the potential card</div>
+<div class="card">
+  <div class="top">
+    <div class="por"><img src="hickory_portrait.png" alt="Bay colt with a blaze"><span class="chip">FOAL</span></div>
+    <div><h2>Hickory Spring</h2><div class="sub">Weanling bay colt · Captain Ledger × Express Spring</div></div>
+  </div>
+  <p class="say">“Leaves the gate like almost nothing in the breed. There's no closing kick in him, so he'll want the lead and to hold it.” <small>— Trainer's read, projects <b>S</b> at five</small></p>
+  <div class="bars">
+    <div class="b"><span class="l">Speed</span><div class="st"><span class="pk" style="width:100%"></span><i class="now" style="width:79%;background:linear-gradient(90deg,#8b5cf6,#38bdf8 70%,#67e8f9)"></i></div><span class="g gGx">GALAXY</span></div>
+    <div class="note"><b>2nd fastest leaver of 2,607 horses</b></div>
+    <div class="b"><span class="l">Stamina</span><div class="st"><span class="pk" style="width:68.8%"></span><i class="now" style="width:10%;background:#5b6270"></i></div><span class="g gA">A</span></div>
+    <div class="b"><span class="l">Finish</span><div class="st"><span class="pk" style="width:45.9%"></span><i class="now" style="width:10%;background:#5b6270"></i></div><span class="g gD">D</span></div>
+    <div class="b"><span class="l">Manners</span><div class="st"><span class="pk" style="width:66%"></span><i class="now" style="width:10%;background:#5b6270"></i></div><span class="g gA">A</span></div>
+  </div>
+  <div class="key"><span><i style="background:#8b95a8"></i>Today</span><span><i style="border:1.5px dashed #c9d2e3aa;background:#c9d2e314"></i>At his peak</span><span>Grade = rank at peak</span></div>
+  <div class="foot">
+    <div><span>Peak</span><b>Age 5</b></div>
+    <div><span>Projects</span><b>S</b></div>
+    <div><span>Mile at peak</span><b class="t">1:52.6</b></div>
+  </div>
+</div>
+
+<div class="hd">Today's card, for comparison</div>
+<div class="card old">
+  <div class="bars">
+    <div class="b"><span class="l">Speed</span><div class="st"><i class="now" style="width:79%;background:#3fb96b"></i><span class="mk" style="left:96%"></span></div><b class="sv">7</b></div>
+    <div class="b"><span class="l">Stamina</span><div class="st"><i class="now" style="width:28%;background:#5b6270"></i><span class="mk" style="left:52%"></span></div><b class="sv">1</b></div>
+    <div class="b"><span class="l">Finish</span><div class="st"><i class="now" style="width:26%;background:#5b6270"></i><span class="mk" style="left:44%"></span></div><b class="sv">1</b></div>
+    <div class="b"><span class="l">Manners</span><div class="st"><i class="now" style="width:27%;background:#5b6270"></i><span class="mk" style="left:50%"></span></div><b class="sv">1</b></div>
+  </div>
+</div>
+<p class="cap">Today's bars show a baby (the white tick is where he'll be at two), with no sign that his speed is one in a thousand or that his finish is weak.</p>
+</div></body></html>

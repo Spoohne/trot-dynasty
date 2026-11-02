@@ -756,6 +756,16 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .bname .sub{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px}
 .facts{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:5px 0 2px}
 .stat{position:relative}.stat u{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:#fff;opacity:.8;box-shadow:0 0 4px #fff}
+/* the horse card (potential_card3): a haze where the trainer guesses next year, grades once raced, untested Grit */
+.stat .fog{position:absolute;top:-2px;bottom:-2px;z-index:1;border-radius:3px;background:linear-gradient(90deg,#c9d2e300,#c9d2e366 30%,#c9d2e366 70%,#c9d2e300);filter:blur(1.5px)}
+.stat.unk{background:repeating-linear-gradient(135deg,#1b2539 0 6px,#16203a 6px 12px)}
+.gd{min-width:38px;text-align:center;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.05em;color:var(--ink3);font-weight:700}
+.gd.gD,.gd.gC,.gd.gB,.gd.gA,.gd.gS,.gd.gSp,.gd.gGalaxy{color:#fff;padding:0 5px;border-radius:2px;font-size:13px}
+.gd.gD{background:#5b6270}.gd.gC{background:#3f7d5b}.gd.gB{background:#2f6fb5}.gd.gA{background:#7c4bc4}.gd.gS{background:#c8781a}
+.gd.gSp{color:#111;background:linear-gradient(135deg,#f0abfc,#67e8f9,#fde68a)}.gd.gGalaxy{font-size:11px;background:radial-gradient(circle at 30% 30%,#c084fc,#3b1d6e 60%,#0a0d22);box-shadow:0 0 8px #a78bfa}
+.rare{margin:-2px 0 2px 70px;font-size:12.5px;font-weight:700;background:linear-gradient(90deg,#c084fc,#67e8f9,#fde68a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mnote{font-size:13px;color:var(--ink2);margin:4px 0}.mnote b{font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-right:6px}
+.tread{margin:0 0 8px;padding:8px 10px;border-left:3px solid var(--tote);background:#0c1322;font-size:14.5px;line-height:1.35}.tread small{display:block;margin-top:3px;color:var(--ink3);font-size:12px}
 .starts{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px}
 /* barn rows: each horse in its own lit stall, framed in its tier color */
 .hc{border-left:5px solid var(--tc);background-image:linear-gradient(90deg,color-mix(in srgb,var(--tc) 14%,transparent),transparent 45%)}
@@ -1361,7 +1371,7 @@ def training_page():
     for h in ys:
         foal = h in e.nursery
         what = ("yearling " if foal else f"{h.age}yo ") + sex_word(h)
-        bars = "".join(stat_bar(h.developed[t], h, k.capitalize(), trait=t, goal=h.ceiling(t, 2) - 2.0 if foal else None) for k, t in FOCUS.items())
+        bars = card_bars(h)
         rows += (f"<div class='card brow hc ts' style='--tc:{TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}</div><div style='flex:1;min-width:0'>"
                  f"<div class=bname><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a><span class=age>{what}</span></div>"
                  f"<div class=bbars>{bars}</div>"
@@ -1911,12 +1921,16 @@ GUIDE = [
          "trip rarely gets shut in. Front-runners like these tracks a little less. They're marked on Entries and the program."),
     ]),
     ("Your horses", [
-        ("The four stats", "<b>Speed</b> is raw pace: how fast a horse can go and how quickly it gets into position off the gate. "
-         "<b>Stamina</b> is how well it carries that speed: through a hard pace, a trip parked on the outside, a long tough mile. "
-         "<b>Finish</b> is the kick in the stretch. <b>Manners</b> is how a horse behaves on the track: a well-mannered horse goes "
-         "where its driver asks and gets the trip it wants; a rank one gets shuffled into bad spots, and is more likely to break stride. "
-         "The bars on each horse's card show where it stands; color moves from grey through yellow and green, and the very best "
-         "shimmer."),
+        ("The four stats", "<b>Speed</b> is a horse's top end: how fast it can go, and how quickly it gets there off the gate. "
+         "<b>Stamina</b> is how long it holds that speed: through a hard pace, a trip parked on the outside, a long tough mile. "
+         "<b>Finish</b> is how much of it is left at the wire. <b>Grit</b> is whether it holds on when another horse comes to it. "
+         "A horse with all the speed and little finish wins by getting the lead and holding on; one with a big finish is saved for one run.<br><br>"
+         "The card fills in as a horse grows. A young horse shows what it is today, a haze where the trainer guesses it will be a "
+         "year from now, and the trainer's read in a line. Grit stays untested until it has been in a race. Once a horse has raced, each "
+         "bar gets a grade for where it ranks among horses its age, and a horse that proves itself one of the very best at something "
+         "gets a line saying so. The haze tightens with every start, but it only ever looks a year ahead, and trainers can be wrong.<br><br>"
+         "<b>Manners</b> is how a horse behaves on the track. It isn't a bar: the trainer mentions it when it matters, a horse that never "
+         "puts a foot wrong, or one that can break when pressed."),
         ("Mile time and tier", "<b>Mile time</b> is how fast your horse is expected to trot a mile, worked out from its "
          "races. It updates after every start. A horse that hasn't raced yet gets an estimate from its parents.<br><br>"
          "<b>Tier</b> is a letter grade that comes from the mile time:" 
@@ -2412,69 +2426,152 @@ def leaders_page(qs=None):
     return page("Leaderboards", body)
 
 
-def pips(v, h, trait=None):
-    """A stat as 1-10 pips on one fixed scale for every horse at every age, so a horse visibly
-    fills in as it trains and matures and fades as it ages. A green 2YO lights two or three;
-    an average aged horse six. The top is stretched: a 9 is about one bar in a hundred, and a
-    full 10 one in a couple of thousand, so a maxed bar is a once-a-generation horse.
-    A vague trainer is a pip off."""
-    if c.trainer_of(h).quirk == "vague":
-        v += (h.id % 3 - 1) * 0.8
-    n = 1 + bisect.bisect_right(PIP_STEPS, v)
-    return "●" * n + "○" * (10 - n)
-
-
-# stat value needed for pips 2..10: even steps up to 8, then a long climb to 9 and a cliff to 10
-PIP_STEPS = (-3.33, -2.5, -1.67, -0.83, 0.0, 0.83, 1.67, 3.7, 6.0)
-
-
-def fill(v, h):
-    """Bar fill in percent: the pip scale made continuous, so a week of growth or training moves the bar a little
-    instead of waiting for the next whole pip."""
-    if c.trainer_of(h).quirk == "vague":
-        v += (h.id % 3 - 1) * 0.8
-    xs, ys = (-4.17,) + PIP_STEPS, range(10, 101, 10)
-    if v <= xs[0]:
-        raw = max(4.0, 10 + 6 * (v - xs[0]))
-    elif v >= xs[-1]:
-        raw = 100.0
-    else:
-        i = bisect.bisect_right(xs, v) - 1
-        raw = ys[i] + 10 * (v - xs[i]) / (xs[i + 1] - xs[i])
-    return BAR_FLOOR + (100 - BAR_FLOOR) * raw / 100         # lifted: the weakest bar is still a quarter full, so a card never looks empty
-
-
 BAR_FLOOR = 25   # chosen 2026-10-29 off a side-by-side of real cards: tiers still read, a green 2-year-old no longer looks like another species
 
 
-def on_bar(trait, v):
-    """Where a stat sits on its bar. Speed, Finish and stamina pay all the way up, so they keep the shared scale.
-    Manners only buys the trip, and at sim.GAIT_CAP the trip is perfect: that is a full bar, and nothing past it shows."""
-    if trait != "gait":
-        return v
-    lo, top = PIP_STEPS[5], PIP_STEPS[-1]                   # the scale is unchanged up to an ordinary 7 pips...
-    if v <= lo:
-        return v
-    return min(top, lo + (v - lo) * (top - lo) / (sim.GAIT_CAP - lo))   # ...then stretched so the cap lands on the top
+# ---- the horse card's bars (mockups/potential_card3, 2026-11-02): Speed is the top end (early speed), Stamina holds it
+# through the mile, Finish is what's left at the wire (late speed), Grit holds it when one comes at him. Manners is a trainer's
+# note, not a bar. The card reveals slowly: today's bar, a haze where the trainer guesses he'll be next year (wide on a foal,
+# tighter with every start), grades and rarity only once he's raced, Grit hidden until he's been in a race.
+BARS = (("Speed", "early_speed"), ("Stamina", "stamina"), ("Finish", "late_speed"), ("Grit", "grit"))
+GRADE_CUT = ((.001, "Galaxy"), (.02, "S+"), (.22, "S"), (.40, "A"), (.63, "B"), (.87, "C"), (1.01, "D"))   # the tier sizes (DECISIONS 219)
+BEST_OF = {"early_speed": ("Quickest", "speed"), "stamina": ("Strongest stayer", "stamina"),
+           "late_speed": ("Best finisher", "finish"), "grit": ("Grittiest", "grit")}
+CROP_NAME = {"2": "two-year-olds", "3": "three-year-olds", "aged": "older horses"}
 
 
-def stat_bar(v, h, label=None, width=None, goal=None, trait=None):
-    """The same 0-10 scale as pips, as a bar: a track with ten ticks and a fill. Color steps
-    from grey (low) through yellow (medium) to green (high); a 9 or 10 is elite and gets an
-    iridescent violet-to-cyan fill, a color nothing else in the UI uses. Past the top of the breed it's off the charts:
-    a glowing bar and a star."""
-    otc = trait is not None and v > sim.SOFT_AT
-    v = on_bar(trait, v)
-    goal = None if goal is None else on_bar(trait, goal)
-    n = pips(v, h).count("●")
-    color = ("#5b6270" if n <= 3 else "#d4c13a" if n <= 6 else "#3fb96b" if n <= 8
-              else "linear-gradient(90deg,#8b5cf6,#38bdf8 70%,#67e8f9)")
-    lab = f"<span class=sub style='width:62px'>{label}</span>" if label else ""
-    w = f"width:{width}px;" if width else "flex:1;"
-    return (f"<div class=row style='gap:8px'>{lab}<div class='stat{' otc' if otc else ''}' style='{w}' title='{'Off the charts' if otc else f'{n} of 10'}'>"
-            f"<i style='width:{fill(v, h):.1f}%;background:{color}'></i>"
-            + (f"<u style='left:{fill(goal, h):.1f}%' title='at 2'></u>" if goal is not None else "") + f"</div><b class='sv{' otc' if otc else ''}'>{n}{'★' if otc else ''}</b></div>")
+def bar_of(h, t, stats=None):
+    """A stat as its bar, 1 to 10, on the race engine's scale (outcome.bar); Grit comes from the horse's toughness genes."""
+    if t == "grit":
+        return getattr(h, "grit_bar", None) or c.outcome.grit_bar(h)
+    return c.outcome.bar((stats or h.developed)[t], gait=t == "gait")
 
+
+_CROPS = {}
+
+
+def crops():
+    """Every racing horse's bars, sorted, by crop (2, 3, aged): what a grade ranks against. Made once a day."""
+    key = (G["day"], len(G["horses"]))
+    if _CROPS.get("key") != key:
+        by = collections.defaultdict(lambda: collections.defaultdict(list))
+        for x in G["horses"]:
+            if not x.retired and x.age >= 2:
+                for _, t in BARS:
+                    by[c.age_group(x)][t].append(bar_of(x, t))
+        _CROPS.clear(); _CROPS.update(key=key, by={g: {t: sorted(v) for t, v in d.items()} for g, d in by.items()})
+    return _CROPS["by"]
+
+
+def crop_rank(h, t):
+    """(share of the crop at or above this horse, its place, crop size) for one bar, or None for a horse with no crop."""
+    vals = crops().get(c.age_group(h), {}).get(t)
+    if not vals or h.retired or h.age < 2:
+        return None
+    v = bar_of(h, t)
+    above = len(vals) - bisect.bisect_left(vals, v - 1e-9)
+    return above / len(vals), len(vals) - bisect.bisect_right(vals, v + 1e-9) + 1, len(vals)
+
+
+def bar_grade(h, t):
+    """The grade on a bar: its rank in the horse's crop, in the tier sizes. Only once the horse has raced."""
+    r = crop_rank(h, t) if h.starts else None
+    return next(g for cut, g in GRADE_CUT if r[0] <= cut) if r else None
+
+
+def bar_haze(h, t, i):
+    """Where the trainer guesses this bar will be a year from now, as (low, high) bars: wide on an unraced horse, tighter
+    with every start, and a little off (trainers guess). None for Grit (it doesn't grow) and for a retired horse."""
+    if t == "grit" or h.retired:
+        return None
+    mid = bar_of(h, t, {t: h.ceiling(t, h.age + 1)})
+    w = max(.6, 2.2 - .2 * h.starts)
+    mid += ((h.id * 7 + i * 13) % 5 - 2) * .2 * w / 2                     # shortcut: a fixed per-horse miss; a real trainer read would come from the horse's works
+    return max(1.0, mid - w / 2), min(10.0, mid + w / 2)
+
+
+def bar_fill(b):
+    """A 1-10 bar as a fill percent, lifted so the weakest bar still shows (BAR_FLOOR)."""
+    return BAR_FLOOR + (100 - BAR_FLOOR) * b / 10
+
+
+def card_bars(h, haze=True):
+    """The card's four bars: Speed, Stamina, Finish, Grit, each with its haze, grade and (once proven) rarity line."""
+    out = ""
+    ranks = {t: crop_rank(h, t) for _, t in BARS} if h.starts >= 3 else {}   # rarity: only once he's proven it, and one line, the rarest
+    ranks = {t: r for t, r in ranks.items() if r and r[0] <= .02}
+    rare = min(ranks, key=lambda t: ranks[t][0]) if ranks else None
+    for i, (label, t) in enumerate(BARS):
+        hidden = t == "grit" and not h.starts and not h.retired               # Grit shows once he's been in a race
+        if hidden:
+            out += (f"<div class=row style='gap:8px'><span class=sub style='width:62px'>{label}</span><div class='stat unk' style='flex:1'></div>"
+                    f"<b class=gd>untested</b></div>")
+            continue
+        b = bar_of(h, t)
+        color = ("#5b6270" if b < 4 else "#d4c13a" if b < 7 else "#3fb96b" if b < 9 else "linear-gradient(90deg,#8b5cf6,#38bdf8 70%,#67e8f9)")
+        hz = bar_haze(h, t, i) if haze else None
+        fog = f"<span class=fog style='left:{bar_fill(hz[0]):.1f}%;width:{bar_fill(hz[1]) - bar_fill(hz[0]):.1f}%'></span>" if hz else ""
+        g = bar_grade(h, t)
+        tag = (f"<b class='gd g{g.replace('+', 'p')}'>{g}</b>" if g else "<b class=gd>early</b>" if not h.starts and not h.retired else "")
+        out += (f"<div class=row style='gap:8px'><span class=sub style='width:62px'>{label}</span><div class=stat style='flex:1' title='{b:.1f} of 10'>"
+                f"<i style='width:{bar_fill(b):.1f}%;background:{color}'></i>{fog}</div>{tag}</div>")
+        if t == rare:
+            r = ranks[t]
+            word, noun = BEST_OF[t]; crop = CROP_NAME[c.age_group(h)]
+            line = f"{word} of {r[2]} {crop}" if r[1] == 1 else f"Top {max(1, round(r[0] * 100))}% of {crop} for {noun}"
+            out += f"<div class=rare>{line}</div>"
+    return out
+
+
+def manners_note(h):
+    """Manners as a trainer's note, only when there's something to say: a steady horse or one that breaks."""
+    if not h.starts:
+        return ""
+    b, he = bar_of(h, "gait"), "He" if h.sex == "m" else "She"
+    if b >= 7.5:
+        say = f"Steady on {'his' if h.sex == 'm' else 'her'} gait. {he} rarely makes a break."
+    elif b <= 3.5:
+        say = f"{he} can make a break when pressed."
+    else:
+        return ""
+    return f"<div class=mnote><b>Manners</b>{say}</div>"
+
+
+STRONG = {"early_speed": "All the speed in the world", "stamina": "Stays all day", "late_speed": "Comes home like a train", "grit": "Won't let one go by"}
+WEAK = {"early_speed": "short of early speed", "stamina": "runs out of air late", "late_speed": "can't keep it all the way to the wire",
+        "grit": "gives in when one looks {him} in the eye"}
+EARLY = {"early_speed": "Quickest thing in the paddock, first to the gate every time", "stamina": "Never seems to tire on the jog",
+         "late_speed": "Finishes his work like he's just getting going"}
+
+
+def trainer_read(h):
+    """The trainer's line on the horse, in words. Unraced: what stands out against horses its age, and that it's early.
+    Raced: its best bar and its worst against its crop, and how that wins races."""
+    him, he = ("him", "he") if h.sex == "m" else ("her", "she")
+    if h.retired:
+        return ""
+    if not h.starts:
+        peers = [x for x in G["horses"] + list(e.nursery) if x.age == h.age and not x.retired and x is not h]
+        best = None
+        for t in ("early_speed", "stamina", "late_speed"):
+            share = sum(bar_of(x, t) >= bar_of(h, t) for x in peers) / max(1, len(peers))
+            if share <= .1 and (best is None or share < best[0]):
+                best = (share, t)
+        lead = EARLY[best[1]].replace("his ", "his " if h.sex == "m" else "her ") if best else "Nothing jumps out yet"
+        return f"“{lead}. What {he}'ll be over a mile, it's too early to say.”"
+    ranks = {t: crop_rank(h, t) for _, t in BARS}
+    ranks = {t: r[0] for t, r in ranks.items() if r}
+    if not ranks:
+        return ""
+    top, low = min(ranks, key=ranks.get), max(ranks, key=ranks.get)
+    s = (STRONG[top] + "." if ranks[top] <= .22 else "Honest, but nothing stands out yet.")
+    if ranks[low] >= .63:
+        s += f" {he.capitalize()} {WEAK[low].format(him=him)}"
+        s += (", so {he} wins by getting the lead and holding on." if top == "early_speed" and low == "late_speed" else
+              ", so {he}'s best saved for one run late." if top == "late_speed" and low == "early_speed" else ".").format(he=he)
+    elif ranks[top] <= .22:
+        s += " No holes in " + him + "."
+    return f"“{s}”"
 
 
 def looks(h):
@@ -2987,8 +3084,8 @@ def card_header(h, own, price=None):
             f"<div class=hline>{h.age}-year-old {coat} {sexname}, {h.starts} starts, {h.wins} wins</div>"
             f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
-            + (f"<div class=hbars>{''.join(stat_bar(h.developed[t], h, k.capitalize(), trait=t, goal=h.ceiling(t, 2) - 2.0 if h in e.nursery else None) for k, t in FOCUS.items())}"
-               + ("<div class=sub>White line: where each stat will be at 2</div>" if h in e.nursery else "") + f"{prime_row(h)}</div>")   # every horse's bars are public
+            + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if trainer_read(h) else "")
+               + card_bars(h) + manners_note(h) + "<div class=sub>Haze: the trainer’s guess for a year from now</div>" + f"{prime_row(h)}</div>")   # every horse's bars are public
             + "</div>")
 
 
@@ -3163,7 +3260,7 @@ def horse_card(h, link=True):
     """A barn row: tier-edged portrait beside the name line, four full-width stat bars, one status line, and the
     action at the foot: Enter for a fit horse that isn't entered, an Entered state (with the tonic bottle) when it is."""
     name = f"<a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a>" if link else esc(h.name)
-    bars = "".join(stat_bar(h.developed[t], h, k.capitalize(), trait=t) for k, t in FOCUS.items())
+    bars = card_bars(h)
     last = h.form[-1] if getattr(h, "form", None) and isinstance(getattr(h, "last", None), tuple) else (getattr(h, "last", None) or "")
     live, act, fresh = "", "", ""
     if h.retired:
@@ -4596,7 +4693,7 @@ def breeding_page(qs=None):
         return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{square_portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(f.name)}' class=bname>{esc(f.name)}</a> <span class=sub>{'weanling' if f.age == 0 else 'yearling'} {'colt' if f.sex == 'm' else 'filly'} · {tier_label(f)}</span>"
                 f"<div class=sub>by {esc(f.sire.name)} out of {esc(f.dam.name)}</div>"
-                f"<div>{''.join(stat_bar(f.developed[t], f, k.capitalize(), 90, trait=t, goal=f.ceiling(t, 2) - 2.0) for k, t in FOCUS.items())}</div>"
+                f"<div>{card_bars(f)}</div>"
                 f"<div class=sub>{'ready to register' if getattr(f, 'unreg', False) else 'joins the barn to race'} in {wk} weeks</div></div></div></div>")
     young = [f for f in e.nursery if f.owner == ME]
     view = qs.get("v") if qs.get("v") in ("mares", "foals") else "stud"
@@ -4681,7 +4778,7 @@ def retired_header(h, own):
         b = e.booked_to(h)
         role = f"Broodmare · in foal to {esc(b.name)}" if b else "Broodmare · open this season"
         act = f"<a class='btn big' href='/breed/{urlname(h.name)}'>Breed</a>" if own and not b else ""
-    bars = (f"<div class=hbars><div class=sub>At their best</div>{''.join(stat_bar(h.developed[t], h, k.capitalize(), trait=t) for k, t in FOCUS.items())}{prime_row(h)}</div>")
+    bars = (f"<div class=hbars><div class=sub>At their best</div>{card_bars(h, haze=False)}{prime_row(h)}</div>")
     return (f"<div class='card hdr'><div class=htop><div class='port t{tier_cls(h)}'><div class=stagelight></div>{portrait(h, 150)}"
             f"<div class='tier {tier_cls(h)} badge'>{tier_label(h)}</div>{trophy(h)}</div>"
             f"<div class=hr><div class=retband>Retired · no longer racing</div><div class=hname>{esc(h.name)}</div><div class=hline>{esc(role)}</div>"
@@ -4696,7 +4793,7 @@ def retired_header(h, own):
 
 def stud_bars(h):
     """A stallion's four bars at his best, compact: what a mare's owner is paying for. Shown for every stud."""
-    return "<div class=sbars>" + "".join(stat_bar(h.developed[t], h, k.capitalize(), trait=t) for k, t in FOCUS.items()) + "</div>"
+    return "<div class=sbars>" + card_bars(h, haze=False) + "</div>"
 
 
 BREED_MENU = lambda on: ("<div class=hmenu>" + "".join(f"<a href={href} class='{'on' if on == k else ''}'>{label}</a>"

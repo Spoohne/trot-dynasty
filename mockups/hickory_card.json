@@ -1,0 +1,40 @@
+{
+ "Speed": {
+  "now": 7.91,
+  "peak": 10.0,
+  "top": 0.0019,
+  "grade": "S+"
+ },
+ "Stamina": {
+  "now": 1.0,
+  "peak": 6.88,
+  "top": 0.2562,
+  "grade": "A"
+ },
+ "Finish": {
+  "now": 1.0,
+  "peak": 4.59,
+  "top": 0.9122,
+  "grade": "D"
+ },
+ "Manners": {
+  "now": 1.0,
+  "peak": 6.6,
+  "top": 0.3748,
+  "grade": "A"
+ },
+ "peak": {
+  "age": 5,
+  "rating": 6.75,
+  "tier": "S",
+  "time": "1:52.6",
+  "top": 0.2704,
+  "grit": 6.84
+ },
+ "sire": "Captain Ledger",
+ "dam": "Express Spring",
+ "coat": "bay",
+ "marking": "blaze",
+ "sex": "m",
+ "age": 0
+}

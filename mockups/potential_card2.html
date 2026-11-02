@@ -1,0 +1,88 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Potential Card v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Mockup v2: Speed is the top end (late speed); Stamina, Grit, Manners are getting there and staying there; gate speed is
+   the style line. The trainer sees one year ahead (a fuzzy band that narrows with starts); words first, grades once proven.
+   Hickory Spring's numbers from the live save, 2026-11-02. The age-3 card is his own projection, for illustration. */
+:root{color-scheme:dark;--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--rule2:#1b2539;--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--led:#ffb347}
+body{margin:0;background:linear-gradient(#0b1430,var(--paper) 420px) var(--paper);color:var(--ink);font:400 15px/1.4 'Barlow Semi Condensed',sans-serif}
+.w{max-width:420px;margin:0 auto;padding:18px 16px 36px;display:grid;gap:14px}
+.hd{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:14px;display:grid;gap:12px}
+.top{display:flex;gap:12px;align-items:center}
+.por{position:relative;width:70px;height:70px;flex:none;border:2px solid #4b5b7d}
+.por img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block}
+.chip{position:absolute;right:-3px;bottom:-3px;font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.06em;padding:2px 5px;background:#26324c;color:var(--ink2);box-shadow:-2px -2px 0 #05070d}
+.chip.s{background:#c8781a;color:#fff;font-size:13px}
+h2{margin:0;font:800 22px 'Barlow Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;text-shadow:2px 2px 0 #000}
+.sub{color:var(--ink2);font-size:13px}
+.say{margin:0;padding:10px 12px;border-left:3px solid var(--tote);background:#0c1322;font-size:15px;line-height:1.35}
+.say small{display:block;margin-top:4px;color:var(--ink3);font-size:12px;letter-spacing:.04em}
+.bars{display:grid;gap:9px}
+.b{display:grid;grid-template-columns:62px minmax(0,1fr) 46px;gap:10px;align-items:center}
+.b .l{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.st{position:relative;height:14px;background:var(--rule2)}
+.st:after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),#05070d88 calc(10% - 1px) 10%);pointer-events:none}
+.st .now{position:absolute;inset:0 auto 0 0;box-shadow:inset 0 -2px 0 #0004,inset 0 1px 0 #fff4}
+.st .fog{position:absolute;top:-2px;bottom:-2px;border-radius:3px;background:linear-gradient(90deg,#c9d2e300,#c9d2e355 30%,#c9d2e355 70%,#c9d2e300);filter:blur(1.5px)}
+.q{justify-self:end;font:700 12px 'Barlow Semi Condensed',sans-serif;color:var(--ink3)}
+.g{justify-self:end;font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.05em;padding:1px 7px;border-radius:2px;color:#fff;min-width:22px;text-align:center}
+.gD{background:#5b6270}.gC{background:#3f7d5b}.gB{background:#2f6fb5}.gA{background:#7c4bc4}.gS{background:#c8781a}
+.unk .st{background:repeating-linear-gradient(135deg,#1b2539 0 6px,#16203a 6px 12px)}
+.style{display:grid;gap:4px;padding-top:2px}
+.sty{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;align-items:center}
+.sty .l{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.line{position:relative;height:2px;background:var(--rule);margin:8px 0}
+.line b{position:absolute;top:-6px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--tote);box-shadow:0 0 8px rgba(232,163,58,.7)}
+.ends{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink3);margin-left:72px}
+.ends span:first-child{color:var(--led)}
+.proof{margin-left:72px;font-size:12.5px;color:var(--ink2)}.proof b{color:var(--led)}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink3);align-items:center}
+.key i{display:inline-block;width:22px;height:9px;vertical-align:-1px;margin-right:5px}
+.cap{font-size:12.5px;color:var(--ink3);margin:-4px 0 0}
+</style></head><body><div class="w">
+
+<div class="hd">Today: Hickory Spring, weanling</div>
+<div class="card">
+  <div class="top">
+    <div class="por"><img src="hickory_portrait.png" alt="Bay colt with a blaze"><span class="chip">FOAL</span></div>
+    <div><h2>Hickory Spring</h2><div class="sub">Weanling bay colt · Captain Ledger × Express Spring</div></div>
+  </div>
+  <p class="say">“First to the gate every time we turn them out. Quick, really quick. Too early to say what he'll have at the end of a mile.” <small>— Trainer's early read</small></p>
+  <div class="bars">
+    <div class="b"><span class="l">Speed</span><div class="st"><i class="now" style="width:10%;background:#5b6270"></i><span class="fog" style="left:11%;width:22%"></span></div><span class="q">early</span></div>
+    <div class="b"><span class="l">Stamina</span><div class="st"><i class="now" style="width:10%;background:#5b6270"></i><span class="fog" style="left:34%;width:22%"></span></div><span class="q">early</span></div>
+    <div class="b unk"><span class="l">Grit</span><div class="st"></div><span class="q">untested</span></div>
+    <div class="b"><span class="l">Manners</span><div class="st"><i class="now" style="width:10%;background:#5b6270"></i><span class="fog" style="left:31%;width:22%"></span></div><span class="q">early</span></div>
+  </div>
+  <div class="style">
+    <div class="sty"><span class="l">Style</span><div class="line"><b style="left:8%"></b></div></div>
+    <div class="ends"><span>Leaves like a shot</span><span>Comes from behind</span></div>
+  </div>
+  <div class="key"><span><i style="background:#8b95a8"></i>Today</span><span><i style="background:linear-gradient(90deg,#c9d2e300,#c9d2e355,#c9d2e300)"></i>Trainer's guess for next year</span></div>
+</div>
+<p class="cap">No grades, no rarity, no peak: just what he is, a hazy look one year out, and what the trainer has noticed. Grit stays hidden until he's been in a fight.</p>
+
+<div class="hd">Hickory Spring at three, six starts in (his projection, for illustration)</div>
+<div class="card">
+  <div class="top">
+    <div class="por"><img src="hickory_portrait.png" alt="Bay colt with a blaze"><span class="chip s">S</span></div>
+    <div><h2>Hickory Spring</h2><div class="sub">3-year-old bay colt · 6 starts, 3 wins</div></div>
+  </div>
+  <p class="say">“Gets the lead from any post. He hasn't got a big finish, so he wins by holding on, and he's tough when one looks him in the eye.” <small>— Trainer</small></p>
+  <div class="bars">
+    <div class="b"><span class="l">Speed</span><div class="st"><i class="now" style="width:34%;background:#5b6270"></i><span class="fog" style="left:36%;width:8%"></span></div><span class="g gC">C</span></div>
+    <div class="b"><span class="l">Stamina</span><div class="st"><i class="now" style="width:56.8%;background:#d4c13a"></i><span class="fog" style="left:59%;width:8%"></span></div><span class="g gA">A</span></div>
+    <div class="b"><span class="l">Grit</span><div class="st"><i class="now" style="width:68.4%;background:#3fb96b"></i></div><span class="g gS">S</span></div>
+    <div class="b"><span class="l">Manners</span><div class="st"><i class="now" style="width:54%;background:#d4c13a"></i><span class="fog" style="left:56%;width:8%"></span></div><span class="g gA">A</span></div>
+  </div>
+  <div class="style">
+    <div class="sty"><span class="l">Style</span><div class="line"><b style="left:4%"></b></div></div>
+    <div class="ends"><span>Leaves like a shot</span><span>Comes from behind</span></div>
+    <div class="proof">Proven: <b>the quickest leaver of 150 three-year-olds</b></div>
+  </div>
+  <div class="key"><span><i style="background:#8b95a8"></i>Today</span><span><i style="background:linear-gradient(90deg,#c9d2e300,#c9d2e355,#c9d2e300)"></i>Next year: a tighter guess now he's raced</span><span>Grade = rank in his crop</span></div>
+</div>
+<p class="cap">Grades appear once he's raced. His gate speed is a style, not a bar; its rarity shows once he's proven it. The haze has narrowed but still only looks one year out.</p>
+</div></body></html>
