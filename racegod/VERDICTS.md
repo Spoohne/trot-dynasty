@@ -92,5 +92,44 @@ winner finishes. On a copy, tonight's overnight card had 26 of 84 races with a h
 starters). The speed limit set 64% of starters' times (V1, point 3).
 
 **Hypothesis:** the root is the speed limit stretching beaten margins. The 40 L cap only hides the damage.
+(Confirmed in V4.)
 **Proposed:** fix V1 point 3 first, so margins come from the race and huge margins become rare. Then keep true margins
 and let the replay show a tailed-off horse as tailed off (beyond 40 L, keep the order but space horses evenly).
+
+## V4 - The speed limit: the clock and the race model disagree ten to one, 2026-11-02
+
+**Measured (315 real fields from the live save since day 2626, each rerun 10 times with the same draws per variant;
+`racegod/speed_lab.py`).** Two scales decide a beaten horse's margin, and they don't agree:
+- the clock (`SPEED_FIT`): one Speed bar is worth 2.3 s, about **11.5 lengths**. Fitted across the whole population,
+  claimers to stakes horses, so it's right about what class a horse belongs in;
+- the race model (`s_margin`, `K`, `omega`): one Speed bar is worth about **1.2 lengths** between horses in the same race.
+  Fitted on real charts, so it's right about how a field finishes.
+
+The speed limit takes each horse's ceiling from the clock's slope and applies it inside the race. In a real field the
+ceilings span 40 L (median; 51 L in the top quarter), while the race model has the last horse 18 L back. So the limit
+overrules the model for 65% of starters, and 40% of races end with a horse 40 L or more behind.
+
+Moving the limit around (the winner waiting for the beaten horses, no carrying of delays) helps a little and costs the
+clock: Northern Star's median win slows from 1:46.4 to 1:53.3 and the field's times slow by 2 s.
+
+**The fix that works: ceilings inside a field spread on the race model's scale.** The winner's ceiling stays its own
+(its class sets the clock, Northern Star keeps his records); each beaten horse's ceiling sits that much behind the
+winner's on the race model's slope (`WITHIN` = 0.1 of the clock's slope, the measured ratio 1.2 / 11.5).
+
+| | limited starters | last horse 40 L+ | last horse (median) | win margin | photos | times | Northern Star median / fastest / margin |
+|---|---|---|---|---|---|---|---|
+| Today | 65% | 40% | 34.5 L | 3.1 L | 7% | 1:54.2 | 1:46.4 / 1:44.4 / 34.5 L |
+| Winner waits for top 3, no carry | 21% | 15% | 23.3 L | 1.8 L | 11% | 1:56.0 | 1:53.3 / 1:48.2 / 11.3 L |
+| **Within-field ceilings x0.1** | **10%** | **7%** | **18.1 L** | **1.8 L** | **10%** | **1:54.2** | **1:46.4 / 1:44.4 / 11.3 L** |
+
+Nothing else moves: the clock, the order and who wins are the same; only beaten horses' times and margins change.
+The hard limit still holds: no horse runs faster than its own ceiling, relative to the field it's in.
+
+**Left open (measured, not fixed):** even with the limit out of the way, the race model itself has the last horse 18 L
+back on median and 43% of races with a horse 20 L+ behind. That's the model's own margin scale (`s_margin`), which
+V1 point 2's retune should look at together with post and front-end value.
+
+### Proposed (awaiting Patrick)
+
+Ship `WITHIN = 0.1` in `outcome.py` (the lab knobs `PACE_FROM` and `CARRY` come out). Then re-read the 40 L wall (V3)
+on the next night's card; if tailed-off horses are now rare, the story can show them as tailed off.
