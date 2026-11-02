@@ -24,9 +24,7 @@ TIME_FIT = (130.94, -2.733)  # mile seconds = a + b * rating: today's racing hor
 # (kick), slowed by STAY seconds for each point its Speed outruns its Stamina (it can't hold its top end a mile). Fitted on
 # today's racing horses 3+ so times keep their spread (n 660; the time tracks Speed at r 0.97, the old rating time at 0.90).
 SPEED_FIT, STAY = (128.26, -2.307), 0.8
-PACE_FROM = 0                # RaceGod V4 lab: how many beaten horses the winner's clock waits for (0: its own clock alone)
-WITHIN = 1.0                 # RaceGod V4 lab: fraction of the clock's slope that separates ceilings within one field (1.0: today)
-CARRY = True                # RaceGod V4 lab: a horse pushed back by its limit pushes those behind it by the same (False: at least a nose)
+WITHIN = 0.1                 # inside one field, ceilings spread on the race model's slope, not the clock's (RaceGod V4: 1.2 L a bar vs 11.5)
 ROLES = ("lead", "pocket", "first_over", "followed", "back")
 DUEL, P_NONE, N_FOLLOW, BREAK = 0.15, 0.10, 2, 3.0
 FO_MAX = {"half": 4, "mile": 5}
@@ -141,8 +139,7 @@ def race(field, track="mile", passing=False):
     to_raw = (sim.CLOCK_REF - sim.CLOCK_AT) / sim.CLOCK_K                # display seconds back to race seconds (the clock is linear above its floor)
     limit = {h.id: best_mile(bars(h, stats[h.id]), half) - LUCK + to_raw for h in field}
     w = order[0]
-    if WITHIN < 1.0:                                           # RaceGod V4 lab: inside a field, ceilings spread on the race model's scale, not the clock's
-        limit = {h.id: limit[w.id] + WITHIN * (limit[h.id] - limit[w.id]) for h in field}
+    limit = {h.id: limit[w.id] + WITHIN * (limit[h.id] - limit[w.id]) for h in field}   # the winner's class sets the clock; the rest sit behind on the model's scale
     win_raw = max(limit[w.id] + LUCK + rng.gauss(0, 0.5), limit[w.id])
     for post, h in enumerate(field, 1):
         r = role[h.id]
@@ -157,14 +154,12 @@ def race(field, track="mile", passing=False):
         h.margin_l = (perf[order[0].id] - perf[h.id]) * p["s_margin"]   # lengths behind the winner: the story shows these as run
         h.why = dict(out=out.index(h) + 1, role=ROLES[r], depth=depth[h.id], perf=round(perf[h.id], 3),   # RaceGod's ledger: what decided it
                      form=round(form[h.id], 3), broke=broke[h.id], model_l=round(h.margin_l, 2))
-    for h in order[1:1 + PACE_FROM]:                           # the field sets the pace: the winner runs no faster than these can follow
-        win_raw = max(win_raw, limit[h.id] - h.margin_l * SEC_PER_LENGTH)
     prev = prev0 = None
     for h in order:                                            # the speed limit, then the order: a horse pushed back carries the delay
         t0 = win_raw + h.margin_l * SEC_PER_LENGTH             # to those behind it, who keep their gaps (at least a nose)
         t = max(t0, limit[h.id])
         if prev is not None:
-            t = max(t, prev + max(NOSE * SEC_PER_LENGTH, (t0 - prev0) if CARRY else 0))
+            t = max(t, prev + max(NOSE * SEC_PER_LENGTH, t0 - prev0))
         h.raw_time, prev, prev0 = t, t, t0
         h.margin_l = (t - win_raw) / SEC_PER_LENGTH
         h.last_time = sim.clock(t, half)

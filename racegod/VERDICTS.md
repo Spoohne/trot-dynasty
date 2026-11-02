@@ -133,3 +133,6 @@ V1 point 2's retune should look at together with post and front-end value.
 
 Ship `WITHIN = 0.1` in `outcome.py` (the lab knobs `PACE_FROM` and `CARRY` come out). Then re-read the 40 L wall (V3)
 on the next night's card; if tailed-off horses are now rare, the story can show them as tailed off.
+
+Patrick: ship it (2026-11-02). Tonight's card on a save copy with WITHIN 0.1: 84 races, no law broken, 14% of starters
+limited (was 64%), 4 races with a horse 40 L+ back (was 26), median last horse 16.8 L, median winning margin 1.6 L.

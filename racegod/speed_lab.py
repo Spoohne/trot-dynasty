@@ -27,7 +27,7 @@ def fields(save, first):
 
 
 def run(races, pace, reps, carry=True, within=1.0):
-    outcome.PACE_FROM, outcome.CARRY, outcome.WITHIN = pace, carry, within
+    outcome.WITHIN = within                                    # pace and carry variants went with the lab knobs (V4)
     starts = limited = big20 = big40 = photos = 0
     wins, times, star_t, star_m, last = [], [], [], [], []
     for k in range(reps):
