@@ -845,7 +845,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
   font-family:'Barlow Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);font-size:17px;border:0}
 .vfold[open] summary{border-bottom:2px solid var(--rule)}.vname{font-weight:700}.vmeta{font-size:13px;color:var(--ink2);font-family:'Barlow Semi Condensed',sans-serif}
 .vin{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--win)}
-.erow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid var(--rule2)}.erow:last-child{border-bottom:0}.en-horse{display:flex;gap:10px;align-items:center}.en-h{display:flex;justify-content:space-between;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--led);margin:16px 2px 6px}.en-h span{color:var(--ink3);letter-spacing:.04em}.en-stk,.en-pick,.en-race{background:var(--panel);border:1px solid var(--rule);border-radius:4px;margin-bottom:6px}.en-stk{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-left:4px solid var(--rule)}.en-stk>div{min-width:0}.en-stk.nom{border-left-color:var(--tote);background:linear-gradient(100deg,#e8a33a1f,var(--panel) 60%)}.en-nom{color:var(--win);font-weight:700;font-size:13px;white-space:nowrap}.en-name{font-weight:700}.en-pick{display:grid;grid-template-columns:20px minmax(0,1fr) auto;grid-template-areas:'k m r' 'k m b';gap:4px 8px;align-items:center;padding:8px 10px}.en-k{grid-area:k;font:800 18px 'Barlow Condensed',sans-serif;color:var(--tote)}.en-pm{grid-area:m;min-width:0}.en-pr{grid-area:r;display:flex;flex-direction:column;align-items:flex-end;gap:2px}.en-pick>form,.en-pick>.en-in{grid-area:b;justify-self:end}.en-chips{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:4px 0 6px}.en-chips button{flex:none;width:auto;margin:0;padding:5px 10px;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--rule);color:var(--ink2);box-shadow:none}.en-chips button.on{background:var(--tote);color:var(--tote-ink);border-color:var(--tote)}.en-race>summary{list-style:none;display:flex;justify-content:space-between;gap:8px;padding:9px 10px;cursor:pointer;font:400 15px 'Barlow Semi Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink)}.en-race>summary::-webkit-details-marker{display:none}.en-main{min-width:0}.en-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}.en-right{flex:none;max-width:48%;display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}.en-lvl,.en-edge,.en-cnt{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.06em;padding:1px 6px;border-radius:2px}.en-lvl{color:#fff}.en-cnt{color:var(--ink3);border:1px solid var(--rule2)}.en-lvl.tSp{background:linear-gradient(90deg,#c084fc,#38bdf8)}.en-lvl.tS{background:#b45309}.en-lvl.tA{background:#1f4fbf}.en-lvl.tB{background:#1f7a3f}.en-lvl.tC{background:#6b7280}.en-lvl.tD{background:#3b3f46}.en-edge{text-transform:uppercase}.en-edge.fav{background:#3fb96b26;color:#4ade80}.en-edge.con{background:#e8a33a26;color:var(--led)}.en-edge.even{background:#a4acb926;color:var(--ink)}.en-edge.long{background:#e0704f26;color:#f87171}.en-trk{display:inline-flex;flex-direction:column;font-size:12px;line-height:1.15;padding-left:6px;border-left:3px solid var(--ta);text-align:left}.en-trk b{font-size:12.5px}.en-trk i{font-style:normal;color:var(--ink3)}.en-body{border-top:1px solid var(--rule2);padding:4px 10px 8px}.en-alt[hidden],.en-race[hidden]{display:none}.en-alt{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:5px 0}.en-alt button,.en-pick button{width:auto;margin:0;padding:6px 12px}.en-in{color:var(--win);white-space:nowrap}.en-clm{margin-top:14px;border:1px solid #e0704f55;border-radius:4px;background:#e0704f0d}.en-clm>summary{list-style:none;padding:9px 10px;cursor:pointer;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}.en-clm .en-race{margin:0 6px 6px}.en-now{border-left:4px solid var(--win)}.en-now form{margin-left:8px}.eclm{padding:8px 10px 4px;margin-top:4px;border-top:2px solid var(--rule);font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}
+.erow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid var(--rule2)}.erow:last-child{border-bottom:0}.en-horse{display:flex;gap:10px;align-items:center}.en-h{display:flex;justify-content:space-between;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--led);margin:16px 2px 6px}.en-h span{color:var(--ink3);letter-spacing:.04em}.en-stk,.en-race{background:var(--panel);border:1px solid var(--rule);border-radius:4px;margin-bottom:6px}.en-stk{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-left:4px solid var(--rule)}.en-stk>div{min-width:0}.en-stk.nom{border-left-color:var(--tote);background:linear-gradient(100deg,#e8a33a1f,var(--panel) 60%)}.en-nom{color:var(--win);font-weight:700;font-size:13px;white-space:nowrap}.en-name{font-weight:700}.en-chips{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:4px 0 6px}.en-chips button{flex:none;width:auto;margin:0;padding:5px 10px;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--rule);color:var(--ink2);box-shadow:none}.en-chips button.on{background:var(--tote);color:var(--tote-ink);border-color:var(--tote)}.en-race>summary{list-style:none;display:flex;justify-content:space-between;gap:8px;padding:9px 10px;cursor:pointer;font:400 15px 'Barlow Semi Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink)}.en-race>summary::-webkit-details-marker{display:none}.en-main{min-width:0}.en-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}.en-right{flex:none;max-width:48%;display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}.en-lvl,.en-cnt{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.06em;padding:1px 6px;border-radius:2px}.en-lvl{color:#fff}.en-cnt{color:var(--ink3);border:1px solid var(--rule2)}.en-lvl.tSp{background:linear-gradient(90deg,#c084fc,#38bdf8)}.en-lvl.tS{background:#b45309}.en-lvl.tA{background:#1f4fbf}.en-lvl.tB{background:#1f7a3f}.en-lvl.tC{background:#6b7280}.en-lvl.tD{background:#3b3f46}.en-trk{display:inline-flex;flex-direction:column;font-size:12px;line-height:1.15;padding-left:6px;border-left:3px solid var(--ta);text-align:left}.en-trk b{font-size:12.5px}.en-trk i{font-style:normal;color:var(--ink3)}.en-body{border-top:1px solid var(--rule2);padding:4px 10px 8px}.en-alt[hidden],.en-race[hidden]{display:none}.en-alt{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:5px 0}.en-alt button{width:auto;margin:0;padding:6px 12px}.en-in{color:var(--win);white-space:nowrap}.en-clm{margin-top:14px;border:1px solid #e0704f55;border-radius:4px;background:#e0704f0d}.en-clm>summary{list-style:none;padding:9px 10px;cursor:pointer;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}.en-clm .en-race{margin:0 6px 6px}.en-now{border-left:4px solid var(--win)}.en-now form{margin-left:8px}.eclm{padding:8px 10px 4px;margin-top:4px;border-top:2px solid var(--rule);font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}
 .ename{flex:1;min-width:0}.erow .money{min-width:64px;text-align:right}.erow .entercell{min-width:76px;display:flex;justify-content:flex-end;align-items:center;gap:4px}
 .entered{color:var(--win);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
 .phase b{font-family:'Barlow Condensed',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
@@ -1939,9 +1939,9 @@ GUIDE = [
          "colt with a good record can stand at stud; their racing record and their best rating stay in the book for good."),
     ]),
     ("Entering a race", [
-        ("Entries", "Tap Enter on a horse's card in your barn. Its stakes come first, then the races that suit it best, then every "
-         "race it qualifies for, one row each: the best-paying track on top, the other tracks folded underneath. Each race shows how "
-         "strong its fields usually run and how your horse measures up. Claiming races sit at the bottom, folded away. "
+        ("Entries", "Tap Enter on a horse's card in your barn. Its stakes come first, then every race it qualifies for, one row "
+         "each: the best-paying track on top, the other tracks folded underneath, and how strong its fields usually run. Sort by purse "
+         "or best fit, or narrow to mile, half-mile or passing-lane tracks. Claiming races sit at the bottom, folded away. "
          "Nothing in your barn races unless you enter it."),
         ("Race classes", "<b>Opens</b> are for the best of each age; an older horse climbs from the Aged Open through the Open and the "
          "Preferred to the Invitational at the top of the ladder, the circuit's free-for-all, where the best meet whatever "
@@ -3968,18 +3968,17 @@ def entry_sheet(h):
     def level(r):                                             # the tier a horse rated r would carry: how good this class runs
         return next((t for cut, t in MILE_TIERS if c.mile_secs(r) <= cut), "D")
 
-    def edge(r):                                              # this horse against that class
+    def fit(r):                                               # how well this horse fits that class: weights the Best fit sort only
         d = h.est - r
-        return ("Favorite", "fav") if d >= 10 else ("Contender", "con") if d >= 3 else ("Even match", "even") if d >= -3 else ("Up against it", "long")
+        return 1.0 if d >= 10 else .7 if d >= 3 else .45 if d >= -3 else .2
 
     rows = []
     for rname, offers in races.items():
         offers.sort(key=lambda o: -o[0])
         r = c.CLASS_RATING.get(rname, 55)
-        lab, cls = edge(r)
         rows.append(dict(rname=rname, title=c.race_title(c.age_group(h), rname), tag=tags.get(rname, 0), offers=offers, level=level(r),
-                         edge=lab, ecls=cls, score=offers[0][0] * {"fav": 1.0, "con": .7, "even": .45, "long": .2}[cls]))
-    conds = sorted((x for x in rows if not x["tag"]), key=lambda x: -x["score"])
+                         score=offers[0][0] * fit(r)))
+    conds = sorted((x for x in rows if not x["tag"]), key=lambda x: -x["offers"][0][0])   # by purse; Best fit is a sort chip
     claims = sorted((x for x in rows if x["tag"]), key=lambda x: -x["offers"][0][0])
 
     def track(v, trk):
@@ -4007,7 +4006,7 @@ def entry_sheet(h):
         cnt = f"<span class=en-cnt>{len(x['offers'])} tracks</span>" if len(x["offers"]) > 1 else ""
         return (f"<details class=en-race data-purse={o0[0]} data-score={x['score']:.0f} data-mile={int(mile)} data-half={int(half)} data-lane={int(lane)}"
                 f"{' open' if open_ else ''}><summary><div class=en-main><div class=en-name>{esc(x['title'])}</div>"
-                f"<div class=en-meta><span class='en-lvl t{x['level'].replace('+', 'p')}'>Field {x['level']}</span><span class='en-edge {x['ecls']}'>{x['edge']}</span>"
+                f"<div class=en-meta><span class='en-lvl t{x['level'].replace('+', 'p')}'>Field {x['level']}</span>"
                 f"{cnt}</div></div>"
                 f"<div class=en-right><span class=money>${o0[0]:,}</span><span class=en-top>{track(o0[1], o0[4])}</span></div></summary><div class=en-body>{alts}</div></details>")
 
@@ -4033,14 +4032,8 @@ def entry_sheet(h):
             out += (f"<div class='en-stk{' nom' if h in s.noms else ''}'><div><div class=en-name>{esc(s.name)}</div>"
                     f"<div class=sub>{when} · purse <span class=money>${s.purse:,.0f}</span></div></div>{act}</div>")
     if conds:
-        out += "<div class=en-h>Best fits<span>purse × chances</span></div>"
-        for k, x in enumerate(conds[:3]):
-            o0 = x["offers"][0]
-            out += (f"<div class=en-pick><div class=en-k>{k + 1}</div><div class=en-pm><div class=en-name>{esc(x['title'])}</div>"
-                    f"<div class=sub>{esc(o0[1]['name'])} · {'mile' if o0[4] == 'mile' else 'half-mile'} · field {x['level']}</div></div>"
-                    f"<div class=en-pr><span class=money>${o0[0]:,}</span><span class='en-edge {x['ecls']}'>{x['edge']}</span></div>{enter_btn(x, o0)}</div>")
         out += (f"<div class=en-h>All races<span>{len(conds)} races · {sum(len(x['offers']) for x in conds)} cards</span></div>"
-                "<div class=en-chips><button type=button class=on data-sort=score>Best fit</button><button type=button data-sort=purse>Purse</button>"
+                "<div class=en-chips><button type=button class=on data-sort=purse>Purse</button><button type=button data-sort=score>Best fit</button>"
                 "<button type=button data-f=mile>Mile</button><button type=button data-f=half>Half-mile</button><button type=button data-f=lane>Passing lane</button></div>"
                 "<div class=en-list>" + "".join(race_row(x) for x in conds) + "</div>"
                 "<script>(()=>{const L=document.currentScript.previousElementSibling,C=L.previousElementSibling;let f=null;"
