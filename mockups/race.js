@@ -189,6 +189,9 @@ RACE.simulate = () => {
         const cap = blocker.v + Math.sqrt(2 * 9 * Math.max(0, blocker.d - r.d - RACE.BODY));
         if (vNew > cap) vNew = Math.max(cap, r.v - 14 * dt);
       }
+      // catching up late, a horse never runs past its own story spot: overshooting it is how a beaten horse (Harbor Oak,
+      // 2626-stake-S6637) hit the wire a length and a half before the winner
+      if (late && r.d + vNew * dt > sd1) vNew = Math.max((sd1 - r.d) / dt, r.v - 9 * dt);   // ease back onto it, at the usual braking
       r.v = vNew;
       // held up but the story wants it further on: pull out a lane and go round, the way a closer swings wide
       const slowAhead = ahead(r, r.o).some(p => p.d - r.d < RACE.BODY * 3 && p.v < vs - .5);   // the one in front is coming back to it
