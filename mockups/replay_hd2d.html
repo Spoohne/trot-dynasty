@@ -935,8 +935,8 @@ function aimCamera(t, st, dt) {
 }
 
 // ---- place everything for time t
-const gateLag = h => Math.max(0, 1 - Math.max(0, h.d) / 220) * h.i * 1.6;     // outside posts leave the gate a beat later
-let gaitT = 0;
+const gateLag = h => Math.min(1, Math.max(0, h.d) / 40) * Math.max(0, 1 - Math.max(0, h.d) / 220) * h.i * 1.6;   // outside posts leave the gate a beat later: flush on the wings at the off, a step behind once it folds
+let gaitT = 0, runShift = 0;                                                 // runShift: feet the whole start (car, wings, field) is still short of its spot at the off (the run-up)
 // the minimap: the oval from above, homestretch at the bottom, the wire marked, a dot per horse in its saddle-cloth color,
 // yours ringed in gold, the leader drawn on top
 const mmEl = document.getElementById("mm"), mmG = mmEl.getContext("2d");
@@ -1084,9 +1084,9 @@ function place(t, st, dt) {
       return [RACE.D(u) + 13 + 1.5 * u * u + 9 * go * go, CO0 + (TRACK_W - 14 - CO0) * sm]; };
     const [gd, co] = at(t), [gd2, co2] = at(t + .15);
     const fold = Math.min(1, t / 1.6), e = fold * fold * (3 - 2 * fold);
-    const tp = V(RACE.SF + gd, co); truck.position.copy(tp);
-    const fwd = V(RACE.SF + gd2, co2).sub(tp); fwd.y = 0; fwd.normalize();            // pointed where it's actually going, so it steers out rather than crabbing
-    const heading = Math.atan2(-fwd.z, fwd.x), side = V(RACE.SF + gd, co + 1).sub(tp).normalize();   // side: toward the outside rail
+    const tp = V(RACE.SF + gd + runShift, co); truck.position.copy(tp);
+    const fwd = V(RACE.SF + gd2 + runShift, co2).sub(tp); fwd.y = 0; fwd.normalize();            // pointed where it's actually going, so it steers out rather than crabbing
+    const heading = Math.atan2(-fwd.z, fwd.x), side = V(RACE.SF + gd + runShift, co + 1).sub(tp).normalize();   // side: toward the outside rail
     truck.rotation.set(0, heading, 0); truck.scale.x = 1;
     [[-1, CO0 - 1 - HALF], [1, TRACK_W - 1 - CO0 - HALF]].forEach(([sd, L], k) => {
       const w = wings[k]; w.position.copy(tp).addScaledVector(fwd, -TRUCK_L / 2 + 1).addScaledVector(side, sd * HALF); w.scale.set(L, 1, 1); w.material.map.repeat.set(L / 24, 1);
@@ -1098,6 +1098,8 @@ function place(t, st, dt) {
 // ---- the opening: a drone sweep over the venue that comes down onto the field at the gate
 const INTRO = 9;
 let introT = 0;
+// after the drone, the field comes up from behind and gathers on the gate before the off
+const RUNUP = 5; let runT = 0;
 const introEl = document.getElementById("intro"), fieldEl = document.getElementById("field");
 introEl.onclick = () => { introT = INTRO; SND.wake(); };
 function introCam(u) {
@@ -1211,7 +1213,7 @@ function result() {                                                             
   const fin = RACE.H.map((h, i) => ({ i, b: h[2][6] })).sort((x, y) => x.b - y.b);
   document.getElementById("res").innerHTML = fin.map((h, k) => `<div class="rw"><b>${k + 1}</b>${RACE.pad(h.i)}<span>${RACE.H[h.i][0]}</span><span class="m">${k ? RACE.lengths(h.b - fin[k - 1].b) : RACE.fmt(RACE.FIN)}</span></div>`).join(""); }
 let froze = false, freezeLeft = 0, freeze0 = 1.8, wireZoom = null, pfShot = false, wireT = 0;
-let SLOW = 1; const SLOMO = 2.2;
+let SLOW = 1; const SLOMO = 1.1;
 var SOUND_ON = false;   // all replay sound off until the sound effects are redone; the code is kept                                                  // seconds of race clock before the wire run in slow motion
 const bulbsEl = document.getElementById("bulbs"), pfEl = document.getElementById("pf");
 let PHOTO = false;                                                                 // the top two inside half a length: the stewards call for the photo
@@ -1265,6 +1267,21 @@ function loop(now) {
       if (introT >= INTRO) camSnap = true;
       cam.fov = 30; cam.updateProjectionMatrix(); cam.position.copy(p); cam.lookAt(a); camPos.copy(p); camAim.copy(a);
       place(0, RACE.state(0), dt); SND.update(0, 0); renderer.render(scene, cam); requestAnimationFrame(loop); return;
+    }
+    if (runT < RUNUP && ctl.t === 0) {                                          // the run-up: scattered behind, each easing into its slot on the gate
+      // the car rolls at the field's starting speed; the field trots up behind it, quicker than the car, and settles on the wings
+      runT += dt; gaitT += dt; const v0 = Math.max(30, (RACE.D(.5) - RACE.D(0)) / .5);
+      runShift = -v0 * (RUNUP - runT);
+      // each in its own time: a loose bunch, not in post order, each easing onto its slot on the wings when it gets there
+      const rnd = (i, n) => { const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+      const st = RACE.state(0).map((h, i) => {
+        const arrive = RUNUP * (.5 + .35 * rnd(i, 1)), u = Math.min(1, runT / arrive), k = (1 - u) * (1 - u);
+        const back = runShift - k * arrive * 6 * (.4 + .6 * rnd(i, 2));    // closing on the car at no more than ~12 ft/s, a horse pacing a little quicker, never a sprint
+        return { ...h, s: h.s + back, d: h.d + back, o: h.o + k * (rnd(i, 3) - .5) * 9 }; });
+      aimCamera(0, st, dt);
+      const ms = st.reduce((a, h) => a + h.s, 0) / st.length, gs = RACE.state(0)[0].s + runShift;   // look between the pack and the gate, so the field is in shot as it comes up
+      cam.lookAt(V((ms + gs) / 2, TRACK_W / 2, 2));
+      place(0, st, dt); if (runT >= RUNUP) runShift = 0; SND.update(0, 0); renderer.render(scene, cam); requestAnimationFrame(loop); return;
     }
     SLOW = view === "tv" && !froze && ctl.t >= RACE.FIN - SLOMO ? .3 : 1;       // the last strides to the wire at a third speed
     if (freezeLeft > 0) { freezeLeft -= dt; flash.style.opacity = Math.max(0, freezeLeft - (freeze0 - .7)); } else ctl.tick(dt * SLOW);
