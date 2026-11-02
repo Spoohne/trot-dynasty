@@ -258,6 +258,7 @@ RACE.state = t => {                                                      // ever
     const kf = Math.floor(RACE.FIN * RACE.HZ), first = RACE.paths.map((p, i) => i).sort((a, b) => RACE.paths[b][kf * 2] - RACE.paths[a][kf * 2])[0];
     if (first !== want[0] && RACE.HERO < 0) {
       RACE.HERO = want[0];
+      RACE.H[want[0]].wide = 0;                                         // its own story's line, not the extra lanes the retries tried (7 wide)
       RACE.simulate();
       RACE.HERO = -1;
     }

@@ -144,7 +144,7 @@ def build(order, track, rng=None, passing=False):
                     continue                                        # it went by on the inside
                 lh, bh = pos[h.id][call]
                 passed = [p for p in order if p is not h and p is not diver and pos[p.id][call - 1][1] < pos[h.id][call - 1][1] and pos[p.id][call][1] > bh]
-                need = max((pos[p.id][call][0] + 1 for p in passed), default=lh)
+                need = max((pos[p.id][call - 1][0] + 1 for p in passed), default=lh)   # outside the lane it was in when passed, not one it drifted to after
                 if need > lh and need <= 4:                         # five wide at the most: any wider and it waits its turn
                     pos[h.id][call] = (float(need), bh); moved = True
             if not moved:
