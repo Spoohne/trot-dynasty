@@ -845,7 +845,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
   font-family:'Barlow Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);font-size:17px;border:0}
 .vfold[open] summary{border-bottom:2px solid var(--rule)}.vname{font-weight:700}.vmeta{font-size:13px;color:var(--ink2);font-family:'Barlow Semi Condensed',sans-serif}
 .vin{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--win)}
-.erow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid var(--rule2)}.erow:last-child{border-bottom:0}.eclm{padding:8px 10px 4px;margin-top:4px;border-top:2px solid var(--rule);font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}
+.erow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid var(--rule2)}.erow:last-child{border-bottom:0}.en-horse{display:flex;gap:10px;align-items:center}.en-h{display:flex;justify-content:space-between;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--led);margin:16px 2px 6px}.en-h span{color:var(--ink3);letter-spacing:.04em}.en-stk,.en-pick,.en-race{background:var(--panel);border:1px solid var(--rule);border-radius:4px;margin-bottom:6px}.en-stk{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-left:4px solid var(--rule)}.en-stk>div{min-width:0}.en-stk.nom{border-left-color:var(--tote);background:linear-gradient(100deg,#e8a33a1f,var(--panel) 60%)}.en-nom{color:var(--win);font-weight:700;font-size:13px;white-space:nowrap}.en-name{font-weight:700}.en-pick{display:grid;grid-template-columns:20px minmax(0,1fr) auto;grid-template-areas:'k m r' 'k m b';gap:4px 8px;align-items:center;padding:8px 10px}.en-k{grid-area:k;font:800 18px 'Barlow Condensed',sans-serif;color:var(--tote)}.en-pm{grid-area:m;min-width:0}.en-pr{grid-area:r;display:flex;flex-direction:column;align-items:flex-end;gap:2px}.en-pick>form,.en-pick>.en-in{grid-area:b;justify-self:end}.en-chips{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:4px 0 6px}.en-chips button{flex:none;width:auto;margin:0;padding:5px 10px;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--rule);color:var(--ink2);box-shadow:none}.en-chips button.on{background:var(--tote);color:var(--tote-ink);border-color:var(--tote)}.en-race>summary{list-style:none;display:flex;justify-content:space-between;gap:8px;padding:9px 10px;cursor:pointer;font:400 15px 'Barlow Semi Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink)}.en-race>summary::-webkit-details-marker{display:none}.en-main{min-width:0}.en-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}.en-right{flex:none;max-width:48%;display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}.en-lvl,.en-edge,.en-cnt{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.06em;padding:1px 6px;border-radius:2px}.en-lvl{color:#fff}.en-cnt{color:var(--ink3);border:1px solid var(--rule2)}.en-lvl.tSp{background:linear-gradient(90deg,#c084fc,#38bdf8)}.en-lvl.tS{background:#b45309}.en-lvl.tA{background:#1f4fbf}.en-lvl.tB{background:#1f7a3f}.en-lvl.tC{background:#6b7280}.en-lvl.tD{background:#3b3f46}.en-edge{text-transform:uppercase}.en-edge.fav{background:#3fb96b26;color:#4ade80}.en-edge.con{background:#e8a33a26;color:var(--led)}.en-edge.even{background:#a4acb926;color:var(--ink)}.en-edge.long{background:#e0704f26;color:#f87171}.en-trk{display:inline-flex;flex-direction:column;font-size:12px;line-height:1.15;padding-left:6px;border-left:3px solid var(--ta);text-align:left}.en-trk b{font-size:12.5px}.en-trk i{font-style:normal;color:var(--ink3)}.en-body{border-top:1px solid var(--rule2);padding:4px 10px 8px}.en-alt[hidden],.en-race[hidden]{display:none}.en-alt{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:5px 0}.en-alt button,.en-pick button{width:auto;margin:0;padding:6px 12px}.en-in{color:var(--win);white-space:nowrap}.en-clm{margin-top:14px;border:1px solid #e0704f55;border-radius:4px;background:#e0704f0d}.en-clm>summary{list-style:none;padding:9px 10px;cursor:pointer;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}.en-clm .en-race{margin:0 6px 6px}.en-now{border-left:4px solid var(--win)}.en-now form{margin-left:8px}.eclm{padding:8px 10px 4px;margin-top:4px;border-top:2px solid var(--rule);font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}
 .ename{flex:1;min-width:0}.erow .money{min-width:64px;text-align:right}.erow .entercell{min-width:76px;display:flex;justify-content:flex-end;align-items:center;gap:4px}
 .entered{color:var(--win);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
 .phase b{font-family:'Barlow Condensed',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
@@ -1939,7 +1939,9 @@ GUIDE = [
          "colt with a good record can stand at stud; their racing record and their best rating stay in the book for good."),
     ]),
     ("Entering a race", [
-        ("Entries", "Tap the + on a horse's card in your barn to see every race it qualifies for, track by track, and enter it. "
+        ("Entries", "Tap Enter on a horse's card in your barn. Its stakes come first, then the races that suit it best, then every "
+         "race it qualifies for, one row each: the best-paying track on top, the other tracks folded underneath. Each race shows how "
+         "strong its fields usually run and how your horse measures up. Claiming races sit at the bottom, folded away. "
          "Nothing in your barn races unless you enter it."),
         ("Race classes", "<b>Opens</b> are for the best of each age; an older horse climbs from the Aged Open through the Open and the "
          "Preferred to the Invitational at the top of the ladder, the circuit's free-for-all, where the best meet whatever "
@@ -3142,7 +3144,7 @@ def corner_action(h):
         return ""
     if h.retired or h.owner != ME or o:
         return ""
-    href = f"/horse/{urlname(h.name)}?enter=1#enter"
+    href = f"/enter/{urlname(h.name)}"
     cr = crown_invite(h)
     if cr and cr[2] == 0:
         return ""
@@ -3208,7 +3210,7 @@ def lanes(h):
     else:
         night = f"<span class=lmuted>{'Resting' if h.freshness < 50 else 'Not racing'}</span>"
     if isinstance(o, tuple) and o[0] == "enter":
-        day = (f"<b>Entered · {esc(order_text(h))}</b><span class=lsub><a href='/horse/{urlname(h.name)}?enter=1#enter'>Change</a> · "
+        day = (f"<b>Entered · {esc(order_text(h))}</b><span class=lsub><a href='/enter/{urlname(h.name)}'>Change</a> · "
                f"<form method=post action=/scratch class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=which value=tomorrow>"
                f"<button class=lnk>Scratch</button></form> · {prog}</span>")
     elif isinstance(o, tuple) and o[0] == "claim":
@@ -3216,7 +3218,7 @@ def lanes(h):
     else:
         corner = corner_action(h)
         if corner and "pause" not in corner:
-            day = f"<a class='btn lgo' href='/horse/{urlname(h.name)}?enter=1#enter'>Enter</a>"
+            day = f"<a class='btn lgo' href='/enter/{urlname(h.name)}'>Enter</a>"
         elif corner:                                                     # its stake (or Crown) runs tomorrow night: that's the entry
             cr = crown_invite(h)
             st_ = cr[0] if cr and cr[2] == 1 else next(s for s in sk.CALENDAR if h in s.noms and not s.result)
@@ -3951,6 +3953,122 @@ def sell_box(h):
             f"a horse worth more belongs on the board.</div></div>")
 
 
+def entry_sheet(h):
+    """The entry screen (mockups/entry_v2): stakes first, then the best fits, then one row per race (its best-paying track
+    on top, the other tracks folded in), claimers folded at the bottom. A horse's book repeats the same few races at
+    every track; grouping by race turns 70-odd cards into a dozen rows."""
+    cur = getattr(h, "order", None)
+    cur = cur if isinstance(cur, tuple) and cur[0] == "enter" else None
+    him = "him" if h.sex == "m" else "her"
+    tags = {c.clm_name(t): t for t, _, _ in c.CLAIMERS}
+    races = {}
+    for v, rname, purse, vpurse, tag, track in c.offerings(h):
+        races.setdefault(rname, []).append((vpurse, v, purse, tag, track))
+
+    def level(r):                                             # the tier a horse rated r would carry: how good this class runs
+        return next((t for cut, t in MILE_TIERS if c.mile_secs(r) <= cut), "D")
+
+    def edge(r):                                              # this horse against that class
+        d = h.est - r
+        return ("Favorite", "fav") if d >= 10 else ("Contender", "con") if d >= 3 else ("Even match", "even") if d >= -3 else ("Up against it", "long")
+
+    rows = []
+    for rname, offers in races.items():
+        offers.sort(key=lambda o: -o[0])
+        r = c.CLASS_RATING.get(rname, 55)
+        lab, cls = edge(r)
+        rows.append(dict(rname=rname, title=c.race_title(c.age_group(h), rname), tag=tags.get(rname, 0), offers=offers, level=level(r),
+                         edge=lab, ecls=cls, score=offers[0][0] * {"fav": 1.0, "con": .7, "even": .45, "long": .2}[cls]))
+    conds = sorted((x for x in rows if not x["tag"]), key=lambda x: -x["score"])
+    claims = sorted((x for x in rows if x["tag"]), key=lambda x: -x["offers"][0][0])
+
+    def track(v, trk):
+        p_, a_, *_ = TI.look(v["id"])
+        return (f"<span class=en-trk style='--ta:{a_}'><b>{esc(v['name'])}</b><i>{'mile' if trk == 'mile' else 'half'}"
+                f"{' · passing lane' if v.get('passing') else ''}</i></span>")
+
+    def enter_btn(x, o, primary=True):
+        vpurse, v, purse, tag, trk = o
+        if cur and cur[1] == x["rname"] and cur[4] == trk and len(cur) > 5 and cur[5] == v["id"]:
+            return "<b class=en-in>✓ Entered</b>"
+        warn = f" onclick=\"return ask(this,'Enter {esc(h.name)} in a ${tag:,} claimer at {esc(v['name'])}? Any barn can take {him} for the tag.')\"" if tag else ""
+        mates = stablemates(h, x["rname"], trk, v["id"])
+        tip = f" title='{esc('You already have ' + ' and '.join(m.name for m in mates) + ' in this race')}'" if mates else ""
+        return (f"<form method=post action=/enter class=inline><input type=hidden name=h value='{esc(h.name)}'>"
+                f"<input type=hidden name=r value='{x['rname']}|{purse}|{tag}|{trk}|{v['id']}'>"
+                f"<button class='{'' if primary else 'sec'}'{warn}{tip}>{'Move' if cur else 'Enter'}</button></form>")
+
+    def race_row(x, open_=False):
+        o0 = x["offers"][0]
+        alts = "".join(f"<div class=en-alt data-mile={int(o[4] == 'mile')} data-half={int(o[4] == 'half')} data-lane={int(bool(o[1].get('passing')))}"
+                       f" data-p={o[0]}>{track(o[1], o[4])}<span class=money>${o[0]:,}</span>{enter_btn(x, o, k == 0)}</div>" for k, o in enumerate(x["offers"]))
+        mile = any(o[4] == "mile" for o in x["offers"]); half = any(o[4] == "half" for o in x["offers"])
+        lane = any(o[1].get("passing") for o in x["offers"])
+        cnt = f"<span class=en-cnt>{len(x['offers'])} tracks</span>" if len(x["offers"]) > 1 else ""
+        return (f"<details class=en-race data-purse={o0[0]} data-score={x['score']:.0f} data-mile={int(mile)} data-half={int(half)} data-lane={int(lane)}"
+                f"{' open' if open_ else ''}><summary><div class=en-main><div class=en-name>{esc(x['title'])}</div>"
+                f"<div class=en-meta><span class='en-lvl t{x['level'].replace('+', 'p')}'>Field {x['level']}</span><span class='en-edge {x['ecls']}'>{x['edge']}</span>"
+                f"{cnt}</div></div>"
+                f"<div class=en-right><span class=money>${o0[0]:,}</span><span class=en-top>{track(o0[1], o0[4])}</span></div></summary><div class=en-body>{alts}</div></details>")
+
+    out = ""
+    if cur:
+        out += (f"<div class='card en-now'><b>Entered</b> · {esc(order_text(h))}"
+                f"<form method=post action=/scratch class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=which value=tomorrow>"
+                f"<button class=sec>Scratch</button></form><div class=sub>Pick another race below to move {him}.</div></div>")
+    wk = G["day"] % c.YEAR
+    stakes = sorted((s for s in sk.CALENDAR if not s.result and s.week >= wk and s.kind != "final" and s.eligible(h)), key=lambda s: s.week)[:4]
+    if stakes:
+        out += f"<div class=en-h>Stakes<span>{sum(h in s.noms for s in stakes)} nominated</span></div>"
+        for s in stakes:
+            out_ = s.week - wk
+            when = "this week" if out_ == 0 else "next week" if out_ == 1 else f"in {out_} weeks"
+            if h in s.noms:
+                act = "<span class=en-nom>✓ Nominated</span>"
+            elif (fee := s.fee(G["day"])) is None:                            # too close to the race: nominations have closed
+                act = "<span class=sub>Nominations closed</span>"
+            else:
+                act = (f"<form method=post action=/nominate class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=s value={s.id}>"
+                       f"<button class=sec onclick=\"return ask(this,'Pay ${fee:,.0f} to nominate {esc(h.name)} for the {esc(s.name)}?')\">Nominate · ${fee:,.0f}</button></form>")
+            out += (f"<div class='en-stk{' nom' if h in s.noms else ''}'><div><div class=en-name>{esc(s.name)}</div>"
+                    f"<div class=sub>{when} · purse <span class=money>${s.purse:,.0f}</span></div></div>{act}</div>")
+    if conds:
+        out += "<div class=en-h>Best fits<span>purse × chances</span></div>"
+        for k, x in enumerate(conds[:3]):
+            o0 = x["offers"][0]
+            out += (f"<div class=en-pick><div class=en-k>{k + 1}</div><div class=en-pm><div class=en-name>{esc(x['title'])}</div>"
+                    f"<div class=sub>{esc(o0[1]['name'])} · {'mile' if o0[4] == 'mile' else 'half-mile'} · field {x['level']}</div></div>"
+                    f"<div class=en-pr><span class=money>${o0[0]:,}</span><span class='en-edge {x['ecls']}'>{x['edge']}</span></div>{enter_btn(x, o0)}</div>")
+        out += (f"<div class=en-h>All races<span>{len(conds)} races · {sum(len(x['offers']) for x in conds)} cards</span></div>"
+                "<div class=en-chips><button type=button class=on data-sort=score>Best fit</button><button type=button data-sort=purse>Purse</button>"
+                "<button type=button data-f=mile>Mile</button><button type=button data-f=half>Half-mile</button><button type=button data-f=lane>Passing lane</button></div>"
+                "<div class=en-list>" + "".join(race_row(x) for x in conds) + "</div>"
+                "<script>(()=>{const L=document.currentScript.previousElementSibling,C=L.previousElementSibling;let f=null;"
+                "C.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{C.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('on',x===b));"
+                "[...L.children].sort((a,z)=>z.dataset[b.dataset.sort]-a.dataset[b.dataset.sort]).forEach(r=>L.appendChild(r))});"
+                "C.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{f=f===b.dataset.f?null:b.dataset.f;C.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x.dataset.f===f));"
+                "[...L.children].forEach(r=>{const a=[...r.querySelectorAll('.en-alt')];a.forEach(x=>x.hidden=!!f&&x.dataset[f]!=='1');"
+                "const b=a.find(x=>!x.hidden);r.hidden=!b;if(b){r.querySelector('.en-right .money').textContent=b.querySelector('.money').textContent;"
+                "r.querySelector('.en-top').innerHTML=b.querySelector('.en-trk').outerHTML;r.dataset.purse=b.dataset.p}})})})()</script>")
+    if claims:
+        out += (f"<details class=en-clm><summary>Claiming races ({len(claims)}) · any barn can take {him} for the tag</summary>"
+                + "".join(race_row(x) for x in claims) + "</details>")
+    return out or "<p class=sub>No races open to this horse.</p>"
+
+
+def entry_page(name):
+    """Enter one horse: the entry screen on its own, where the barn's Enter button lands."""
+    h = next((x for x in G["horses"] if x.name == name and x.owner == ME and not x.retired), None)
+    if not h:
+        return page("Enter", "<p>Not one of your racing horses.</p>")
+    head = (f"<div class='card en-horse'><a href='/horse/{urlname(h.name)}'>{square_portrait(h, 64)}</a><div style='min-width:0'>"
+            f"<a href='/horse/{urlname(h.name)}' class=bname>{esc(h.name)}</a>"
+            f"<div class=sub>{h.age}yo {sex_word(h)} · {condition(h)} · best {best_time(h)}</div><div class=sub>{tonight(h)}</div>"
+            f"<div class=sub>Entering for tomorrow night's card, drawn at the close tonight.</div></div></div>")
+    body = head + (groom_form(h) if h.freshness < e.GROOMED_TO else "") + entry_sheet(h)
+    return page(f"Enter {h.name}", body)
+
+
 def horse_page(name, entering=False):
     h = find_horse(name)
     if not h:
@@ -4034,62 +4152,7 @@ def horse_page(name, entering=False):
     inner += "</div>"
     if h.freshness < e.GROOMED_TO:
         inner += groom_form(h)
-    # a sliding strip of tracks (like the barn's menu); the chosen track's races open underneath, best-paying first.
-    # The track it's entered at is picked by itself.
-    by_track, vtabs, vpanes = {}, [], []
-    for o in c.offerings(h):
-        by_track.setdefault(o[0]["id"], []).append(o)
-    for v in c.VENUES:
-        rows = sorted(by_track.get(v["id"], []), key=lambda o: (o[4] > 0, -o[3]))   # its own races first, claimers after
-        if not rows:
-            continue
-        here = cur and cur[0] == "enter" and len(cur) > 5 and cur[5] == v["id"]
-        fold = ""
-        him = "him" if h.sex == "m" else "her"
-        for k, (_, rname, purse, vpurse, tag, track) in enumerate(rows):
-            if tag and (k == 0 or not rows[k - 1][4]):              # the claiming races under their own heading
-                fold += f"<div class=eclm>Claiming races · any barn can take {him} for the tag</div>"
-            picked = here and cur[1] == rname and cur[4] == track
-            warn = f"onclick=\"return ask(this,'Enter {h.name} in a ${tag:,} claimer at {v['name']}? Any barn can take {him} for the tag.')\"" if tag else ""
-            mates = stablemates(h, rname, track, v["id"])
-            tip = "You already have " + " and ".join(x.name for x in mates) + " in this race"
-            fold += (f"<div class=erow><span class=ename>{esc(c.race_title(c.age_group(h), rname))}</span><span class=money>${vpurse:,}</span><span class=entercell>"
-                     + ("<b class=entered>Entered</b>" if picked else
-                        f"<form method=post action=/enter class=inline><input type=hidden name=h value='{esc(h.name)}'>"
-                        f"<input type=hidden name=r value='{rname}|{purse}|{tag}|{track}|{v['id']}'><button class=sec {warn}>Enter</button></form>")
-                     + (f"<span class=mates title='{esc(tip)}' aria-label='{esc(tip)}'>{STABLEMATE}</span>" if mates else "") + "</span></div>")
-        wk = G["day"] % c.YEAR + 1
-        fair = " · <b class=fairnow>fair week</b>" if v.get("fair") and v["fair"][0] <= wk < v["fair"][1] else ""
-        head = (f"<span class=vname>{esc(v['name'])}</span><span class=vmeta>{'mile' if v['track'] == 'mile' else 'half-mile'} · "
-                f"{len(rows)} race{'s' if len(rows) != 1 else ''} · up to ${rows[0][3]:,}{fair}</span>"
-                + ("<span class=vin>entered</span>" if here else ""))
-        vtabs.append((v["id"], v["name"], here, bool(fair)))
-        p_, a_, f_, m_, b_ = TI.look(v["id"])
-        vpanes.append((v["id"], f"<div class=vband style='--tp:{p_};--ta:{a_}'><img src={b_} width=40 height=40 alt=''><div><b style=\"font-family:{f_}\">"
-                                f"{esc(v['name'])}</b><span>{esc(m_)}</span></div></div><div class=vmeta2>{head}</div>{fold}"))
-    if vtabs:
-        pick = next((i for i, (_, _, here_, _) in enumerate(vtabs) if here_), 0)
-        inner += ("<div class='hmenu vstrip'>" + "".join(
-            f"<button type=button data-v={vid}{' class=on' if i == pick else ''} style='--tp:{TI.look(vid)[0]};--ta:{TI.look(vid)[1]}'>"
-            f"<img src={TI.look(vid)[4]} width=18 height=18 alt=''>{esc(nm)}{' <i class=vdot></i>' if here_ else ''}"
-            f"{' <b class=fairnow>fair</b>' if fair_ else ''}</button>" for i, (vid, nm, here_, fair_) in enumerate(vtabs)) + "</div>"
-            + "".join(f"<div class=vpane id=vp-{vid}{'' if i == pick else ' hidden'}>{p}</div>" for i, (vid, p) in enumerate(vpanes))
-            + "<script>document.currentScript.previousElementSibling&&0;(()=>{const s=document.querySelector('.vstrip');s.querySelectorAll('button').forEach(b=>b.onclick=()=>{"
-              "s.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.vpane').forEach(p=>p.hidden=p.id!=='vp-'+b.dataset.v);"
-              "b.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})});s.querySelector('.on').scrollIntoView({inline:'center',block:'nearest'})})()</script>")
-    inner += "<div class=sub style='margin-top:6px'>Every race this horse qualifies for, by track. Higher class, bigger purse, tougher field.</div>"
-    best = sk.best_for(h, G["day"])
-    inner += "<div style='margin-top:10px'><b>Stakes</b> <span class=sub>by nomination, weeks ahead</span></div>"
-    if best:
-        inner += "<table><tr><th>Stake</th><th>Week</th><th>Fee now</th><th>Expected net</th><th></th></tr>"
-        for ev, s, fee in best[:5]:
-            act = ("<b>nominated</b>" if h in s.noms else
-                   f"<form method=post action=/nominate class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=s value={s.id}>"
-                   f"<button class=sec onclick=\"return ask(this,'Pay ${fee:,.0f} to nominate {h.name} for the {s.name}?')\">Nominate</button></form>")
-            inner += f"<tr><td>{esc(s.name)}</td><td>{s.week + 1} ({s.week - G['day'] % c.YEAR:+})</td><td>${fee:,.0f}</td><td>${ev:,.0f}</td><td>{act}</td></tr>"
-        inner += "</table>"
-    else:
-        inner += "<div class=sub>None open that this horse can enter.</div>"
+    inner += entry_sheet(h)                                              # stakes, best fits, every race (DECISIONS: entry v2)
     opts = "".join(f"<option>{o}</option>" for o in ["rest", "sell"])
     inner += (f"<div style='margin-top:10px'><b>Or instead this week</b></div><form method=post action=/order><input type=hidden name=h value='{esc(h.name)}'>"
               f"<select name=o>{opts}</select> <button class=sec>Set</button></form><div class=sub>Not entered means the trainer's week: school or rest.</div></div>")
@@ -5330,6 +5393,8 @@ class H(BaseHTTPRequestHandler):
                     "right:env(safe-area-inset-right,0);z-index:9999;padding:8px 14px;border-radius:0 0 0 10px;background:#000c;color:#fff;font:600 15px system-ui;text-decoration:none'>&larr; Back</a>")
             card = next_card()
             return self.send(html_.replace("</body>", back + (card_overlay(card) if card else "") + "</body>", 1))
+        if p.startswith("/enter/"):                                   # the entry screen, where the barn's Enter button lands
+            return self.send(entry_page(unquote(p[len("/enter/"):])))
         if p.startswith("/horse/"):
             return self.send(horse_page(unquote(p.split("/")[2]), "enter" in parse_qs(urlparse(self.path).query)))
         if p.startswith("/mock/"):                          # design mockups: static files from mockups/
