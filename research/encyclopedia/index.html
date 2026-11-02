@@ -102,6 +102,8 @@ p.lead{color:var(--ink2);max-width:80ch;margin:0 0 12px}
   <div class=chart id=c_tables></div>
   <div class=sec>Card total vs career purses</div><canvas id=sc width=1400 height=560></canvas>
   <div class=legend id=sc_key></div>
+  <div class=sec>Peak Speed bar vs best mile time</div><p class=lead>Each horse's highest Speed bar against the fastest mile it ever ran (20+ starts, complete careers). If Speed sets the clock, the dots fall in a tight band from top left to bottom right.</p>
+  <canvas id=sc2 width=1400 height=560></canvas>
 </section>
 
 <section id=t-notes class=hidden>
@@ -190,8 +192,18 @@ async function charts() {
   for (let e = 3; e <= Math.ceil(y1); e++) { const y = Y(10 ** e); g.beginPath(); g.moveTo(P, y); g.lineTo(W - P, y); g.stroke(); g.fillText("$" + (10 ** e).toLocaleString(), 4, y - 4); }
   g.fillText("card total at " + $("#c_age").value + " (four bars, 4 to 40) →", P, H - 12);
   for (const [x, y, t] of pts) { g.fillStyle = (TIER_COL[t] || "#5b6270") + "bb"; g.beginPath(); g.arc(X(x), Y(y), 3.2, 0, 7); g.fill(); }
+  plot2(d.speed_time);
   $("#sc_key").innerHTML = Object.entries(TIER_COL).map(([t, c]) => `<span><i style="background:${c}"></i>peak ${t}</span>`).join("");
 }
+function plot2(pts) {
+  const cv = $("#sc2"), g = cv.getContext("2d"), W = cv.width, H = cv.height, P = 60; g.clearRect(0, 0, W, H); if (!pts || !pts.length) return;
+  const ys = pts.map(p => p[1]), y0 = Math.min(...ys), y1 = Math.min(Math.max(...ys), y0 + 25);
+  const X = v => P + (v - 1) / 9 * (W - 2 * P), Y = v => P / 2 + (Math.min(v, y1) - y0) / (y1 - y0 || 1) * (H - 1.5 * P);
+  g.strokeStyle = "#2b3a55"; g.fillStyle = "#6f7886"; g.font = "20px Barlow Semi Condensed";
+  for (let b = 1; b <= 10; b++) { g.beginPath(); g.moveTo(X(b), P / 2); g.lineTo(X(b), H - P); g.stroke(); g.fillText(b, X(b) - 5, H - P + 24); }
+  for (let t = Math.ceil(y0); t <= y1; t += 2) { const y = Y(t); g.fillText(mt(t), 4, y + 6); }
+  g.fillText("peak Speed bar →", W - P - 170, H - 8);
+  for (const [x, y, t] of pts) { g.fillStyle = (TIER_COL[t] || "#5b6270") + "bb"; g.beginPath(); g.arc(X(x), Y(y), 3.2, 0, 7); g.fill(); } }
 async function loadNotes() { notes = await (await fetch("/api/notes")).json(); $("#gnote").value = notes.general || "";
   const ids = Object.keys(notes.horses || {});
   $("#hnotes").innerHTML = ids.length ? ids.map(id => `<div class=panel style="margin-bottom:6px"><a href="#" onclick="open_(${id});return false">Horse #${id}</a><div class=sub style="white-space:pre-wrap">${esc(notes.horses[id])}</div></div>`).join("") : "<div class=sub>None yet.</div>"; }

@@ -19,6 +19,11 @@ LUCK = 1.0                    # seconds: the best night a horse can have, beyond
 NOSE = 0.05                   # lengths: the least one finisher is behind another
 RATE_W = dict(gate=.242, cruise=.304, kick=.391, grit=.064)   # the rating: bars weighted by worth (DECISIONS 217/224)
 TIME_FIT = (130.94, -2.733)  # mile seconds = a + b * rating: today's racing horses 3+ (n 660, r -0.93, resid 1.2 s)
+# Speed sets the clock (Patrick, 2026-11-02: "speed being the thing that directly correlates to how fast a horse can finish;
+# the rest of the bars are how often and how well it gets to that finish"). A horse's fastest mile comes from its Speed bar
+# (kick), slowed by STAY seconds for each point its Speed outruns its Stamina (it can't hold its top end a mile). Fitted on
+# today's racing horses 3+ so times keep their spread (n 660; the time tracks Speed at r 0.97, the old rating time at 0.90).
+SPEED_FIT, STAY = (128.26, -2.307), 0.8
 ROLES = ("lead", "pocket", "first_over", "followed", "back")
 DUEL, P_NONE, N_FOLLOW, BREAK = 0.15, 0.10, 2, 3.0
 FO_MAX = {"half": 4, "mile": 5}
@@ -59,6 +64,11 @@ def grit_bar(h):
 def bars(h, stats):
     return dict(gate=bar(stats["early_speed"]), cruise=bar(stats["stamina"]), kick=bar(stats["late_speed"]),
                 manners=bar(stats["gait"], gait=True), grit=getattr(h, "grit_bar", None) or grit_bar(h))
+
+
+def best_mile(b, half=False):
+    """A horse's own mile on a clean night, in display seconds: its Speed (kick) sets it, less what its Stamina can't hold."""
+    return SPEED_FIT[0] + SPEED_FIT[1] * b["kick"] + STAY * max(0.0, b["kick"] - b["cruise"]) + (sim.HALF_SLOWER if half else 0)
 
 
 def race(field, track="mile", passing=False):
@@ -126,8 +136,7 @@ def race(field, track="mile", passing=False):
     # or beaten, runs faster than its own rating's time less LUCK. A beaten horse that would have to be quicker than that to
     # be this close is beaten by more; the order stands, and the margins are re-read from the times.
     to_raw = (sim.CLOCK_REF - sim.CLOCK_AT) / sim.CLOCK_K                # display seconds back to race seconds (the clock is linear above its floor)
-    limit = {h.id: TIME_FIT[0] + TIME_FIT[1] * sum(RATE_W[k] * v for k, v in bars(h, stats[h.id]).items() if k in RATE_W)
-             + (sim.HALF_SLOWER if half else 0) - LUCK + to_raw for h in field}
+    limit = {h.id: best_mile(bars(h, stats[h.id]), half) - LUCK + to_raw for h in field}
     w = order[0]
     win_raw = max(limit[w.id] + LUCK + rng.gauss(0, 0.5), limit[w.id])
     for post, h in enumerate(field, 1):

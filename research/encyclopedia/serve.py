@@ -130,6 +130,9 @@ def charts(db, age):
     out["points"] = [list(r) for r in db.execute(f"""SELECT (c.speed + c.stamina + c.grit + c.manners), h.earnings,
         (SELECT tier FROM seasons WHERE id = h.id ORDER BY rating DESC LIMIT 1), h.id FROM horses h {card_join(age)}
         WHERE (h.retired = 1 OR h.last_season < ?) AND h.starts > 0 ORDER BY RANDOM() LIMIT 5000""", (done,))]
+    out["speed_time"] = [list(r) for r in db.execute("""SELECT p.speed, h.best, p.tier FROM horses h JOIN (SELECT id, MAX(speed) speed,
+        (SELECT tier FROM seasons s2 WHERE s2.id = s.id ORDER BY rating DESC LIMIT 1) tier FROM seasons s GROUP BY id) p ON p.id = h.id
+        WHERE h.starts >= 20 AND h.best < 900 AND (h.retired = 1 OR h.last_season < ?) ORDER BY RANDOM() LIMIT 5000""", (done,))]
     return out
 
 

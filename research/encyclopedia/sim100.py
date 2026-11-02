@@ -27,7 +27,7 @@ O = c.outcome
 
 SEASONS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
 DB = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "research", "encyclopedia", "world100.db")
-BAR_KEYS = (("speed", "early_speed"), ("stamina", "stay"), ("grit", "grit"), ("manners", "gait"))
+BAR_KEYS = (("speed", "late_speed"), ("stamina", "stamina"), ("grit", "grit"), ("manners", "gait"))   # the live card (app.BARS)
 TIER_3UP = ((10.01, "Galaxy"), (7.55, "S+"), (6.59, "S"), (6.01, "A"), (5.25, "B"), (4.09, "C"))   # DECISIONS 236
 TIER_2YO = ((5.61, "Galaxy"), (5.36, "S+"), (4.18, "S"), (3.26, "A"), (2.42, "B"), (1.66, "C"))   # DECISIONS 237
 KEEP = 3                                                       # races kept per horse
@@ -53,7 +53,7 @@ def open_db(path):
         best REAL, trophies TEXT, titles TEXT, last_season INTEGER, retired INTEGER, last_age INTEGER);
       CREATE TABLE seasons(id INTEGER, season INTEGER, age INTEGER, retired INTEGER, speed REAL, stamina REAL, grit REAL,
         manners REAL, g_speed TEXT, g_stamina TEXT, g_grit TEXT, g_manners TEXT, rating REAL, tier TEXT, starts INTEGER,
-        wins INTEGER, earnings REAL, season_earn REAL, PRIMARY KEY(id, season));
+        wins INTEGER, earnings REAL, season_earn REAL, gate REAL, best_mile REAL, PRIMARY KEY(id, season));   -- gate: early speed, not on the card; best_mile: outcome.best_mile
       CREATE TABLE stories(rid TEXT PRIMARY KEY, day INTEGER, season INTEGER, name TEXT, purse REAL, stake INTEGER, json BLOB);   -- zlib'd JSON
       CREATE TABLE kept(id INTEGER, rid TEXT, score REAL, place INTEGER);
       CREATE TABLE meta(k TEXT PRIMARY KEY, v TEXT);
@@ -128,9 +128,10 @@ class Recorder:
                 g[k] = grade_of((len(vals) - bisect.bisect_left(vals, b - 1e-9)) / len(vals)) if vals else None
             out.append((h.id, season, h.age, int(h.retired), bars["speed"], bars["stamina"], bars["grit"], bars["manners"],
                         g["speed"], g["stamina"], g["grit"], g["manners"], rating, tier(rating, h.age) if h.age >= 2 else None,
-                        h.starts, h.wins, h.earnings, getattr(h, "earnings", 0) - getattr(h, "season0", 0)))
+                        h.starts, h.wins, h.earnings, getattr(h, "earnings", 0) - getattr(h, "season0", 0), app.bar_of(h, "early_speed"),
+                        O.best_mile(O.bars(h, h.developed))))
             self.horse_row(h, season)
-        self.db.executemany("INSERT OR REPLACE INTO seasons VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
+        self.db.executemany("INSERT OR REPLACE INTO seasons VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
         for hid, heap in self.best.items():
             self.db.execute("DELETE FROM kept WHERE id=?", (hid,))
             self.db.executemany("INSERT INTO kept VALUES(?,?,?,?)", [(hid, rid, s, pl) for s, rid, pl in heap])
