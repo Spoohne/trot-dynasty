@@ -89,7 +89,14 @@ def check_save(save):
     print("save: a failed write stays unsaved and the next pass saves it")
 
 
+def check_rehome(save):
+    """Day 2624: Northern Star, alone in the Preferred, was moved into the fullest card, a $500k claimer."""
+    cards = {("all", "open", "Preferred", 40000, 0, "mile"): ["ns"], ("aged", "open", "CLM500k", 52000, 500000, "mile"): list(range(10))}
+    assert c.rehome(("all", "open", "Preferred", 40000, 0, "mile"), cards) is None, "a lone horse was moved into a claimer"
+    print("rehome: a lone horse is never moved into a claiming race")
+
+
 if __name__ == "__main__":
-    for check in (check_signup, check_settlement, check_save):
+    for check in (check_signup, check_settlement, check_save, check_rehome):
         check(sys.argv[1])
-    print("all three defects stay fixed")
+    print("all checks pass")

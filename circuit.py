@@ -987,6 +987,15 @@ def top_up(key, field, idle_all, drafted):
         field.append(visitor(key, field, everyone))
 
 
+def rehome(key, cards):
+    """Where a horse left alone in its class races instead: the fullest card of its age group (any age if none),
+    but never a claiming race it wasn't entered in, which would put it up for a tag nobody chose (Northern Star was
+    moved into a $500k claimer this way). None: it keeps its own card, and the race office fills it (top_up)."""
+    fits = [k for k in cards if k != key and not k[4] and len(cards[k]) >= 2]   # k[4]: the claiming tag
+    others = [k for k in fits if k[0] == key[0]] or fits
+    return max(others, key=lambda k: len(cards[k])) if others else None
+
+
 def draw_card(day, horses, skip=()):
     """The draw for the card of `day`: every entry is carded, short fields are filled, splits are made and posts drawn.
     Done right after the previous card runs, so the program is up all day; race_day then runs exactly these fields.
@@ -1048,13 +1057,11 @@ def draw_card(day, horses, skip=()):
         for key in [k for k in cards if k[2] == name and len(cards[k]) < TOP_MIN]:
             purse = next(c[2] for c in CONDITIONS if c[0] == below)
             cards.setdefault((key[0], key[1], below, purse, 0, key[5]), []).extend(cards.pop(key))
-    # still alone: the office rewrites the condition and the horse races in the fullest card
-    # of its age group tonight, whatever the class
+    # still alone: the office rewrites the condition and the horse races in the fullest card of its age group tonight
     for key in [k for k, v in cards.items() if len(v) < 2]:
-        others = [k for k in cards if k != key and k[0] == key[0] and len(cards[k]) >= 2] \
-            or [k for k in cards if k != key and len(cards[k]) >= 2]   # nobody its age racing: any card
-        if others:
-            cards[max(others, key=lambda k: len(cards[k]))].extend(cards.pop(key))
+        to = rehome(key, cards)
+        if to:
+            cards[to].extend(cards.pop(key))
     races = []
     for key, entries in cards.items():
         group, sex, name, purse, tag, track = key
