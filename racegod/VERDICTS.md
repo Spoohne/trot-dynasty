@@ -136,3 +136,39 @@ on the next night's card; if tailed-off horses are now rare, the story can show 
 
 Patrick: ship it (2026-11-02). Tonight's card on a save copy with WITHIN 0.1: 84 races, no law broken, 14% of starters
 limited (was 64%), 4 races with a horse 40 L+ back (was 26), median last horse 16.8 L, median winning margin 1.6 L.
+
+Deployed 2026-11-02, commit 7a1a7bf. Live: service active, login 200, WITHIN 0.1 on the server. Backup
+save.before-within-20261102-190405.pkl.
+
+## V5 - The engine's shape is the problem, 2026-11-02 (proposal; Patrick asked for it straight)
+
+V1-V4 were patches on one structural fault: **the game never runs a race.** It decides a result (outcome.py), then a
+second system (story.py) invents where everyone was from one line of text per horse, and a third set of formulas
+(clock fit, model margins, speed limit) argues over the times. Every bug so far was two of these disagreeing: the photo
+finish that was a 47 L win, the 40 L wall, 65% of times set by a ceiling instead of the race. The auditor's laws exist
+only because the picture and the result are produced separately and can drift apart. Pace doesn't exist at all: every
+race runs the same fixed quarters, so a speed duel and a soft lead look identical, and the replay shows moves ("moved
+after the half") that nothing in the engine made.
+
+**Proposal: one time-stepped race, and the result is whatever crosses the wire.** Each horse has a speed curve and an
+energy budget from its bars; drivers make the trip choices the outcome model already has (leave, tuck, pull first-over,
+wait) at the calls, with a cost for racing outside; the pace sets the fractions, and fast fractions tire the leader.
+Positions at every call come out of the run, the replay plays them back, and times, margins, order, photos, trips and
+fractions are consistent because there's only one of each. The outcome model's fitted knowledge (post effect, role
+advantages, grit in the duel) becomes the driver and physics parameters, so nothing learned is thrown away.
+
+**What it costs and what it doesn't.** It replaces `outcome.py` and most of `story.py`; it keeps the contract
+(`race(field, track, passing)` returns the order with trip, times and the ledger), so `circuit.py`, `stakes.py`, the
+pages and the replay viewer are untouched, and it goes in behind the existing TD_ENGINE switch. Calibration is the same
+lab: the 315 real fields, TARGETS.md, Northern Star's records, the 1-3 L winning margins. **This reverses the engine
+lab's direction (DECISIONS 226-234: outcome first, then a caster that choreographs it).** The caster reached 58% of
+races; a simulation reaches 100% by construction.
+
+**Measured basis:** V1 (post and front-end targets missed), V3 (40 L wall), V4 (three time scales). **Hypothesis:** a
+single simulation will hit the targets with less tuning than the three-system design; proven only by building the
+prototype and running the same audit on it.
+
+### Proposed (awaiting Patrick)
+
+Build the prototype in `racegod/engine/` (not imported by the game), run it on the 315 fields, publish the audit side
+by side with today's engine, and show three replays. About two sessions' work before there's anything to judge.
