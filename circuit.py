@@ -36,9 +36,9 @@ CONDITIONS = [
     # not the veterans in the all-ages Open
     ("2YO Open", lambda h: age_group(h) == "2", 20_000, 72),
     ("3YO Open", lambda h: age_group(h) == "3", 25_000, 75),
-    ("Preferred", lambda h: _rated(h) >= 82, 40_000, 86),       # three rungs for an older horse between the top claimer
-    ("Open", lambda h: _rated(h) >= 76, 32_000, 78),            # and the Invitational (Aged Open used to catch them all)
-    ("Aged Open", lambda h: True, 30_000, 77),                  # the top of the ordinary older horses
+    ("Preferred", lambda h: _rated(h) >= 82 and h.age >= 3, 40_000, 86),       # three rungs for an older horse between the top claimer
+    ("Open", lambda h: _rated(h) >= 76 and h.age >= 3, 32_000, 78),            # and the Invitational (Aged Open used to catch them all)
+    ("Aged Open", lambda h: age_group(h) == "aged", 30_000, 77),   # the top of the ordinary older horses (2YO and 3YO Open catch the young)
 ]
 RETIRED_CLASS = {"NW$6kL5": "NW$20k", "Winners Over $1M": "Invitational", "Winners Over $500k": "Invitational",
                  "Winners Over $200k": "Invitational"}           # classes taken off the sheet: an old order for one lands here
