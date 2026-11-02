@@ -547,6 +547,10 @@ buildSurroundings();
 const RIG = new URLSearchParams(location.search).has("rig");
 const STRIDE_FT = RIG ? 51 : 17, FR = 12, FW = RIG ? 230 : PAINTED ? 416 : 208, FH = RIG ? 136 : PAINTED ? 213 : 101, PAD = RIG ? [136, 43, 15, 21] : PAINTED ? [210, 58, 34, 40] : [105, 25, 18, 21], LEN_FT = 14.5, POSES = 24;
 const H_FT = LEN_FT * FH / FW, NOSE = .99;
+// the side runner's sheet is drawn at twice the 208 grid (art/fe12_416.py: 416x202 frames, 6 across, 2 down); FW, FH and PAD stay
+// in 208-grid units for the geometry, and the pixel work on the sheet uses these
+const CS = RIG || PAINTED || QS.has("sheet208") ? 1 : 2,   // ?sheet208: the old sheet, to compare
+      CFW = FW * CS, CFH = FH * CS, CPAD = PAD.map(v => v * CS), CCOLS = CS > 1 ? 6 : 0, PADFIND = !RIG && !PAINTED;
 // Coat colors from the bay art: the warm body pixels are re-toned, and black points, mane, harness and silks
 // are left alone (a grey's dark points are lifted too). One canvas per sheet per coat, made once.
 const COAT = { bay: null, brown: [.62, .5, .45, 1], black: "black", chestnut: [1.25, .82, .55, 1], grey: "grey" };
@@ -611,33 +615,34 @@ function grit(c, fw, fh = c.height) {                                          /
 }
 // silks: the sprite's blue pixels, recolored. hex is "jacket" or "jacket|trim": the driver's helmet in his trim color,
 // everything else (jacket, and the harness and wheels the sprite draws in the same blue) in his jacket color
-function paintSilks(p, w, hex, fw = 0) {                                      // fw: frame width of a side stride sheet, driver on the left
+function paintSilks(p, w, hex, fw = 0, fh = 0) {                              // fw: frame width of a side stride sheet, driver on the left; fh: frame height when it runs in rows
   const driver = i => !fw || ((i / 4) % w) % fw < .31 * fw;                       // the horse's bridle rides as high as the helmet: never trim it
   const [a, b] = hex.split("|"), rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), ta = rgb(a), tb = b ? rgb(b) : ta;
   const isSilk = i => p[i + 3] && p[i + 2] > p[i] + 40 && p[i + 2] > p[i + 1] + 20;
+  const row = i => fh ? ((i / 4 / w) | 0) % fh : (i / 4 / w) | 0;               // height within its own frame: rows of frames share one helmet line
   let y0 = 1e9, y1 = -1;
-  if (b) for (let i = 0; i < p.length; i += 4) if (isSilk(i) && driver(i)) { const y = (i / 4 / w) | 0; y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  if (b) for (let i = 0; i < p.length; i += 4) if (isSilk(i) && driver(i)) { const y = row(i); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
   const cut = y0 + .13 * (y1 - y0);                                               // the helmet: the very top of the silks
   for (let i = 0; i < p.length; i += 4) {
     if (!isSilk(i)) continue;
-    const l = Math.min(1.3, (p[i] + p[i + 1] + p[i + 2]) / 3 / 70), t = b && driver(i) && ((i / 4 / w) | 0) < cut ? tb : ta;
+    const l = Math.min(1.3, (p[i] + p[i + 1] + p[i + 2]) / 3 / 70), t = b && driver(i) && row(i) < cut ? tb : ta;
     p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l;
   }
 }
 // The number painted on the runner's own saddle pad (fe12 draws a white pad behind the girth): the pad's pixels take
 // the pad color with their shading kept, the number sits centered and only on pad pixels, so the reins stay on top.
 function padPixels(p, w, fw, fh, frames, cols, coatM) {
-  const out = [];
+  const out = [], sc = fw / 208;                                                 // the search box and speck size, on the 208 grid
   for (let f = 0; f < frames; f++) {
     const ox = (f % cols) * fw, oy = Math.floor(f / cols) * fh, m = new Set();
-    for (let y = 20; y < 55; y++) for (let x = 95; x < 135; x++) {
+    for (let y = Math.round(20 * sc); y < 55 * sc; y++) for (let x = Math.round(95 * sc); x < 135 * sc; x++) {
       const q = ((oy + y) * w + ox + x) * 4, l = (p[q] + p[q + 1] + p[q + 2]) / 3;
       if (p[q + 3] && !(coatM && coatM[q / 4]) && l > 150 && Math.max(p[q], p[q + 1], p[q + 2]) - Math.min(p[q], p[q + 1], p[q + 2]) < 40) m.add(y * fw + x);
     }
     const keep = new Set(), seen = new Set();                                     // drop specks (a buckle's glint): keep pieces of 12+ pixels
     for (const s of m) { if (seen.has(s)) continue; const part = [s], st = [s]; seen.add(s);
       while (st.length) { const k = st.pop(); for (const n of [k - 1, k + 1, k - fw, k + fw]) if (m.has(n) && !seen.has(n)) { seen.add(n); part.push(n); st.push(n); } }
-      if (part.length >= 12) part.forEach(k => keep.add(k)); }
+      if (part.length >= 12 * sc * sc) part.forEach(q => keep.add(q)); }
     out.push({ ox, oy, fw, keep });
   }
   return out;
@@ -650,7 +655,7 @@ function paintPad(p, w, frames, pad, num, dark) {
     for (const k of keep) { const x = k % fw, y = (k / fw) | 0; sx += x; y0 = Math.min(y0, y); y1 = Math.max(y1, y);
       const q = ((oy + y) * w + ox + x) * 4, l = (p[q] + p[q + 1] + p[q + 2]) / 3 / 235;
       for (let i = 0; i < 3; i++) p[q + i] = Math.min(255, pc[i] * l); }
-    const S = 2, gap = s.length > 1 ? 1 : 0, tw = s.length * 3 * S + (s.length - 1) * gap;   // two digits stay full size, packed a pixel apart
+    const S = 2 * Math.max(1, Math.round(fw / 208)), gap = s.length > 1 ? S / 2 : 0, tw = s.length * 3 * S + (s.length - 1) * gap;   // two digits stay full size, packed a pixel apart
     let cx = Math.round(sx / keep.size - tw / 2); const cy = Math.round((y0 + y1) / 2 - 5 * S / 2);
     for (const ch of s) { const bits = DIGITS[ch];
       for (let k = 0; k < 15; k++) if (bits[k] === "1") for (let dy = 0; dy < S; dy++) for (let dx = 0; dx < S; dx++) {
@@ -663,8 +668,8 @@ function dye(img, hex, num, dark, pad, fw = FW, rect = PAD, cloth = null, frames
   const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
   const g = c.getContext("2d"); g.drawImage(img, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
-  const onPad = !cloth && fw === 208 ? padPixels(p, c.width, fw, fh, frames, cols, img.coatMask) : null;   // the runner's own white pad, found before the silks dye can whiten a rein
-  paintSilks(p, c.width, hex, fw === 208 ? fw : 0);
+  const onPad = !cloth && PADFIND && fw === CFW ? padPixels(p, c.width, fw, fh, frames, cols, img.coatMask) : null;   // the runner's own white pad, found before the silks dye can whiten a rein
+  paintSilks(p, c.width, hex, PADFIND && fw === CFW ? fw : 0, fh);
   if (onPad) paintPad(p, c.width, onPad, pad, num, dark);
   if (cloth) { const pc = [1, 3, 5].map(k => parseInt(pad.slice(k, k + 2), 16));
     for (let f = 0; f < frames; f++) for (let y = cloth[1]; y < cloth[1] + cloth[3]; y++) for (let x = f * fw + cloth[0]; x < f * fw + cloth[0] + cloth[2]; x++) {
@@ -730,7 +735,7 @@ const flatGeo = new THREE.PlaneGeometry(TOP_LEN, TOP_LEN * TFH / TFW).rotateX(-M
 const DFW = 251, DPAD = [118, 26, 18, 21];
 const driveGeo = new THREE.PlaneGeometry(LEN_FT * DFW / FW, H_FT).translate(LEN_FT * DFW / FW * (.5 - NOSE), H_FT / 2, 0);
 let driveImg = null; const driveLoaded = new Promise(r => { const i = new Image(); i.onload = () => { driveImg = i; r(); }; i.src = P("/mock/pixel/drive/drive12.png"); });
-const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => { cycleImg = i; r(); }; i.src = RIG ? P("/mock/pixel/rig_cycle.png") : P("/mock/pixel/fe12_cycle.png?v=2"); });   // the original runner; gear (wraps, hood) rides on it as overlays
+const cycleLoaded = new Promise(r => { const i = new Image(); i.onload = () => { cycleImg = i; r(); }; i.src = RIG ? P("/mock/pixel/rig_cycle.png") : P(CS > 1 ? "/mock/pixel/fe12_cycle416.png?v=1" : "/mock/pixel/fe12_cycle.png?v=2"); });   // the original runner; gear (wraps, hood) rides on it as overlays
 // Tack Room leg wraps: SpriteCook's wrapped cycle (same 12 cells) and the mask of its wrap pixels, tinted to each horse's color.
 // Side view only for now; the angle, overhead and drive-cam sheets stay bare.
 const WRAPS_OK = !RIG && !PAINTED;                                    // the race data may not be in yet: load the sheet, pick per horse later
@@ -744,7 +749,7 @@ const wrapLoaded = WRAPS_OK ? Promise.all(Object.keys(GEAR).map(n => new Promise
 function leatherStraps(c, mask) {
   if (!mask) return c;
   if (!maskData.has(mask)) { const k = document.createElement("canvas"); k.width = mask.width; k.height = mask.height; const kg = k.getContext("2d"); kg.drawImage(mask, 0, 0); maskData.set(mask, kg.getImageData(0, 0, k.width, k.height).data); }
-  const m = maskData.get(mask), g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height, R = 2;
+  const m = maskData.get(mask), g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height, R = 2 * CS;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = (y * W + x) * 4;
     if (!p[i + 3] || !(p[i + 2] > p[i] + 40 && p[i + 2] > p[i + 1] + 20)) continue;   // a blue (bridle) pixel
@@ -762,7 +767,7 @@ function leatherStraps(c, mask) {
 function maskFringe(c, hex, mask) {
   if (!mask || !hex) return c;
   const m = maskData.get(mask); if (!m) return c;
-  const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height, R = 2;
+  const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height, R = 2 * CS;
   const rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) * .55);      // the hood's color, in shadow
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = (y * W + x) * 4;
@@ -796,13 +801,23 @@ function wrapTint(c, hex, mask = wrapMask) {                             // mask
   }
   g.putImageData(d, 0, 0); return c;
 }
+// the gear overlays are drawn on the 208 grid in one row: put them on the runner sheet's grid (2x, 6 across), once
+let gearOnSheet = CS === 1;
+function onSheet(img) {
+  if (!img) return img;
+  const fr = wrapMeta.frames, sc = wrapMeta.cols, c = document.createElement("canvas"); c.width = CFW * CCOLS; c.height = CFH * Math.ceil(fr / CCOLS);
+  const g = c.getContext("2d"); g.imageSmoothingQuality = "high";
+  for (let k = 0; k < fr; k++) g.drawImage(img, (k % sc) * FW, Math.floor(k / sc) * FH, FW, FH, (k % CCOLS) * CFW, Math.floor(k / CCOLS) * CFH, CFW, CFH);
+  return c;
+}
 function buildRunners() {
+  if (!gearOnSheet) { wrapImg = onSheet(wrapImg); wrapMask = onSheet(wrapMask); hoodImg = onSheet(hoodImg); hoodMask = onSheet(hoodMask); gearOnSheet = true; }
   runners.forEach(r => { scene.remove(r.drive); scene.remove(r.card); scene.remove(r.shadow); scene.remove(r.flat); Object.values(r.ang).forEach(a => scene.remove(a.m)); });
   runners = RACE.H.map((h, i) => {
     const wr = WRAPS_OK && wrapImg && h.wraps, hd = WRAPS_OK && hoodImg && h.mask;   // gear: overlays on the coated runner, each dyed in its own color
-    const fr = wrapMeta.frames, cols = wrapMeta.cols, rows = Math.ceil(fr / cols);   // the side sheet's own length (wraps12.json): the real stride is 13 frames
-    const sil = dye(leatherStraps(overlay(coat(cycleImg, h.coat), [wr && wrapImg, hd && hoodImg]), hd && hoodMask), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null, fr, cols);
-    const t = new THREE.CanvasTexture(grit(maskFringe(wrapTint(wrapTint(sil, wr && h.wraps), hd && h.mask, hoodMask), hd && h.mask, hd && hoodMask), FW, FH));
+    const fr = wrapMeta.frames, cols = CCOLS || wrapMeta.cols, rows = Math.ceil(fr / cols);   // the side sheet's own length (wraps12.json): the real stride is 13 frames
+    const sil = dye(leatherStraps(overlay(coat(cycleImg, h.coat), [wr && wrapImg, hd && hoodImg]), hd && hoodMask), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], CFW, CPAD, RIG ? [119, 42, 33, 25] : null, fr, cols, CFH);
+    const t = new THREE.CanvasTexture(grit(maskFringe(wrapTint(wrapTint(sil, wr && h.wraps), hd && h.mask, hoodMask), hd && h.mask, hd && hoodMask), CFW, CFH));
     sharp(t); t.repeat.set(1 / cols, 1 / rows);
     const card = new THREE.Mesh(cardGeo, new THREE.MeshBasicMaterial({ map: t, color: 0xece6dc, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false }));
     const shadow = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
