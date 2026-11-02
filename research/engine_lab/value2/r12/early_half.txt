@@ -1,0 +1,44 @@
+{
+ "top/pocket": {
+  "n": 85,
+  "fixed_place": 0.718,
+  "fixed_time": 0.346,
+  "fixed_q_place": 0.788,
+  "fixed_q_used": -11.327,
+  "fixed_ground": 17.881,
+  "adaptive_place": 0,
+  "adaptive_time": -0.002,
+  "adaptive_q_place": 0.071,
+  "adaptive_q_used": -2.031,
+  "adaptive_ground": -0.155
+ },
+ "sitter": {
+  "n": 75,
+  "fixed_place": 0.12,
+  "fixed_time": 0.014,
+  "fixed_q_place": 0.013,
+  "fixed_q_used": 0.937,
+  "fixed_ground": -1.066,
+  "adaptive_place": -0.12,
+  "adaptive_time": -0.223,
+  "adaptive_q_place": 0.76,
+  "adaptive_q_used": -7.788,
+  "adaptive_ground": -9.51
+ },
+ "all": {
+  "n": 160,
+  "fixed_place": 0.438,
+  "fixed_time": 0.191,
+  "fixed_q_place": 0.425,
+  "fixed_q_used": -5.578,
+  "fixed_ground": 9.0,
+  "adaptive_place": -0.056,
+  "adaptive_time": -0.105,
+  "adaptive_q_place": 0.394,
+  "adaptive_q_used": -4.729,
+  "adaptive_ground": -4.54
+ },
+ "learned gate aim was a best choice": 0.53,
+ "learned gate aim regret (places)": 1.26
+}
+(positive = the upgrade helped: places gained, seconds gained, quarter places gained, less energy used, less ground)

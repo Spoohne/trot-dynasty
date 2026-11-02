@@ -1,0 +1,174 @@
+/* The Marquee: an elite barn's banner. Scene (an animated backdrop), frame, nameplate, trophy shelf, ticker.
+   Shared by the game pages and the replay's winner's circle. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@900&family=Playfair+Display:ital,wght@1,900&family=Yellowtail&family=Bungee&family=Pirata+One&family=Jersey+10&display=swap');
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.mqx{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;min-height:60px;padding:8px 18px;box-sizing:border-box;overflow:hidden;
+  color:#fff;text-decoration:none;isolation:isolate;
+  background:linear-gradient(90deg,#000c,#0005 55%,#0007),var(--bg) center/cover,#05070d}
+.mqx>*{position:relative;z-index:3}
+.mqx.mqbig{min-height:100px}
+.mqmid{flex:0 1 auto;min-width:0;display:flex;align-items:center;gap:10px}
+.mqped{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 50% 35%,#fff3,#0000 60%),radial-gradient(#000a,#0004);box-shadow:0 0 0 2px #ffd36b66,0 4px 8px #000c}
+.mqped .crest{width:32px;height:32px;filter:drop-shadow(0 2px 3px #000)}
+.mqbig .mqped{width:74px;height:74px}.mqbig .mqped .crest{width:64px;height:64px}
+.mqn{min-width:0;font-size:24px;line-height:1.15;white-space:nowrap;overflow:hidden;padding:0 2px}.mqbig .mqn{font-size:34px}
+.mqt{font:700 11px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#ffe9a8;text-shadow:0 1px 2px #000}
+
+.sc-gilded{background:linear-gradient(90deg,#000e,#000a 55%,#000c),var(--bg) center/cover,#05070d}
+/* scenes: the animated layer over the backdrop */
+.mqfx{position:absolute!important;inset:0;z-index:1!important;pointer-events:none}
+.mqfx:before,.mqfx:after{content:'';position:absolute;inset:0}
+.sc-grandstand .mqfx:before{background:radial-gradient(circle at 18% 34%,#fff 0 1.5px,#fff8 2.5px,#0000 6px),radial-gradient(circle at 46% 22%,#fff 0 1.5px,#fff8 2.5px,#0000 6px),
+  radial-gradient(circle at 71% 40%,#fff 0 1.5px,#fff8 2.5px,#0000 6px),radial-gradient(circle at 88% 26%,#fff 0 1.5px,#fff8 2.5px,#0000 6px);animation:mqpop 2.9s steps(1) infinite}
+.sc-grandstand .mqfx:after{background:radial-gradient(circle at 30% 28%,#fff 0 1.5px,#fff8 2.5px,#0000 6px),radial-gradient(circle at 58% 36%,#fff 0 1.5px,#fff8 2.5px,#0000 6px),
+  radial-gradient(circle at 80% 18%,#fff 0 1.5px,#fff8 2.5px,#0000 6px),radial-gradient(circle at 9% 22%,#fff 0 1.5px,#fff8 2.5px,#0000 6px);animation:mqpop 3.7s steps(1) 1.3s infinite}
+@keyframes mqpop{0%,100%{opacity:0}4%{opacity:1}9%{opacity:.4}13%{opacity:0}52%{opacity:0}55%{opacity:.9}60%{opacity:0}}
+.sc-gilded .mqfx:before{background:linear-gradient(105deg,#0000 30%,#fff5 47%,#fffb 50%,#fff5 53%,#0000 70%) 0 0/50% 100% no-repeat;animation:mqsweep 4.5s ease-in-out infinite}
+@keyframes mqsweep{0%{background-position:-120% 0}60%,100%{background-position:220% 0}}
+.sc-neon .mqfx:before{background:repeating-linear-gradient(#0000 0 2px,#0004 2px 3px)}
+.sc-neon .mqfx:after{background:radial-gradient(ellipse at 70% 60%,#ff4f2a55,#0000 60%);mix-blend-mode:screen;animation:mqflick 5s infinite}
+@keyframes mqflick{0%,100%{opacity:1}41%{opacity:1}42%{opacity:.2}43%{opacity:1}45%{opacity:.4}46%{opacity:1}}
+.sc-aurora .mqfx:before{background:linear-gradient(100deg,#5eead433,#a78bfa44,#38bdf833,#34d39955,#5eead433) 0 0/300% 100%;mix-blend-mode:screen;animation:mqdrift 14s linear infinite}
+@keyframes mqdrift{to{background-position:300% 0}}
+.sc-snow .mqfx:before{background:radial-gradient(circle,#fff 0 1px,#0000 1.6px) 0 0/23px 19px,radial-gradient(circle,#fffc 0 1.4px,#0000 2px) 7px 4px/37px 31px;animation:mqsnow 6s linear infinite}
+@keyframes mqsnow{to{background-position:-23px 76px,30px 124px}}
+.sc-sunset .mqfx:before{background:radial-gradient(ellipse at 52% 40%,#ffd36b66,#0000 45%);mix-blend-mode:screen;animation:mqglow 5s ease-in-out infinite}
+@keyframes mqglow{50%{opacity:.35}}
+
+/* frames */
+.mqx:after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none}
+.fr-bulbs:after{padding:6px;background:radial-gradient(circle,var(--bulb) 0 2.2px,#0000 3.4px) -3.5px -3.5px/13px 13px space,linear-gradient(#1a1206,#3a2a0c);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  filter:drop-shadow(0 0 3px var(--bulb));animation:mqbulbs 2.6s ease-in-out infinite}
+@keyframes mqbulbs{50%{filter:drop-shadow(0 0 6px var(--bulb)) brightness(1.25)}0%,100%{filter:drop-shadow(0 0 2px var(--bulb)) brightness(.8)}}   /* the bulbs dim and brighten together */
+.fr-brass:after{border:6px solid;border-image:linear-gradient(135deg,#6b4c12,#f7e08a 25%,#a07a2a 45%,#fff0b0 60%,#7a5a1c 80%,#e9cf86) 1;box-shadow:inset 0 0 0 1px #000,inset 0 0 12px #000a}
+.fr-wood:after{border:7px solid;border-image:repeating-linear-gradient(45deg,#4a2c14 0 3px,#7a4a22 3px 6px,#a06a3a 6px 8px,#5b3a1e 8px 11px) 7;box-shadow:inset 0 0 0 1px #000,inset 0 0 10px #000c}
+.fr-neon:after{inset:4px;border:3px solid #ff5fd8;border-radius:8px;box-shadow:0 0 6px #ff5fd8,0 0 14px #ff5fd8,inset 0 0 6px #ff5fd8,inset 0 0 14px #ff5fd877;animation:mqneon 6s infinite}
+@keyframes mqneon{0%,100%{opacity:1}70%{opacity:1}71%{opacity:.3}72%{opacity:1}74%{opacity:.5}75%{opacity:1}}
+.fr-diamond:after{border:5px solid;border-image:conic-gradient(from var(--ang),#fff,#a5f3fc,#e0e7ff,#fff,#c4b5fd,#bae6fd,#fff) 1;
+  box-shadow:inset 0 0 14px #a5f3fc66,0 0 10px #e0f2fe88;animation:mqspin 3s linear infinite}
+@keyframes mqspin{to{--ang:360deg}}
+.fr-chrome:after{border:6px solid;border-image:linear-gradient(180deg,#f8fafc,#94a3b8 30%,#475569 50%,#cbd5e1 70%,#f1f5f9) 1;box-shadow:inset 0 0 0 1px #000,inset 0 0 10px #000a}
+
+/* nameplates */
+.nf-gilded{font-family:'Playfair Display',serif;font-style:italic;font-weight:900;background:linear-gradient(#fff6c8,#f2c14e 50%,#a8701a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 1px #000)}
+.nf-brass{font-family:'Cinzel',serif;font-weight:900;letter-spacing:.04em;color:#e9cf86;text-shadow:0 1px 0 #fff7,0 -1px 0 #3a2a06,0 3px 4px #000}
+.nf-neon{font-family:'Yellowtail',cursive;font-size:26px;color:#fff;text-shadow:0 0 3px #fff,0 0 8px #ff5fd8,0 0 18px #ff5fd8,0 0 30px #ff5fd8aa}
+.nf-block{font-family:'Bungee',sans-serif;font-size:22px;color:#ffe9a8;text-shadow:2px 2px 0 #b45309,4px 4px 0 #000}
+.nf-black{font-family:'Pirata One',serif;font-size:28px;color:#f5e6c4;text-shadow:0 1px 0 #fff6,0 2px 3px #000,0 0 10px #000}
+.shim{position:relative}
+.shim:after{content:attr(data-t);position:absolute;inset:0;padding:inherit;background:linear-gradient(110deg,#0000 42%,#fffd 50%,#0000 58%) 0 0/260% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;animation:mqshim 3.8s linear infinite;white-space:nowrap;overflow:hidden}
+@keyframes mqshim{from{background-position:160% 0}to{background-position:-60% 0}}
+
+/* the trophy shelf and the ticker */
+.mqshelf{flex:1 1 0;display:flex;gap:6px;align-items:flex-end}.mqshelf.l{justify-content:flex-end}.mqshelf.r{justify-content:flex-start}
+.mqshelf img{width:30px;height:30px;padding:2px 3px 3px;filter:drop-shadow(0 2px 2px #000);
+  background:radial-gradient(ellipse at 50% 20%,#ffe9a855,#0000 65%),linear-gradient(#0000 82%,#7a5a1c 82% 90%,#e9cf86 90% 94%,#3a2a06 94%)}
+.mqbig .mqshelf img{width:40px;height:40px}
+@media (max-width:520px){.mqx{flex-wrap:wrap;gap:4px 8px}.mqmid{order:0;flex-basis:100%;justify-content:center}
+  .mqshelf{order:1;flex:0 0 auto}.mqshelf img{width:22px;height:22px}.mqbig .mqn{font-size:26px}.mqbig .mqped{width:44px;height:44px}.mqbig .mqped .crest{width:32px;height:32px}}
+.mqtick{position:absolute!important;left:8px;right:8px;bottom:7px;height:13px;overflow:hidden;font:700 10px/13px 'Barlow Condensed',sans-serif;letter-spacing:.1em;
+  text-transform:uppercase;color:#ffe9a8;text-shadow:0 1px 1px #000}
+.mqtick span{display:inline-block;white-space:nowrap;padding-left:100%;animation:mqtick 22s linear infinite}
+@keyframes mqtick{to{transform:translateX(-100%)}}
+
+/* a win on race night: fireworks, three bursts */
+.mqboom{position:absolute!important;inset:0;z-index:5!important;pointer-events:none}
+.mqboom:before,.mqboom:after{content:'';position:absolute;width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0 3%,#0000 4%),repeating-conic-gradient(#ffd36b 0 4deg,#0000 4deg 24deg);
+  -webkit-mask:radial-gradient(circle,#0000 30%,#000 32% 48%,#0000 50%);mask:radial-gradient(circle,#0000 30%,#000 32% 48%,#0000 50%);
+  left:22%;top:-8px;transform:scale(.1);opacity:0;animation:mqboom 1.6s ease-out 3}
+.mqboom:after{left:68%;top:4px;background:radial-gradient(circle,#fff 0 3%,#0000 4%),repeating-conic-gradient(#ff7ad9 0 4deg,#0000 4deg 24deg);animation-delay:.7s}
+@keyframes mqboom{0%{transform:scale(.1);opacity:1}70%{opacity:1}100%{transform:scale(1.4);opacity:0}}
+
+/* Prestige tiers: extras each tier adds to the same gilded, gold-lit look */
+.mqx[hidden]{display:none}
+.pxbadge{position:absolute!important;top:5px;right:10px;z-index:6!important;font:800 11px 'Cinzel',serif;color:#ffe9a8;text-shadow:0 1px 2px #000}
+.sc-plain .mqfx{display:none}
+.sc-sunset{background:linear-gradient(90deg,#000d,#000a 55%,#000d),var(--bg) center/cover,#05070d}
+.pt-dim .mqn{filter:saturate(.6) brightness(.85)}
+.pt-spot{--bg:radial-gradient(ellipse at 50% 50%,#5a4320,#120d08 70%)!important}
+.pt-dusk{background:linear-gradient(90deg,#000e,#000b 55%,#000d),var(--bg) center/cover}.pt-dusk .mqfx{display:none}
+.pt-spill:before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 26px #ffd36b88}
+.pt-wreath .mqped{box-shadow:0 0 0 3px #e9cf86,0 0 0 5px #3a2a06,0 0 0 8px #a8701a,0 0 18px #ffd36baa}
+.pember{position:absolute!important;inset:0;z-index:2!important;pointer-events:none;
+  background:radial-gradient(circle,#ffd36b 0 1.4px,#0000 2.2px) 0 0/29px 23px,radial-gradient(circle,#fff3b0 0 1px,#0000 1.8px) 9px 5px/41px 37px;animation:pember 5s linear infinite}
+@keyframes pember{to{background-position:14px -92px,-20px -148px}}
+.mqmid{position:relative}.mqped{position:relative}
+.pt-rays .mqmid:before{content:'';position:absolute;left:-60px;top:50%;width:200px;height:200px;margin-top:-100px;z-index:-1;border-radius:50%;
+  background:repeating-conic-gradient(#ffd36b55 0 6deg,#0000 6deg 18deg);-webkit-mask:radial-gradient(#000 20%,#0000 68%);mask:radial-gradient(#000 20%,#0000 68%);animation:prays 14s linear infinite}
+@keyframes prays{to{transform:rotate(360deg)}}
+.pt-sweep .mqfx:after{background:linear-gradient(105deg,#0000 30%,#ffe9a866 47%,#fff9 50%,#ffe9a866 53%,#0000 70%) 0 0/50% 100% no-repeat;animation:mqsweep 4.5s ease-in-out infinite}
+.pt-double{box-shadow:inset 0 0 0 9px #0000,inset 0 0 0 12px #e9cf86,inset 0 0 0 13px #000}
+.pt-glow .mqn{filter:drop-shadow(0 0 8px #ffd36b)}
+.mqbig.pt-tall{min-height:130px}.mqbig.pt-tall .mqn{font-size:40px}.mqbig.pt-tall .mqped{width:78px;height:78px}.mqbig.pt-tall .mqped .crest{width:64px;height:64px}
+.pcrown{position:absolute;width:30px;top:-20px;left:50%;margin-left:-15px;filter:drop-shadow(0 2px 3px #000)}
+.pt-dynasty .mqboom:before,.pt-dynasty .mqboom:after{animation-iteration-count:infinite;animation-duration:2.4s}
+.fr-goldspin:after{border:6px solid;border-image:conic-gradient(from var(--ang),#fff6c8,#f2c14e,#a8701a,#fff6c8,#e8a33a,#7a5a1c,#fff6c8) 1;
+  box-shadow:inset 0 0 14px #ffd36b66,0 0 12px #ffd36b88;animation:mqspin 3s linear infinite}
+
+/* ---- Marquee v2 (2026-10-28): SpriteCook pixel scenes, Jersey 10 nameplate, emblem on a ledge, trophy tray ---- */
+/* v2: the pixel scenes need only a light scrim behind the name; the plate tiers sit on the walnut board */
+.mqx.v2{background:linear-gradient(90deg,#0009,#0003 30%,#0003 70%,#0009),var(--bg) center/cover,#05070d}
+.mqx.v2.sc-plain{background:var(--bg) center/100% 100%,#2a1a0c}
+.v2.pt-dusk{background:linear-gradient(#0008,#0008),var(--bg) center/cover}
+.v2.pt-spot.sc-plain{background:radial-gradient(ellipse at 50% 50%,#ffd36b40,#0000 60%),var(--bg) center/100% 100%}
+/* the pixel nameplate: Jersey 10, a metal fill by Prestige, a hard 1px outline and drop shadow */
+.np{font-family:'Jersey 10',sans-serif;font-size:34px;letter-spacing:.02em;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(1px 0 0 #1a0f04) drop-shadow(-1px 0 0 #1a0f04) drop-shadow(0 1px 0 #1a0f04) drop-shadow(0 -1px 0 #1a0f04) drop-shadow(0 3px 0 #000a)}
+.mqbig.pt-tall .np{font-size:44px}
+.np-iron{background-image:linear-gradient(#d9cbb8,#9a8a76 55%,#6d5f50)}
+.np-silver{background-image:linear-gradient(#ffffff,#c9d2de 50%,#8793a3)}
+.np-gold{background-image:linear-gradient(#ffe58a,#f5b83d 50%,#d08a1e 62%,#9a6212)}
+.v2 .mqshelf{gap:2px}.v2 .mqshelf img{width:26px;height:26px;padding:1px 2px 3px}.mqbig.v2 .mqshelf img{width:28px;height:28px}
+.mqbig.v2.pt-tall .mqped{width:70px;height:70px}.mqx.v2{gap:8px;padding-left:12px;padding-right:12px}
+.pt-glow .np{filter:drop-shadow(1px 0 0 #1a0f04) drop-shadow(-1px 0 0 #1a0f04) drop-shadow(0 1px 0 #1a0f04) drop-shadow(0 -1px 0 #1a0f04) drop-shadow(0 0 8px #ffd36b)}
+ /* the emblem stands free on a little metal ledge (no circle), metal by Prestige */
+.v2 .mqped,.v2.pt-wreath .mqped{background:none;box-shadow:none;border-radius:0;width:auto!important;height:auto!important;padding:0 6px 9px}
+.v2 .mqped .crest{filter:drop-shadow(0 3px 2px #000c)}
+.v2 .mqped:after{content:'';position:absolute;left:0;right:0;bottom:0;height:7px;
+  background:linear-gradient(var(--l1) 0 2px,var(--l2) 2px 5px,var(--l3) 5px);box-shadow:0 3px 3px #000a,inset 0 0 0 1px #0006}
+.v2 .mqped:before{content:'';position:absolute;left:8px;right:8px;bottom:-4px;height:4px;background:var(--l3);box-shadow:0 2px 2px #0008}
+.ld-iron{--l1:#a8977f;--l2:#6d5f50;--l3:#3b3128}.ld-silver{--l1:#ffffff;--l2:#aeb8c6;--l3:#5d6876}.ld-gold{--l1:#fff1a8;--l2:#e2a53a;--l3:#8a5a12}
+.v2.pt-wreath .mqped{background:radial-gradient(ellipse at 50% 100%,#ffd36b55,#0000 65%)}
+ /* layout: emblem on its ledge at the far left, the name centered in the space that's left, trophies at the ends */
+.mqx.v2{justify-content:flex-start}.v2 .mqmid{display:contents}
+.v2 .mqped{order:0;flex:none}.v2 .mqshelf.l{order:1;flex:0 0 auto}.v2 .mqname{position:relative;z-index:3;order:2;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;padding-left:4px}.v2 .mqn{max-width:100%}.mqunder{align-self:stretch;display:flex;justify-content:center;align-items:center;gap:6px;margin-top:3px;min-height:28px;padding:2px 8px;background:linear-gradient(#050302,#140d06);border:2px solid #8a5a12;border-top-color:#5a3a0c;border-bottom-color:#c9922e;box-shadow:inset 0 3px 6px #000,inset 0 0 0 1px #000,0 2px 4px #000c}.mqunder img{width:22px;height:22px;filter:drop-shadow(0 1px 1px #000) drop-shadow(0 0 5px #ffd36b88)}.v2 .mqshelf.r{order:3;flex:0 0 auto}
+.v2.pt-rays .mqped:before{content:none}
+ /* sparkles: pixel glints twinkling in turn (static and half-lit with reduced motion) */
+.sparks{position:absolute!important;inset:0;z-index:2!important;pointer-events:none}
+.mqsp{position:absolute;width:16px;height:16px;margin:-8px;background:url(/mock/brand/marquee/v2/spark.png) center/contain no-repeat;
+  filter:drop-shadow(0 0 4px #ffd36b);transform:scale(.15);opacity:0;animation:mqtwinkle 3.6s ease-in-out infinite}
+.mqbig .mqsp{width:20px;height:20px;margin:-10px}
+@keyframes mqtwinkle{0%,100%{transform:scale(.15) rotate(0);opacity:0}12%{transform:scale(1) rotate(45deg);opacity:1}24%{transform:scale(.2) rotate(90deg);opacity:0}}
+/* ---- the Prestige theme on barn pages: the tier's scene behind everything, dark enough to read over; cards and section
+   bars in the tier's metal; glints drifting from VII ---- */
+body.themed{background:#070a14}
+body.themed:before{content:'';position:fixed;inset:-20px;z-index:-1;pointer-events:none;
+  background:linear-gradient(#070a14b3,#070a14f0 70%),var(--tbg) center top/cover;filter:blur(3px)}
+.tm-iron{--tm1:#8a7a66;--tm2:#c8b89f}.tm-silver{--tm1:#8793a3;--tm2:#e6ecf3}.tm-gold{--tm1:#a8701a;--tm2:#ffd36b}
+body.themed .card{background:#0d1322e8;border-color:var(--tm1);box-shadow:inset 0 1px 0 #ffffff12,0 2px 6px #0008}
+body.themed .secbar{color:var(--tm2);border-bottom-color:var(--tm1)}
+body.themed h1{color:var(--tm2)}
+.tsparks{position:fixed!important;opacity:.45}
+.tsparks .mqsp{animation-duration:6s}
+/* Prestige X: rubies set into the gold frame as accents: the middle of each side, and a pair flanking the top */
+.gems{position:absolute!important;inset:-3px;z-index:6!important;pointer-events:none;
+  background:url(/mock/brand/marquee/v2/ruby.png) 50% 0/16px 16px no-repeat,url(/mock/brand/marquee/v2/ruby.png) 30% 0/12px 12px no-repeat,url(/mock/brand/marquee/v2/ruby.png) 70% 0/12px 12px no-repeat,
+    url(/mock/brand/marquee/v2/ruby.png) 50% 100%/16px 16px no-repeat,url(/mock/brand/marquee/v2/ruby.png) 0 50%/14px 14px no-repeat,url(/mock/brand/marquee/v2/ruby.png) 100% 50%/14px 14px no-repeat;
+  filter:drop-shadow(0 1px 1px #000) drop-shadow(0 0 4px #ff335599)}
+@media (prefers-reduced-motion:reduce){.mqsp{opacity:.7;transform:scale(.6)}}
+/* VIII up: gold filigree corner pieces with rubies, set over the frame's corners */
+.corners{position:absolute!important;inset:0;z-index:5!important;pointer-events:none}
+.corners b{position:absolute;width:30px;height:30px;background:url(/mock/brand/marquee/v2/corner.png) center/contain no-repeat;filter:drop-shadow(0 1px 1px #000)}
+.mqbig .corners b{width:40px;height:40px}
+.corners b:nth-child(1){left:-3px;top:-3px}.corners b:nth-child(2){right:-3px;top:-3px;transform:scaleX(-1)}
+.corners b:nth-child(3){left:-3px;bottom:-3px;transform:scaleY(-1)}.corners b:nth-child(4){right:-3px;bottom:-3px;transform:scale(-1)}
+.pxbadge{font-family:'Jersey 10',sans-serif!important;font-size:16px!important;font-weight:400!important}
+
+.mqunder:empty{display:none}
+@media (max-width:520px){.mqx.v2{flex-wrap:nowrap;gap:6px}.v2 .mqshelf{order:initial}.v2 .mqshelf.l{order:1}.v2 .mqshelf.r{order:3}}
+
+@media (prefers-reduced-motion:reduce){.mqx *,.mqx :before,.mqx :after,.mqx:after,.mqx:before{animation:none!important}.mqtick span{padding-left:0}}

@@ -1,0 +1,16 @@
+r3_c1 done
+r3_turn done
+r3_pace done
+r3_post done
+r3_kick6 done
+r3_cruise done
+r3_draft done
+r3_drive done
+r3_c1          | half n64 t 113.2 res 0.72 ga +0.44±0.08 cr +0.38±0.05 ki +0.41±0.04 gr +0.11±0.02 | mile n64 t 111.1 res 0.86 ga +0.78±0.09 cr +0.17±0.04 ki +0.55±0.03 gr +0.04±0.02
+r3_turn        | half n64 t 110.8 res 0.81 ga +0.51±0.08 cr +0.35±0.06 ki +0.51±0.04 gr +0.09±0.02 | mile n64 t 109.8 res 0.89 ga +0.77±0.09 cr +0.19±0.04 ki +0.58±0.03 gr +0.03±0.02
+r3_pace        | half n64 t 114.5 res 0.73 ga +0.46±0.09 cr +0.39±0.05 ki +0.34±0.04 gr +0.13±0.03 | mile n64 t 112.3 res 0.86 ga +0.77±0.09 cr +0.20±0.04 ki +0.54±0.04 gr +0.03±0.02
+r3_post        | half n64 t 113.6 res 0.75 ga +0.24±0.05 cr +0.34±0.05 ki +0.43±0.04 gr +0.11±0.02 | mile n64 t 111.2 res 0.92 ga +0.47±0.07 cr +0.10±0.03 ki +0.52±0.03 gr +0.03±0.02
+r3_kick6       | half n64 t 113.2 res 0.73 ga +0.41±0.08 cr +0.39±0.05 ki +0.56±0.05 gr +0.14±0.03 | mile n64 t 111.0 res 0.87 ga +0.74±0.09 cr +0.20±0.05 ki +0.67±0.04 gr +0.04±0.01
+r3_cruise      | half n64 t 113.4 res 0.72 ga +0.44±0.08 cr +0.35±0.05 ki +0.41±0.04 gr +0.11±0.03 | mile n64 t 111.2 res 0.87 ga +0.78±0.09 cr +0.18±0.03 ki +0.56±0.03 gr +0.03±0.01
+r3_draft       | half n64 t 113.2 res 0.70 ga +0.48±0.09 cr +0.41±0.05 ki +0.34±0.04 gr +0.10±0.02 | mile n64 t 111.1 res 0.84 ga +0.79±0.09 cr +0.18±0.04 ki +0.53±0.03 gr +0.03±0.02
+r3_drive       | half n64 t 112.5 res 0.76 ga +0.50±0.09 cr +0.44±0.06 ki +0.34±0.04 gr +0.10±0.02 | mile n64 t 110.0 res 0.86 ga +0.71±0.09 cr +0.20±0.04 ki +0.50±0.03 gr +0.05±0.02

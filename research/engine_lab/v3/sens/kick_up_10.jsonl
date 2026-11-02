@@ -1,0 +1,9 @@
+{"cfg": {"k_kick": 2.6}}
+{"track": "half", "field": 10, "time": 120.98827107101873, "reserve": 0.11580235641339254, "gate": 0.625, "cruise": 0.5, "kick": -0.125, "grit": 0.125}
+{"track": "half", "field": 26, "time": 121.40233553933976, "reserve": 0.46215518353507146, "gate": 0, "cruise": 0.875, "kick": -0.125, "grit": 0}
+{"track": "half", "field": 42, "time": 119.05495627557045, "reserve": 0.14844794660057442, "gate": -0.625, "cruise": 1, "kick": 0, "grit": 0}
+{"track": "half", "field": 58, "time": 123.80914358062634, "reserve": 0.7857292613203058, "gate": 0.125, "cruise": 1.5, "kick": 0, "grit": 0}
+{"track": "mile", "field": 10, "time": 119.69416591469272, "reserve": 0.9565274787427858, "gate": 0.375, "cruise": 0.75, "kick": 0.25, "grit": 0.125}
+{"track": "mile", "field": 26, "time": 116.61153339944937, "reserve": 0.8486531480322175, "gate": 0.625, "cruise": 0.625, "kick": 0.25, "grit": 0.125}
+{"track": "mile", "field": 42, "time": 112.91932557471776, "reserve": 0.3349903134632286, "gate": 0.25, "cruise": 0.875, "kick": 0.125, "grit": 0}
+{"track": "mile", "field": 58, "time": 118.09707125164351, "reserve": 0.7965688295030708, "gate": 0.375, "cruise": 0.875, "kick": 0.375, "grit": 0}

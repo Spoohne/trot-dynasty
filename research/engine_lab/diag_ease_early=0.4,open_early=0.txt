@@ -1,0 +1,4 @@
+traffic · leaver {"n": 25, "slower": 0.16, "secs": -0.298, "energy_at_wire": 0.23, "capped_s": 0.34, "boxed_s": 0.47, "extra_ground_ft": -0.4}
+traffic · sitter {"n": 135, "slower": 0.18, "secs": -0.152, "energy_at_wire": -0.62, "capped_s": 0.65, "boxed_s": -1.73, "extra_ground_ft": 5.0}
+alone · leaver {"n": 25, "slower": 0.04, "secs": -0.396, "energy_at_wire": -0.82, "capped_s": 0.86, "boxed_s": 0.0, "extra_ground_ft": 0.1}
+alone · sitter {"n": 135, "slower": 0.13, "secs": -0.156, "energy_at_wire": -0.56, "capped_s": -0.21, "boxed_s": 0.0, "extra_ground_ft": 3.4}

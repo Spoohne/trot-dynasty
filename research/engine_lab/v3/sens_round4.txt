@@ -1,0 +1,12 @@
+r4_c done
+r4_push1 done
+r4_push2 done
+r4_push1_cr done
+r4_push1_post done
+r4_push1_tank done
+r4_c           | half n64 t 115.8 res 0.73 ga +0.39±0.09 cr +0.41±0.05 ki +0.21±0.04 gr +0.10±0.03 | mile n64 t 113.7 res 0.91 ga +0.43±0.07 cr +0.12±0.03 ki +0.37±0.03 gr +0.04±0.02
+r4_push1       | half n64 t 114.4 res 0.63 ga +0.25±0.08 cr +0.48±0.06 ki +0.16±0.04 gr +0.10±0.02 | mile n64 t 112.2 res 0.82 ga +0.37±0.07 cr +0.17±0.04 ki +0.37±0.02 gr +0.03±0.02
+r4_push2       | half n64 t 113.2 res 0.53 ga -0.03±0.08 cr +0.55±0.06 ki +0.18±0.05 gr +0.07±0.02 | mile n64 t 110.8 res 0.72 ga +0.27±0.06 cr +0.20±0.04 ki +0.33±0.02 gr +0.01±0.01
+r4_push1_cr    | half n64 t 114.3 res 0.62 ga +0.23±0.08 cr +0.62±0.06 ki +0.17±0.04 gr +0.09±0.02 | mile n64 t 112.2 res 0.82 ga +0.37±0.06 cr +0.25±0.04 ki +0.38±0.02 gr +0.04±0.01
+r4_push1_post  | half n64 t 114.4 res 0.62 ga +0.21±0.08 cr +0.44±0.06 ki +0.17±0.04 gr +0.09±0.02 | mile n64 t 112.6 res 0.86 ga +0.14±0.03 cr +0.20±0.02 ki +0.41±0.02 gr +0.04±0.01
+r4_push1_tank  | half n64 t 115.0 res 0.56 ga -0.05±0.07 cr +0.63±0.06 ki +0.03±0.04 gr +0.10±0.02 | mile n64 t 112.5 res 0.79 ga +0.25±0.06 cr +0.19±0.04 ki +0.29±0.03 gr +0.01±0.01

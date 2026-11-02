@@ -1,0 +1,7 @@
+half
+   lead vs 4th on the rail      forward spot worth +1.50 places (±0.20), forward finished ahead 86%  n 64
+   pocket vs 4th on the rail    forward spot worth +1.14 places (±0.19), forward finished ahead 80%  n 64
+   2nd vs last on the rail      forward spot worth +4.67 places (±0.17), forward finished ahead 100%  n 64
+   3rd vs 5th on the rail       forward spot worth +1.83 places (±0.12), forward finished ahead 97%  n 64
+half: places gained at the first turn +1.30, at the quarter +1.21, at the wire +0.12
+   reserve at the quarter -0.63 (of 12.0), extra ground to the quarter +1.3 ft, cleared for the lead 12% -> 42%

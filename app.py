@@ -3136,7 +3136,7 @@ def corner_action(h):
     if cr and cr[2] == 0:
         return ""
     if weeks_to_stake(h) == 1 or (cr and cr[2] == 1):
-        tip = f"{h.name} has a stake next week: rest or groom this week"
+        tip = f"{h.name} has a stake tomorrow night: rest or groom today"
         return (f"<a class='enterplus pause' href='{href}' title='{esc(tip)}' aria-label='{esc(tip)}'>"
                 "<svg viewBox='0 0 12 12' width=12 height=12 aria-hidden=true><rect x='2' y='1.5' width='3' height='9' fill='currentColor'/>"
                 "<rect x='7' y='1.5' width='3' height='9' fill='currentColor'/></svg></a>")
@@ -3193,7 +3193,7 @@ def lanes(h):
         night = (f"<b>{esc(c.race_title(r['key'][0], r['key'][2]))} · {esc(r['v']['name'])}</b>"
                  f"<span class=lsub>{fmt_post(r.get('post', 0))} · post {h.post} · {prog}</span>")
     elif tonight(h).startswith("<b>Tonight:"):                         # a stake or an invitation tonight
-        night = "<b>" + tonight(h)[len("<b>Tonight: "):]                 # "the <stake name></b> ..."
+        night = "<b>" + tonight(h).split("<br>")[0][len("<b>Tonight: "):]   # "the <stake name></b> ...", not tomorrow's line
     else:
         night = f"<span class=lmuted>{'Resting' if h.freshness < 50 else 'Not racing'}</span>"
     if isinstance(o, tuple) and o[0] == "enter":
@@ -3206,8 +3206,11 @@ def lanes(h):
         corner = corner_action(h)
         if corner and "pause" not in corner:
             day = f"<a class='btn lgo' href='/horse/{urlname(h.name)}?enter=1#enter'>Enter</a>"
-        elif corner:
-            day = "<span class=lmuted>Stake next week · rest or groom</span>"
+        elif corner:                                                     # its stake (or Crown) runs tomorrow night: that's the entry
+            cr = crown_invite(h)
+            st_ = cr[0] if cr and cr[2] == 1 else next(s for s in sk.CALENDAR if h in s.noms and not s.result)
+            day = (f"<b>The {esc(st_.name)}, {fmt_post(CLOSE_HOUR * 60)}</b>"
+                   f"<span class=lsub>Stake · rest or groom today</span>")
         elif h.freshness < 50:
             day = "<span class=lmuted>Too tired · groom or rest</span>"
         else:
@@ -3329,16 +3332,18 @@ def tonight(h):
     if (r := on_card(h)):                                     # on the posted program; maybe entered again for the night after
         return (f"<b>Tonight: {esc(c.race_title(r['key'][0], r['key'][2]))} at {esc(r['v']['name'])}, {fmt_post(r.get('post', 0))}, post {h.post}</b>"
                 + (f"<br>Tomorrow: {esc(order_text(h))}" if o else ""))
+    cr = crown_invite(h)
+    stake = next((s for s in sk.CALENDAR if h in s.noms and not s.result), None)
+    night = (f"<b>Tonight: the {esc(cr[0].name)}</b> <span class=sub>(invited)</span>" if cr and cr[2] == 0
+             else f"<b>Tonight: the {esc(stake.name)}, {fmt_post(CLOSE_HOUR * 60)}</b>" if stake and stake.week == G["day"] % c.YEAR
+             else "")
+    if night:                                                 # tonight's stake stays on show with tomorrow's entry under it
+        return night + (f"<br>Tomorrow: {esc(order_text(h))}" if o else "")
     if o:
         return f"<b>Tomorrow: {esc(order_text(h))}</b>"
-    cr = crown_invite(h)
-    if cr and cr[2] == 0:
-        return f"<b>Tonight: the {esc(cr[0].name)}</b> <span class=sub>(invited)</span>"
-    stake = next((s for s in sk.CALENDAR if h in s.noms and not s.result), None)
     if stake:
-        return (f"<b>Tonight: the {esc(stake.name)}, {fmt_post(CLOSE_HOUR * 60)}</b>" if stake.week == G["day"] % c.YEAR
-                else f"nominated: {esc(stake.name)} in {stake.week - G['day'] % c.YEAR} wks" + ("; " if h.freshness >= 50 else "") +
-                ("<span style='color:var(--tote)'>not entered tonight</span>" if h.freshness >= 50 else ""))
+        return (f"nominated: {esc(stake.name)} in {stake.week - G['day'] % c.YEAR} wks" + ("; " if h.freshness >= 50 else "") +
+                ("<span style='color:var(--tote)'>not entered tomorrow</span>" if h.freshness >= 50 else ""))
     if h.freshness < 50:
         return f"not fit to race (fresh {h.freshness:.0f}); trainer's week"
     return "<span style='color:var(--tote)'>not entered</span>"
@@ -4067,7 +4072,7 @@ def horse_page(name, entering=False):
             act = ("<b>nominated</b>" if h in s.noms else
                    f"<form method=post action=/nominate class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=s value={s.id}>"
                    f"<button class=sec onclick=\"return ask(this,'Pay ${fee:,.0f} to nominate {h.name} for the {s.name}?')\">Nominate</button></form>")
-            inner += f"<tr><td>{esc(s.name)}</td><td>{s.week} ({s.week - G['day'] % c.YEAR:+})</td><td>${fee:,.0f}</td><td>${ev:,.0f}</td><td>{act}</td></tr>"
+            inner += f"<tr><td>{esc(s.name)}</td><td>{s.week + 1} ({s.week - G['day'] % c.YEAR:+})</td><td>${fee:,.0f}</td><td>${ev:,.0f}</td><td>{act}</td></tr>"
         inner += "</table>"
     else:
         inner += "<div class=sub>None open that this horse can enter.</div>"

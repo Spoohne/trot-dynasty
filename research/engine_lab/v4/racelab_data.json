@@ -1,0 +1,242 @@
+{
+ "half": {
+  "title": "Engine test \u00b7 half-mile \u00b7 8 starters \u00b7 race 1",
+  "horses": [
+   {
+    "name": "Gilded Spoke",
+    "post": 1,
+    "traits": {
+     "gate": 0.263,
+     "cruise": -0.137,
+     "kick": -0.295,
+     "manners": -0.211,
+     "grit": 0.014
+    }
+   },
+   {
+    "name": "Tally Ho Tess",
+    "post": 2,
+    "traits": {
+     "gate": -0.248,
+     "cruise": -0.05,
+     "kick": 0.502,
+     "manners": 0.18,
+     "grit": 0.912
+    }
+   },
+   {
+    "name": "Ironwood Ace",
+    "post": 3,
+    "traits": {
+     "gate": -0.433,
+     "cruise": 0.115,
+     "kick": -0.37,
+     "manners": -0.019,
+     "grit": 0.669
+    }
+   },
+   {
+    "name": "Paddock Rumor",
+    "post": 4,
+    "traits": {
+     "gate": 1.219,
+     "cruise": 0.231,
+     "kick": 0.256,
+     "manners": -0.36,
+     "grit": -0.33
+    }
+   },
+   {
+    "name": "Silver Furlong",
+    "post": 5,
+    "traits": {
+     "gate": -0.338,
+     "cruise": 0.43,
+     "kick": 0.618,
+     "manners": 0.443,
+     "grit": 0.056
+    }
+   },
+   {
+    "name": "Brass Bell",
+    "post": 6,
+    "traits": {
+     "gate": 0.606,
+     "cruise": -0.458,
+     "kick": 0.478,
+     "manners": -0.287,
+     "grit": 0.099
+    }
+   },
+   {
+    "name": "Harbor Lights",
+    "post": 7,
+    "traits": {
+     "gate": 0.132,
+     "cruise": -0.188,
+     "kick": -0.341,
+     "manners": 0.503,
+     "grit": 0.396
+    }
+   },
+   {
+    "name": "Quiet Thunder",
+    "post": 8,
+    "traits": {
+     "gate": -0.146,
+     "cruise": 0.124,
+     "kick": 0.828,
+     "manners": 0.132,
+     "grit": -0.55
+    }
+   }
+  ],
+  "params": {
+   "g": 0.25,
+   "s_form": 0.15,
+   "s_choice": 0.1,
+   "c_post": 0.0994314106733373,
+   "s_start": 0.02017397059465198,
+   "omega": 0.5938761916108407,
+   "A_lead": 0.4122946448648809,
+   "A_pocket": 0.31396172750867324,
+   "A_fo": 0.09299566675668958,
+   "A_fol": 0.09574834786072772,
+   "s_eps": 0.17798810007780796,
+   "s_margin": 7.605805514239352,
+   "k_close": 0.04303554691830236,
+   "b_depth": 0.39885805717373174
+  }
+ },
+ "mile": {
+  "title": "Engine test \u00b7 mile \u00b7 10 starters \u00b7 race 1",
+  "horses": [
+   {
+    "name": "Brass Bell",
+    "post": 1,
+    "traits": {
+     "gate": 0.772,
+     "cruise": 0.938,
+     "kick": -0.729,
+     "manners": -0.437,
+     "grit": -0.194
+    }
+   },
+   {
+    "name": "Harbor Lights",
+    "post": 2,
+    "traits": {
+     "gate": -0.441,
+     "cruise": -0.434,
+     "kick": -0.071,
+     "manners": -0.16,
+     "grit": 0.103
+    }
+   },
+   {
+    "name": "Quiet Thunder",
+    "post": 3,
+    "traits": {
+     "gate": 0.353,
+     "cruise": 0.01,
+     "kick": -0.286,
+     "manners": -0.456,
+     "grit": -0.041
+    }
+   },
+   {
+    "name": "Velvet Hobble",
+    "post": 4,
+    "traits": {
+     "gate": 0.245,
+     "cruise": -0.82,
+     "kick": -0.019,
+     "manners": 0.004,
+     "grit": -0.16
+    }
+   },
+   {
+    "name": "Copper Lantern",
+    "post": 5,
+    "traits": {
+     "gate": 0.453,
+     "cruise": 0.505,
+     "kick": 0.612,
+     "manners": 0.196,
+     "grit": -0.011
+    }
+   },
+   {
+    "name": "Midnight Ledger",
+    "post": 6,
+    "traits": {
+     "gate": -0.015,
+     "cruise": 0.545,
+     "kick": 0.046,
+     "manners": 0.291,
+     "grit": -0.549
+    }
+   },
+   {
+    "name": "Northfield Rose",
+    "post": 7,
+    "traits": {
+     "gate": 0.632,
+     "cruise": -0.277,
+     "kick": -0.838,
+     "manners": 0.273,
+     "grit": -0.556
+    }
+   },
+   {
+    "name": "Gilded Spoke",
+    "post": 8,
+    "traits": {
+     "gate": -0.017,
+     "cruise": 0.529,
+     "kick": -0.273,
+     "manners": 0.589,
+     "grit": 0.128
+    }
+   },
+   {
+    "name": "Tally Ho Tess",
+    "post": 9,
+    "traits": {
+     "gate": -0.666,
+     "cruise": -0.266,
+     "kick": -0.198,
+     "manners": 0.428,
+     "grit": -0.438
+    }
+   },
+   {
+    "name": "Ironwood Ace",
+    "post": 10,
+    "traits": {
+     "gate": 0.049,
+     "cruise": 0.011,
+     "kick": 0.215,
+     "manners": -0.031,
+     "grit": 0.286
+    }
+   }
+  ],
+  "params": {
+   "g": 0.25,
+   "s_form": 0.15,
+   "s_choice": 0.1,
+   "c_post": 0.04926660027735483,
+   "s_start": 0.8370432667346848,
+   "omega": 0.4703087097212123,
+   "A_lead": 0.8944309419378034,
+   "A_pocket": 0.7728020645420891,
+   "A_fo": 0.8026769007091834,
+   "A_fol": 0.2615173160574591,
+   "s_eps": 0.027295459447580828,
+   "s_margin": 6.0407761172731735,
+   "k_close": 1.1015350803998327,
+   "b_depth": 0.13223734814640054
+  }
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "move 0.55 \u00b7 tank_full 45": {
+  "behind_half": 7.792,
+  "gap_s": 0.215,
+  "recovered_len": 6.35,
+  "won": 0.1,
+  "capped_s": 38.697,
+  "energy_end": 2.41,
+  "bound_beats_leader": 1
+ },
+ "move 0.55 \u00b7 tank_full 100": {
+  "behind_half": 7.792,
+  "gap_s": -0.114,
+  "recovered_len": 8.556,
+  "won": 0.7,
+  "capped_s": 48.181,
+  "energy_end": 21.25,
+  "bound_beats_leader": 1
+ },
+ "move 0.74 \u00b7 tank_full 45": {
+  "behind_half": 7.792,
+  "gap_s": 0.118,
+  "recovered_len": 6.998,
+  "won": 0.45,
+  "capped_s": 26.522,
+  "energy_end": 10.925,
+  "bound_beats_leader": 0.95
+ },
+ "move 0.74 \u00b7 tank_full 100": {
+  "behind_half": 7.792,
+  "gap_s": 0.313,
+  "recovered_len": 5.694,
+  "won": 0.1,
+  "capped_s": 28.706,
+  "energy_end": 32.434,
+  "bound_beats_leader": 1
+ }
+}

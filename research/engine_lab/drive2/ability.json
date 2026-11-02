@@ -1,0 +1,56 @@
+{
+ "early_speed": {
+  "frozen": {
+   "places_gained": 0.13,
+   "places_gained_se": 0.15,
+   "secs_gained": 0.153,
+   "worse_place": 0.281,
+   "slower": 0.263,
+   "aim_changed": 0.2
+  },
+  "replan": {
+   "places_gained": -0.48,
+   "places_gained_se": 0.18,
+   "secs_gained": -0.059,
+   "worse_place": 0.456,
+   "slower": 0.481,
+   "aim_changed": 0.263
+  }
+ },
+ "late_speed": {
+  "frozen": {
+   "places_gained": 0.28,
+   "places_gained_se": 0.06,
+   "secs_gained": 0.095,
+   "worse_place": 0.05,
+   "slower": 0.087,
+   "aim_changed": 0.031
+  },
+  "replan": {
+   "places_gained": 0.25,
+   "places_gained_se": 0.1,
+   "secs_gained": 0.08,
+   "worse_place": 0.069,
+   "slower": 0.1,
+   "aim_changed": 0.037
+  }
+ },
+ "stamina": {
+  "frozen": {
+   "places_gained": 0.74,
+   "places_gained_se": 0.12,
+   "secs_gained": 0.219,
+   "worse_place": 0.094,
+   "slower": 0.106,
+   "aim_changed": 0.1
+  },
+  "replan": {
+   "places_gained": 0.72,
+   "places_gained_se": 0.11,
+   "secs_gained": 0.22,
+   "worse_place": 0.113,
+   "slower": 0.113,
+   "aim_changed": 0.138
+  }
+ }
+}

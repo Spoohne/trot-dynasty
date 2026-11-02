@@ -1,0 +1,18 @@
+== fixed
+1 {'win': 21.9, 'pos_at_quarter': 1.88, 'extra_ground_ft': 14.8, 'gate_aims': {'close': 40, 'follow': 40, 'pocket': 40}}
+2 {'win': 18.8, 'pos_at_quarter': 2.62, 'extra_ground_ft': 12.5, 'gate_aims': {'pocket': 40, 'close': 40, 'follow': 40}}
+3 {'win': 8.8, 'pos_at_quarter': 3.61, 'extra_ground_ft': 17.4, 'gate_aims': {'pocket': 40, 'close': 40, 'follow': 40}}
+4 {'win': 11.2, 'pos_at_quarter': 4.39, 'extra_ground_ft': 24.6, 'gate_aims': {'follow': 40, 'pocket': 40, 'close': 40}}
+5 {'win': 13.8, 'pos_at_quarter': 4.67, 'extra_ground_ft': 24.9, 'gate_aims': {'close': 40, 'follow': 40, 'pocket': 40}}
+6 {'win': 14.4, 'pos_at_quarter': 5.47, 'extra_ground_ft': 23.0, 'gate_aims': {'pocket': 40, 'close': 40, 'follow': 40}}
+7 {'win': 8.1, 'pos_at_quarter': 6.34, 'extra_ground_ft': 31.3, 'gate_aims': {'follow': 40, 'pocket': 40, 'close': 40}}
+8 {'win': 3.1, 'pos_at_quarter': 7.02, 'extra_ground_ft': 35.1, 'gate_aims': {'close': 40, 'follow': 40, 'pocket': 40}}
+== driver
+1 {'win': 48.1, 'pos_at_quarter': 2.11, 'extra_ground_ft': 7.5, 'gate_aims': {'pocket': 117, 'top': 43}}
+2 {'win': 30.0, 'pos_at_quarter': 2.25, 'extra_ground_ft': 10.0, 'gate_aims': {'pocket': 86, 'top': 74}}
+3 {'win': 10.0, 'pos_at_quarter': 3.79, 'extra_ground_ft': 11.6, 'gate_aims': {'pocket': 77, 'top': 45, 'close': 38}}
+4 {'win': 5.6, 'pos_at_quarter': 4.59, 'extra_ground_ft': 11.8, 'gate_aims': {'close': 62, 'top': 52, 'pocket': 46}}
+5 {'win': 1.2, 'pos_at_quarter': 5.36, 'extra_ground_ft': 14.4, 'gate_aims': {'close': 89, 'pocket': 44, 'top': 27}}
+6 {'win': 2.5, 'pos_at_quarter': 5.51, 'extra_ground_ft': 13.1, 'gate_aims': {'close': 87, 'pocket': 40, 'top': 33}}
+7 {'win': 1.9, 'pos_at_quarter': 5.9, 'extra_ground_ft': 14.6, 'gate_aims': {'close': 100, 'top': 31, 'pocket': 29}}
+8 {'win': 0.6, 'pos_at_quarter': 6.49, 'extra_ground_ft': 13.0, 'gate_aims': {'close': 104, 'pocket': 28, 'top': 28}}

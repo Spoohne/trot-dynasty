@@ -1,0 +1,4 @@
+{"model": 0.77, "oracle": 0.0, "hindsight": 0.08, "spread": 1.72} (places; model and oracle = expected regret vs the best mean aim; spread = worst minus best mean aim)
+  at 0.0: model 1.04  oracle 0.00  n 7
+  at 0.25: model 0.66  oracle 0.00  n 7
+  at 0.45: model 0.58  oracle 0.00  n 6

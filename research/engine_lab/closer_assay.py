@@ -6,7 +6,16 @@ import json, os, random, statistics as st, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 import race2 as R
 drive, surplus, move_late = map(float, sys.argv[1:4])
-R.P.update(drive_all=drive, surplus_k=surplus, move_late=move_late, break_k=0.0002, budget=int(os.environ.get("BUDGET", "0")))
+R.P.update(drive_all=drive, surplus_k=surplus, move_late=move_late, break_k=0.0002, budget=int(os.environ.get("BUDGET", "0")),
+           tank_full=float(os.environ.get("TANK", R.P["tank_full"])), split=int(os.environ.get("SPLIT", "0")), route=int(os.environ.get("ROUTE", "0")))
+if os.environ.get("GEO") == "1":                                   # an eighth-mile homestretch that fans out five wide
+    R.P.update(mile_turns=[(0.125, 0.375), (0.625, 0.875)], stretch_at=0.875, stretch_lanes=5)
+if os.environ.get("GAPLATE"):
+    R.P["gap_late"] = float(os.environ["GAPLATE"])
+if os.environ.get("GAPMID"):
+    R.P["gap_mid"] = float(os.environ["GAPMID"])
+if R.P["split"]:
+    R.P["cost_base"] = R.P["cost_base"] - R.P["air_k"]          # same spend alone at cruise; only its make-up changes
 STY = ["front", "stalk", "stalk", "mid", "mid", "late"]
 rng = random.Random(77)
 N = 300
@@ -23,10 +32,10 @@ for i in range(N):
         if h.style == "late":
             behind.append(pos[h.name]["behind"]); e_end.append(h.energy); boxed.append(h.boxed_t); late_place.append(k + 1)
 share = {s: STY.count(s) / len(STY) for s in wins}
-out = dict(drive_all=drive, surplus_k=surplus, move_late=move_late,
+out = dict(gap_late=R.P["gap_late"], geo=os.environ.get("GEO", "0"), route=R.P["route"], tank_full=R.P["tank_full"], split=R.P["split"], drive_all=drive, surplus_k=surplus, move_late=move_late,
            style_wins={s: round(wins[s] / N, 3) for s in wins}, style_win_over_share={s: round(wins[s] / N / share[s], 2) for s in wins},
            closer_behind_at_75=round(st.mean(behind), 2), closer_energy_at_finish=round(st.mean(e_end), 1),
            closer_boxed_s=round(st.mean(boxed), 2), closer_mean_place=round(st.mean(late_place), 2))
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "closer"), exist_ok=True)
-json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "closer", f"d{drive}_s{surplus}_m{move_late}_b{os.environ.get('BUDGET', '0')}.json"), "w"), indent=1)
+json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "closer", f"d{drive}_s{surplus}_m{move_late}_b{os.environ.get('BUDGET', '0')}_t{R.P['tank_full']}_x{R.P['split']}_r{R.P['route']}_g{os.environ.get('GEO','0')}_gl{R.P['gap_late']:g}.json"), "w"), indent=1)
 print(json.dumps(out))

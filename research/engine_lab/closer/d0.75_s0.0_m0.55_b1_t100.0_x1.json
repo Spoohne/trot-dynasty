@@ -1,0 +1,23 @@
+{
+ "tank_full": 100.0,
+ "split": 1,
+ "drive_all": 0.75,
+ "surplus_k": 0.0,
+ "move_late": 0.55,
+ "style_wins": {
+  "stalk": 0.373,
+  "mid": 0.027,
+  "front": 0.59,
+  "late": 0.01
+ },
+ "style_win_over_share": {
+  "stalk": 1.12,
+  "mid": 0.08,
+  "front": 3.54,
+  "late": 0.06
+ },
+ "closer_behind_at_75": 3.89,
+ "closer_energy_at_finish": 22.0,
+ "closer_boxed_s": 9.55,
+ "closer_mean_place": 6.22
+}

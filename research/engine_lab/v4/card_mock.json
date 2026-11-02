@@ -1,0 +1,110 @@
+[
+ {
+  "name": "Gilded Spoke",
+  "speed": 4.9,
+  "stam": 4.3,
+  "grit": 5.1,
+  "manners": 3.9,
+  "gate": 6.3,
+  "kick": 3.5,
+  "lean": -2.8,
+  "rating": 4.75,
+  "tier": "B"
+ },
+ {
+  "name": "Tally Ho Tess",
+  "speed": 5.7,
+  "stam": 4.8,
+  "grit": 9.6,
+  "manners": 5.9,
+  "gate": 3.8,
+  "kick": 7.5,
+  "lean": 3.8,
+  "rating": 5.91,
+  "tier": "A"
+ },
+ {
+  "name": "Ironwood Ace",
+  "speed": 3.0,
+  "stam": 5.6,
+  "grit": 8.3,
+  "manners": 4.9,
+  "gate": 2.8,
+  "kick": 3.2,
+  "lean": 0.3,
+  "rating": 4.31,
+  "tier": "C"
+ },
+ {
+  "name": "Paddock Rumor",
+  "speed": 8.6,
+  "stam": 6.2,
+  "grit": 3.4,
+  "manners": 3.2,
+  "gate": 11.1,
+  "kick": 6.3,
+  "lean": -4.8,
+  "rating": 7.34,
+  "tier": "S+"
+ },
+ {
+  "name": "Silver Furlong",
+  "speed": 5.8,
+  "stam": 7.2,
+  "grit": 5.3,
+  "manners": 7.2,
+  "gate": 3.3,
+  "kick": 8.1,
+  "lean": 4.8,
+  "rating": 6.07,
+  "tier": "S"
+ },
+ {
+  "name": "Brass Bell",
+  "speed": 7.7,
+  "stam": 2.7,
+  "grit": 5.5,
+  "manners": 3.6,
+  "gate": 8.0,
+  "kick": 7.4,
+  "lean": -0.6,
+  "rating": 6.14,
+  "tier": "S"
+ },
+ {
+  "name": "Harbor Lights",
+  "speed": 4.4,
+  "stam": 4.1,
+  "grit": 7.0,
+  "manners": 7.5,
+  "gate": 5.7,
+  "kick": 3.3,
+  "lean": -2.4,
+  "rating": 4.65,
+  "tier": "C"
+ },
+ {
+  "name": "Quiet Thunder",
+  "speed": 6.8,
+  "stam": 5.6,
+  "grit": 2.2,
+  "manners": 5.7,
+  "gate": 4.3,
+  "kick": 9.1,
+  "lean": 4.9,
+  "rating": 5.94,
+  "tier": "A"
+ },
+ {
+  "name": "Crown of Lexington (S+ example)",
+  "speed": 8.8,
+  "stam": 8.5,
+  "grit": 7.5,
+  "manners": 7.0,
+  "gate": 8.5,
+  "kick": 9.0,
+  "lean": 0.5,
+  "rating": 8.54,
+  "tier": "S+"
+ }
+]

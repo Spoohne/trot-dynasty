@@ -1,0 +1,26 @@
+{
+ "gap_late": 5.0,
+ "geo": "1",
+ "route": 1,
+ "tank_full": 45.0,
+ "split": 0,
+ "drive_all": 0.75,
+ "surplus_k": 0.0,
+ "move_late": 0.68,
+ "style_wins": {
+  "late": 0.063,
+  "stalk": 0.643,
+  "front": 0.107,
+  "mid": 0.187
+ },
+ "style_win_over_share": {
+  "late": 0.38,
+  "stalk": 1.93,
+  "front": 0.64,
+  "mid": 0.56
+ },
+ "closer_behind_at_75": 4.87,
+ "closer_energy_at_finish": 13.0,
+ "closer_boxed_s": 6.21,
+ "closer_mean_place": 4.83
+}

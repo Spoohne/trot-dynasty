@@ -1,0 +1,16 @@
+r2_base done
+r2_fade done
+r2_kick done
+r2_tank done
+r2_drive done
+r2_topshort done
+r2_posthalf done
+r2_cruise done
+r2_base        | half n64 t 114.9 res 0.59 ga +0.22±0.08 cr +0.61±0.05 ki +0.04±0.04 gr +0.06±0.02 | mile n64 t 112.3 res 0.79 ga +0.54±0.08 cr +0.31±0.04 ki +0.16±0.02 gr +0.06±0.01
+r2_fade        | half n64 t 114.4 res 0.59 ga -0.04±0.07 cr +0.68±0.06 ki +0.01±0.04 gr +0.11±0.02 | mile n64 t 111.9 res 0.79 ga +0.62±0.08 cr +0.27±0.05 ki +0.16±0.02 gr +0.04±0.02
+r2_kick        | half n64 t 114.4 res 0.60 ga +0.04±0.08 cr +0.66±0.06 ki +0.03±0.04 gr +0.10±0.03 | mile n64 t 111.9 res 0.79 ga +0.64±0.08 cr +0.27±0.04 ki +0.30±0.03 gr +0.04±0.02
+r2_tank        | half n64 t 114.1 res 0.72 ga +0.46±0.08 cr +0.41±0.05 ki +0.11±0.04 gr +0.10±0.03 | mile n64 t 111.6 res 0.86 ga +0.79±0.09 cr +0.19±0.04 ki +0.18±0.02 gr +0.04±0.01
+r2_drive       | half n64 t 115.3 res 0.43 ga +0.21±0.08 cr +0.42±0.05 ki +0.04±0.03 gr +0.05±0.02 | mile n64 t 112.9 res 0.82 ga +0.71±0.09 cr +0.21±0.04 ki +0.13±0.02 gr +0.04±0.01
+r2_topshort    | half n64 t 114.8 res 0.55 ga +0.06±0.08 cr +0.66±0.07 ki +0.02±0.03 gr +0.10±0.02 | mile n64 t 111.8 res 0.71 ga +0.46±0.08 cr +0.39±0.06 ki +0.16±0.03 gr +0.06±0.02
+r2_posthalf    | half n64 t 114.8 res 0.56 ga +0.20±0.09 cr +0.68±0.07 ki +0.02±0.02 gr +0.08±0.02 | mile n64 t 112.3 res 0.79 ga +0.54±0.08 cr +0.31±0.04 ki +0.16±0.02 gr +0.06±0.01
+r2_cruise      | half n64 t 115.1 res 0.59 ga +0.25±0.08 cr +0.44±0.05 ki +0.01±0.04 gr +0.10±0.03 | mile n64 t 112.4 res 0.80 ga +0.49±0.08 cr +0.23±0.05 ki +0.16±0.02 gr +0.08±0.02

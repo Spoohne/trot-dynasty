@@ -1,0 +1,18 @@
+{
+ "traffic": {
+  "win": 0.015,
+  "place": 5.73,
+  "energy_end": 31.1,
+  "boxed_s": 9.24,
+  "extra_ground_ft": 31.7,
+  "behind_winner_s": 1.0
+ },
+ "clear": {
+  "win": 0.125,
+  "place": 3.73,
+  "energy_end": 20.7,
+  "boxed_s": 0.0,
+  "extra_ground_ft": 27.7,
+  "behind_winner_s": 0.63
+ }
+}

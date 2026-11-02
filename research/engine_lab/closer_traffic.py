@@ -3,12 +3,14 @@ blocked, boxed or sheltered by anyone; it still covers its own ground). DT 1/8, 
 import copy, json, os, random, statistics as st, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 import race2 as R
-R.P.update(break_k=0.0002)
+import os as _o
+R.P.update(break_k=0.0002, budget=0, tank_full=float(_o.environ.get("TANK", 45)), route=int(_o.environ.get("ROUTE", "0")))
+MOVE = float(_o.environ.get("MOVE", 0.74))
 STY = ["front", "stalk", "stalk", "mid", "mid", "late"]
 rng = random.Random(5)
 res = {"traffic": [], "clear": []}
 for i in range(400):
-    base = [R.Runner("S", R.avg(**{t: rng.gauss(0, .4) for t in ("early_speed", "late_speed", "stamina", "gait")}), "late", 1)]
+    base = [R.Runner("S", R.avg(**{t: rng.gauss(0, .4) for t in ("early_speed", "late_speed", "stamina", "gait")}), "late", 1, {"move_at": MOVE})]
     base += [R.Runner(f"H{k}", R.avg(**{t: rng.gauss(0, .4) for t in ("early_speed", "late_speed", "stamina", "gait")}), rng.choice(STY), k + 2) for k in range(7)]
     posts = list(range(8)); rng.shuffle(posts)
     for p_, h in zip(posts, base):
@@ -23,5 +25,5 @@ for i in range(400):
 out = {arm: dict(win=round(st.mean(x[0] == 1 for x in v), 3), place=round(st.mean(x[0] for x in v), 2), energy_end=round(st.mean(x[1] for x in v), 1),
                  boxed_s=round(st.mean(x[2] for x in v), 2), extra_ground_ft=round(st.mean(x[3] for x in v), 1), behind_winner_s=round(st.mean(x[4] for x in v), 2))
        for arm, v in res.items()}
-json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "closer_traffic.json"), "w"), indent=1)
+json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), f"closer_traffic_m{MOVE}_t{R.P['tank_full']:g}_r{R.P['route']}.json"), "w"), indent=1)
 print(json.dumps(out, indent=1))

@@ -1,0 +1,1 @@
+round 0: best loss 55.77  {"half": {"gate": 0.021, "cruise": 0.333, "kick": 0.021, "grit": 0.042, "time": 116.35}, "mile": {"gate": 0.125, "cruise": 0.438, "kick": 0.104, "grit": 0.083, "time": 113.16}}

@@ -1,0 +1,44 @@
+{
+ "early_speed": {
+  "frozen": {
+   "places_gained": 0.21,
+   "se": 0.12,
+   "worse": 0.225,
+   "better": 0.331
+  },
+  "replan": {
+   "places_gained": 0.39,
+   "se": 0.15,
+   "worse": 0.287,
+   "better": 0.487
+  }
+ },
+ "late_speed": {
+  "frozen": {
+   "places_gained": 0.46,
+   "se": 0.13,
+   "worse": 0.138,
+   "better": 0.375
+  },
+  "replan": {
+   "places_gained": 0.31,
+   "se": 0.13,
+   "worse": 0.212,
+   "better": 0.35
+  }
+ },
+ "stamina": {
+  "frozen": {
+   "places_gained": 0.51,
+   "se": 0.08,
+   "worse": 0.106,
+   "better": 0.419
+  },
+  "replan": {
+   "places_gained": 0.38,
+   "se": 0.07,
+   "worse": 0.144,
+   "better": 0.425
+  }
+ }
+}

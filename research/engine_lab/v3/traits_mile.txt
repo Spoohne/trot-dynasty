@@ -1,0 +1,5 @@
+mile +0.5 gate     frozen: +0.06 places (±0.07) worse 5% better 3% | adaptive: -0.11 (±0.08) worse 25% better 19%
+mile +0.5 cruise   frozen: +0.52 places (±0.09) worse 5% better 41% | adaptive: +0.53 (±0.10) worse 7% better 42%
+mile +0.5 kick     frozen: +0.09 places (±0.03) worse 2% better 10% | adaptive: +0.12 (±0.03) worse 2% better 12%
+mile +0.5 grit     frozen: +0.02 places (±0.02) worse 1% better 2% | adaptive: +0.02 (±0.02) worse 1% better 2%
+mile +0.5 manners  frozen: +0.02 places (±0.01) worse 0% better 1% | adaptive: +0.02 (±0.01) worse 0% better 1%

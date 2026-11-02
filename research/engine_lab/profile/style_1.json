@@ -1,0 +1,36 @@
+{
+ "mode": "style",
+ "races": 150,
+ "profile_win_share": {
+  "balanced": 0.287,
+  "speed": 0.3,
+  "finisher": 0.413
+ },
+ "profile_starter_share": {
+  "balanced": 0.323,
+  "speed": 0.339,
+  "finisher": 0.338
+ },
+ "plan_win_share": {
+  "mid": 0.26,
+  "front": 0.12,
+  "late": 0.113,
+  "stalk": 0.507
+ },
+ "plan_starter_share": {
+  "mid": 0.338,
+  "front": 0.154,
+  "late": 0.161,
+  "stalk": 0.347
+ },
+ "leader_at_three_quarters_wins": 0.267,
+ "winner_position_at_three_quarters": {
+  "1st": 0.267,
+  "2nd": 0.1,
+  "3rd": 0.18,
+  "4th-5th": 0.273,
+  "6th+": 0.18
+ },
+ "winner_lengths_behind_at_three_quarters": 1.93,
+ "best_rated_wins": 0.227
+}
