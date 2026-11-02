@@ -3560,12 +3560,12 @@ def barn_page(qs=None):
     ev = "".join(f"<div class=ev>{esc(x)}</div>" for x in P()["events"] if " for $" not in x)
     racers = [h for h in mine() if not h.retired]
     rated = lambda h: c.mile_secs(h.est)                                     # fastest first
-    idle = lambda h: h.freshness >= 50 and not getattr(h, "order", None) and not on_card(h)   # fit and not entered for tomorrow
+    idle = lambda h: "pause" not in (a := corner_action(h)) and bool(a)                # the card shows an Enter button: the same test lanes() uses
     racers.sort(key=(lambda h: (h.age, TIER_RANK[tier_label(h)], rated(h))) if by == "age"
                 else (lambda h: (not idle(h), TIER_RANK[tier_label(h)], rated(h))) if by == "open"
                 else (lambda h: (TIER_RANK[tier_label(h)], rated(h))))
     toggle = ("<div class=sortby><span>Sort by</span>"
-              + "".join(f"<a href='/?sort={k}' class='{'on' if by == k else ''}'>{label}</a>" for k, label in (("age", "Age"), ("class", "Class"), ("open", "Unentered"))) + "</div>")
+              + "".join(f"<a href='/?sort={k}' class='{'on' if by == k else ''}'>{label}</a>" for k, label in (("age", "Age"), ("class", "Class"), ("open", "Not Entered"))) + "</div>")
     tb, fb = e.bills(ME, G["horses"])
     cards = ""
     if not e.can_breed(ME) and any(h.retired and h.sex == "f" for h in mine()):   # the way up, until the barn can breed
