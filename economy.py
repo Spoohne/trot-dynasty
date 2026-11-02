@@ -165,12 +165,14 @@ def start_from_history(horses, owner, racers=3):
             c.assign(h, c.BARN_TRAINER.get(new, c.HOUSE)) or c.assign(h, c.HOUSE)
     # racers at the B/C line (rated 52-57 against their age group): good enough to win at the bottom of the ladder and pay for a
     # second horse within the first season (~$150-180k), not so good the start is handed over
-    pool = [h for h in horses if not h.retired and 2 <= h.age <= 4 and STARTER[0] <= c.on_aged_scale(h.est, c.age_group(h)) <= STARTER[1]]
+    carded = {id(h) for r in c.CARD.get("races", []) if not r.get("done") for h in r["field"]}
+    free = lambda h: h.owner not in human and not getattr(h, "order", None) and h.id not in c.CLAIMS and id(h) not in carded   # never another player's, never one already committed
+    pool = [h for h in horses if free(h) and not h.retired and 2 <= h.age <= 4 and STARTER[0] <= c.on_aged_scale(h.est, c.age_group(h)) <= STARTER[1]]
     rng.shuffle(pool)
     picks = pool[:racers]
     # retired stock keeps the best tier it ever showed (nearly all S), so judge a mare by her best rating instead:
     # one from the lower half of the broodmare band, young enough to breed for years
-    mares = sorted((h for h in horses if h.retired and h.sex == "f" and h.age <= 12), key=c.peak_est)
+    mares = sorted((h for h in horses if free(h) and h.retired and h.sex == "f" and h.age <= 12), key=c.peak_est)
     picks += [rng.choice(mares[:max(1, len(mares) // 2)])] if mares else []
     for h in picks:
         drop_auction(h.id)

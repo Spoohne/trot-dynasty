@@ -170,6 +170,8 @@ def signup(user, pw, claim=False):
         return None, "That name is taken."
     if claim and "user" not in P(0):
         o = 0
+    elif not G["ai"]:                                                          # every barn is taken: no starting string to hand over
+        return None, "The circuit is full right now. Please try again later."
     else:
         o = min(G["ai"])
         G["ai"].discard(o)
@@ -245,7 +247,6 @@ def save():
 def flush():
     if not DIRTY[0]:
         return
-    DIRTY[0] = False
     with open(SAVE + ".tmp", "wb") as f:                                      # whole file or nothing: a crash mid-write never leaves a torn save
         pickle.dump({"G": G, "cash": e.cash, "ledger": e.ledger, "settled": e.settled, "listings": e.listings, "auctions": e.auctions,
                      "bookings": e.bookings, "scouted": e.scouted, "nursery": e.nursery, "level": e.level, "groomed": e.groomed, "human": set(c.HUMAN), "roster": c.ROSTER,
@@ -254,6 +255,7 @@ def flush():
                      "card": c.CARD, "drivers": c.DRIVER_STATS, "trades": e.trades, "rng": sim.rng.getstate()}, f)
         f.flush(); os.fsync(f.fileno())
     os.replace(SAVE + ".tmp", SAVE)
+    DIRTY[0] = False                                                          # only once the new save is in place: a failed write retries
 
 
 SAVE_EVERY = 10

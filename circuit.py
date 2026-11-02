@@ -1136,9 +1136,15 @@ def run_race(r, alive, log):
             h.last = f"entered {race_title(group, name)}, the field came apart; rested"
         r["done"] = True
         return
+    if r.get("settling"):                               # a retry after a failure partway through settling: a result is never
+        r["done"] = True                                # applied twice (starts, purses, claims); this race stays as far as it got
+        return
     vpurse = venue_purse(v, purse)
     drive(field, r.setdefault("drivers", {}), track)
     order = (outcome.race if ENGINE == "outcome" else race)(field, track, v.get("passing", False))
+    story = _story.build(order, track, passing=v.get("passing", False))   # everything that can fail, before any result is written
+    line = tote_odds(field)
+    r["settling"] = True                                # from here the result is being applied: no retry may apply it again
     for h in field:
         h.tonic_on = None
     field_est = st.mean(h.est for h in field)        # who you beat, not where you ran
@@ -1152,11 +1158,10 @@ def run_race(r, alive, log):
         h.results[-1]["race_id"] = rid
         h.results[-1]["venue"] = v["name"]
         raced.add(h.id)
-    STORIES[rid] = dict(_story.build(order, track, passing=v.get("passing", False)), id=rid, name=race_title(group, name), purse=vpurse, day=DAY[0], venue=v["name"],
+    STORIES[rid] = dict(story, id=rid, name=race_title(group, name), purse=vpurse, day=DAY[0], venue=v["name"],
                         passing=v.get("passing", False))
     STORIES[rid]["records"] = set_records(v["id"], STORIES[rid]["quarters"][1:])   # each track keeps its own records
     drove(order, STORIES[rid]["horses"], year_of(DAY[0]))
-    line = tote_odds(field)
     for row, h in zip(STORIES[rid]["horses"], order):              # the story is in finishing order, like order
         row["odds"] = "%d-%d" % line[h.id]
     for old in list(STORIES)[:-400]:
