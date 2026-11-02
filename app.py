@@ -1923,7 +1923,7 @@ GUIDE = [
          "<b>Grit</b> is whether it holds on when another horse comes to it. <b>Manners</b> is how it behaves on the track: a "
          "well-mannered horse goes where its driver asks and gets the trip it wants; a rank one gets shuffled into bad spots, and "
          "is more likely to break stride. A horse with all the speed and little stamina wins by getting the lead and holding on.<br><br>"
-         "The card fills in as a horse grows. A young horse shows what it is today, and the trainer's read in a line. Grit "
+         "The card fills in as a horse grows. A young horse shows what it is today, and, with the Season Pass, the trainer's read in a line. Grit "
          "stays untested until it has been in a race. Once a horse has raced, each bar gets a grade for where it ranks among horses its age."),
         ("Mile time and tier", "<b>Mile time</b> is how fast your horse is expected to trot a mile, worked out from its "
          "races. It updates after every start. A horse that hasn't raced yet gets an estimate from its parents.<br><br>"
@@ -2034,7 +2034,9 @@ GUIDE = [
         ("The Stable Manager", "What the Season Pass buys: a manager who does your chores in one tap. The trainer's entries for "
          "every fit horse, and every youngster's standing orders from the Training tab: the last set you gave each one, "
          "saved from its day sheet, which you change any time by working it by hand. Miss a night and the manager covers you, for a few nights in a row, then waits for you. It never "
-         "enters a claimer, never nominates for a stake, and never does anything you couldn't do yourself with a few taps."),
+         "enters a claimer, never nominates for a stake, and never does anything you couldn't do yourself with a few taps.<br><br>"
+         "The Season Pass also brings the trainer's notes: a line on every horse's card, the trainer's read of what it has and "
+         "how it wins, from a young horse's first days in the paddock on."),
     ] + ([
         ("Sponsoring a stake", "At the start of every season the stakes go up for sponsorship, in Markers, to the highest bid. "
          "The sponsor's barn presents that stake for the season: its name and colors on the calendar, the program and the track, "
@@ -2504,7 +2506,7 @@ EARLY = {"early_speed": "Quickest thing in the paddock, first to the gate every 
 
 
 def trainer_read(h):
-    """The trainer's line on the horse, in words. Unraced: what stands out against horses its age, and that it's early.
+    """The trainer's line on the horse, in words (a Season Pass perk: shown only to a holder). Unraced: what stands out against horses its age, and that it's early.
     Raced: its best bar and its worst against its crop, and how that wins races."""
     him, he = ("him", "he") if h.sex == "m" else ("her", "she")
     if h.retired:
@@ -3043,7 +3045,7 @@ def card_header(h, own, price=None):
             f"<div class=hline>{h.age}-year-old {coat} {sexname}, {h.starts} starts, {h.wins} wins</div>"
             f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
-            + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if trainer_read(h) else "")
+            + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if has_pass(ME) and trainer_read(h) else "")   # a Season Pass perk
                + card_bars(h) + f"{prime_row(h)}</div>")   # every horse's bars are public
             + "</div>")
 
