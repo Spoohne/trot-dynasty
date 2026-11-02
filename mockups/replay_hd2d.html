@@ -557,6 +557,7 @@ function coat(img, kind) {
   const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
   const g = c.getContext("2d"); g.drawImage(img, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data, k = COAT[kind];
+  const was = new Uint8ClampedArray(p);                                           // the bay's pixels, to mark the ones that became coat
   for (let i = 0; i < p.length; i += 4) {
     if (!p[i + 3]) continue;
     const r = p[i], gg = p[i + 1], b = p[i + 2], warm = r > gg + 12 && r > b + 25 && !(b > r + 40);
@@ -568,6 +569,8 @@ function coat(img, kind) {
       if (warm) { const v = 10 + (r + gg + b) / 3 * .42; p[i] = v * .9; p[i + 1] = v * .94; p[i + 2] = Math.min(255, v * 1.12); }
     } else if (warm) { p[i] = Math.min(255, r * k[0]); p[i + 1] = Math.min(255, gg * k[1] * (kind === "chestnut" ? 1.05 : 1)); p[i + 2] = Math.min(255, b * k[2]); }
   }
+  c.coatMask = new Uint8Array(p.length / 4);                                    // a grey's coat is near-white like the pad: dye() must not take it for pad
+  for (let i = 0; i < p.length; i += 4) if (p[i] !== was[i] || p[i + 1] !== was[i + 1] || p[i + 2] !== was[i + 2]) c.coatMask[i / 4] = 1;
   g.putImageData(d, 0, 0); c.src = key; coatCache.set(key, c); return c;
 }
 // The saddle cloth and its number, drawn in the sprite's own pixels: a hand-made 3x5 pixel font doubled
@@ -623,13 +626,13 @@ function paintSilks(p, w, hex, fw = 0) {                                      //
 }
 // The number painted on the runner's own saddle pad (fe12 draws a white pad behind the girth): the pad's pixels take
 // the pad color with their shading kept, the number sits centered and only on pad pixels, so the reins stay on top.
-function padPixels(p, w, fw, fh, frames, cols) {
+function padPixels(p, w, fw, fh, frames, cols, coatM) {
   const out = [];
   for (let f = 0; f < frames; f++) {
     const ox = (f % cols) * fw, oy = Math.floor(f / cols) * fh, m = new Set();
     for (let y = 20; y < 55; y++) for (let x = 95; x < 135; x++) {
       const q = ((oy + y) * w + ox + x) * 4, l = (p[q] + p[q + 1] + p[q + 2]) / 3;
-      if (p[q + 3] && l > 150 && Math.max(p[q], p[q + 1], p[q + 2]) - Math.min(p[q], p[q + 1], p[q + 2]) < 40) m.add(y * fw + x);
+      if (p[q + 3] && !(coatM && coatM[q / 4]) && l > 150 && Math.max(p[q], p[q + 1], p[q + 2]) - Math.min(p[q], p[q + 1], p[q + 2]) < 40) m.add(y * fw + x);
     }
     const keep = new Set(), seen = new Set();                                     // drop specks (a buckle's glint): keep pieces of 12+ pixels
     for (const s of m) { if (seen.has(s)) continue; const part = [s], st = [s]; seen.add(s);
@@ -660,13 +663,13 @@ function dye(img, hex, num, dark, pad, fw = FW, rect = PAD, cloth = null, frames
   const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
   const g = c.getContext("2d"); g.drawImage(img, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
-  const onPad = !cloth && fw === 208 ? padPixels(p, c.width, fw, fh, frames, cols) : null;   // the runner's own white pad, found before the silks dye can whiten a rein
+  const onPad = !cloth && fw === 208 ? padPixels(p, c.width, fw, fh, frames, cols, img.coatMask) : null;   // the runner's own white pad, found before the silks dye can whiten a rein
   paintSilks(p, c.width, hex, fw === 208 ? fw : 0);
   if (onPad) paintPad(p, c.width, onPad, pad, num, dark);
   if (cloth) { const pc = [1, 3, 5].map(k => parseInt(pad.slice(k, k + 2), 16));
     for (let f = 0; f < frames; f++) for (let y = cloth[1]; y < cloth[1] + cloth[3]; y++) for (let x = f * fw + cloth[0]; x < f * fw + cloth[0] + cloth[2]; x++) {
       const q = (y * c.width + x) * 4, l = (p[q] + p[q + 1] + p[q + 2]) / 3;
-      if (p[q + 3] && l > 150 && Math.max(p[q], p[q + 1], p[q + 2]) - Math.min(p[q], p[q + 1], p[q + 2]) < 40) { const k = l / 235; p[q] = pc[0] * k; p[q + 1] = pc[1] * k; p[q + 2] = pc[2] * k; } } }
+      if (p[q + 3] && !(img.coatMask && img.coatMask[q / 4]) && l > 150 && Math.max(p[q], p[q + 1], p[q + 2]) - Math.min(p[q], p[q + 1], p[q + 2]) < 40) { const k = l / 235; p[q] = pc[0] * k; p[q + 1] = pc[1] * k; p[q + 2] = pc[2] * k; } } }
   g.putImageData(d, 0, 0);
   if (!onPad) for (let f = 0; f < frames; f++) saddleCloth(g, (f % cols) * fw + rect[0], Math.floor(f / cols) * fh + rect[1], rect[2], rect[3], pad, num, dark);
   return c;
@@ -773,7 +776,7 @@ function maskFringe(c, hex, mask) {
 }
 function overlay(base, layers) {                                        // the coated runner with its gear overlays drawn on, one canvas
   const c = document.createElement("canvas"); c.width = base.width; c.height = base.height; const g = c.getContext("2d");
-  g.drawImage(base, 0, 0); for (const l of layers) if (l) g.drawImage(l, 0, 0); return c;
+  g.drawImage(base, 0, 0); for (const l of layers) if (l) g.drawImage(l, 0, 0); c.coatMask = base.coatMask; return c;
 }
 const maskData = new Map();
 function wrapTint(c, hex, mask = wrapMask) {                             // mask: which overlay's pixels take the color
