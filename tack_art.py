@@ -9,8 +9,7 @@ FRAME = os.path.join(ROOT, "mockups", "pixel", "fe12_cycle.png")
 CACHE = os.path.join(ROOT, "mockups", "brand", "emblem", "cache")
 WRAPPED = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12.png")      # SpriteCook's leg wraps on the cycle, and the mask of them
 WMASK = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12_mask.png")
-PIECES = ("harness", "mask", "wraps", "bike")
-EARS, BAND = 6, 2           # the hood's top rows are its ears; each wrap's top rows its band (the second colors)
+PIECES = ("harness", "mask", "wraps")
 _frame, _wrapped = [], []
 
 
@@ -67,7 +66,10 @@ def paint(pieces, cols, c1, c2):
         hm = Image.open(WMASK.replace("wraps12", "hood12")).convert("L").crop((0, 0, W, H)).load()
     near_hood = lambda x, y: hm is not None and any(0 <= x + dx < W and 0 <= y + dy < H and hm[x + dx, y + dy] >= 128
                                                     for dy in (-2, -1, 0, 1, 2) for dx in (-2, -1, 0, 1, 2))
-    silks = rgb(c1)                                                   # a driver in the barn's colors, for the look
+    on_h = "harness" in pieces                                        # Harness: jacket, harness and bike in its first color, helmet stripe in its second
+    silks, trim = (col("harness"), col("harness2")) if on_h else (rgb(c1), rgb(c2))   # unfitted: the barn's colors, for the look
+    dys = [y for y in range(H) for x in range(60) if blue(px[x, y]) and math.hypot(x - cx, y - cy) > R]
+    helmet = min(dys) + .13 * (max(dys) - min(dys)) if dys else -1     # the replay's rule: the top of the driver's blue is his helmet
     for y in range(H):
         for x in range(W):
             p = px[x, y]
@@ -76,20 +78,12 @@ def paint(pieces, cols, c1, c2):
             if near_hood(x, y):
                 l = sum(p[:3]) / 765
                 px[x, y] = (int(34 + 70 * l), int(24 + 50 * l), int(18 + 36 * l), p[3])
-            elif math.hypot(x - cx, y - cy) <= R:
-                px[x, y] = dye(p, col("bike") if "bike" in pieces else silks)
-            elif x < 60 and y < 70:
-                px[x, y] = dye(p, silks)
+            elif x < 60 and y < helmet:
+                px[x, y] = dye(p, trim)
             else:
-                px[x, y] = dye(p, col("harness") if "harness" in pieces else silks)
-    if "bike" in pieces:                                              # the hub in its own color
-        for y in range(int(cy) - 4, int(cy) + 5):
-            for x in range(int(cx) - 4, int(cx) + 5):
-                if 0 <= x < W and 0 <= y < H and px[x, y][3] and math.hypot(x - cx, y - cy) < 3.6:
-                    px[x, y] = dye(px[x, y], col("hub"))
+                px[x, y] = dye(p, silks)
     if "mask" in pieces:
-        top = min(y for y in range(H) for x in range(W) if hm[x, y] > 128)
-        fabric(px, hm, W, H, col("mask"), lambda x, y, on: col("mask2") if y < top + EARS else None)   # the ears in the second color
+        fabric(px, hm, W, H, col("mask"))
         shadow = tuple(int(v * .55) for v in col("mask"))             # maskFringe: light specks round the hood go to its shadow
         for y in range(H):
             for x in range(W):
@@ -97,14 +91,14 @@ def paint(pieces, cols, c1, c2):
                 if p[3] and hm[x, y] < 128 and sum(p[:3]) / 3 >= 165 and near_hood(x, y):
                     px[x, y] = shadow + (p[3],)
     if "wraps" in pieces:
-        fabric(px, wrapped0()[1].load(), W, H, col("wraps"), lambda x, y, on: col("wraps2") if not on(x, y - BAND) else None)   # each wrap's top rows: the band
+        fabric(px, wrapped0()[1].load(), W, H, col("wraps"))
     return im
 
 
 def render(pieces, cols, c1, c2):
     """The model's PNG at 3x, cached like the emblems; returns its path under /mock."""
     pieces = tuple(p for p in PIECES if p in pieces)
-    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v23"
+    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v25"
     name = hashlib.md5(key.encode()).hexdigest()[:12] + ".png"
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):
@@ -115,7 +109,7 @@ def render(pieces, cols, c1, c2):
 
 
 if __name__ == "__main__":
-    full = render(PIECES, {"bike": "p", "hub": "s"}, "#8e44ad", "#f3f3f3")
+    full = render(PIECES, {"harness": "#8e44ad", "harness2": "#f3f3f3"}, "#8e44ad", "#f3f3f3")
     bare = render((), {}, "#8e44ad", "#f3f3f3")
     assert full != bare and os.path.exists(os.path.join(ROOT, full.replace("/mock/", "mockups/")))
     a, b = paint(PIECES, {}, "#8e44ad", "#f3f3f3").load(), paint((), {}, "#8e44ad", "#f3f3f3").load()

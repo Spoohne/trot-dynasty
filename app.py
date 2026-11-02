@@ -363,6 +363,13 @@ def load(path=None):
                 t = c.OLD_TAGS[o[3]]
                 h.order = ("enter", c.clm_name(t), o[2], t) + tuple(o[4:])
         G["tags_mig"] = True
+    if not G.get("tack_v2"):                                                  # once: the bike leaves the Tack Room (races never showed it);
+        for o, pl in G["players"].items():                                    # each barn that unlocked it gets back what the log says it paid
+            t = pl.get("tack")
+            if t and "bike" in t.get("own", []):
+                paid = sum(-n for _, n, why in pl.get("mk_log", []) if why == "Bike design") or 50
+                mk_book(o, paid, "Bike refunded: it left the Tack Room"); t["own"].remove("bike")
+        G["tack_v2"] = True
     for h in G["horses"]:                                                     # an entry for a class taken off the sheet lands in its stand-in
         o = getattr(h, "order", None)
         if isinstance(o, tuple) and o[0] == "enter" and o[1] in c.RETIRED_CLASS:
@@ -2061,7 +2068,8 @@ GUIDE = [
          "in between, and the next season with the pass collects whatever was earned. Each tier is kept for good once reached, "
          "and the barn's tier shows beside its name. The owner chooses which tier to show and which trophies sit on its shelf."),
         ("The Tack Room", "Where a barn keeps its gear, one horse at a time. A design is bought once for the barn, in Markers: the "
-         "harness, the face mask, the leg wraps and the bike. Each horse wears it in its own colors, piece by piece: the barn's "
+         "harness, the face mask and the leg wraps. A horse in harness races with its driver, harness and bike in its own "
+         "colors, whoever drives it. Each horse wears its gear in its own colors, piece by piece: the barn's "
          "two colors come free, and any other is unlocked once for the whole barn. Fitting a horse is a small charge each time, "
          "and changing a fitted horse's colors a smaller one; the gear stays with the barn when a horse leaves. Gear is looks, "
          "nothing more: a horse races the same in it or out of it. The most prestigious barns pay a little less."),
@@ -4175,11 +4183,13 @@ def claimers_page(qs=None):
     return page("Claimers", body)
 
 
-TACK = {"harness": ("Harness", 0, 0), "mask": ("Face mask", 40, 5), "wraps": ("Leg wraps", 30, 5), "bike": ("Bike", 50, 5)}   # name, unlock, fitting
+TACK = {"harness": ("Harness", 0, 0), "mask": ("Face mask", 40, 5), "wraps": ("Leg wraps", 30, 5)}   # name, unlock, fitting: only what races show
+# Harness dresses the whole rig in the horse's colors for its races: the driver's jacket, the harness and the bike in the
+# first, the helmet stripe in the second, over the driver's own silks. The saddle pad keeps its post color.
 TACK_DISC_AT, TACK_DISC = 7, 0.8     # Prestige tier from which unlocks and fittings are 20% off (nothing is free)
 COLOR_PRICE, RECOLOR = 10, 2          # a palette color unlocked for the barn; changing a fitted horse's colors
-ROLES = {"harness": ("harness",), "mask": ("mask", "mask2"), "wraps": ("wraps", "wraps2"), "bike": ("bike", "hub")}
-ROLE_NAME = {"harness": "Harness", "mask": "Hood", "mask2": "Ears", "wraps": "Wraps", "wraps2": "Band", "bike": "Bike", "hub": "Hub"}
+ROLES = {"harness": ("harness", "harness2"), "mask": ("mask",), "wraps": ("wraps",)}   # the colors races paint, and no others
+ROLE_NAME = {"harness": "Jacket, harness and bike", "harness2": "Helmet stripe", "mask": "Hood", "wraps": "Wraps"}
 COLOR_NAME = dict(zip(CR.PALETTE, ("Red", "Royal", "Gold", "Green", "White", "Black", "Orange", "Purple", "Pink", "Teal", "Brown",
                                    "Sky", "Silver", "Maroon")))
 
@@ -4211,14 +4221,13 @@ def barn_kit(o):
     t, (c1, c2) = tack_of(o), tack_colors(o)
     one = lambda k: c1 if t["col"].get(k, "p") == "p" else c2
     two = lambda k: c2 if t["col"].get(k, "p") == "p" else c1
-    return {"harness": one("harness"), "mask": one("mask"), "mask2": two("mask"), "wraps": one("wraps"), "wraps2": two("wraps"),
-            "bike": one("bike"), "hub": c1 if t["col"].get("hub", "s") == "p" else c2}
+    return {"harness": one("harness"), "harness2": two("harness"), "mask": one("mask"), "wraps": one("wraps")}
 
 
 def fitted(h):
     """The pieces a horse wears: only while it's with the barn that fitted it."""
     f = getattr(h, "fit", None)
-    return f[1] if f and f[0] == h.owner else []
+    return [k for k in f[1] if k in TACK] if f and f[0] == h.owner else []   # pieces since retired (harness, bike) drop out
 
 
 def kit_of(h):
@@ -5284,6 +5293,8 @@ class H(BaseHTTPRequestHandler):
                     r["marquee"] = marquee_html(h.owner, mq_) if h and (mq_ := marquee_of(h.owner)) else ""
                     r["wraps"] = kit_of(h)["wraps"] if h and "wraps" in fitted(h) else ""   # shortcut: the gear it wears now, not on race night
                     r["mask"] = kit_of(h)["mask"] if h and "mask" in fitted(h) else ""
+                    if h and "harness" in fitted(h):                       # the horse's harness colors over its driver's silks
+                        r["silks"] = [kit_of(h)["harness"], kit_of(h)["harness2"]]
                     if h:                                                  # the handicapper's pick, on what was known before the race
                         form = [x["place"] == 1 for x in getattr(h, "results", []) if x["day"] < st_["day"]][-5:]
                         score = h.est + 1.5 * sum(form) - 0.4 * r["post"]

@@ -76,7 +76,7 @@ RACE.silks = () => {
     return false;
   };
   if (!place(0)) { out.length = 0; RACE.H.forEach((h, i) => out.push(RACE.SILKS[(start[i] + i) % N])); }   // search ran out: still give everyone a color
-  RACE.SILK = out;
+  RACE.SILK = out.map((c, i) => RACE.H[i].silks ? RACE.H[i].silks.join("|") : c);   // a horse in its barn's harness colors keeps them, in older races too
 };
 RACE.rebuild = () => {
   RACE.silks();
