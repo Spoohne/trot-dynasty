@@ -756,14 +756,12 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .bname .sub{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px}
 .facts{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:5px 0 2px}
 .stat{position:relative}.stat u{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:#fff;opacity:.8;box-shadow:0 0 4px #fff}
-/* the horse card (potential_card3): a haze where the trainer guesses next year, grades once raced, untested Grit */
-.stat .fog{position:absolute;top:-2px;bottom:-2px;z-index:1;border-radius:3px;background:linear-gradient(90deg,#c9d2e300,#c9d2e366 30%,#c9d2e366 70%,#c9d2e300);filter:blur(1.5px)}
+/* the horse card (potential_card3): grades once raced, untested Grit */
 .stat.unk{background:repeating-linear-gradient(135deg,#1b2539 0 6px,#16203a 6px 12px)}
 .gd{min-width:38px;text-align:center;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.05em;color:var(--ink3);font-weight:700}
 .gd.gD,.gd.gC,.gd.gB,.gd.gA,.gd.gS,.gd.gSp,.gd.gGalaxy{color:#fff;padding:0 5px;border-radius:2px;font-size:13px}
 .gd.gD{background:#5b6270}.gd.gC{background:#3f7d5b}.gd.gB{background:#2f6fb5}.gd.gA{background:#7c4bc4}.gd.gS{background:#c8781a}
 .gd.gSp{color:#111;background:linear-gradient(135deg,#f0abfc,#67e8f9,#fde68a)}.gd.gGalaxy{font-size:11px;background:radial-gradient(circle at 30% 30%,#c084fc,#3b1d6e 60%,#0a0d22);box-shadow:0 0 8px #a78bfa}
-.rare{margin:-2px 0 2px 70px;font-size:12.5px;font-weight:700;background:linear-gradient(90deg,#c084fc,#67e8f9,#fde68a);-webkit-background-clip:text;background-clip:text;color:transparent}
 .tread{margin:0 0 8px;padding:8px 10px;border-left:3px solid var(--tote);background:#0c1322;font-size:14.5px;line-height:1.35}.tread small{display:block;margin-top:3px;color:var(--ink3);font-size:12px}
 .starts{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px}
 /* barn rows: each horse in its own lit stall, framed in its tier color */
@@ -1925,10 +1923,8 @@ GUIDE = [
          "<b>Grit</b> is whether it holds on when another horse comes to it. <b>Manners</b> is how it behaves on the track: a "
          "well-mannered horse goes where its driver asks and gets the trip it wants; a rank one gets shuffled into bad spots, and "
          "is more likely to break stride. A horse with all the speed and little stamina wins by getting the lead and holding on.<br><br>"
-         "The card fills in as a horse grows. A young horse shows what it is today, a haze where the trainer guesses it will be a "
-         "year from now, and the trainer's read in a line. Grit stays untested until it has been in a race. Once a horse has raced, each "
-         "bar gets a grade for where it ranks among horses its age, and a horse that proves itself one of the very best at something "
-         "gets a line saying so. The haze tightens with every start, but it only ever looks a year ahead, and trainers can be wrong."),
+         "The card fills in as a horse grows. A young horse shows what it is today, and the trainer's read in a line. Grit "
+         "stays untested until it has been in a race. Once a horse has raced, each bar gets a grade for where it ranks among horses its age."),
         ("Mile time and tier", "<b>Mile time</b> is how fast your horse is expected to trot a mile, worked out from its "
          "races. It updates after every start. A horse that hasn't raced yet gets an estimate from its parents.<br><br>"
          "<b>Tier</b> is a letter grade that comes from the mile time:" 
@@ -2429,13 +2425,9 @@ BAR_FLOOR = 25   # chosen 2026-10-29 off a side-by-side of real cards: tiers sti
 
 # ---- the horse card's bars (mockups/potential_card3, 2026-11-02; Patrick: Speed / Stam / Grit / Manners): Speed is the top end
 # (early speed); Stamina is holding it through the mile and to the wire (stamina and late speed, weighted as the rating weighs
-# them); Grit holds it when one comes at him; Manners keeps him flat. The card reveals slowly: today's bar, a haze where the trainer guesses he'll be next year (wide on a foal,
-# tighter with every start), grades and rarity only once he's raced, Grit hidden until he's been in a race.
+# them); Grit holds it when one comes at him; Manners keeps him flat. The card reveals slowly: today's bar, grades only once he's raced, Grit hidden until he's been in a race.
 BARS = (("Speed", "early_speed"), ("Stamina", "stay"), ("Grit", "grit"), ("Manners", "gait"))
 GRADE_CUT = ((.001, "Galaxy"), (.02, "S+"), (.22, "S"), (.40, "A"), (.63, "B"), (.87, "C"), (1.01, "D"))   # the tier sizes (DECISIONS 219)
-BEST_OF = {"early_speed": ("Quickest", "speed"), "stay": ("Strongest stayer", "stamina"),
-           "grit": ("Grittiest", "grit"), "gait": ("Best-mannered", "manners")}
-CROP_NAME = {"2": "two-year-olds", "3": "three-year-olds", "aged": "older horses"}
 
 
 def bar_of(h, t, stats=None):
@@ -2481,29 +2473,15 @@ def bar_grade(h, t):
     return next(g for cut, g in GRADE_CUT if r[0] <= cut) if r else None
 
 
-def bar_haze(h, t, i):
-    """Where the trainer guesses this bar will be a year from now, as (low, high) bars: wide on an unraced horse, tighter
-    with every start, and a little off (trainers guess). None for Grit (it doesn't grow) and for a retired horse."""
-    if t == "grit" or h.retired:
-        return None
-    mid = bar_of(h, t, {u: h.ceiling(u, h.age + 1) for u in ("early_speed", "stamina", "late_speed", "gait")})
-    w = max(.6, 2.2 - .2 * h.starts)
-    mid += ((h.id * 7 + i * 13) % 5 - 2) * .2 * w / 2                     # shortcut: a fixed per-horse miss; a real trainer read would come from the horse's works
-    return max(1.0, mid - w / 2), min(10.0, mid + w / 2)
-
-
 def bar_fill(b):
     """A 1-10 bar as a fill percent, lifted so the weakest bar still shows (BAR_FLOOR)."""
     return BAR_FLOOR + (100 - BAR_FLOOR) * b / 10
 
 
-def card_bars(h, haze=True):
-    """The card's four bars: Speed, Stamina, Grit, Manners, each with its haze, grade and (once proven) rarity line."""
+def card_bars(h):
+    """The card's four bars: Speed, Stamina, Grit, Manners, each with its grade once the horse has raced."""
     out = ""
-    ranks = {t: crop_rank(h, t) for _, t in BARS} if h.starts >= 3 else {}   # rarity: only once he's proven it, and one line, the rarest
-    ranks = {t: r for t, r in ranks.items() if r and r[0] <= .02}
-    rare = min(ranks, key=lambda t: ranks[t][0]) if ranks else None
-    for i, (label, t) in enumerate(BARS):
+    for label, t in BARS:
         hidden = t == "grit" and not h.starts and not h.retired               # Grit shows once he's been in a race
         if hidden:
             out += (f"<div class=row style='gap:8px'><span class=sub style='width:62px'>{label}</span><div class='stat unk' style='flex:1'></div>"
@@ -2511,17 +2489,10 @@ def card_bars(h, haze=True):
             continue
         b = bar_of(h, t)
         color = ("#5b6270" if b < 4 else "#d4c13a" if b < 7 else "#3fb96b" if b < 9 else "linear-gradient(90deg,#8b5cf6,#38bdf8 70%,#67e8f9)")
-        hz = bar_haze(h, t, i) if haze else None
-        fog = f"<span class=fog style='left:{bar_fill(hz[0]):.1f}%;width:{bar_fill(hz[1]) - bar_fill(hz[0]):.1f}%'></span>" if hz else ""
         g = bar_grade(h, t)
         tag = (f"<b class='gd g{g.replace('+', 'p')}'>{g}</b>" if g else "<b class=gd>early</b>" if not h.starts and not h.retired else "")
         out += (f"<div class=row style='gap:8px'><span class=sub style='width:62px'>{label}</span><div class=stat style='flex:1' title='{b:.1f} of 10'>"
-                f"<i style='width:{bar_fill(b):.1f}%;background:{color}'></i>{fog}</div>{tag}</div>")
-        if t == rare:
-            r = ranks[t]
-            word, noun = BEST_OF[t]; crop = CROP_NAME[c.age_group(h)]
-            line = f"{word} of {r[2]} {crop}" if r[1] == 1 else f"Top {max(1, round(r[0] * 100))}% of {crop} for {noun}"
-            out += f"<div class=rare>{line}</div>"
+                f"<i style='width:{bar_fill(b):.1f}%;background:{color}'></i></div>{tag}</div>")
     return out
 
 
@@ -3073,7 +3044,7 @@ def card_header(h, own, price=None):
             f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
             + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if trainer_read(h) else "")
-               + card_bars(h) + "<div class=sub>Haze: the trainer’s guess for a year from now</div>" + f"{prime_row(h)}</div>")   # every horse's bars are public
+               + card_bars(h) + f"{prime_row(h)}</div>")   # every horse's bars are public
             + "</div>")
 
 
@@ -4766,7 +4737,7 @@ def retired_header(h, own):
         b = e.booked_to(h)
         role = f"Broodmare · in foal to {esc(b.name)}" if b else "Broodmare · open this season"
         act = f"<a class='btn big' href='/breed/{urlname(h.name)}'>Breed</a>" if own and not b else ""
-    bars = (f"<div class=hbars><div class=sub>At their best</div>{card_bars(h, haze=False)}{prime_row(h)}</div>")
+    bars = (f"<div class=hbars><div class=sub>At their best</div>{card_bars(h)}{prime_row(h)}</div>")
     return (f"<div class='card hdr'><div class=htop><div class='port t{tier_cls(h)}'><div class=stagelight></div>{portrait(h, 150)}"
             f"<div class='tier {tier_cls(h)} badge'>{tier_label(h)}</div>{trophy(h)}</div>"
             f"<div class=hr><div class=retband>Retired · no longer racing</div><div class=hname>{esc(h.name)}</div><div class=hline>{esc(role)}</div>"
@@ -4781,7 +4752,7 @@ def retired_header(h, own):
 
 def stud_bars(h):
     """A stallion's four bars at his best, compact: what a mare's owner is paying for. Shown for every stud."""
-    return "<div class=sbars>" + card_bars(h, haze=False) + "</div>"
+    return "<div class=sbars>" + card_bars(h) + "</div>"
 
 
 BREED_MENU = lambda on: ("<div class=hmenu>" + "".join(f"<a href={href} class='{'on' if on == k else ''}'>{label}</a>"
