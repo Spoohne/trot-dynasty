@@ -42,8 +42,9 @@ def grade_of(share):
 
 
 def open_db(path):
-    if os.path.exists(path):
-        os.remove(path)
+    for f in (path, path + "-wal", path + "-shm"):                # a fresh file: a stale write-ahead log would corrupt it
+        if os.path.exists(f):
+            os.remove(f)
     db = sqlite3.connect(path)
     db.executescript("""
       PRAGMA journal_mode=WAL;

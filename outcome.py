@@ -15,6 +15,8 @@ K = 0.36                     # model units per bar (0.4 / 1.1)
 PIP_STEPS = (-3.33, -2.5, -1.67, -0.83, 0.0, 0.83, 1.67, 3.7, 6.0)   # app.PIP_STEPS: the live bar scale
 GRIT_POP = dict(dur=(0.17, 1.424), gait=(0.09, 1.274), raw_sd=1.479, bar=(5.38, 1.58))   # live save 2026-11-02 (v6_convert)
 SEC_PER_LENGTH = 0.2         # the replay's own conversion (a length is a fifth of a second)
+LUCK = 1.0                    # seconds: the best night a horse can have, beyond its rating's time (two night-swings)
+NOSE = 0.05                   # lengths: the least one finisher is behind another
 RATE_W = dict(gate=.242, cruise=.304, kick=.391, grit=.064)   # the rating: bars weighted by worth (DECISIONS 217/224)
 TIME_FIT = (130.94, -2.733)  # mile seconds = a + b * rating: today's racing horses 3+ (n 660, r -0.93, resid 1.2 s)
 ROLES = ("lead", "pocket", "first_over", "followed", "back")
@@ -120,10 +122,14 @@ def race(field, track="mile", passing=False):
     order = sorted(field, key=lambda h: -perf[h.id])
     # times (DECISIONS 216, 239): the bars estimate the mile time. The winner runs its own rating's time, give or take a
     # night's variation; everyone else is the winner plus its margin. Board, clock and replay agree.
+    # The speed limit (Patrick, 2026-11-02: "there's just a hard limit on how fast a horse can go. Period."): no horse, winner
+    # or beaten, runs faster than its own rating's time less LUCK. A beaten horse that would have to be quicker than that to
+    # be this close is beaten by more; the order stands, and the margins are re-read from the times.
+    to_raw = (sim.CLOCK_REF - sim.CLOCK_AT) / sim.CLOCK_K                # display seconds back to race seconds (the clock is linear above its floor)
+    limit = {h.id: TIME_FIT[0] + TIME_FIT[1] * sum(RATE_W[k] * v for k, v in bars(h, stats[h.id]).items() if k in RATE_W)
+             + (sim.HALF_SLOWER if half else 0) - LUCK + to_raw for h in field}
     w = order[0]
-    wb = bars(w, stats[w.id])
-    win_disp = TIME_FIT[0] + TIME_FIT[1] * sum(RATE_W[k] * wb[k] for k in RATE_W) + rng.gauss(0, 0.5) + (sim.HALF_SLOWER if half else 0)
-    win_raw = win_disp + (sim.CLOCK_REF - sim.CLOCK_AT) / sim.CLOCK_K   # back to race seconds (the clock is linear above its floor)
+    win_raw = max(limit[w.id] + LUCK + rng.gauss(0, 0.5), limit[w.id])
     for post, h in enumerate(field, 1):
         r = role[h.id]
         beat_leader = perf[h.id] > perf[lead.id]
@@ -135,8 +141,14 @@ def race(field, track="mile", passing=False):
             trip += ", broke stride"
         h.trip = trip
         h.margin_l = (perf[order[0].id] - perf[h.id]) * p["s_margin"]   # lengths behind the winner: the story shows these as run
-        h.raw_time = win_raw + h.margin_l * SEC_PER_LENGTH
-        h.last_time = sim.clock(h.raw_time, half)
+    prev = None
+    for h in order:                                            # the speed limit, then the order: each at least a nose behind the one ahead
+        t = max(win_raw + h.margin_l * SEC_PER_LENGTH, limit[h.id])
+        if prev is not None:
+            t = max(t, prev + NOSE * SEC_PER_LENGTH)
+        h.raw_time, prev = t, t
+        h.margin_l = (t - win_raw) / SEC_PER_LENGTH
+        h.last_time = sim.clock(t, half)
     return order
 
 
