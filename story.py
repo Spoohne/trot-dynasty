@@ -60,6 +60,8 @@ def build(order, track, rng=None, passing=False):
     for a, b in zip(order, order[1:]):                              # keep the finishing order strict: at least a nose apart
         fin[b.id] = max(fin[b.id], fin[a.id] + (0.05 if true else 0.15))
     fin = {k: round(v, 2) for k, v in fin.items()}
+    for h in order:                                                 # spent: a later race the outcome engine didn't run can't borrow them (RaceGod V2)
+        h.margin_l = None
 
     # Slots. A field races in at most two lines until the stretch: the rail line, nose to tail, and
     # the outer flow (first-over, then second- and third-over tucked in its cover). SLOT is the gap

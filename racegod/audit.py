@@ -16,6 +16,13 @@ def odds(s):
     return int(a) / int(b)
 
 
+TRUE_FROM = 2626                                              # first night the story shows true margins (DECISIONS 239)
+
+
+def true_margins(s):
+    return s["day"] >= TRUE_FROM
+
+
 def laws(s):
     """Every way this story disagrees with its own result: [(kind, detail)]."""
     bad, H = [], s["horses"]
@@ -34,8 +41,11 @@ def laws(s):
             bad.append(("4-wide or more before the stretch", f"{r['name']} {int(max(r['lane'][2:5])) + 1}-wide"))
         if max(r["lane"][2:]) > 4:                           # lane at the start is the post, behind the car
             bad.append(("6-wide or more", f"{r['name']} {int(max(r['lane'][2:])) + 1}-wide"))
+        gap = (r["time"] - s["final"]) / 0.2                  # the board's margin: a length is a fifth of a second
+        if true_margins(s) and abs(r["behind"][6] - min(gap, 40)) > 1.5:   # the story stops a tailed-off horse at 40 L   # times are in fifths: a length either way is rounding
+            bad.append(("replay finish differs from the timed margin", f"{r['name']} {r['behind'][6]} L on the replay, {gap:.1f} L by the clock"))
         w = r.get("why")
-        if w and abs(r["behind"][6] - w["margin"]) > 0.5:
+        if w and abs(r["behind"][6] - min(w["margin"], 40)) > 0.5:
             bad.append(("replay margin differs from the result", f"{r['name']} {r['behind'][6]} L vs {w['margin']} L"))
     q = s["quarters"]
     splits = [b - a for a, b in zip(q, q[1:])]

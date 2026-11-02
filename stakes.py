@@ -220,7 +220,8 @@ def run_today(day, horses):
             h.order = "stakes"; h.post = post
         s.tonight = {h.id: c.rating_tonight(h) for h in field}   # who was the better horse at the gate
         c.drive(field, c.assign_drivers(field), "mile")
-        order = race(field, "mile", True)                    # Harness Park has a passing lane
+        order = (c.outcome.race if c.ENGINE == "outcome" else race)(field, "mile", True)   # the overnights' engine; Harness Park has a passing lane
+        line = c.tote_odds(field)
         field_est = st.mean(c.on_aged_scale(h.est, c.age_group(h)) for h in field)
         RATINGS[(s.group, s.sex)] = s.rating = s.rating + 0.3 * (field_est - s.rating)
         rid = f"{day}-stake-{s.id}"
@@ -231,6 +232,10 @@ def run_today(day, horses):
         c.STORIES[rid] = dict(_story.build(order, "mile", passing=True), id=rid, name=s.name, purse=s.purse, day=day, venue="Harness Park", passing=True,
                               sponsor=getattr(s, "sponsor", None))   # stakes nights are the flagship's; a sponsored stake carries its barn into the replay
         c.drove(order, c.STORIES[rid]["horses"], c.year_of(day))
+        for row, h in zip(c.STORIES[rid]["horses"], order):  # odds at post time and RaceGod's ledger, as overnights keep them
+            row["odds"] = "%d-%d" % line[h.id]
+            if c.ENGINE == "outcome":
+                row["why"] = h.why
         s.result = order
         ran.update(id(h) for h in field)
         champ = order[0]                                      # a stake's winner keeps the trophy; the Crown names a champion

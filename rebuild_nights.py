@@ -48,12 +48,12 @@ def limit(row, live, track):
     return O.TIME_FIT[0] + O.TIME_FIT[1] * rating + (sim.HALF_SLOWER if track == "half" else 0) - O.LUCK
 
 
-def rebuild(rid, st, by_name):
+def rebuild(rid, st, by_name, retime=True):
     rows = sorted(st["horses"], key=lambda r: r["place"])
     win = rows[0]["time"]
     times, prev, prev0 = [], None, None
     for r in rows:                                             # pushed back by the limit, it carries the delay to those behind: they keep their gaps
-        t = r["time"] if prev is None else max(r["time"], limit(r, by_name.get(r["name"]), st["track"]), prev + max(O.NOSE * SEC, r["time"] - prev0))
+        t = r["time"] if prev is None or not retime else max(r["time"], limit(r, by_name.get(r["name"]), st["track"]), prev + max(O.NOSE * SEC, r["time"] - prev0))
         times.append(t); prev, prev0 = t, r["time"]
     order = [Stub(r, by_name.get(r["name"]), t, (t - win) / SEC) for r, t in zip(rows, times)]
     new = story.build(order, st["track"], passing=st.get("passing", False))
@@ -61,7 +61,7 @@ def rebuild(rid, st, by_name):
     for r in new["horses"]:
         for k, v in old_rows[r["name"]].items():
             r.setdefault(k, v)                                 # odds, driver, silks: as they were on the night
-    c.STORIES[rid] = dict(new, **{k: st[k] for k in ("id", "name", "purse", "day", "venue", "passing", "records") if k in st})
+    c.STORIES[rid] = dict(new, **{k: st[k] for k in ("id", "name", "purse", "day", "venue", "passing", "records", "sponsor") if k in st})
     changed = []
     for r, t in zip(rows, times):
         h = by_name.get(r["name"])

@@ -52,3 +52,28 @@ The replay then shows margins the trips don't explain.
    beats post 8. Done in the engine lab on real fields, then checked here before going live.
 3. **Rework the speed limit** so it applies to the winner's time (the clock) but not beaten margins, or only rarely
    (target: under 10% of starts limited).
+
+Patrick: deployed the ledger (1) on 2026-11-02, commit 1186370.
+
+## V2 - Clover Stakes (2629-stake-S6705), reviewed on request, 2026-11-02
+
+**Measured: the replay shows a photo finish, but the clock has a 47-length win.** Northern Star went 1:41.4 and Fancy
+Charger 1:50.8, 9.4 s behind. The replay finishes Fancy Charger a nose back, and the PHOTO graphic fires (watched on the
+live page).
+
+**Cause: measured in the code.** Stakes never moved to the outcome engine. `stakes.py` still runs `sim.race` (`from sim
+import race`). `story.build` trusts each horse's `margin_l` whenever the engine is "outcome", and `sim.race` never sets it.
+So every stakes replay since the switch finishes on margins left over from each horse's *previous* overnight race. The ledger
+and tote odds are missing from stakes for the same reason. The odds are priced at view time instead, which is how this
+board shows 1-9 and eleven horses at 99-1.
+
+**Scope: measured.** 8 stakes since day 2626, and all 8 used borrowed margins. The new auditor law (replay finish against
+the clock's margin) catches 4 of them; the other 4 happened to fall within a length and a half.
+
+### Proposed (awaiting Patrick)
+
+1. `stakes.py` runs the same engine as overnights: `(c.outcome.race if c.ENGINE == "outcome" else race)`. Stakes then get
+   true margins, the ledger and odds at post time. On the outcome engine, Northern Star wins his fields by about 9½ L
+   (DECISIONS 240), not 47.
+2. `story.build` only trusts margins set by this race, so a stale `margin_l` can never steer a replay again.
+3. Rebuild the 8 affected stakes replays from their recorded times. Results, purses and trophies stay as they are.

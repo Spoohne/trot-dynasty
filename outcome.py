@@ -162,6 +162,7 @@ def race(field, track="mile", passing=False):
         h.margin_l = (t - win_raw) / SEC_PER_LENGTH
         h.last_time = sim.clock(t, half)
         h.why["limited"] = t > t0 + 1e-9                         # the speed limit, not the model, set this horse's time
+        h.why["margin"] = round(h.margin_l, 2)
     return order
 
 
