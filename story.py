@@ -74,8 +74,12 @@ def build(order, track, rng=None, passing=False):
     # to where they sat on the rail (they had to come off it to get there), never the leader or pocket
     gainers = sorted((h for h in rail[2:] if h is not first_over and h not in breakers and "off the pace" not in h.trip),   # closers wait for the stretch
                      key=lambda h: finish_rank[h.id] - rail.index(h))
-    n_cover = 1 if len(order) >= 6 else 0                         # one horse follows the first-over cover; a small field has nobody
+    n_cover = 1 if len(order) >= 6 and first_over else 0          # one horse follows a real first-over move; no move, no cover
     flow = ([first_over] if first_over else []) + gainers[:n_cover]
+    # when the move comes varies race to race (Patrick: it always landed on the blimp cut at the half): first-over is
+    # out by the quarter, the half or the three-quarters; its cover follows a call later (5: not till the stretch)
+    fo_call = rng.choices((2, 3, 4), weights=(25, 40, 35))[0] if flow else None
+    out_call = {h.id: fo_call + k for k, h in enumerate(flow)}
     inside = [h for h in rail if h not in flow and h not in breakers]
     pos = {h.id: {} for h in order}                                 # call -> (lane, lengths behind)
 
@@ -90,25 +94,24 @@ def build(order, track, rng=None, passing=False):
     for i, h in enumerate(rail):
         l0 = pos[h.id][0][0]
         pos[h.id][1] = (round(min(l0, max(0.0, l0 * 0.45 - (1.0 if i < 3 else 0.0))), 2), i * 0.6)
-    # quarter: the whole field single file on the rail, the closers dropped in at the back; the first-over
-    # horse is still in line here and only pulls out on the way to the half
+    # quarter, half, three-quarters: the rail line nose to tail (the closers dropped in at the back), and the flow
+    # outside it once each horse has pulled out. First-over sits alongside a horse that's really there: the third on
+    # the rail, or the last one in a short field (never beside an empty slot), then rolls up a horse a call; its cover
+    # follows a length and three-quarters back
     q_line = [h for h in rail if h not in breakers]
     q_line = [h for h in q_line if "off the pace" not in h.trip] + [h for h in q_line if "off the pace" in h.trip]
-    put(2, q_line)
-    # half: the outer flow is moving; inside horses close up behind each other
-    put(3, inside)
-    # first-over sits alongside a horse that's really there: the third on the rail, or the last one in
-    # a short field (never beside an empty slot); the cover follows a length and three-quarters back
     beside = min(2, max(1, len(inside) - 1))
-    for k, h in enumerate(flow):
-        pos[h.id][3] = (1.0, (beside + k) * SLOT)
-    # three-quarters: the flow rolls up one horse toward the leader
-    put(4, inside)
-    for k, h in enumerate(flow):
-        pos[h.id][4] = (1.0, (max(0.5, beside - 1) + k) * SLOT)
+    line_len = {}
+    for c in (2, 3, 4):
+        out = [h for h in flow if out_call[h.id] <= c]
+        line = [h for h in q_line if h not in out]
+        put(c, line)
+        line_len[c] = len(line)
+        for k, h in enumerate(out):
+            pos[h.id][c] = (1.0, (max(0.5, beside - (c - out_call[h.id])) + k) * SLOT)
     for k, h in enumerate(breakers):                                # broke, dropped off the back, and trail on the rail
         for c in (2, 3, 4):
-            pos[h.id][c] = (0.0, ((len(q_line) if c == 2 else len(inside)) + 0.5 + k) * SLOT)
+            pos[h.id][c] = (0.0, (line_len[c] + 0.5 + k) * SLOT)
     # stretch and finish: the real margins; a horse that would run up the back of one ahead in its
     # lane angles out one more, so the field fans two and three wide, never more
     diver = next((h for h in order if "passing lane" in h.trip), None) if passing else None
@@ -154,8 +157,8 @@ def build(order, track, rng=None, passing=False):
     q_behind = {h.id: pos[h.id][2][1] for h in order}
     # captions from the trip notes
     caps = [[0.0, "They're away"], [gate_t, f"{leader.name} leaves for the lead"]]
-    if first_over:
-        caps.append([tt[2] * 0.9, f"{first_over.name} pulls first-over"])
+    if first_over and fo_call:
+        caps.append([calls_t[fo_call] - 3, f"{first_over.name} pulls first-over"])   # as the move happens, whichever call it lands on
     caps.append([tt[2], f"Half in {_mt(tt[2])}, {leader.name} in front"])
     caps.append([tt[3], f"Three-quarters in {_mt(tt[3])}"])
     closer = min(order[:3], key=lambda h: -q_behind[h.id])
