@@ -822,7 +822,7 @@ function shotAt(t) {
   return "pan";
 }
 function aimCamera(t, st, dt) {
-  const shot = shotAt(t); if (shot !== lastShot) { camSnap = true; lastShot = shot; sponsorBoards.forEach(b => b.visible = shot !== "reverse" && shot !== "flat" && shot !== "across");
+  const shot = shotAt(t); if (shot !== lastShot) { camSnap = true; lastShot = shot; sponsorBoards.forEach(b => b.userData.on = shot !== "reverse" && shot !== "flat" && shot !== "across");
     if (hedgeMesh) hedgeMesh.visible = shot !== "across";                         // the long lens sees over an open infield to the far rail
     if (shot !== "across") clearLine(null);
     cv.parentElement.classList.toggle("acrossup", shot === "across");             // the soft foreground band
@@ -895,6 +895,7 @@ function aimCamera(t, st, dt) {
   const k = camSnap ? 1 : 1 - Math.exp(-dt * 3); camSnap = false;
   camPos.lerp(p, k); camAim.lerp(a, k); cam.fov += (fov - cam.fov) * k; cam.updateProjectionMatrix();
   cam.position.copy(camPos); cam.lookAt(camAim);
+  sponsorBoards.forEach(b => b.visible = b.userData.on !== false && b.position.distanceTo(cam.position) > 240);   // too close to read: a board would only clip the lens
 }
 
 // ---- place everything for time t
