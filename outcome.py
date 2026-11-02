@@ -150,12 +150,13 @@ def race(field, track="mile", passing=False):
             trip += ", broke stride"
         h.trip = trip
         h.margin_l = (perf[order[0].id] - perf[h.id]) * p["s_margin"]   # lengths behind the winner: the story shows these as run
-    prev = None
-    for h in order:                                            # the speed limit, then the order: each at least a nose behind the one ahead
-        t = max(win_raw + h.margin_l * SEC_PER_LENGTH, limit[h.id])
+    prev = prev0 = None
+    for h in order:                                            # the speed limit, then the order: a horse pushed back carries the delay
+        t0 = win_raw + h.margin_l * SEC_PER_LENGTH             # to those behind it, who keep their gaps (at least a nose)
+        t = max(t0, limit[h.id])
         if prev is not None:
-            t = max(t, prev + NOSE * SEC_PER_LENGTH)
-        h.raw_time, prev = t, t
+            t = max(t, prev + max(NOSE * SEC_PER_LENGTH, t0 - prev0))
+        h.raw_time, prev, prev0 = t, t, t0
         h.margin_l = (t - win_raw) / SEC_PER_LENGTH
         h.last_time = sim.clock(t, half)
     return order
