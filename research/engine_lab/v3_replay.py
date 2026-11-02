@@ -144,7 +144,7 @@ window.V3 = %s;
     RACE.TT = s.quarters; RACE.DD = [0, 1320, 2640, 3960, 5280]; RACE.CT = s.calls; RACE.FIN = s.final; RACE.END = s.final + 12;
     RACE.H = s.horses.map(h => Object.assign([h.name, "#5a3420", h.behind, h.lane], { coat: h.coat, odds: "", owner: "", stable: "", player: false,
       silks: null, wraps: "", mask: "", driver: "", emblem: "", marquee: "", stamina: 0, early: 0 }));
-    RACE.PICK = ""; RACE.HERO = -1; RACE.MATINEE = false; RACE.PASSING = false; RACE.DIVER = -1;
+    RACE.PICK = ""; RACE.HERO = -1; RACE.MATINEE = false; RACE.PASSING = !!s.passing; RACE.DIVER = -1;   // library races run on a passing-lane track: the rail swings in down the stretch
     RACE.real = true; RACE.CAPS = s.captions; RACE.ME = 0;
     RACE.rebuild();
     RACE.simulate = () => {                       // race3 already ran the race: these are its paths, at 20 Hz

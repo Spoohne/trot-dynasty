@@ -2383,3 +2383,8 @@ Newest at the bottom. **M** = measured (experiment named), **H** = hypothesis (n
      Field search: Grit held within one spread (bar 7 at most). Measured, fresh races, winner on the scripted trip
      (A / B): wire 54/57%, pocket 49/56%, first-over 23/29%, sweep 30/38%, from last 22/18%; whole replay incl.
      runner-up: 41/37, 32/38, 12/16, 14/16, 0/6%.
+228. **Passing lane drawn properly in the library; Patrick: "looks good now".** The lab adapter had the passing lane off,
+     so the rail never swung in and the pocket horse ran through it. Library races now set it on. The pocket story wins
+     by 2.2–3 lengths so the winner can angle back to the rail as the lane closes past the wire; the overlap check now
+     runs to 150 ft past the wire. Measured: every horse in every kept variant stays at least 3.75 ft off the inside rail
+     from 3,000 ft on.

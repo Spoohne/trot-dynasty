@@ -35,6 +35,7 @@
 .t4 em{font-style:normal;background:#f4d01e;color:#14306e;font-weight:700;font-size:13px;line-height:18px;padding:0 8px;text-transform:uppercase;white-space:nowrap;overflow:hidden}
 .t4.me i{color:#f4d01e}
 #fr{background:var(--glass);border-radius:6px;padding:4px 8px}
+#rest .stk{display:flex;flex-direction:column;gap:1px}#rest .stk b{height:13px;font-size:10px}
 #rest{display:flex;gap:3px;align-items:center;font:700 11px 'Barlow Semi Condensed',sans-serif;color:#cfd6e4}#rest:empty{display:none}
 #rest .rl{margin-right:4px;letter-spacing:.1em;text-shadow:0 1px 2px #000}
 #rest b{min-width:18px;height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:2px;box-shadow:0 1px 3px #0008}
@@ -140,6 +141,7 @@
   #tv .tvb{padding:5px 10px;gap:8px}#tv table{font-size:12px}#tv td,#tv th{padding:1px 4px}#tv .tvm td,#tv .tvm th{padding:1px 3px}
   #tv .tvf{padding:3px 10px 5px;font-size:10px;line-height:1.2}#tv .tvf a,#tv .tvf button{padding:4px 12px;font-size:13px;white-space:nowrap}
   #tv td{line-height:1.15}#tv .pd{line-height:1.2;min-width:1.4em}#tv .tvo{flex:1}#tv .tvm{flex:1.1;padding:2px 4px}#tv .tvm td:nth-child(n+2),#tv .tvm th:nth-child(n+2){padding:1px 2px}}   /* a phone held sideways: everything fits without scrolling */
+.stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:24%;pointer-events:none;opacity:0;transition:opacity .5s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);background:linear-gradient(transparent,rgba(5,7,13,.35));z-index:0;-webkit-mask:linear-gradient(transparent,#000 45%);mask:linear-gradient(transparent,#000 45%)}.stage.acrossup::after{opacity:1}.stage>.bot,.stage>.lt2,.stage>.lt,.stage>#intro,.stage>#field{z-index:3}   /* the across shot: the near side of the infield out of focus, like a long lens */
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <link rel="stylesheet" href="/mock/brand/marquee/marquee.css?v=14"></head><body><div class="wrap">
@@ -180,12 +182,18 @@ document.getElementById("go").onclick = goFull;
 function top4(ord) {
   const lead = ord[0].d;
   document.getElementById("ord").innerHTML = ord.slice(0, 4).map((h, k) => { const H = RACE.H[h.i], dark = RACE.DARK.includes(h.i + 1);
-    const m = k ? RACE.lengths((lead - h.d) / RACE.LEN) : "", sub = [H.odds, m && m + " back"].filter(Boolean).join(" · ") || "leader";
+    const m = k ? RACE.lengths((lead - h.d) / RACE.LEN) : "";
+    const sub = H.driver ? H.driver + (m ? " · " + m : "") : [H.odds, m && m + " back"].filter(Boolean).join(" · ") || "leader";   // the driver, as the broadcast names him
     return `<div class="t4${MY_NAME && H[0] === MY_NAME ? " me" : ""}"><b style="background:${RACE.PAD[h.i]};color:${dark ? "#111" : "#fff"}">${h.i + 1}</b><span><i>${H[0]}</i><em>${sub}</em></span></div>`; }).join("");
   // the rest of the field, in running order, as saddle cloths; your horse ringed, with where it's running
   const rest = ord.slice(4), mine = MY_NAME ? ord.findIndex(h => RACE.H[h.i][0] === MY_NAME) : -1;   // only when one of yours is in it
   const nth = n => n + ([, "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] || "th");
-  document.getElementById("rest").innerHTML = rest.length ? `<span class="rl">THEN</span>` + rest.map(h => `<b class="${MY_NAME && RACE.H[h.i][0] === MY_NAME ? "me" : ""}" style="background:${RACE.PAD[h.i]};color:${RACE.DARK.includes(h.i + 1) ? "#111" : "#fff"}">${h.i + 1}</b>`).join("")
+  const cloth = h => `<b class="${MY_NAME && RACE.H[h.i][0] === MY_NAME ? "me" : ""}" style="background:${RACE.PAD[h.i]};color:${RACE.DARK.includes(h.i + 1) ? "#111" : "#fff"}">${h.i + 1}</b>`;
+  const groups = [];                                                              // side by side (inside a length, a lane apart): one stack
+  for (const h of rest) { const g = groups[groups.length - 1];
+    if (g && Math.abs(g[g.length - 1].d - h.d) < RACE.LEN && g.every(x => Math.abs(x.ln - h.ln) > .5)) g.push(h); else groups.push([h]); }
+  document.getElementById("rest").innerHTML = rest.length ? `<span class="rl">THEN</span>`
+    + groups.map(g => g.length > 1 ? `<span class="stk">${[...g].sort((x, y) => y.ln - x.ln).map(cloth).join("")}</span>` : cloth(g[0])).join("")
     + (mine >= 4 ? `<span class="you">YOU ${nth(mine + 1)}</span>` : "") : "";
 }
 // ---- the race's sound bed: a recording of the field running that murmurs, swells down the stretch and roars at the wire; the starter's bell as the gate folds.
@@ -365,6 +373,20 @@ buildRails();
 // along both straights, and light towers all round, each with a glowing lamp head and a real pool of light
 // thrown on the ground. Everything here is in track feet, so it fits whatever the oval's size.
 let infield = [], towers = [];
+let hedgeMesh = null, lineHidden = [];
+// the across shot: whatever stands in the infield between the lens and the field (the tote and odds boards, trees) steps
+// out of the way while it's up; everything else stays
+function clearLine(p, a) {
+  lineHidden.forEach(o => o.visible = true); lineHidden = [];
+  if (!p) return;
+  const ax = a.x - p.x, az = a.z - p.z, L2 = ax * ax + az * az;
+  for (const o of [...infield, ...around, ...(screen ? [screen] : [])]) {   // the infield video screen too
+    if (!o.visible || o === hedgeMesh || o.position.lengthSq() < 1) continue;     // the lawn and hedge are handled on their own
+    const u = Math.max(0, Math.min(1, ((o.position.x - p.x) * ax + (o.position.z - p.z) * az) / L2));
+    const sz = new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3());   // its own size (boards are a placeholder until their art loads)
+    if (Math.hypot(o.position.x - p.x - u * ax, o.position.z - p.z - u * az) < 25 + Math.max(sz.x, sz.z) / 2) { o.visible = false; lineHidden.push(o); }
+  }
+}                                                            // the infield hedge: the across shot opens it up
 const cardTex = {};
 const card = (src, wFt, hook, tint = null) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, alphaTest: .5, side: THREE.DoubleSide }));
   (cardTex[src] = cardTex[src] || new Promise(r => new THREE.TextureLoader().load(src, t => { sharp(t); r(t); }))).then(t0 => {
@@ -420,7 +442,7 @@ function buildInfield() {
     for (let d = 0; d <= RACE.L + .1; d += 6, k++) { const p = V(d, o); const hh = straightAt(d) ? 5 : H; /* cut down along the straights so the infield camera sees over it */ pts.push(p.x, 0, p.z, p.x, hh, p.z); uv.push(d / tileFt, 0, d / tileFt, 1); if (k) { const a = (k - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } }
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
     const t = tex(P("/mock/pixel/infield/hedge_c.png"), t => { t.wrapS = THREE.RepeatWrapping; });
-    add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, transparent: true, alphaTest: .5 }))); }
+    hedgeMesh = add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, transparent: true, alphaTest: .5 }))); }
   // the long odds board above the hedge on each straight, on dark posts, facing the track
   for (const side of [1, -1]) {
     const b = add(card(P("/mock/pixel/infield/odds.png"), 85, (m, h) => m.position.y = 12, trackPaint(true))); b.position.set(0, 0, side * (R - 42)); if (side < 0) b.rotation.y = Math.PI;
@@ -791,14 +813,17 @@ function shotAt(t) {
   if (t >= RACE.FIN - SLOMO) return "flat";                                    // the run-in: low and square to the wire, in slow motion
   if (t > RACE.CT[3] - 5 && t < RACE.CT[3] + 5) return "blimp";               // over the field at the half
   { const lead = Math.max(...RACE.state(t).map(h => h.s)), wire = RACE.SF + 5280;   // the infield angle, for variety: down the backstretch, and down the
-    if (t > RACE.CT[2] && t < RACE.CT[3] - 5 && straightAt(lead) && straightAt(lead - 120)) return "reverse";   // stretch before the sprint to the wire
+    if (t > RACE.CT[2] && t < RACE.CT[3] - 5 && straightAt(lead) && straightAt(lead - 120)) return "across";   // down the backstretch: the long lens across the infield
     if (lead > wire - 1700 && lead <= wire - 900) return "wide";                // the final turn: pull back and go wide, the whole field sorting out
     if (lead > wire - 900 && lead < wire - 160) return "reverse";
     if (lead >= wire - 160) return "finish"; }                                   // the long lens on the wire
   return "pan";
 }
 function aimCamera(t, st, dt) {
-  const shot = shotAt(t); if (shot !== lastShot) { camSnap = true; lastShot = shot; sponsorBoards.forEach(b => b.visible = shot !== "reverse" && shot !== "flat");
+  const shot = shotAt(t); if (shot !== lastShot) { camSnap = true; lastShot = shot; sponsorBoards.forEach(b => b.visible = shot !== "reverse" && shot !== "flat" && shot !== "across");
+    if (hedgeMesh) hedgeMesh.visible = shot !== "across";                         // the long lens sees over an open infield to the far rail
+    if (shot !== "across") clearLine(null);
+    cv.parentElement.classList.toggle("acrossup", shot === "across");             // the soft foreground band
     farOff(shot === "flat"); }   // the low wire shot looks across the whole infield: leave the distant scenery out (phones)
   if (false) { }
   const cs = RACE.camS(st), mo = st.reduce((a, h) => a + h.o, 0) / st.length;
@@ -814,6 +839,13 @@ function aimCamera(t, st, dt) {
     fov = Math.min(35, 19 + span / 50);                                           // a fifth tighter than first cut; widens as the field strings out
     const u = Math.min(1, Math.max(0, (lead - (RACE.SF + 5280 - 1700)) / 450));   // how far through the turn the leader is
     fov *= 1 - .45 * u * (2 - u);                                                 // a push in across the turn: it starts at once and closes to about half the width by mid-turn
+  }
+  else if (shot === "across") {                                                // from the grandstand side, a telephoto across the infield: the field
+    // on the backstretch as one compressed line. The camera stands opposite the field on the homestretch, outside the rail,
+    // up in the stand, and pans with it
+    const c = RACE.camS(st), cm = ((c % RACE.L) + RACE.L) % RACE.L, opp = 2 * RACE.S + Math.PI * RACE.R - cm;   // the homestretch point straight across from the field
+    p = V(opp, 110, 30); a = V(c, mo, 5); fov = 4.5;
+    clearLine(p, a);
   }
   else if (shot === "reverse") {                                               // the TV pan mirrored: same height, distance and lens, but from
     // above the infield looking out, so the field runs the other way across the frame with the crowd behind it

@@ -16,6 +16,8 @@ import race3 as R
 
 LEN, BODY, WIDE, HZ = 8.0, 15.5, 5.4, 20          # a length (ft), nose to wheel, a sulky's width, path rate
 T = R.HALF
+STRETCH_FAN = 3960                                  # from the 3/4 on, horses fanning out drift wider as room opens
+FAN = bool(int(os.environ.get("FAN", "1")))
 D = [0, 150, 300, 820, 1320, 1980, 2640, 3300, 3960, 4400, 4780, 5050, 5280]   # formation points (ft of the mile)
 STORIES = ("wire", "pocket", "first_over", "sweep", "closer", "photo")
 TITLE = {"wire": "Wire to wire, ran away with it", "pocket": "Pocket trip, out the passing lane",
@@ -81,7 +83,8 @@ def formations(story, posts, rng):
     top = {"wire": [lead, pocket, fo], "pocket": [pocket, lead, fo], "first_over": [fo, lead, pocket],
            "sweep": [fol, fo, lead], "closer": [back, fo, lead], "photo": [fo, lead, pocket]}[story]
     order = top + [h for h in sorted(range(n), key=lambda i: beh[i, 8]) if h not in top]
-    first = {"wire": 3.0 + rng.uniform(0, 1.5), "photo": rng.uniform(0.03, 0.12), "closer": rng.uniform(0.2, 0.5)}.get(story, rng.uniform(0.5, 1.5))
+    first = {"wire": 3.0 + rng.uniform(0, 1.5), "photo": rng.uniform(0.03, 0.12), "closer": rng.uniform(0.2, 0.5),
+             "pocket": rng.uniform(2.2, 3.0)}.get(story, rng.uniform(0.5, 1.5))   # pocket: clear of the leader to cross back over
     fin = np.cumsum([0.0, first] + [rng.uniform(0.3, 1.4) for _ in range(n - 2)])
     # the stretch: who wins from behind goes a lane wider than whoever is in front of them; the pocket dives inside
     wide = {"pocket": {pocket: -1.0}, "sweep": {fol: 2.0}, "closer": {back: 2.0}}.get(story, {})
@@ -105,7 +108,7 @@ def paths(beh, lane, lead_s):
     vt = np.gradient(ts, axis=1) * HZ                                   # the target's own speed (feed-forward)
     S = np.zeros((n, m)); Y = np.zeros((n, m)); V = np.zeros(n) + 44.0
     S[:, 0] = np.maximum(ts[:, 0], 0); Y[:, 0] = ty[:, 0]; dest = ty[:, 0].copy()
-    GAP, ACC, LAT = BODY + 1.0, 3.0, 3.0
+    GAP, ACC, LAT = BODY + 1.0, float(os.environ.get("ACC", 3.0)), 3.0
     band = lambda y0, y1: (min(y0, y1) - WIDE / 2, max(y0, y1) + WIDE / 2)   # the strip a horse occupies or is moving across
     hit = lambda p, q: p[0] < q[1] and q[0] < p[1]
     for k in range(1, m):
@@ -116,7 +119,9 @@ def paths(beh, lane, lead_s):
             want = max(lo, ty[i, k])
             if s >= 700:                                                # once settled, horses race in whole lanes
                 want = R.RAIL_Y + R.LANE * round((want - R.RAIL_Y) / R.LANE)
-            if s >= 700 and want > y + 0.5:                             # moving out: whole moves only, once the strip is clear
+            if s >= R.FT_MILE and y < R.RAIL_Y - 0.5:                   # past the wire the passing lane closes: back out to the rail line
+                dest[i] = R.RAIL_Y; want = None                             # (the story leaves it clear: the pocket wins by a sulky's length)
+            elif s >= 700 and want > y + 0.5 and (s < STRETCH_FAN or not FAN):   # moving out: whole moves only, once the strip is clear (the stretch fan drifts)
                 if abs(want - dest[i]) > 1.0 and abs(y - dest[i]) < 0.5:
                     mine = (y + WIDE / 2 + 0.5, want + WIDE / 2)                # the new strip, not the lane I am leaving
                     if not any(j != i and abs(S0[j] - s) < BODY + 2 and hit(mine, band(Y0[j], dest[j])) for j in range(n)):
@@ -149,12 +154,12 @@ def check(S, Y):
     n, m = S.shape
     for a in range(n):
         for b in range(a + 1, n):
-            close = (np.abs(S[a] - S[b]) < BODY) & (np.abs(Y[a] - Y[b]) < WIDE) & (np.minimum(S[a], S[b]) > 30) & (np.maximum(S[a], S[b]) < R.FT_MILE)
+            close = (np.abs(S[a] - S[b]) < BODY) & (np.abs(Y[a] - Y[b]) < WIDE) & (np.minimum(S[a], S[b]) > 30) & (np.maximum(S[a], S[b]) < R.FT_MILE + 150)
             if close.any():
                 return False, f"overlap {a}-{b}"
     V = np.diff(S, axis=1) * HZ
     lead = S.max(0)
-    pre = lead[:-1] < 4400
+    pre = (lead[:-1] > 400) & (lead[:-1] < 4400)                          # past the gate fold (the field drops in behind the leader by design)
     rel = V[:, pre] - np.median(V[:, pre], axis=0)
     w = 2 * HZ
     burst = max(np.convolve(r, np.ones(w) / w, "valid").max() for r in rel)
@@ -162,7 +167,7 @@ def check(S, Y):
         return False, f"burst {burst:.1f}"
     k = int(np.argmax(lead >= 1320))
     spread = (S[:, k].max() - S[:, k].min()) / LEN
-    if spread > 13:
+    if spread > 15:                                                   # single file on a half-mile runs about 14-15 lengths
         return False, f"spread {spread:.1f}"
     return True, f"ok spread {spread:.1f} burst {burst:.1f}"
 

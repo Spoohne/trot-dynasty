@@ -31,9 +31,12 @@ def page_race(v, title, k):
         horses.append(dict(name=names[i], post=i + 1, coat=COATS[sum(map(ord, names[i])) % len(COATS)], behind=behind, lane=lane,
                            trip=v["role"][i], path=path, place=v["got"].index(i) + 1, traits={x: 0.0 for x in ("gate", "cruise", "kick", "manners", "grit")}, form=0.0))
     caps = [[0, "They're away. The gate folds clear"]]
-    fo = next(i for i, r in v["role"].items() if r == "first-over"); fol = next(i for i, r in v["role"].items() if r == "follow")
-    caps.append([round(at(1500), 2), f"{names[fo]} is parked out, {names[fol]} right behind"])
-    caps.append([round(at(2100), 2), f"{names[fo]} starts to roll first-over"])
+    fo = next((i for i, r in v["role"].items() if r == "first-over"), None); fol = next((i for i, r in v["role"].items() if r == "follow"), None)
+    if fo is not None and v.get("cast"):                            # cast races: first-over pulls out of the line after the quarter
+        caps.append([round(at(2100), 2), f"{names[fo]} pulls first-over" + (f", {names[fol]} follows" if fol is not None else "")])
+    elif fo is not None:
+        caps.append([round(at(1500), 2), f"{names[fo]} is parked out, {names[fol]} right behind"])
+        caps.append([round(at(2100), 2), f"{names[fo]} starts to roll first-over"])
     if v["story"] == "pocket":
         caps.append([round(at(T.last_turn_end + 150), 2), f"{names[v['got'][0]]} slips through the passing lane"])
     elif v["story"] in ("sweep", "closer"):
@@ -43,7 +46,7 @@ def page_race(v, title, k):
         caps.append([round(tq, 2), f"{label} in {R_fmt(tq)}, {names[top]} on top"])
     caps.append([round(win, 2), f"{names[v['got'][0]]} wins it in {R_fmt(win)}"])
     caps.sort(key=lambda c: c[0])
-    return dict(track="half", S=T.lap / 2 - np.pi * T.R, R=T.R, run_in=T.arcs[0][0], final=round(win, 3), quarters=[round(x, 2) for x in q],
+    return dict(track="half", passing=True, S=T.lap / 2 - np.pi * T.R, R=T.R, run_in=T.arcs[0][0], final=round(win, 3), quarters=[round(x, 2) for x in q],
                 calls=[round(x, 2) for x in calls], horses=horses, captions=caps, title=f"Replay library · {title}")
 
 
