@@ -159,6 +159,12 @@ def check(S, Y):
             close = (np.abs(S[a] - S[b]) < BODY) & (np.abs(Y[a] - Y[b]) < WIDE) & (np.minimum(S[a], S[b]) > 30) & (np.maximum(S[a], S[b]) < R.FT_MILE + 150)
             if close.any():
                 return False, f"overlap {a}-{b}"
+    sf = T.lap / 2 - np.pi * T.R - T.arcs[0][0]                      # the replay's finish line, along its lap (race.js RACE.SF)
+    lap = (S - R.FT_MILE + sf) % T.lap
+    inset = np.where(lap < 90, 8 * lap / 90, np.where(lap < sf + 40, 8, np.clip(8 * (1 - (lap - sf - 40) / 90), 0, 8)))
+    inside = (Y + 1 - WIDE / 2) < (-3 - inset)                      # the replay's inside rail (race.js RACE.inset), passing lane included
+    if (inside & (S > 2000) & (S < R.FT_MILE + 400)).any():
+        return False, "rail"
     V = np.diff(S, axis=1) * HZ
     lead = S.max(0)
     pre = (lead[:-1] > 400) & (lead[:-1] < 4400)                          # past the gate fold (the field drops in behind the leader by design)

@@ -753,6 +753,23 @@ function leatherStraps(c, mask) {
   }
   g.putImageData(d, 0, 0); return c;
 }
+// the horse's own highlights (eye shine, the blaze) poking out just past the hood's edge read as white specks: fold them into
+// the hood's darker edge color
+function maskFringe(c, hex, mask) {
+  if (!mask || !hex) return c;
+  const m = maskData.get(mask); if (!m) return c;
+  const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height, R = 2;
+  const rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) * .55);      // the hood's color, in shadow
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 4;
+    if (!p[i + 3] || m[i] >= 128 || (p[i] + p[i + 1] + p[i + 2]) / 3 < 165) continue;   // only light pixels outside the hood
+    let near = false;
+    for (let dy = -R; dy <= R && !near; dy++) for (let dx = -R; dx <= R && !near; dx++) {
+      const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < W && yy < H && m[(yy * W + xx) * 4] >= 128) near = true; }
+    if (near) { p[i] = rgb[0]; p[i + 1] = rgb[1]; p[i + 2] = rgb[2]; }
+  }
+  g.putImageData(d, 0, 0); return c;
+}
 function overlay(base, layers) {                                        // the coated runner with its gear overlays drawn on, one canvas
   const c = document.createElement("canvas"); c.width = base.width; c.height = base.height; const g = c.getContext("2d");
   g.drawImage(base, 0, 0); for (const l of layers) if (l) g.drawImage(l, 0, 0); return c;
@@ -781,7 +798,7 @@ function buildRunners() {
     const wr = WRAPS_OK && wrapImg && h.wraps, hd = WRAPS_OK && hoodImg && h.mask;   // gear: overlays on the coated runner, each dyed in its own color
     const fr = wrapMeta.frames, cols = wrapMeta.cols, rows = Math.ceil(fr / cols);   // the side sheet's own length (wraps12.json): the real stride is 13 frames
     const sil = dye(leatherStraps(overlay(coat(cycleImg, h.coat), [wr && wrapImg, hd && hoodImg]), hd && hoodMask), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null, fr, cols);
-    const t = new THREE.CanvasTexture(grit(wrapTint(wrapTint(sil, wr && h.wraps), hd && h.mask, hoodMask), FW, FH));
+    const t = new THREE.CanvasTexture(grit(maskFringe(wrapTint(wrapTint(sil, wr && h.wraps), hd && h.mask, hoodMask), hd && h.mask, hd && hoodMask), FW, FH));
     sharp(t); t.repeat.set(1 / cols, 1 / rows);
     const card = new THREE.Mesh(cardGeo, new THREE.MeshBasicMaterial({ map: t, color: 0xece6dc, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false }));
     const shadow = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));

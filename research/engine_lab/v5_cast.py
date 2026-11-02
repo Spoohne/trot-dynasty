@@ -63,7 +63,8 @@ def formations(res, rng, at34=None):
     for rank, h in enumerate(order):
         l = lane[h, 8]
         beaten_near = [x for x in order[rank + 1:] if beh[x, 8] < beh[h, 8] + 1.0]   # ahead (however far), or alongside within a length
-        if h == pocket and lead in beaten_near and all(lane[x, 8] > 0 or x == lead for x in beaten_near):
+        if h == pocket and lead in beaten_near and all(lane[x, 8] > 0 or x == lead for x in beaten_near) \
+                and res["margin"][lead] - res["margin"][h] >= 2.4:   # up the passing lane only if clear to cross back after the wire
             l = -1.0
         else:                                                       # outside everyone it beats that's ahead or alongside
             for x in sorted(beaten_near, key=lambda x: sl.get(x, lane[x, 8])):
