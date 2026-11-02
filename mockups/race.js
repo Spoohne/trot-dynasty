@@ -252,6 +252,15 @@ RACE.state = t => {                                                      // ever
       if (!late.length) break;
       late.forEach(i => RACE.H[i].wide += 1);
     }
+    // Still the wrong winner after every try (Northern Star, 2627-ls-mile-Open-0: shut in on the rail from the quarter by a
+    // horse level outside him that wanted in): the winner runs exactly as the story has it, and the field parts for it.
+    // Only a race that came out wrong is run again, so every other replay stays as it was.
+    const kf = Math.floor(RACE.FIN * RACE.HZ), first = RACE.paths.map((p, i) => i).sort((a, b) => RACE.paths[b][kf * 2] - RACE.paths[a][kf * 2])[0];
+    if (first !== want[0] && RACE.HERO < 0) {
+      RACE.HERO = want[0];
+      RACE.simulate();
+      RACE.HERO = -1;
+    }
     RACE.paths.src = RACE.H;
   }
   const f = Math.max(0, Math.min(RACE.pathN - 1.001, t * RACE.HZ)), k = Math.floor(f), u = f - k;
