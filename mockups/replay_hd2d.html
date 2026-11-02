@@ -1161,7 +1161,7 @@ function drawResults() {
   const ord = RACE.H.map((h, i) => ({ h, i })).sort((a, b) => a.h[2][6] - b.h[2][6]), t1 = ord[0].h[2][6];
   const dec = o => { const m = /^(\d+)-(\d+)$/.exec(o || ""); return m ? m[1] / m[2] : 9; };
   const money = v => "$" + (Math.max(2.1, Math.floor(v * 10) / 10)).toFixed(2);
-  const marg = (d, k) => { if (!k) return RACE.fmt(RACE.FIN); const L = d / .2;                    // about a length to a fifth of a second
+  const marg = (d, k) => { if (!k) return RACE.fmt(RACE.FIN); const L = d;                          // the story's margins are already in lengths
     return L < .25 ? "nose" : L < .5 ? "head" : L < .75 ? "neck" : (Math.round(L * 4) / 4).toString().replace(".25", "¼").replace(".5", "½").replace(".75", "¾").replace(/^0/, "") + (L < 1.5 ? " length" : " lengths"); };
   const pad = i => `<span class="pd" style="background:${RACE.PAD[i]};color:${RACE.DARK.includes(i + 1) ? "#111" : "#fff"}">${i + 1}</span>`;
   const ordn = k => ["1st", "2nd", "3rd"][k] || (k + 1) + "th";
@@ -1214,6 +1214,9 @@ function result() {                                                             
   document.getElementById("res").innerHTML = fin.map((h, k) => `<div class="rw"><b>${k + 1}</b>${RACE.pad(h.i)}<span>${RACE.H[h.i][0]}</span><span class="m">${k ? RACE.lengths(h.b - fin[k - 1].b) : RACE.fmt(RACE.FIN)}</span></div>`).join(""); }
 let froze = false, freezeLeft = 0, freeze0 = 1.8, wireZoom = null, pfShot = false, wireT = 0;
 let SLOW = 1; const SLOMO = 1.1;
+// the winner's circle comes up two and a half seconds after the last horse is home (a length to a fifth of a second),
+// never later than seven after the winner: a tight field doesn't keep running on long after it has finished
+const runOut = () => RACE.FIN + Math.min(7, Math.max(...RACE.H.map(h => h[2][6])) * .2 + 2.5);
 var SOUND_ON = false;   // all replay sound off until the sound effects are redone; the code is kept                                                  // seconds of race clock before the wire run in slow motion
 const bulbsEl = document.getElementById("bulbs"), pfEl = document.getElementById("pf");
 let PHOTO = false;                                                                 // the top two inside half a length: the stewards call for the photo
@@ -1292,7 +1295,7 @@ function loop(now) {
     SND.update(t, ord[0].d);
     // the winner hits the wire: flash, hold the frame, then let them run on through it; the result card follows once they've eased up
     if (!froze && (ord[0].d >= 5280 || t >= RACE.FIN + 1)) { froze = true; wireT = t; freezeLeft = freeze0 = PHOTO ? 4.2 : 1.8; result(ord); }   // the instant the leader's nose is on the wire
-    const circle = t >= RACE.FIN + 7 && freezeLeft <= 0;                         // after the official result, the winner's circle photo
+    const circle = t >= runOut() && freezeLeft <= 0;                         // after the official result, the winner's circle photo
     if (circle && !wcDrawn) drawWinnersCircle();
     if (circle && wc.style.display !== "flex") { wc.classList.remove("flip"); void wc.offsetWidth; wc.classList.add("flip"); }   // turned over each time it appears
     wc.style.display = circle ? "flex" : "none";
@@ -1309,7 +1312,7 @@ function loop(now) {
       cam.fov = wireZoom.fov * (1 - .35 * e); cam.updateProjectionMatrix();
       cam.lookAt(wireZoom.aim.clone().lerp(wireZoom.to, .6 * e));
     }
-    if (freezeLeft <= 0 && wireZoom && t < RACE.FIN + 7) {          // hold the zoomed frame still on the wire: the whole field
+    if (freezeLeft <= 0 && wireZoom && t < runOut()) {          // hold the zoomed frame still on the wire: the whole field
       cam.position.copy(wireZoom.pos); cam.fov = wireZoom.fov * .65; cam.updateProjectionMatrix();   // runs through it, then
       cam.lookAt(wireZoom.aim.clone().lerp(wireZoom.to, .6));     // the winner's circle photo comes up
     } else if (freezeLeft <= 0 && wireZoom) { wireZoom = null; }

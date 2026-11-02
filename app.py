@@ -662,7 +662,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .brow{display:flex;gap:12px;align-items:flex-start} .bname{font-size:16px;font-weight:700} .bname .sub{font-weight:400}
 .bbars{margin:6px 0 4px} .bbars .row{gap:8px;margin:2px 0} .bbars .sub{width:52px;font-size:12px}
 .tp{position:relative;overflow:hidden;flex:0 0 auto;border-radius:4px}.tp img,.tploop{display:block;image-rendering:auto}
-.tploop{background-size:1200% 100%;animation:tploop 1.5s steps(12,jump-none) infinite}@keyframes tploop{to{background-position:100% 0}}
+.tploop{background-size:1200% 100%;animation:tploop 4.5s infinite}@keyframes tploop{0%{background-position:0 0;animation-timing-function:steps(12,jump-none)}33.33%{background-position:100% 0;animation-timing-function:step-end}33.34%,100%{background-position:0 0}}
 .tpsweep{position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,#fff0c826 47%,#fff0c84d 50%,#fff0c826 53%,transparent 65%);background-size:300% 100%;animation:tpsweep 4.5s ease-in-out infinite}
 @keyframes tpsweep{from{background-position:120% 0}to{background-position:-60% 0}}
 .tpmotes{position:absolute;inset:0;background-image:radial-gradient(#ffd75acc 1px,transparent 1.6px),radial-gradient(#ffe9a8aa 1px,transparent 1.6px);background-size:23px 29px,37px 41px;background-position:0 0,11px 7px;animation:tpmotes 9s linear infinite;opacity:.7}
@@ -817,6 +817,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .lk2{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--ink2);text-align:center;margin:0}
 .lk2 .tsw{width:100%}.lk2 b{color:var(--ink);font-size:12px}.lk2 button{padding:2px 6px;font-size:12px}
 .tsave{position:sticky;bottom:72px;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;background:#111a2bee;border:1px solid var(--tote);margin:10px 0}
+.tsave[hidden]{display:none}
 .tsave .go{font:800 16px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;padding:8px 16px;box-shadow:2px 2px 0 #05070d}
 .enterplus{position:relative;width:30px;height:30px;display:grid;place-items:center;text-decoration:none;font:700 22px/1 'Barlow Condensed',sans-serif;color:#1a1000;background:linear-gradient(#ffd27a,#e8a33a);border:2px solid #05070d;box-shadow:2px 2px 0 #05070d,inset 0 2px 0 #fff6}
 .entercell{white-space:nowrap}.mates{display:inline-block;vertical-align:middle;margin-left:6px}.mates svg{width:24px!important;height:24px!important;min-width:24px;display:block;box-shadow:2px 2px 0 #05070d}
@@ -4121,7 +4122,7 @@ def claimers_page(qs=None):
     chips = lambda items, cur, key: "<div class=fchips>" + "".join(
         f"<a href='{link(**{key: k})}' class='{'on' if str(cur) == str(k) else ''}'>{label}</a>" for k, label in items) + "</div>"
     head = (chips([("tag", "By tag"), ("est", "By rating"), ("earn", "By purses"), ("age", "By age")], sort, "s")
-            + chips([("all", "Any tag"), ("lo", "$25,000–$60,000"), ("mid", "$90,000–$200,000"), ("hi", "$300,000+")], band, "b")
+            + chips([("all", "Any tag")] + [(str(t), f"${t // 1000:,}K" if t < 1_000_000 else f"${t // 1_000_000}M") for t, *_ in c.CLAIMERS], band, "b")   # one per claimer size
             + chips([("all", "All ages"), ("2", "2yo"), ("3", "3yo"), ("aged", "Aged")], grp, "g")
             + chips([("all", "Colts & fillies"), ("m", "Colts"), ("f", "Fillies")], sex, "x")
             + chips([("all", "All tracks")] + [(v["id"], v["name"]) for v in c.VENUES], vid, "v")
@@ -4135,9 +4136,8 @@ def claimers_page(qs=None):
             for h in r["field"]:
                 if not getattr(h, "visitor", None):
                     rows.append((h, tag, r))
-    bands = {"lo": (0, 60_000), "mid": (90_000, 200_000), "hi": (300_000, 10 ** 9)}
-    if band in bands:
-        rows = [x for x in rows if bands[band][0] <= x[1] <= bands[band][1]]
+    if band.isdigit():
+        rows = [x for x in rows if x[1] == int(band)]
     if grp != "all":
         rows = [x for x in rows if c.age_group(x[0]) == grp]
     if sex != "all":
@@ -4232,7 +4232,7 @@ def fit_cost(o, pieces):
 
 
 def tack_model(pieces, kit):
-    return TA.render(pieces, kit, "#000000", "#000000")
+    return TA.render(pieces, kit, *tack_colors(ME))                         # the driver (and a bare wheel) in the barn's colors
 
 
 def tack_page(msg="", qs=None):
@@ -4243,13 +4243,18 @@ def tack_page(msg="", qs=None):
     note = f"<div class=card><b>{esc(msg)}</b></div>" if msg else ""
     if not racers:
         return page("Tack Room", market_tabs("tack") + note + "<p class=sub>No racers to fit.</p>")
-    h = next((x for x in racers if x.name == (qs or {}).get("h")), racers[0])
+    h = next((x for x in racers if x.name == (qs or {}).get("h")), None)
+    if not h:                                                              # from the tab: choose the horse to fit
+        return page("Tack Room", market_tabs("tack") + note + "<div class='card hc mgr'><div class=mhead><b>Tack Room</b>"
+                    f"<span>{mk_tag(markers())}</span></div><div class=sub>Choose a horse to fit.</div><div class=tstrip>"
+                    + "".join(f"<a class=tsq href='/tack?h={quote(x.name)}' title='{esc(x.name)}'>{square_portrait(x, 44)}</a>" for x in racers)
+                    + "</div></div>")
     i = racers.index(h); on = fitted(h); kit = kit_of(h)
     go = lambda x: f"/tack?h={quote(x.name)}"
     sw_ = lambda hx: f"<span class='tsw lk' style='--c:{hx}' title='{COLOR_NAME[hx]}: unlock it in the color locker'><i>&#128274;</i></span>"
-    pick = (f"<div class=tpick><a class=tpa href='{go(racers[i - 1])}' aria-label='previous horse'>&lsaquo;</a><div class=tpn><b>{esc(h.name)}</b>"
-            f"<span class=sub>{h.age}yo {sex_word(h)} · {i + 1} of {len(racers)}</span></div><a class=tpa href='{go(racers[(i + 1) % len(racers)])}' aria-label='next horse'>&rsaquo;</a></div>")
-    strip = "<div class=tstrip>" + "".join(f"<a class='tsq{' on' if x is h else ''}' href='{go(x)}' title='{esc(x.name)}'>{square_portrait(x, 44)}</a>" for x in racers) + "</div>"
+    pick = (f"<div class=tpick><div class=tpn><b>{esc(h.name)}</b>"                     # this horse only: it's reached from its own card
+            f"<span class=sub>{h.age}yo {sex_word(h)} · <a href='/horse/{urlname(h.name)}'>Horse page</a></span></div></div>")
+    strip = ""
     rows = ""
     for k, (name, unlock, fee) in TACK.items():
         if k not in own:
