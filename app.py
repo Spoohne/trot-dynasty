@@ -403,6 +403,9 @@ def load(path=None):
             r["key"] = (("all" if n in c.ALL_AGES else r["key"][0]), r["key"][1], n, next(p for nm, _, p, _ in c.CONDITIONS if nm == n), 0, r["key"][5])
     if not any(getattr(h, "drawn", False) for h in G["horses"]):                # a save from before the program: post this week's
         c.draw_claimers(G["horses"], G["ai"])
+    for h in c.lineage(G["horses"] + e.nursery + sk.HALL):                  # Sire Stakes legs stopped giving trophies (2026-11-02): take back old ones
+        if any("Sire Stakes Leg" in t for t in getattr(h, "trophies", [])):
+            h.trophies = [t for t in h.trophies if "Sire Stakes Leg" not in t]
     for h in c.lineage(G["horses"] + e.nursery + sk.HALL):                  # season ledgers for saves from before they existed:
         if not hasattr(h, "seasons"):                                         # rebuilt from the starts each horse still keeps
             h.seasons = {}
