@@ -120,7 +120,9 @@ def paths(beh, lane, lead_s):
             if s >= 700:                                                # once settled, horses race in whole lanes
                 want = R.RAIL_Y + R.LANE * round((want - R.RAIL_Y) / R.LANE)
             if s >= R.FT_MILE and y < R.RAIL_Y - 0.5:                   # past the wire the passing lane closes: back out to the rail line
-                dest[i] = R.RAIL_Y; want = None                             # (the story leaves it clear: the pocket wins by a sulky's length)
+                if not any(j != i and abs(S0[j] - s) < BODY + 0.5 and abs(Y0[j] - R.RAIL_Y) < WIDE for j in range(n)):
+                    dest[i] = R.RAIL_Y                                      # once nobody on the rail is alongside
+                want = None
             elif s >= 700 and want > y + 0.5 and (s < STRETCH_FAN or not FAN):   # moving out: whole moves only, once the strip is clear (the stretch fan drifts)
                 if abs(want - dest[i]) > 1.0 and abs(y - dest[i]) < 0.5:
                     mine = (y + WIDE / 2 + 0.5, want + WIDE / 2)                # the new strip, not the lane I am leaving
@@ -143,7 +145,7 @@ def paths(beh, lane, lead_s):
             for j in range(n):                                          # check off behind anyone in my strip
                 if j != i and 0 < S0[j] - s < GAP + 12 and hit(mine, band(Y0[j], dest[j])):
                     v = min(v, (S0[j] - s - GAP) * 1.5 + V0[j])
-            v = min(V0[i] + ACC / HZ, max(V0[i] - 2 * ACC / HZ, v)) if s > 60 else v
+            v = min(V0[i] + ACC / HZ, max(V0[i] - (4 if s >= R.FT_MILE else 2) * ACC / HZ, v)) if s > 60 else v   # past the wire they pull up
             V[i] = max(v, 0.0)
             S[i, k] = s + V[i] / HZ; Y[i, k] = y + max(-LAT / HZ, min(LAT / HZ, dest[i] - y))
     return S, Y, ts, ty

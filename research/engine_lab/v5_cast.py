@@ -69,6 +69,9 @@ def formations(res, rng, at34=None):
             for x in sorted(beaten_near, key=lambda x: sl.get(x, lane[x, 8])):
                 if sl.get(x, lane[x, 8]) >= l:
                     l = sl.get(x, lane[x, 8]) + 1
+            for x in order[:rank]:                                  # can't finish within a length of someone in front in the same lane
+                if sl[x] == l and res["margin"][h] - res["margin"][x] < 2.2 and beh[x, 8] <= beh[h, 8] + 1.0:
+                    l += 1
             l = min(l, 4.0)
         sl[h] = l
     late = {h for h in order if sl[h] >= 2 and beh[h, 8] - min(beh[:, 8]) > 6}  # coming from far back: swing out at the 3/4

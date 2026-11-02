@@ -735,6 +735,24 @@ const wrapMetaLoaded = WRAPS_OK ? fetch(P("/mock/pixel/tack/wraps12.json?v=" + D
 let hoodImg = null, hoodMask = null;                                   // the hood overlay and its mask, same sheet layout
 const GEAR = { wraps12: i => wrapImg = i, wraps12_mask: i => wrapMask = i, hood12: i => hoodImg = i, hood12_mask: i => hoodMask = i };
 const wrapLoaded = WRAPS_OK ? Promise.all(Object.keys(GEAR).map(n => new Promise(r => { const i = new Image(); i.onload = () => { GEAR[n](i); r(); }; i.onerror = r; i.src = P(`/mock/pixel/tack/${n}.png?v=18`); }))) : Promise.resolve();
+// the bridle runs over the hood: those straps are leather, not the driver's silks, so on and just around the hood they go
+// dark before the silks are dyed (the dye repaints every blue pixel, which left the driver's color striped across the mask)
+function leatherStraps(c, mask) {
+  if (!mask) return c;
+  if (!maskData.has(mask)) { const k = document.createElement("canvas"); k.width = mask.width; k.height = mask.height; const kg = k.getContext("2d"); kg.drawImage(mask, 0, 0); maskData.set(mask, kg.getImageData(0, 0, k.width, k.height).data); }
+  const m = maskData.get(mask), g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), p = d.data, W = c.width, H = c.height, R = 2;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 4;
+    if (!p[i + 3] || !(p[i + 2] > p[i] + 40 && p[i + 2] > p[i + 1] + 20)) continue;   // a blue (bridle) pixel
+    let near = false;
+    for (let dy = -R; dy <= R && !near; dy++) for (let dx = -R; dx <= R && !near; dx++) {
+      const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < W && yy < H && m[(yy * W + xx) * 4] >= 128) near = true; }
+    if (!near) continue;
+    const l = (p[i] + p[i + 1] + p[i + 2]) / 3 / 255;                         // keep its shading, as dark brown leather
+    p[i] = 34 + 70 * l; p[i + 1] = 24 + 50 * l; p[i + 2] = 18 + 36 * l;
+  }
+  g.putImageData(d, 0, 0); return c;
+}
 function overlay(base, layers) {                                        // the coated runner with its gear overlays drawn on, one canvas
   const c = document.createElement("canvas"); c.width = base.width; c.height = base.height; const g = c.getContext("2d");
   g.drawImage(base, 0, 0); for (const l of layers) if (l) g.drawImage(l, 0, 0); return c;
@@ -762,7 +780,7 @@ function buildRunners() {
   runners = RACE.H.map((h, i) => {
     const wr = WRAPS_OK && wrapImg && h.wraps, hd = WRAPS_OK && hoodImg && h.mask;   // gear: overlays on the coated runner, each dyed in its own color
     const fr = wrapMeta.frames, cols = wrapMeta.cols, rows = Math.ceil(fr / cols);   // the side sheet's own length (wraps12.json): the real stride is 13 frames
-    const sil = dye(overlay(coat(cycleImg, h.coat), [wr && wrapImg, hd && hoodImg]), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null, fr, cols);
+    const sil = dye(leatherStraps(overlay(coat(cycleImg, h.coat), [wr && wrapImg, hd && hoodImg]), hd && hoodMask), RACE.SILK[i], i + 1, RACE.DARK.includes(i + 1), RACE.PAD[i], FW, PAD, RIG ? [119, 42, 33, 25] : null, fr, cols);
     const t = new THREE.CanvasTexture(grit(wrapTint(wrapTint(sil, wr && h.wraps), hd && h.mask, hoodMask), FW, FH));
     sharp(t); t.repeat.set(1 / cols, 1 / rows);
     const card = new THREE.Mesh(cardGeo, new THREE.MeshBasicMaterial({ map: t, color: 0xece6dc, transparent: true, alphaTest: .5, side: THREE.DoubleSide, depthWrite: false }));
