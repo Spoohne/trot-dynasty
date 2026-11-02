@@ -77,3 +77,20 @@ the clock's margin) catches 4 of them; the other 4 happened to fall within a len
    (DECISIONS 240), not 47.
 2. `story.build` only trusts margins set by this race, so a stale `margin_l` can never steer a replay again.
 3. Rebuild the 8 affected stakes replays from their recorded times. Results, purses and trophies stay as they are.
+
+Patrick: fix all three. Deployed 2026-11-02, commit 746b033. The live save was backed up before the rebuild
+(save.before-stakesrebuild-*). The 8 replays were rebuilt with `racegod/rebuild_stakes.py`. Live audit: 326 of 326
+races true to their result. Watched on the site, Clover Stakes no longer shows a photo.
+
+## V3 - The 40-length wall (found while checking V2), 2026-11-02
+
+**Measured, on the live page and a copy of tonight's card.** `story.build` stops every beaten horse at 40 L, a nose
+apart. When a winner is far clear, everyone behind piles into one blob. Clover Stakes had 2nd-12th beaten 47-73 L by
+the clock; on the replay they finish within half a length of each other. The replay's board then calls the wrong
+places: it shows Chief Frost 2nd, but Fancy Charger was 2nd. The camera frames the post with nobody in shot as the
+winner finishes. On a copy, tonight's overnight card had 26 of 84 races with a horse beaten 40 L or more (69 of 732
+starters). The speed limit set 64% of starters' times (V1, point 3).
+
+**Hypothesis:** the root is the speed limit stretching beaten margins. The 40 L cap only hides the damage.
+**Proposed:** fix V1 point 3 first, so margins come from the race and huge margins become rare. Then keep true margins
+and let the replay show a tailed-off horse as tailed off (beyond 40 L, keep the order but space horses evenly).
