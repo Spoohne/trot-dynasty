@@ -172,3 +172,64 @@ prototype and running the same audit on it.
 
 Build the prototype in `racegod/engine/` (not imported by the game), run it on the 315 fields, publish the audit side
 by side with today's engine, and show three replays. About two sessions' work before there's anything to judge.
+
+Patrick: build the prototype (2026-11-02).
+
+## V6 - The simulated race, first side by side, 2026-11-02 (session 1 of 2)
+
+**Built (nothing in the game touched):** `racegod/engine.py`, one simulated race at a quarter-second step, feet along the
+rail, lanes 7 ft apart, the two tracks' real turn geometry (an outside horse covers more ground on a turn). Same contract
+as `outcome.race`, plus `story()` that reads the replay straight off the run. The outcome model's fitted knowledge goes
+in as inputs: `omega`, `w_k`, `s_eps`, `s_margin` set each horse's steady speed; the start is the model's own (gate + luck
+- `c_post` x post) and the drivers pick the same five trips by the same rule; the manners curve breaks them. Everything
+the model had as a trip bonus the run has to earn: cover is cheaper than wind, the outside loses ground on turns, a hot
+pace empties the leader's tank, a boxed horse can't go. Drivers yield only upward crossing over (DECISIONS 193).
+Lab: `engine_lab.py` (today vs sim on the same fields, through the same audit), `engine_fit.py` (random search on the
+run's knobs, 40 trials, one run each), `replay_server.py` (lab stories in the game's viewer).
+
+**Measured: 315 real fields x 2 runs each, horses as they stand now.**
+
+| | Today (outcome + story) | Sim | Band |
+|---|---|---|---|
+| Half post 1 wins | 20.6 ok | 21.5 ok | 19-27 |
+| Half post 8 wins | 8.0 HIGH | 4.0 ok | 1-6 |
+| Mile post 1 wins | 10.4 LOW | 10.4 LOW | 15-20 (soft) |
+| Mile post 8 wins | 10.0 ok | 7.6 ok | 6-10 (soft) |
+| Winner within 3 L at the half | 45.1 LOW | 83.0 ok | 60-90 |
+| Half winner 4+ L back at the half | 42.3 HIGH | 9.0 ok | 0-15 |
+| Favorite wins | 40.0 ok | **23.8 LOW** | 30-45 |
+| Median winning margin | 1.8 ok | 2.7 ok | 1-3 |
+| Photos | 11.4 ok | 7.0 ok | 5-15 |
+| Speed limit set the time | 10.3 HIGH | 5.7 ok | 0-10 |
+| Races with a horse 40 L+ back | 7.9% | 4.6% | |
+| Winning time, mile-eq (median / fastest) | 1:54.1 / 1:44.7 | 1:55.2 / 1:44.5 | |
+| Northern Star (4 fields): wins / median time / margin | 4 / 1:46.6 / 12.9 L | 4 / 1:47.3 / 9.2 L | |
+| Winning trips: lead / pocket / first-over / mid-pack / behind | 29 / 16 / 13 / 21 / 22 | **50 / 33 / 1 / 13 / 3** | |
+| Laws broken | 0 of 630 | 0 of 630 | |
+
+**What the sim gets right, by construction or by physics.** Truth: the replay is the race, 630 of 630 (the 40 L viewer
+wall is kept for now, V3). Post bias comes out of the crossing-over, not a fitted slope, and lands in band on three of
+four (the mile's post 1 reads the same as today's engine, against a soft target). The pace is run: a brush to the
+quarter, a breather, the drive; the leader at the quarter wins 50%, not 29% with the winner 4 L back at the half.
+Tailed-off horses are rarer and the speed limit rarely speaks. Watched in the viewer (served by `replay_server.py`):
+the field crosses over from the posts and strings out properly, the first-over horse pulls when the caption says,
+the stretch fans two and three wide, the board's margins are the finish.
+
+**What it gets wrong, and this is structural, not knobs (measured; 40 fit trials moved it from loss 28 to 18.5 and
+changed none of it).** The lead and the pocket win 83% of races (today, and the chart targets behind it, 45%); a
+first-over horse wins 1 in 100, a closer 3. The favorite wins 24%: the trip lottery outweighs ability.
+**Hypothesis, from watching the runs:** three things are missing. (1) **The flow doesn't box the pocket.** The outside
+line is one or two horses who fade, so the pocket horse always gets out in the drive with a full tank. Real: second- and
+third-over sit outside the pocket into the stretch. (2) **Pressing costs the presser more than the leader.** A first-over
+horse pays wind and the turn to get to the leader's flank and fades before it gets there; the leader's hot pace costs
+it less. Real: the presser arrives with momentum; the leader pays for the fractions. (3) **Ability counts too little:**
+the drive runs everyone at nearly the same push, so the order at the three-quarters mostly holds; the yield cascades
+at the start cost more than a horse's class is worth.
+
+### Proposed (awaiting Patrick)
+
+Session 2: the three structural changes above, then a proper fit (the engine lab's differential evolution on the real
+fields, not 40 random trials), then the same table again. Decision after that: adopt behind TD_ENGINE, or stop. The
+replays to watch meanwhile: `2629-stake-S6705-sim` (Clover Stakes, Northern Star from mid-pack in 1:47.4),
+`2626-gh-half-CLM1M-0-sim` (half-mile, won from mid-pack), `2626-ng-mile-NW2L6-2-sim` (mile, won from behind); each
+also has a `-today` twin from the live engine on the same field.
