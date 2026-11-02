@@ -9,6 +9,9 @@ three together; durability sets how fast it drains and refills. No injuries:
 nothing random ever damages a horse.
 """
 import copy
+import os
+import outcome
+ENGINE = os.environ.get("TD_ENGINE", "outcome")   # race night decided by the outcome engine (outcome.py); TD_ENGINE=live rolls back to sim.race
 import statistics as st
 from itertools import count
 from sim import GAIT_CAP, GAIT_W, W_FINISH, W_SPEED, W_STAM, HALF_SLOWER, RACE_TRAITS, RETIRE_AGE, Horse, founder, breed, race, rng
@@ -216,7 +219,8 @@ TAKE = 0.17               # the track's cut of the win pool: every price is a li
 def tote_odds(field):
     """The public's win odds on a field, from the public ratings alone: money follows the estimate, the track
     takes its cut, and prices land on the tote's own steps (4-5, 5-2, 9-2...). Returns {horse id: (to, over)}."""
-    w = {h.id: 2.718 ** (h.est / 15) for h in field}
+    w = ({h.id: 2.718 ** (1.9 * outcome.rating(h)) for h in field} if ENGINE == "outcome"   # the card's rating, fitted to who wins (DECISIONS 240)
+         else {h.id: 2.718 ** (h.est / 15) for h in field})
     tot = sum(w.values())
     steps = [(1, 9), (1, 5), (2, 5), (1, 2), (3, 5), (4, 5), (1, 1), (6, 5), (7, 5), (3, 2), (8, 5), (9, 5), (2, 1), (5, 2),
              (3, 1), (7, 2), (4, 1), (9, 2), (5, 1), (6, 1), (8, 1), (10, 1), (12, 1), (15, 1), (20, 1), (30, 1), (50, 1), (99, 1)]
@@ -1134,7 +1138,7 @@ def run_race(r, alive, log):
         return
     vpurse = venue_purse(v, purse)
     drive(field, r.setdefault("drivers", {}), track)
-    order = race(field, track, v.get("passing", False))
+    order = (outcome.race if ENGINE == "outcome" else race)(field, track, v.get("passing", False))
     for h in field:
         h.tonic_on = None
     field_est = st.mean(h.est for h in field)        # who you beat, not where you ran

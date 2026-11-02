@@ -174,7 +174,7 @@ CLOCK_REF, CLOCK_AT, CLOCK_K = 113.8, 112.6, 1.0
 CLOCK_OLD = 109.6, 1.25, 104.0   # the clock before 2026-10-27 (anchor, stretch, floor): kept to convert saved times and the rating fit
 
 
-CLOCK_FLOOR, HALF_FLOOR = 107.4, 1.8   # 1:47.4 on a mile (1.8s more on a half): the clock leans ever harder against it
+CLOCK_FLOOR, HALF_FLOOR = 100.5, 1.8   # 1:40.5 on a mile (1.8s more on a half), just past Northern Star (DECISIONS 239): only he gets near it
 
 
 def clock(t, half=False):

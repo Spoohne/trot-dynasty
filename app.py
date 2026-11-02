@@ -843,7 +843,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
   font-family:'Barlow Condensed',sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);font-size:17px;border:0}
 .vfold[open] summary{border-bottom:2px solid var(--rule)}.vname{font-weight:700}.vmeta{font-size:13px;color:var(--ink2);font-family:'Barlow Semi Condensed',sans-serif}
 .vin{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--win)}
-.erow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid var(--rule2)}.erow:last-child{border-bottom:0}
+.erow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid var(--rule2)}.erow:last-child{border-bottom:0}.eclm{padding:8px 10px 4px;margin-top:4px;border-top:2px solid var(--rule);font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--loss)}
 .ename{flex:1;min-width:0}.erow .money{min-width:64px;text-align:right}.erow .entercell{min-width:76px;display:flex;justify-content:flex-end;align-items:center;gap:4px}
 .entered{color:var(--win);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
 .phase b{font-family:'Barlow Condensed',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
@@ -4038,14 +4038,17 @@ def horse_page(name, entering=False):
     for o in c.offerings(h):
         by_track.setdefault(o[0]["id"], []).append(o)
     for v in c.VENUES:
-        rows = sorted(by_track.get(v["id"], []), key=lambda o: -o[3])
+        rows = sorted(by_track.get(v["id"], []), key=lambda o: (o[4] > 0, -o[3]))   # its own races first, claimers after
         if not rows:
             continue
         here = cur and cur[0] == "enter" and len(cur) > 5 and cur[5] == v["id"]
         fold = ""
-        for _, rname, purse, vpurse, tag, track in rows:
+        him = "him" if h.sex == "m" else "her"
+        for k, (_, rname, purse, vpurse, tag, track) in enumerate(rows):
+            if tag and (k == 0 or not rows[k - 1][4]):              # the claiming races under their own heading
+                fold += f"<div class=eclm>Claiming races · any barn can take {him} for the tag</div>"
             picked = here and cur[1] == rname and cur[4] == track
-            warn = f"onclick=\"return ask(this,'Enter {h.name} in a ${tag:,} claimer at {v['name']}? Any barn can take him for the tag.')\"" if tag else ""
+            warn = f"onclick=\"return ask(this,'Enter {h.name} in a ${tag:,} claimer at {v['name']}? Any barn can take {him} for the tag.')\"" if tag else ""
             mates = stablemates(h, rname, track, v["id"])
             tip = "You already have " + " and ".join(x.name for x in mates) + " in this race"
             fold += (f"<div class=erow><span class=ename>{esc(c.race_title(c.age_group(h), rname))}</span><span class=money>${vpurse:,}</span><span class=entercell>"
@@ -4509,7 +4512,7 @@ def breeding_page(qs=None):
             b = e.booked_to(h)
             now = f"foal by <b>{esc(b.name)}</b> at her side" if b else "open this season"
             act = "" if b else f"<a class=btn href='/breed/{urlname(h.name)}'>Breed</a>"
-        return (f"<div class=card><div class=brow><a href='/horse/{urlname(h.name)}'>{portrait(h, 64)}</a><div style='flex:1;min-width:0'>"
+        return (f"<div class=card><div class=brow><a href='/horse/{urlname(h.name)}'>{square_portrait(h, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(h.name)}' class=bname>{esc(h.name)}</a> <span class=sub>{h.age}yo {sex_word(h)} · {left} season{'s' if left != 1 else ''} left</span>"
                 f"<div class=sub>{len(ks)} foal{'s' if len(ks) != 1 else ''} · {sum(k.wins for k in ks)} wins · ${sum(k.earnings for k in ks):,.0f}</div>"
                 f"<div>{now}</div>{stud_bars(h)}</div><div>{act}</div></div></div>")
@@ -4519,8 +4522,8 @@ def breeding_page(qs=None):
     def foal_row(f):
         if getattr(f, "unreg", False) and f.age >= 2:                            # old enough to race: register it or let it go
             nm = esc(f.name)
-            return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
-                    f"<a href='/horse/{urlname(f.name)}' class=bname>{nm}</a> <span class=sub>{f.age}yo {sex_word(f)} · {f.tier} · unregistered</span>"
+            return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{square_portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
+                    f"<a href='/horse/{urlname(f.name)}' class=bname>{nm}</a> <span class=sub>{f.age}yo {sex_word(f)} · {tier_label(f)} · unregistered</span>"
                     f"<div class=sub>by {esc(f.sire.name)} out of {esc(f.dam.name)}</div>"
                     f"<div class=row style='gap:8px;flex-wrap:wrap;margin-top:6px'>"
                     f"<form method=post action=/register class=inline><input type=hidden name=h value='{nm}'>"
@@ -4529,8 +4532,8 @@ def breeding_page(qs=None):
                     f"<button class=sec onclick=\"return ask(this,'Sell {nm} to the house for ${e.UNREG_SALE:,}? Gone for good.')\">Sell to the house · ${e.UNREG_SALE:,}</button></form></div>"
                     f"<div class=sub>Stays in your shed, taking a stall, until you register or sell.</div></div></div></div>")
         wk = (2 - f.age) * c.YEAR - G["day"] % c.YEAR
-        return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
-                f"<a href='/horse/{urlname(f.name)}' class=bname>{esc(f.name)}</a> <span class=sub>{'weanling' if f.age == 0 else 'yearling'} {'colt' if f.sex == 'm' else 'filly'} · {f.tier}</span>"
+        return (f"<div class=card><div class=brow><a href='/horse/{urlname(f.name)}'>{square_portrait(f, 64)}</a><div style='flex:1;min-width:0'>"
+                f"<a href='/horse/{urlname(f.name)}' class=bname>{esc(f.name)}</a> <span class=sub>{'weanling' if f.age == 0 else 'yearling'} {'colt' if f.sex == 'm' else 'filly'} · {tier_label(f)}</span>"
                 f"<div class=sub>by {esc(f.sire.name)} out of {esc(f.dam.name)}</div>"
                 f"<div>{''.join(stat_bar(f.developed[t], f, k.capitalize(), 90, trait=t, goal=f.ceiling(t, 2) - 2.0) for k, t in FOCUS.items())}</div>"
                 f"<div class=sub>{'ready to register' if getattr(f, 'unreg', False) else 'joins the barn to race'} in {wk} weeks</div></div></div></div>")
@@ -4582,20 +4585,20 @@ def breed_page(name):
         btn = (f"<span class='btn big off'>{close}</span>" if close else "<span class='btn big off'>book full</span>" if full else "" if why else
                f"<form method=post action=/breed><input type=hidden name=h value='{esc(m.name)}'><input type=hidden name=s value='{esc(s.name)}'>"
                f"<button onclick=\"return ask(this,'Book {m.name} to {s.name}{'' if own else f' for ${fee:,.0f}'}?')\">Book{'' if own else f' ${fee:,.0f}'}</button></form>")
-        return (f"<div class=card><div class=brow><a href='/horse/{urlname(s.name)}'>{portrait(s, 64)}</a><div style='flex:1;min-width:0'>"
-                f"<a href='/horse/{urlname(s.name)}' class=bname>{esc(s.name)}</a> <span class=sub>{s.tier} · {s.starts}-{s.wins} · ${s.earnings:,.0f}</span>"
+        return (f"<div class=card><div class=brow><a href='/horse/{urlname(s.name)}'>{square_portrait(s, 64)}</a><div style='flex:1;min-width:0'>"
+                f"<a href='/horse/{urlname(s.name)}' class=bname>{esc(s.name)}</a> <span class=sub>{tier_label(s)} · {s.starts}-{s.wins} · ${s.earnings:,.0f}</span>"
                 f"<div class=sub>{len(ks)} foals · {sum(k.wins for k in ks)} wins · book {e.covers_sold(s)}/{e.BOOK}</div>"
                 f"<div class=money>{'your stallion · no fee' if own else f'${fee:,.0f}'}</div>{stud_bars(s)}</div><div>{btn}</div></div>{outlook(s)}"
                 + (f"<div class='kin bad'>He is {close}: the registry won't take this mating.</div>" if close else "")   # inbreeding itself is for the breeder to find out
                 + "</div>")
     own = [h for h in mine() if h.retired and h.sex == "m"]
     public = [s for s in e.studs(G["horses"]) if s.owner != ME]
-    head = (f"<div class=card><div class=brow>{portrait(m, 64)}<div><span class=bname>{esc(m.name)}</span>"
+    head = (f"<div class=card><div class=brow>{square_portrait(m, 64)}<div><span class=bname>{esc(m.name)}</span>"
             f"<div class=sub>{m.age}-year-old broodmare · {c.BREEDING_UNTIL - m.age} seasons left</div></div></div>"
             + (f"<div class=ev>Can't book her: {esc(why)}</div>" if why else "<div class=sub style='margin-top:6px'>Fee paid now; the foal arrives at the year tick.</div>")
             + "</div>")
-    body = head + "<h2>Your stallions</h2>" + ("".join(row(s, True) for s in own) or "<p class=sub>None standing.</p>")
-    body += "<h2>Public stud book</h2>" + "".join(row(s, False) for s in public)
+    body = head + "<div class=calm><h2>Your stallions</h2>" + ("".join(row(s, True) for s in own) or "<p class=sub>None standing.</p>")
+    body += "<h2>Public stud book</h2>" + "".join(row(s, False) for s in public) + "</div>"   # mostly S+: the holo holds still, as in the stud book
     return page("Breed", body)
 
 

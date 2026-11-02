@@ -41,9 +41,13 @@ def formations(res, rng, at34=None):
     for i in range(n):                                              # the gate folds into one line on the rail
         p = res["post"][i]
         lane[i, 0] = p - 1
-        beh[i, 1] = 0.0 if i == lead else (0.25 if i == pocket else 0.6 + 0.2 * (p - 1))
-        lane[i, 1] = max(0.0, (p - 1) * 0.7 - (1.0 if i in (lead, pocket) else 0.0))
-        beh[i, 2] = pos[i] * 0.5; lane[i, 2] = 0.0 if i in (lead, pocket) else min(1.5, (p - 1) * 0.35)
+        # every horse leaves its own way (Patrick: the fold looked orchestrated): how hard it leaves follows its start
+        # order with some scatter, how fast it angles in and when it drops over vary, and some hang wide a few strides
+        beh[i, 1] = 0.0 if i == lead else max(0.05, pos[i] * rng.uniform(0.06, 0.16) + rng.gauss(0, 0.2))
+        lane[i, 1] = max(0.0, (p - 1) * rng.uniform(0.55, 1.0) - (rng.uniform(0.6, 1.4) if i in (lead, pocket) else 0.0))
+        beh[i, 2] = 0.0 if i == lead else pos[i] * rng.uniform(0.25, 0.45)   # the drop-back spread evenly to 820 ft
+        hang = rng.random() < float(os.environ.get("HANG", 0.25))
+        lane[i, 2] = 0.0 if i in (lead, pocket) else min(2.0, lane[i, 1] * 0.8 if hang else (p - 1) * rng.uniform(0.1, 0.55))
         for c in range(3, len(D)):
             beh[i, c] = pos[i] + (j() * 0.5 if c == 4 else 0.0)
     if fo is not None:                                              # first-over pulls out after the quarter and rolls up to the
@@ -64,7 +68,7 @@ def formations(res, rng, at34=None):
         l = lane[h, 8]
         beaten_near = [x for x in order[rank + 1:] if beh[x, 8] < beh[h, 8] + 1.0]   # ahead (however far), or alongside within a length
         if h == pocket and lead in beaten_near and all(lane[x, 8] > 0 or x == lead for x in beaten_near) \
-                and res["margin"][lead] - res["margin"][h] >= 2.4:   # up the passing lane only if clear to cross back after the wire
+                and res["margin"][lead] - res["margin"][h] >= float(os.environ.get("DIVE_MIN", 0.8)):   # up the passing lane only if clear to cross back after the wire
             l = -1.0
         else:                                                       # outside everyone it beats that's ahead or alongside
             for x in sorted(beaten_near, key=lambda x: sl.get(x, lane[x, 8])):
@@ -76,6 +80,20 @@ def formations(res, rng, at34=None):
             l = min(l, 4.0)
         sl[h] = l
     late = {h for h in order if sl[h] >= 2 and beh[h, 8] - min(beh[:, 8]) > 6}  # coming from far back: swing out at the 3/4
+    for _ in range(6):                                              # settle conflicts: whoever has to pass someone runs wider than them
+        moved = False
+        for rank, h in enumerate(order):
+            if sl[h] < 0:
+                continue
+            for x in order[rank + 1:]:
+                if beh[x, 8] < beh[h, 8] + 1.0 and sl[x] >= sl[h] and sl[h] < 4:
+                    sl[h] = sl[x] + 1; moved = True
+        if not moved:
+            break
+    if at34 is not None and rng.random() < float(os.environ.get("PLAN_VARY", 0.5)):   # retries try other plans, not the same one:
+        for h in order[:4]:                                         # a passer may go a lane wider than it strictly needs
+            if 0 < sl[h] < 4 and rng.random() < 0.4:
+                sl[h] += 1
     diver = next((h for h in order if sl[h] < 0), None)
     for h in range(n):
         f = fin[order.index(h)]; b8 = beh[h, 8]
@@ -100,8 +118,13 @@ def cast(res, tries=40, seed=0):
         k = int(np.argmax(S.max(0) >= 3960))
         rng.setstate(state)
         beh, lane = formations(res, rng, ((S[:, k].max() - S[:, k]) / LEN, (Y[:, k] - R.RAIL_Y) / R.LANE))
-        S, Y, ts, ty = C.paths(beh, lane, lead_s)
+        S, Y, ts, ty = C.paths(beh, lane, lead_s, savers={h for h in range(len(lane)) if lane[h, 12] >= 2})   # wide closers save ground
         ok, why = C.check(S, Y)
+        lead = S.max(0)
+        for ft in (1320, 2640, 3300):                               # the race kept its shape: nobody stuck parked or out of place
+            kk = int(np.argmax(lead >= ft))
+            if ok and (np.abs(S[:, kk] - ts[:, kk]).max() / LEN > 1.5 or np.abs(Y[:, kk] - ty[:, kk]).max() / R.LANE > 0.4):
+                ok, why = False, f"shape at {ft}"
         wire_t = [float(np.interp(R.FT_MILE, s, lead_s[:, 0])) for s in S]
         got = sorted(range(len(S)), key=lambda i: wire_t[i])
         if ok and got != list(res["order"]):
@@ -135,3 +158,48 @@ if __name__ == "__main__":
         by[(story_of(res), c is not None)] += 1
         got += c is not None
     print(f"cast {got}/{N} in {time.time() - t0:.0f}s |", {s: f"{by[(s, True)]}/{by[(s, True)] + by[(s, False)]}" for s in sorted({s for s, _ in by})})
+
+
+ROLE_NAME = ["lead", "pocket", "first-over", "follow", "line"]
+
+
+def library_result(story, rng, n=8):
+    """A library story as a scripted result for the caster (DECISIONS 232): who leads, who sits the pocket, who goes
+    first-over and follows, and the finish. A horse that does the work first-over tires and finishes in the back
+    half, except in the stories built around it winning or holding on (Patrick: parked all the way, only a top-grade
+    horse lasts)."""
+    noise = [p + rng.uniform(-1.2, 1.2) for p in range(n)]
+    start_order = sorted(range(n), key=lambda i: noise[i])           # quicker from the inside, mostly
+    start = [start_order.index(i) for i in range(n)]
+    lead, pocket = start_order[0], start_order[1]
+    fo = start_order[rng.choice([3, 4, 5])]; fol = start_order[start_order.index(fo) + 1] if start_order.index(fo) + 1 < n else start_order[2]
+    role = [LINE] * n
+    role[lead], role[pocket], role[fo], role[fol] = LEAD, POCKET, FO, FOL
+    line = [i for i in start_order if role[i] == LINE]
+    back = line[-1]
+    rest = [i for i in start_order if i not in (lead, pocket, fo, fol)]
+    top = {"wire": [lead, pocket], "pocket": [pocket, lead], "first_over": [fo, lead, pocket], "sweep": [fol, fo, lead],
+           "closer": [back, lead, pocket], "photo": [fo, lead, pocket]}[story]
+    others = [i for i in [lead, pocket] + rest if i not in top]
+    tired = [i for i in (fo, fol) if i not in top]
+    order = top + others[:max(0, 4 - len(top))] + tired + others[max(0, 4 - len(top)):]
+    first = {"wire": 3.0 + rng.uniform(0, 1.5), "photo": rng.uniform(0.03, 0.12), "closer": rng.uniform(0.3, 0.6),
+             "pocket": rng.uniform(2.5, 3.2)}.get(story, rng.uniform(0.6, 1.5))
+    gaps = [0.0, first] + [rng.uniform(0.4, 1.5) for _ in range(n - 2)]
+    fin = np.cumsum(gaps)
+    margin = [0.0] * n
+    for k, h in enumerate(order):
+        margin[h] = float(fin[k])
+    return dict(post=list(range(1, n + 1)), role=role, start=start, order=order, margin=margin)
+
+
+def library_variant(story, seed):
+    """One library candidate: (ok, why, v) in the shape v5_library expects."""
+    rng = random.Random(seed)
+    res = library_result(story, rng)
+    c = cast(res, tries=1, seed=seed)
+    if c is None:
+        return False, "no cast", None
+    v = dict(c, role={i: ("back" if story == "closer" and i == res["order"][0] else ROLE_NAME[r]) for i, r in enumerate(res["role"])},
+             story=story, cast=True, res=res)
+    return True, c["why"], v

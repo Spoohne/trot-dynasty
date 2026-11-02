@@ -4,6 +4,7 @@ page (today's live replay page and art, via v3_replay.build_page; the choreograp
 import json, os, re, shutil, sys
 import numpy as np
 import v5_choreo as C
+import v5_cast as K
 from v3_replay import NAMES, COATS, R_fmt, build_page
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -33,7 +34,11 @@ def page_race(v, title, k):
     caps = [[0, "They're away. The gate folds clear"]]
     fo = next((i for i, r in v["role"].items() if r == "first-over"), None); fol = next((i for i, r in v["role"].items() if r == "follow"), None)
     if fo is not None and v.get("cast"):                            # cast races: first-over pulls out of the line after the quarter
-        caps.append([round(at(2100), 2), f"{names[fo]} pulls first-over" + (f", {names[fol]} follows" if fol is not None else "")])
+        k_out = int(np.argmax((lead > 1500) & (Y[fo] - R.RAIL_Y > R.LANE * 0.5)))   # when it actually pulls out
+        caps.append([round(float(t[k_out]), 2), f"{names[fo]} pulls first-over"])
+        if fol is not None:
+            k_fol = int(np.argmax((lead > 1500) & (Y[fol] - R.RAIL_Y > R.LANE * 0.5)))
+            caps.append([round(float(t[k_fol]), 2), f"{names[fol]} follows him out"])
     elif fo is not None:
         caps.append([round(at(1500), 2), f"{names[fo]} is parked out, {names[fol]} right behind"])
         caps.append([round(at(2100), 2), f"{names[fo]} starts to roll first-over"])
@@ -54,7 +59,7 @@ def best(story, tries):
     """The cleanest passing variants of a story: least burst, field nearest ten lengths at the quarter."""
     keep = []
     for sd in range(tries):
-        ok, why, v = C.variant(story, 20000 + sd)
+        ok, why, v = K.library_variant(story, 20000 + sd)          # stories cast like real results (DECISIONS 232)
         if ok:
             spread, burst = map(float, re.findall(r"[0-9.]+", why)[:2])
             keep.append((burst + abs(spread - 10), sd, v))
@@ -81,9 +86,9 @@ if __name__ == "__main__":
                 r["note"] = (f"A field made for this replay, all one class. With it the outcome model wins with this horse on this trip "
                              f"{100 * fit['win_trip']:.0f}% of the time, and plays out the whole replay (runner-up too) {100 * fit['plays_out']:.0f}%.")
             races[key].append(r)
-        labels.append(st)
-    links = "".join(f'<a href="#{key}{k + 1}" style="background:#111a2b;color:#e8a33a;border:1px solid #2b3a55;padding:6px 8px;border-radius:4px;text-decoration:none">{st.replace("_", "-")} {"A" if key == "half" else "B"}</a>'
-                    for k, st in enumerate(labels) for key in ("half", "mile") if len(races[key]) > k)
+            labels.append((st, key, len(races[key])))   # each button points at its own replay
+    links = "".join(f'<a href="#{key}{ix}" style="background:#111a2b;color:#e8a33a;border:1px solid #2b3a55;padding:6px 8px;border-radius:4px;text-decoration:none">{st.replace("_", "-")} {"A" if key == "half" else "B"}</a>'
+                    for st, key, ix in labels)
     page = build_page(races, links, OUT)                             # today's live replay page and art (v3_replay)
     page = page.replace("<title>Engine Test Replay</title>", "<title>Replay Library</title>")
     for old, new in (   # the Field panel shows the big-four card (DECISIONS 222) and how often the model plays out this replay

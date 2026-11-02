@@ -48,12 +48,17 @@ def build(order, track, rng=None, passing=False):
     raw = [(h.last_time - win) for h in order]
     spread = raw[min(len(raw) - 1, 6)] or 1.0                       # the gap to the 7th horse sets the scale
     fin = {}
+    import circuit as _circuit
+    true = _circuit.ENGINE == "outcome" and all(getattr(h, "margin_l", None) is not None for h in order)
     for h, g in zip(order, raw):
+        if true:                                                    # the outcome engine's margins, as run (DECISIONS 239)
+            fin[h.id] = max(0.0, min(h.margin_l, 40.0))
+            continue
         f = (g / spread) * 7.0 if "broke" not in h.trip else 7.0 + (g / spread) * 6.0
         fin[h.id] = max(0.0, min(f, 24.0))
     fin[order[0].id] = 0.0                                          # the winner is the reference, broke or not
     for a, b in zip(order, order[1:]):                              # keep the finishing order strict: at least a nose apart
-        fin[b.id] = max(fin[b.id], fin[a.id] + 0.15)
+        fin[b.id] = max(fin[b.id], fin[a.id] + (0.05 if true else 0.15))
     fin = {k: round(v, 2) for k, v in fin.items()}
 
     # Slots. A field races in at most two lines until the stretch: the rail line, nose to tail, and

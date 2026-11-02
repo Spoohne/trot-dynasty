@@ -2404,3 +2404,90 @@ Newest at the bottom. **M** = measured (experiment named), **H** = hypothesis (n
      first-over 1/11, sweep 1/6, photo 1/6, from last 0/3. First-over is the weakest here, unlike the 30-race batches.
 230. **Patrick: "Fallback, keep improving."** On race night a race the caster can draw gets its cast replay; any other
      race keeps today's replay. Casting keeps improving, off-the-pace trips first (first-over 1/11 is the biggest gap).
+231. **Casting fixes; ground-saving closers (Patrick: a savvy driver saves ground).**
+     Casting, same 60 races (seed 607): 18 → 27 → 43 → 36/60 legit. Fixes: followers pull out once first-over is a
+     sulky's length clear (was 17.5 ft); closers plan around every horse they beat, however far ahead; a beaten leader
+     holds until the passing lane opens; a horse finishing within ~2 L of one in front in its lane goes a lane wider;
+     the pocket horse waits to cross back until the rail is clear and the beaten horses pull up harder past the wire.
+     The 43 included 10 races where a horse ran through the closing rail: the replay's inside rail (passing lane
+     included) is now part of every check, and the pocket horse takes the passing lane only if it beats the leader by
+     2.4 L or more (otherwise it comes out round him). 36/60 is the honest number.
+     Closers (library "from last" and wide cast closers): they sit in the second lane, go three-wide only when a horse
+     in front in their lane is in the way, and tuck back in when there's room. Library closer now moves three-wide at
+     about 4,800 ft instead of from the 3/4. Closer fields refit: winner on trip A 6% / B 22%.
+     **Patrick on the ground-saving closers: "Yes, that's it."**
+232. **Cast rate work; library rebuilt through the caster (Patrick: parked all the way, only a top-grade horse lasts).**
+     `v5_cast_why.py` classifies failures. Kept: lane-plan settling (whoever must pass someone runs wider, iterated);
+     a burst check through the drive (9 ft/s over 2 s). Tried and backed out: narrow passing-lane wins with beaten
+     horses pulling up, "everyone eases together" past the wire, slot-in behind the horse ahead (each made overlaps or
+     rail hits worse; the library pocket story fell to 1/30). Same 60 races: 36 → 42/60 with settling; the caster now
+     also runs the shape check (nobody stuck parked or out of place at 1/4, 1/2, 5/8), which costs 7: **35/60 (58%)**.
+     Library: stories are scripted results cast like real races (`library_result`): single file, first-over pulls out
+     after the quarter; first-over finishes 5th in wire/pocket/closer, 2nd in sweep, 1st in first-over/photo. No rail
+     horse is off the rail early in any of the 11 replays. Wire to wire has only one clean variant in 120 tries (no B).
+233. **Library button bug; builds from committed code; messier starts (Patrick: the fold "looks orchestrated").**
+     Buttons were numbered as if every story had a B (wire had none), so Pocket B opened First-over B: each button now
+     points at its own replay. The builder reads the committed replay page and art (`git show HEAD:`), so unshipped
+     work in the checkout can't leak in; the gate-stagger patch now matches the line by name.
+     Pocket B review (Patrick): everything after the start looks good. The start: each horse now leaves its own way
+     (how hard it leaves follows its start order with scatter; how fast it angles in, when it drops over; a quarter of
+     them hang wide a few strides). A first try (big drop-backs by 300 ft) failed the burst check; the drop-back is now
+     spread evenly to 820 ft and pass rates are back to before. The first-over and follower captions fire when each
+     horse actually pulls out. Fields refit; wire to wire has its B back.
+     **Patrick on the new start: "Looks right."**
+234. **Paused by Patrick (2026-11-01) for a live deploy of visual changes.** State at pause:
+     - Casting: 34-35/60 (about 58%) with the rail and shape checks. Single-try failures on the 60-race set (seed 607):
+       order 18, shape at the quarter 11 (a rail-line or follower horse not folded in yet; likely the hang-wide starts),
+       burst 4, overlap 1. Next experiment, not run: HANG=0 vs 0.25 (env switch was about to be added).
+     - In the code, untested by Patrick: past-the-wire fan-out (the beaten rail horse and anyone alongside outside it
+       drift a lane so a passing-lane horse can cross back; cut rail hits 7 → 1, no net cast gain); retries vary the
+       stretch plan (PLAN_VARY, no gain); passing-lane minimum is DIVE_MIN default 0.8 L.
+     - Library (artifact AY8eReomwRTr7JkeZGJZSZ, v11) is the version Patrick approved: messier starts, own-replay buttons.
+     - Nothing from the engine lab touches live.
+235. **Patrick: bring the new engine to the current live world (option B), all picks as proposed (2026-11-02).**
+     1A rank-preserving stat conversion (early speed → gate, stamina → cruise, late speed → finish, gait → manners;
+     durability stays as soundness); 2A grit seeded from each horse's durability and gait genes; 3A tiers come from the
+     bars, no grandfathering — Patrick gets the full list of tier changes by barn before the switch; 4A shadow race
+     nights on a copy for about a week, then a scheduled switch on a race-night boundary with a save backup; 5A cast
+     replays where they work, today's replay otherwise; 6A breeding switches too (genes convert with the same mapping,
+     grit inherits, foals in the shed convert). Purses, entries, program, market, names, ownership, records unchanged.
+236. **Conversion v1 (`v6_convert.py`, live save copy 2026-11-02; report `v6/tier_changes.md`).**
+     Bars stay on the live pip scale made continuous (each a rising function of the live stat: standing preserved).
+     Speed = gate and finish blended (.242/.391); Grit seeded from durability and gait potential (z-scored, given the
+     stamina bars' spread). The approved fixed lines (Galaxy 8.49 …) were measured on whole-number pips; on continuous
+     bars they put 36% of racing horses in S, so lines are re-derived from the approved SIZES on today's racing horses
+     3+: Galaxy 10.01, S+ 7.55, S 6.59, A 6.01, B 5.25, C 4.09.
+     **Measured:** racing 3+ (661): 410 keep their tier, 112 up, 139 down. Retired (rated at prime): most fall (today
+     890 of 1,526 are S+; new: S+ 69, S 376, A 461, B 463): today's retired tier is a career-high public estimate,
+     inflated by its noise. Two-year-olds on the world scale fall to C/D (today they're judged within their age group).
+     Player barns: 3 (Patrick 17 of 24 change, mostly retired S+ → S; LUCKY 7 FARMS 9 of 21; Doo Dynasty 3 of 4).
+     Northern Star (all bars 10) is the one Galaxy.
+     **Open (Patrick):** two-year-olds world scale or within their age group.
+237. **Patrick: two-year-olds are tiered within their age group.** Same tier sizes as the racing horses 3+, measured
+     on the two-year-olds' own ratings (lines Galaxy 5.61, S+ 5.36, S 4.18, A 3.26, B 2.42, C 1.66). 67 of 122 keep
+     their tier; Patrick's Clever Frost and Harbor Oak stay S. Report regenerated (`v6/tier_changes.md`).
+238. **Outcome engine wired into race night behind a switch (`outcome.py`; `circuit.ENGINE`, env TD_ENGINE=outcome;
+     default stays today's engine). Not deployed.**
+     Same contract as sim.race: finish order, trip text in the chart caller's words (story/replay keep working),
+     raw_time and clock. Inputs are the stats sim.race races on (training, freshness, tonic, driver), made bars, then
+     model units at K = 0.36 per bar: live fields differ by about 1.1 bars a stat (385 recent fields), the model was
+     fitted on 0.4-unit fields. Times: the field averages what sim.race would run (ratings stay on today's scale); the
+     spread is the model's margins at a fifth of a second a length. Pure Python (no numpy in the game).
+     **Shadow v1 (`v6_shadow.py`, 345 real fields × 20 runs):**
+     | | Favorite (today's est) wins | Best by new rating wins | Post 1 | Margin median | Photos |
+     |---|---|---|---|---|---|
+     | Half, today | 39% | 37% | 22% | 3.3 L | 5% |
+     | Half, outcome | 34% | 38% | 20% | 1.8 L | 9% |
+     | Mile, today | 39% | 38% | 15% | 3.2 L | 5% |
+     | Mile, outcome | 30% | 42% | 10% | 1.8 L | 8% |
+     Winner times within 0.6 s of today's. The tote still prices off today's estimate, which the new engine doesn't
+     use: odds pricing must move to the new rating before the switch. Mile front-runners win less than the lab
+     targets on real fields (lead 16% vs 25%); to examine in the shadow week.
+239. **Patrick: Northern Star sets the records; his marks are the standard everyone else shoots for (2026-11-02).**
+     Context: his last six starts all clocked 1:47.4-1:47.5 (the clock floor), and the story system compresses
+     margins (his 4.6 s win showed as 4¾ L). Asked which plays best on replay: true margins and no ceiling a real
+     horse can hit (records only land as moments if they're rare and breakable).
+     **So, for the new engine:** true margins (no story compression; times come from the field's time minus the
+     model's margins, so board, clock and picture agree); the clock floor goes just past Northern Star's best, so only
+     he can approach it: his runs set each track's record, and those records are the marks the rest of the world
+     chases (shown as the track record to beat). Ordinary top horses stay well clear of the floor.

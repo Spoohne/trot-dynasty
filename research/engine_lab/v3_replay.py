@@ -107,15 +107,18 @@ def build_page(races, links, out):
     """The live replay page (mockups/replay_hd2d.html as it is today) with lab races fed in: art copied to out/mock,
     paths made relative, the adapter and Field panel added. links: the race buttons' HTML. Returns the page text."""
     os.makedirs(out, exist_ok=True)
-    live = open(os.path.join(MOCK, "replay_hd2d.html"), encoding="utf-8").read() + open(os.path.join(MOCK, "race.js"), encoding="utf-8").read()
+    import subprocess                                     # the committed replay, not work in progress in the checkout
+    shipped = lambda f: subprocess.run(["git", "-C", ROOT, "show", f"HEAD:mockups/{f}"], capture_output=True, text=True, encoding="utf-8", check=True).stdout
+    live = shipped("replay_hd2d.html") + shipped("race.js")
     asked = set(re.findall(r"/mock/([A-Za-z0-9_./-]+?\.(?:png|json|css|js|jpg|webp))", live))   # every file the game asks for: the copy can't fall behind
     for rel in sorted(set(FILES) | asked):                # the art, at the same relative paths the page asks for
-        src, dst = os.path.join(MOCK, rel), os.path.join(out, "mock", rel)
-        if not os.path.isfile(src):
+        dst = os.path.join(out, "mock", rel)
+        got = subprocess.run(["git", "-C", ROOT, "show", f"HEAD:mockups/{rel}"], capture_output=True)   # committed art too
+        if got.returncode:
             continue
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copyfile(src, dst)
-    page = open(os.path.join(MOCK, "replay_hd2d.html"), encoding="utf-8").read()
+        open(dst, "wb").write(got.stdout)
+    page = shipped("replay_hd2d.html")
     page = page.replace('"/mock/', '"mock/').replace("`/mock/", "`mock/").replace("'/mock/", "'mock/").replace('("/mock/', '("mock/')
     page = page.replace('src.slice("/mock/pixel/".length)', 'src.slice("mock/pixel/".length)').replace('src.replace("/mock/pixel/"', 'src.replace("mock/pixel/"')
     page = page.replace('const INJ = "__RACE_ID__"', 'const INJ = "v3test"')
@@ -123,8 +126,9 @@ def build_page(races, links, out):
     assert old in page, old
     page = page.replace(old, "const L = d;   // lab fix: the story's final margin is already in lengths (DECISIONS 200)")
     # the engine's own start positions (no cosmetic stagger), and a lake that fits a half-mile infield
-    for old, new in (('const gateLag = h => Math.max(0, 1 - Math.max(0, h.d) / 220) * h.i * 1.6;', 'const gateLag = h => 0;   // race3 paths: exact positions'),
-                     ('const LAKE = [1250, 620], LZ = -60;', 'const LAKE = [Math.min(1250, RACE.S + RACE.R * .9), Math.min(620, RACE.R * 1.25)], LZ = -Math.min(60, RACE.R * .15);'),
+    page, ng = re.subn(r"const gateLag = h => [^;\n]*;", "const gateLag = h => 0;", page, count=1)   # race3/choreographed paths: exact positions
+    assert ng == 1, "gateLag"
+    for old, new in (('const LAKE = [1250, 620], LZ = -60;', 'const LAKE = [Math.min(1250, RACE.S + RACE.R * .9), Math.min(620, RACE.R * 1.25)], LZ = -Math.min(60, RACE.R * .15);'),
                      # a half-mile oval (R 165, the game's is 490): the infield camera would look through the final turn's
                      # hedge and the odds board, and the video board (set 255 ft out) would stand on the wire camera
                      ('const hh = straightAt(d) ? 5 : H;', 'const hh = straightAt(d) || (RACE.R < 300 && (p.z > 0 || p.x < 0)) ? 5 : H;'),

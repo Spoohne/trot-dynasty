@@ -96,10 +96,12 @@ def formations(story, posts, rng):
     return beh, lane, order, role
 
 
-def paths(beh, lane, lead_s):
+def paths(beh, lane, lead_s, savers=()):
     """Continuous paths: rail distance s and lane offset y (ft) for every horse at HZ. Each horse steers toward its
     formation target with eased speed and lane changes, and never into another sulky: it holds its lane when the
-    lane it wants is occupied alongside, and checks off rather than run up on the horse in front."""
+    lane it wants is occupied alongside, and checks off rather than run up on the horse in front.
+    savers: closers driven to save ground (Patrick, DECISIONS 231): once out, they sit in the second lane, go
+    three-wide only when a horse in front of them in their lane is in the way, and tuck back in once there's room."""
     n = beh.shape[0]
     d = np.clip(lead_s[:, 1], 0, R.FT_MILE)
     ts = np.array([lead_s[:, 1] - PchipInterpolator(D, beh[i])(d) * LEN for i in range(n)])
@@ -111,15 +113,41 @@ def paths(beh, lane, lead_s):
     GAP, ACC, LAT = BODY + 1.0, float(os.environ.get("ACC", 3.0)), 3.0
     band = lambda y0, y1: (min(y0, y1) - WIDE / 2, max(y0, y1) + WIDE / 2)   # the strip a horse occupies or is moving across
     hit = lambda p, q: p[0] < q[1] and q[0] < p[1]
+    fanned, set_out = set(), set()
     for k in range(1, m):
         S0, Y0, V0 = S[:, k - 1].copy(), Y[:, k - 1].copy(), V.copy()
+        fan = set(fanned)                                           # who fans out (once out, stays out): the rail horse alongside a passing-lane horse
+        divers = [j for j in range(n) if Y0[j] < R.RAIL_Y - 0.5 and S0[j] >= R.FT_MILE - 80]   # in its last strides, then anyone
+        if divers:                                                  # alongside on the outside of a horse that's fanning
+            edge = [j for j in range(n) if abs(Y0[j] - R.RAIL_Y) < 1.0 and abs(dest[j] - R.RAIL_Y) < 1.0
+                    and j not in divers and any(abs(S0[j] - S0[d]) < BODY + 0.5 for d in divers)]
+            while edge:
+                fan.update(edge); fanned.update(edge)
+                edge = [j for j in range(n) if j not in fan and j not in divers and Y0[j] > R.RAIL_Y - 0.5
+                        and any(0 < Y0[j] - Y0[f] < R.LANE + WIDE and abs(S0[j] - S0[f]) < BODY + 0.5 for f in edge)]   # anyone its drift would reach
         for i in range(n):
             s, y = S0[i], Y0[i]
             lo = R.RAIL_Y - R.LANE if s >= T.last_turn_end else R.RAIL_Y
             want = max(lo, ty[i, k])
             if s >= 700:                                                # once settled, horses race in whole lanes
                 want = R.RAIL_Y + R.LANE * round((want - R.RAIL_Y) / R.LANE)
-            if s >= R.FT_MILE and y < R.RAIL_Y - 0.5:                   # past the wire the passing lane closes: back out to the rail line
+            if i in savers and want > R.RAIL_Y + 0.5 and 2000 <= s < R.FT_MILE:
+                cap = max(2, round((want - R.RAIL_Y) / R.LANE))         # the plan's lane is as wide as it ever needs to go
+                cur = int(round((y - R.RAIL_Y) / R.LANE)); yl = lambda l: R.RAIL_Y + R.LANE * l
+                in_way = lambda l, reach: any(j != i and abs(Y0[j] - yl(l)) < WIDE * 0.8 and 0 < S0[j] - s < reach and ts[i, k] > S0[j] - GAP
+                                              for j in range(n))
+                alongside = lambda l: any(j != i and abs(Y0[j] - yl(l)) < WIDE and abs(S0[j] - s) < BODY + 0.5 for j in range(n))
+                if cur < cap and in_way(cur, GAP + 2 * LEN):
+                    want = yl(cur + 1)                                  # someone in front in my lane: out one more
+                elif cur > 1 and not alongside(cur - 1) and not in_way(cur - 1, GAP + 4 * LEN):
+                    want = yl(cur - 1)                                  # room inside: tuck back in and save the ground
+                else:
+                    want = yl(max(1, cur))
+            if i in fan:                                                # pulling up, the field fans out a lane to let the
+                if i not in set_out:                                    # passing-lane horse back across before the rail closes
+                    dest[i] = y + R.LANE; set_out.add(i)
+                want = None
+            elif s >= R.FT_MILE and y < R.RAIL_Y - 0.5:                 # past the wire the passing lane closes: back out to the rail line
                 if not any(j != i and abs(S0[j] - s) < BODY + 0.5 and abs(Y0[j] - R.RAIL_Y) < WIDE for j in range(n)):
                     dest[i] = R.RAIL_Y                                      # once nobody on the rail is alongside
                 want = None
@@ -173,6 +201,11 @@ def check(S, Y):
     burst = max(np.convolve(r, np.ones(w) / w, "valid").max() for r in rel)
     if burst > 6.5:
         return False, f"burst {burst:.1f}"
+    late = (lead[:-1] >= 4400) & (lead[:-1] < R.FT_MILE)            # the drive: closing speed is real, a sprint isn't
+    rel = V[:, late] - np.median(V[:, late], axis=0)
+    drive = max(np.convolve(r, np.ones(w) / w, "valid").max() for r in rel) if late.sum() > w else 0.0
+    if drive > 9.0:
+        return False, f"burst {drive:.1f} in the drive"
     k = int(np.argmax(lead >= 1320))
     spread = (S[:, k].max() - S[:, k].min()) / LEN
     if spread > 15:                                                   # single file on a half-mile runs about 14-15 lengths
@@ -187,7 +220,7 @@ def variant(story, seed):
     final = 115.9 + rng.uniform(-1.5, 1.5)
     lead_s, quarters = leader_clock(final, rng)
     beh, lane, order, role = formations(story, posts, rng)
-    S, Y, ts, ty = paths(beh, lane, lead_s)
+    S, Y, ts, ty = paths(beh, lane, lead_s, savers={order[0]} if story == "closer" else ())
     ok, why = check(S, Y)
     lead = S.max(0)
     for ft in (1320, 2640, 3960):                                   # the race kept its shape: everyone near their planned spot
