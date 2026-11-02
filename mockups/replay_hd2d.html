@@ -608,15 +608,16 @@ function grit(c, fw, fh = c.height) {                                          /
 }
 // silks: the sprite's blue pixels, recolored. hex is "jacket" or "jacket|trim": the driver's helmet in his trim color,
 // everything else (jacket, and the harness and wheels the sprite draws in the same blue) in his jacket color
-function paintSilks(p, w, hex) {
+function paintSilks(p, w, hex, fw = 0) {                                      // fw: frame width of a side stride sheet, driver on the left
+  const driver = i => !fw || ((i / 4) % w) % fw < .31 * fw;                       // the horse's bridle rides as high as the helmet: never trim it
   const [a, b] = hex.split("|"), rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), ta = rgb(a), tb = b ? rgb(b) : ta;
   const isSilk = i => p[i + 3] && p[i + 2] > p[i] + 40 && p[i + 2] > p[i + 1] + 20;
   let y0 = 1e9, y1 = -1;
-  if (b) for (let i = 0; i < p.length; i += 4) if (isSilk(i)) { const y = (i / 4 / w) | 0; y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  if (b) for (let i = 0; i < p.length; i += 4) if (isSilk(i) && driver(i)) { const y = (i / 4 / w) | 0; y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
   const cut = y0 + .13 * (y1 - y0);                                               // the helmet: the very top of the silks
   for (let i = 0; i < p.length; i += 4) {
     if (!isSilk(i)) continue;
-    const l = Math.min(1.3, (p[i] + p[i + 1] + p[i + 2]) / 3 / 70), t = b && ((i / 4 / w) | 0) < cut ? tb : ta;
+    const l = Math.min(1.3, (p[i] + p[i + 1] + p[i + 2]) / 3 / 70), t = b && driver(i) && ((i / 4 / w) | 0) < cut ? tb : ta;
     p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l;
   }
 }
@@ -660,7 +661,7 @@ function dye(img, hex, num, dark, pad, fw = FW, rect = PAD, cloth = null, frames
   const g = c.getContext("2d"); g.drawImage(img, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
   const onPad = !cloth && fw === 208 ? padPixels(p, c.width, fw, fh, frames, cols) : null;   // the runner's own white pad, found before the silks dye can whiten a rein
-  paintSilks(p, c.width, hex);
+  paintSilks(p, c.width, hex, fw === 208 ? fw : 0);
   if (onPad) paintPad(p, c.width, onPad, pad, num, dark);
   if (cloth) { const pc = [1, 3, 5].map(k => parseInt(pad.slice(k, k + 2), 16));
     for (let f = 0; f < frames; f++) for (let y = cloth[1]; y < cloth[1] + cloth[3]; y++) for (let x = f * fw + cloth[0]; x < f * fw + cloth[0] + cloth[2]; x++) {
