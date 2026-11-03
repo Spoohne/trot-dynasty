@@ -3200,7 +3200,7 @@ CUP = ("<svg viewBox='0 0 12 12' width=100% height=100% shape-rendering=crispEdg
 
 # Displayed tiers are absolute, cut from the mile rating, so a tier means the same horse at any age: a promising
 # 2-year-old shows C or B until it is fast. (Classes, prices and breeding still use h.tier, the age-relative one.)
-MILE_TIERS = tuple((sim.retime(x), t) for x, t in ((107.5, "S+"), (109.5, "S"), (112.0, "A"), (115.0, "B"), (119.0, "C")))
+MILE_TIERS = tuple((sim.squeeze(sim.retime(x)), t) for x, t in ((107.5, "S+"), (109.5, "S"), (112.0, "A"), (115.0, "B"), (119.0, "C")))   # on the honest clock (sim.squeeze)
 # seconds for a mile, slower is D: the original cuts, moved exactly onto the 2026-10-27 clock (S+ ~1:50.9 ... C ~2:00.1)
 
 
@@ -4010,7 +4010,6 @@ def results_page(qs=None):
                      + (f"<a class='btn sec rbtn' href='/replay/{r['race_id']}'>Watch</a>" if r.get("race_id") in c.STORIES else "")
                      + f"<button class='rbtn' onclick='reveal(this)'>Result</button></span>"
                      f"<span class='spoil rres'><span class='rfin{' rwin' if p == 1 else ''}'>{nth}</span> <span class=rtime>{c.mile_time(r['time'])}</span>"
-                     + (f" <span class=sub>fig {c.mile_time(f)}</span>" if (f := r.get('fig')) else "")
                      + (f"<span class=won>${r['won']:,.0f}</span>" if r["won"] else "")
                      + (f"<button class='sec rbtn fullbtn' onclick=\"fullOrder('{esc(r['race_id'])}')\">Full order</button>" if r.get("race_id") in c.STORIES else "")
                      + "</span></span></div>"
@@ -4055,7 +4054,7 @@ def results_list(h, n=10):
         rows += (f"<div class=r10><span class='rp{' rp1' if p == 1 else ' rp3' if p <= 3 else ''}'>{ordn}</span>"
                  f"<span class=r10n>{esc(r['race'])}<span class=sub> · {esc(r.get('venue') or ('half-mile' if r['track'] == 'half' else 'mile'))}</span>"
                  + (f"<span class=r10d>Year {c.year_of(r['day'])} · Week {r['day'] % c.YEAR + 1}</span>" if r.get("day") is not None else "") + "</span>"
-                 f"<span class=r10t>{c.mile_time(r['time'])}<small class=r10f>{'fig ' + c.mile_time(f) if (f := fig_of(r)) else '—'}</small></span><span class=r10w>{'$' + format(round(r['won']), ',') if r['won'] else ''}</span>"
+                 f"<span class=r10t>{c.mile_time(r['time'])}</span><span class=r10w>{'$' + format(round(r['won']), ',') if r['won'] else ''}</span>"
                  + (f"<a class=r10v href='/replay/{r['race_id']}'>▶ Watch replay</a>" if r.get("race_id") in c.STORIES else "") + "</div>")
     more = len(res) - n
     return "<div class='card rlist10'>" + rows + (f"<div class=sub style='margin-top:6px'>Last {n} of {h.starts} starts</div>" if more > 0 else "") + "</div>"
@@ -5069,13 +5068,13 @@ def pp_lines(h, n=3):
         rows += (f"<tr><td>W{r['day'] % c.YEAR + 1}</td><td class=ppc title='{esc(r['race'])}'>{esc(cls)}</td><td>{r['purse']:,}</td>"
                  f"<td>{r['trip'].split(',')[0].replace('post ', '') if r['trip'].startswith('post') else ''}</td><td>{st_}</td>"
                  f"<td class={'w' if r['place'] == 1 else ''}>{nth(r['place'])}{f'<sup>{_lengths(fin[1])}</sup>' if r['place'] > 1 and fin[1] > 0 else ''}</td>"
-                 f"<td>{c.mile_time(r['time'])}</td><td>{c.mile_time(r['fig']) if r.get('fig') else '—'}</td></tr>"
-                 + f"<tr class=ppt><td></td><td colspan=7><b class=pptk>{TRACK_WORD.get(r.get('track'), '')}</b>"   # times on a half are slower: say which
+                 f"<td>{c.mile_time(r['time'])}</td></tr>"
+                 + f"<tr class=ppt><td></td><td colspan=6><b class=pptk>{TRACK_WORD.get(r.get('track'), '')}</b>"   # times on a half are slower: say which
                  f"{' · ' if trip and r.get('track') in TRACK_WORD else ''}{esc(trip)}</td></tr>")
     if not rows:
         return "<div class=pgped>Unraced.</div>"
     return ("<div class=pglines><table><colgroup><col style='width:2.2em'><col><col style='width:4.6em'><col style='width:1.8em'>"
-            "<col style='width:2.6em'><col style='width:3.4em'><col style='width:3.6em'><col style='width:3.6em'></colgroup><tr class=pph><td>Wk</td><td>Class</td><td>Purse</td><td>PP</td><td>Str</td><td>Fin</td><td>Time</td><td>Fig</td></tr>"
+            "<col style='width:2.6em'><col style='width:3.4em'><col style='width:3.6em'></colgroup><tr class=pph><td>Wk</td><td>Class</td><td>Purse</td><td>PP</td><td>Str</td><td>Fin</td><td>Time</td></tr>"
             + rows + "</table></div>")
 
 

@@ -249,8 +249,9 @@ def on_aged_scale(x, group):
     m, s = GROUP_STATS[group]
     return 55 + 15 * (x - m) / (s or 1)
 OBS_SD = 8.0             # how noisy one finishing position is as evidence of rating
-TIME_FIT = {"mile": 784.5, "half": 780.9 + 6.2 * HALF_SLOWER}, -6.2, 13.5   # rating ~ a[track] + b*seconds, residual sd, on the race's
-                                                                             # internal seconds (h.raw_time); the clock is for show
+_TF_OLD = {"mile": 784.5 - 6.2 * 1.2, "half": 780.9 + 6.2 * HALF_SLOWER - 6.2 * 1.2}   # rating ~ a + b*seconds, fitted on the 10-27 clock's race seconds (display + 1.2)
+TIME_FIT = ({t: a - 6.2 * (sim.SQUEEZE_REF + (HALF_SLOWER if t == "half" else 0)) * (1 - 1 / sim.SQUEEZE) for t, a in _TF_OLD.items()},
+            -6.2 / sim.SQUEEZE, 13.5)                        # the same fit on the honest clock (sim.squeeze): h.raw_time is now the time shown
 DROP_MARGIN = 0          # owner drops to a claimer once est is under the class it would race in
 YEAR = 52                # game weeks (real days) per game year
 SHAPE_CAP = 1.0          # how far training can push one trait above (or below) the genetic ceiling. With DEV_W, two seasons of the
@@ -643,10 +644,10 @@ ABILITY_FIT = 53.58, 3.121        # est ~= a + b * race_score(age)
 
 
 def mile_secs(est):
-    """The rating as seconds for a mile, leaning against the same floor as the race clock."""
+    """The rating as seconds for a mile, on the honest clock (sim.squeeze of the 2026-10-27 clock's reading)."""
     x = MILE_FIT[0] + MILE_FIT[1] * est                          # fitted on the old clock's linear part:
     at, k, _ = sim.CLOCK_OLD
-    return sim.clock(sim.CLOCK_REF + (x - at) / k)               # back to race seconds, then onto today's clock
+    return sim.squeeze(sim.clock(sim.CLOCK_REF + (x - at) / k))  # back to race seconds, onto the 10-27 clock, then squeezed
 
 
 def mile_rating(h):
