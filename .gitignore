@@ -27,3 +27,5 @@ mockups/brand/emblem/cache/
 
 # the encyclopedia's 100-season world: rebuilt by research/encyclopedia/sim100.py
 research/encyclopedia/*.db*
+# the launch-scenario worlds: rebuilt by research/engine_lab/launch.py
+research/engine_lab/launch/
