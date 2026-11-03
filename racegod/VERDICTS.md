@@ -493,3 +493,8 @@ Patrick: Northern Star half pulls out and sits there (2654-hp-mile-Open-1); the 
 Desert Melody rebuilt: rail from 24 s to 78 s, out to lane 1 at the three-quarters as the story says. Northern Star in the Crown race: rail to 78 s, one tip-out, straight to the wire.
 
 **Open.** The remainder (about 20% of horse-seconds) is the viewer's own re-simulation: a beaten horse swings a lane wider in the stretch than its story lane (Desert Melody to lane 2 from 90 s in both versions), and the slot still narrows to 15 ft late in the third quarter as the viewer closes gaps. Next: once this is live, a nightly count of horse-seconds off the story lane per race. Stories already kept on live stay as they were; only new nights get the wider slot. AI field fillers are not kept in the save, so `choreo_rebuild.py` now uses stand-ins for them.
+
+Patrick: deploy (2026-11-03). Code in commit 5dd4c44 (deploy commit 0236b97), service restarted, slot 20 / body 2.0 and
+`TD_STORY=choreo` confirmed on the server, login 200, no tracebacks. Stories kept before this night keep their old positions.
+Next: the first night's stories under the wider slot through the lab viewer (horse-seconds off the story lane per race), and
+the leader's drop-in timing (the story's seven calls put it at ~47 s on screen when the engine does it at ~28 s).
