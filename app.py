@@ -2075,7 +2075,7 @@ GUIDE = [
          "that gets a soft trip in front runs a little quicker than its merit; one that does the work parked outside runs a little "
          "slower. A horse's letter is earned from its recent miles, read fairly for the trips it got, so a horse on the way up earns "
          "its letter on the track and one on the way down loses it the same way. A break tells you nothing about a horse's speed and "
-         "counts for nothing. A well-beaten horse is eased home, and its time says so. Until a horse has raced enough, its letter is drawn hollow and read off its bars against horses its age."),
+         "counts for nothing. A well-beaten horse is eased home, and its time says so. A foal or a yearling's letter is drawn hollow, read off its bars against its crop; from two a horse wears the letter its bars say, until its miles have earned one."),
     ]),
     ("After the races", [
         ("Results and replays", "Results are spoiler-free: your starters are listed in post order, and you choose when to reveal each "
@@ -2589,6 +2589,31 @@ STRONG = {"late_speed": "All the speed in the world", "stamina": "Stays all day"
 WEAK = {"late_speed": "is short of real speed", "stamina": "can't hold it all the way to the wire",
         "grit": "gives in when one looks {him} in the eye", "gait": "can make a break when pressed"}
 EARLY = {"late_speed": "Fastest thing in the paddock once {he}'s let go", "stamina": "Never seems to tire on the jog"}
+WINDOWS = (   # the trainer's read of what a horse can run, by its bars' mile at its peak against the top line (S+), without saying the time
+    (-2.5, "The kind that comes along once in a lifetime: nothing on this circuit will run with {him} at {his} best"),
+    (-1.2, "A horse for the record book: {he} can take on the best there is and make them chase"),
+    (0.0, "Top-line stock: {he} belongs on the biggest nights"),
+    (0.6, "Stakes company: {he} can win a stake when it falls right"),
+    (1.2, "A good overnight horse: {he} wins {his} share in the better company"),
+    (2.2, "An honest horse: {he} earns {his} keep in mid-week fields"),
+    (3.2, "A claimer by class: {he} needs the cheaper fields to get {his} picture taken"),
+    (9.9, "Slow: {he} will struggle to beat anything but the softest company"))
+
+
+def peak_mile(h):
+    """The mile the horse's bars predict at its peak (today's, once it is past it): what it is, known from two."""
+    age = max(h.age, h.peak_age)
+    return c.outcome.pred_mile(dict(kick=c.outcome.bar(h.ceiling("late_speed", age)), cruise=c.outcome.bar(h.ceiling("stamina", age))))
+
+
+def window_read(h):
+    """The window the horse's bars put it in at its peak, and whether it is there yet."""
+    him, he, his = ("him", "he", "his") if h.sex == "m" else ("her", "she", "her")
+    peak, now = peak_mile(h), predicted_mile(h)
+    text = next(t for cut, t in WINDOWS if peak - MILE_TIERS[0][0] <= cut).format(him=him, he=he, his=his)
+    if h.age < h.peak_age and now - peak > 0.6:
+        text += f", once {he} fills out"
+    return text
 
 
 def trainer_read(h):
@@ -2605,13 +2630,15 @@ def trainer_read(h):
             if share <= .1 and (best is None or share < best[0]):
                 best = (share, t)
         lead = EARLY[best[1]].format(he=he) if best else "Nothing jumps out yet"
-        return f"“{lead}. What {he}'ll be over a mile, it's too early to say.”"
+        if h.age < 2:
+            return f"“{lead}. What {he}'ll be over a mile, it's too early to say.”"
+        return f"“{window_read(h)}. {lead}.”"
     ranks = {t: crop_rank(h, t) for _, t in BARS}
     ranks = {t: r[0] for t, r in ranks.items() if r}
     if not ranks:
         return ""
     top, low = min(ranks, key=ranks.get), max(ranks, key=ranks.get)
-    s = (STRONG[top] + "." if ranks[top] <= .22 else "Honest, but nothing stands out yet.")
+    s = window_read(h) + ". " + (STRONG[top] + "." if ranks[top] <= .22 else "Honest, but nothing stands out yet.")
     if ranks[low] >= .63:
         s += f" {he.capitalize()} {WEAK[low].format(him=him)}"
         s += (", so {he} needs the trip to go right." if top == "late_speed" and low == "stamina" else
@@ -3217,15 +3244,16 @@ MILE_TIERS = c.MILE_TIERS                                      # on the honest c
 # seconds for a mile, slower is D: the original cuts, moved exactly onto the 2026-10-27 clock (S+ ~1:50.9 ... C ~2:00.1)
 
 
-PED_STARTS = 5                 # under this many starts a horse's badge is read off its bars against its peers, shown hollow
+PED_STARTS = 5                 # (kept for older wording) a letter is earned on the clock once three clean miles are in
 BADGE_LAST, BADGE_MIN = 10, 3  # ratings v2: the badge rests on the median of the last ten figures, once there are three (badge_windows.py:
                                # 4..15 all beat live on reading the horse; 10 keeps a decline visible within a few starts)
 BADGE_HYST = 0.1               # seconds a figure must clear a tier line by before the badge changes (on the honest clock: flips 39% -> 33%, same-tier 73% -> 71%)
 
 
 def unproven(h):
-    """A horse that hasn't raced enough to earn its badge on the clock: a foal, a yearling, a lightly raced horse."""
-    return not h.retired and h.starts < PED_STARTS
+    """A foal or a yearling: its bars read against its crop, its letter drawn hollow. From two a horse's ratings are known,
+    raced or not (Patrick 2026-11-03), and it wears the letter its bars say until its miles have earned one."""
+    return not h.retired and h.age < 2 and not h.starts
 
 
 def predicted_mile(h):
@@ -3285,10 +3313,10 @@ def bars_grade(h):
 def letter_line(h):
     """Why the horse wears its letter, in a line: the miles it rests on and the next line up (or down, at the top)."""
     if unproven(h):
-        return f"{tier_label(h)} on its bars against horses its age · earns its letter at {PED_STARTS} starts"
+        return f"{tier_label(h)} on its bars against horses its age · rated at two"
     secs = badge_secs(h)
     if secs is None:
-        return f"{tier_label(h)} on its bars · no clean miles yet"
+        return f"{tier_label(h)} on its bars{' at its peak' if h.age < h.peak_age else ''}" + (" · no clean miles yet" if h.starts else "")
     n = min(BADGE_LAST, sum(1 for r in getattr(h, "results", []) if r.get("fig") is not None))
     t = tier_label(h)
     ups = [(cut, tt) for cut, tt in MILE_TIERS if TIER_RANK[tt] < TIER_RANK.get(t, 5)]
@@ -3303,8 +3331,8 @@ def tier_label(h):
     if unproven(h):
         return bars_grade(h)
     secs = badge_secs(h)
-    if secs is None:                                                           # every start a break, or retired unraced: its bars
-        secs = predicted_mile(h)
+    if secs is None:                                                           # no earned miles yet: its bars at its peak (known from two)
+        secs = peak_mile(h)
     t = next((tt for cut, tt in MILE_TIERS if secs <= cut), "D")
     prev = getattr(h, "badge", None)                                           # hysteresis: a line is crossed by BADGE_HYST before the
     if prev and prev != t:                                                     # badge moves
