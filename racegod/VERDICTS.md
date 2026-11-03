@@ -363,3 +363,24 @@ choreographer would fix, not this retune.
 
 Run the per-horse check on the proposed values; if it passes, ship them in `outcome.py` (a deploy, no save change)
 and read the first real night with the audit. Or hold the trip-value changes and ship the post costs alone.
+
+**Per-horse check run (Patrick: "yes, run the check", 2026-11-02).** `racegod/per_horse.py`: 100 real fields, one horse
+each, 60 reruns with common random numbers, each bar one pip up through the drivers' own door (`drive_on`).
+
+| +1 bar | Today's values | V9 as proposed | Candidate B (mid-pack value 0.35 / 0.40) |
+|---|---|---|---|
+| Speed: average gain / cases down 2+ pts | +7.3 / 0 of 100 | +6.8 / 0 | +6.4 / 0 |
+| Stamina | +7.6 / 0 | +6.7 / 0 | +6.5 / 0 |
+| Gate (early speed) | +4.5 / 2 (worst -3) | +3.2 / **8 (worst -33)** | +5.2 / 3 (worst -20) |
+
+Speed and Stamina pass everywhere. **The proposal as written fails on gate:** with mid-pack worth 0.6, a bar more of
+early speed puts a horse out first into a trip that loses (Captain Pine, post 4 on the half: 55% -> 22%). Candidate B
+(mid-pack 0.35 on the half, 0.40 on the mile, the rest as proposed) keeps the posts in band (half 27.0 / 3.5, mile
+17.3 / 6.1; favorite 38.5; margin 2.0 L; photos 10.2%; trips lead 46 / pocket 15 / first-over 5 / mid-pack 21 /
+behind 13) and brings the gate failures down to today's count, with one bad case left: the same horse, 35% -> 15%,
+one more gate bar putting him on the lead against a gritty rival he'd have followed. Today's engine has that case
+too, at 3 points. `racegod/retune_b.json` holds candidate B.
+
+**RaceGod's read:** ship candidate B's post costs and lead/pocket values; the one failing case is the duel rule
+(a horse out first who can't clear is pressed into a fight), which is a V-next of its own, not this retune. Patrick's
+call: ship B, or the post costs alone (`c_post` half 0.15, mile 0.25) and leave the trip values for after the duel rule.
