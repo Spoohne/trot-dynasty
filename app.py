@@ -5069,13 +5069,13 @@ def pp_lines(h, n=3):
         rows += (f"<tr><td>W{r['day'] % c.YEAR + 1}</td><td class=ppc title='{esc(r['race'])}'>{esc(cls)}</td><td>{r['purse']:,}</td>"
                  f"<td>{r['trip'].split(',')[0].replace('post ', '') if r['trip'].startswith('post') else ''}</td><td>{st_}</td>"
                  f"<td class={'w' if r['place'] == 1 else ''}>{nth(r['place'])}{f'<sup>{_lengths(fin[1])}</sup>' if r['place'] > 1 and fin[1] > 0 else ''}</td>"
-                 f"<td>{c.mile_time(r['time'])}</td></tr>"
-                 + f"<tr class=ppt><td></td><td colspan=6><b class=pptk>{TRACK_WORD.get(r.get('track'), '')}</b>"   # times on a half are slower: say which
+                 f"<td>{c.mile_time(r['time'])}</td><td>{c.mile_time(r['fig']) if r.get('fig') else '—'}</td></tr>"
+                 + f"<tr class=ppt><td></td><td colspan=7><b class=pptk>{TRACK_WORD.get(r.get('track'), '')}</b>"   # times on a half are slower: say which
                  f"{' · ' if trip and r.get('track') in TRACK_WORD else ''}{esc(trip)}</td></tr>")
     if not rows:
         return "<div class=pgped>Unraced.</div>"
     return ("<div class=pglines><table><colgroup><col style='width:2.2em'><col><col style='width:4.6em'><col style='width:1.8em'>"
-            "<col style='width:2.6em'><col style='width:3.4em'><col style='width:3.6em'></colgroup><tr class=pph><td>Wk</td><td>Class</td><td>Purse</td><td>PP</td><td>Str</td><td>Fin</td><td>Time</td></tr>"
+            "<col style='width:2.6em'><col style='width:3.4em'><col style='width:3.6em'><col style='width:3.6em'></colgroup><tr class=pph><td>Wk</td><td>Class</td><td>Purse</td><td>PP</td><td>Str</td><td>Fin</td><td>Time</td><td>Fig</td></tr>"
             + rows + "</table></div>")
 
 

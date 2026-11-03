@@ -223,7 +223,7 @@ def race(field, track="mile", passing=False, decided=None):
                 want = min(want, min(o["v"] for o in seniors) - ease)   # a horse that ranks above it wants in: let it cross
             d["gave"] += max(0.0, d["v"] - want) * DT             # what it has given up so far
             if d["broke"] and d["break_until"] is None and s >= d["break_at"]:
-                d["break_until"] = t + E["break_s"]
+                d["break_until"] = t + E["break_s"]; d["broke_t"] = t
             if d["break_until"] is not None and t < d["break_until"]:
                 want = 0.5 * st
             over = (d["v"] / st) ** 3 * ((1 - E["draft"]) if covered else 1 + E["wind"] + (E["turn"] * max(0, ln) if on_turn(s) else 0)) - 1
@@ -287,7 +287,7 @@ def race(field, track="mile", passing=False, decided=None):
         d, r = S[h.id], role[h.id]
         if decided:
             h.run = dict(calls=calls_t, quarters=[0.0, q1, q2, q3, win], at=at[h.id], post=post, leader=leader3.name, fo=outside4[0].name if outside4 else None,
-                         fo_at=next((calls_t[c] for c in (3, 4) if outside4 and at[outside4[0].id][c][0] >= 1), None), passing=passing)
+                         fo_at=next((calls_t[c] for c in (3, 4) if outside4 and at[outside4[0].id][c][0] >= 1), None), passing=passing, broke_at=d.get("broke_t"))
             continue
         if h is leader3:
             how = "on the lead"
@@ -304,7 +304,7 @@ def race(field, track="mile", passing=False, decided=None):
                      model_l=round((able[ref.id] - able[h.id]) * p["s_margin"], 2), limited=d["limited"] > 2.0, margin=round(h.margin_l, 2),
                      ceiling=round(lim[ref.id] + WITHIN * (lim[h.id] - lim[ref.id]), 2), at_half=at[h.id][3][1], tank=round(d["E"], 2))
         h.run = dict(calls=calls_t, quarters=[0.0, q1, q2, q3, win], at=at[h.id], post=post, leader=leader3.name, fo=outside4[0].name if outside4 else None,
-                     fo_at=next((calls_t[c] for c in (3, 4) if outside4 and at[outside4[0].id][c][0] >= 1), None), passing=passing)
+                     fo_at=next((calls_t[c] for c in (3, 4) if outside4 and at[outside4[0].id][c][0] >= 1), None), passing=passing, broke_at=d.get("broke_t"))
     return order
 
 
@@ -340,7 +340,8 @@ def story(order, track, passing=False):
         at = h.run["at"]
         rows.append({"name": h.name, "post": h.run["post"], "behind": [min(b, 40.0) for _, b in at], "lane": [ln for ln, _ in at], "place": place,   # 40 L: the viewer's wall, as story.build (RaceGod V3, open)
                      "time": fifth(h.last_time), "trip": h.trip, "stamina": round(cur[h.id]["stamina"], 2), "early": round(cur[h.id]["early_speed"], 2),
-                     "coat": getattr(h, "coat", "bay"), "marking": getattr(h, "marking", "none")})
+                     "coat": getattr(h, "coat", "bay"), "marking": getattr(h, "marking", "none"),
+                     "broke_at": round(h.run["broke_at"] * k, 1) if h.run.get("broke_at") is not None else None})   # when it broke, on the clock (the viewer's tell)
     rows[0]["behind"][6] = 0.0
     caps = [[0.0, "They're away"], [calls_t[1], f"{run['leader']} leaves for the lead"]]
     if run["fo"] and run["fo_at"]:

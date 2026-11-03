@@ -1161,11 +1161,12 @@ def run_race(r, alive, log):
     order = (outcome.race if ENGINE == "outcome" else race)(field, track, v.get("passing", False))
     story = _story.build(order, track, passing=v.get("passing", False))   # everything that can fail, before any result is written
     if ENGINE == "outcome" and "captions" in story:                # ratings v2 tells: the ledger names what the picture drew
+        if "sharp tonight" in order[0].trip:
+            story["captions"][-1][1] += ", sharp tonight"            # the win caption is last until the breaks go in
+        when = {r["name"]: r.get("broke_at") for r in story["horses"]}
         for h in order:
             if (getattr(h, "why", None) or {}).get("broke"):
-                story["captions"].append([story["calls"][2], f"{h.name} breaks stride"])
-        if "sharp tonight" in order[0].trip:
-            story["captions"][-1][1] += ", sharp tonight"
+                story["captions"].append([when.get(h.name) or story["calls"][2], f"{h.name} breaks stride"])
         story["captions"].sort(key=lambda x: x[0])
     line = tote_odds(field)
     r["settling"] = True                                # from here the result is being applied: no retry may apply it again
