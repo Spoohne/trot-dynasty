@@ -8,7 +8,8 @@ exports/
 # editor copies and caches
 *.bak*
 __pycache__/
-.claude/
+.claude/*
+!.claude/settings.json
 
 # art experiments and bulk media that the game doesn't serve
 mockups/*.glb
