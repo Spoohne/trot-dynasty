@@ -3171,7 +3171,6 @@ def card_header(h, own, price=None):
             + f"<div class=hown><span class=hownk>{'Owner and breeder' if bred == barn_name(h.owner) else 'Owner'}</span>{barn_tag(h.owner, 32)}"
             + ("" if bred == barn_name(h.owner) else f"<span class=hbred>bred by {esc(bred)}</span>") + "</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
-            + (f"<div class=mqbar>{marquee_html(h.owner, mq_, href=f'/barn/{h.owner}')}</div>" if (mq_ := marquee_of(h.owner)) else "")   # a Prestige barn's Marquee under its horse
             + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if has_pass(ME) and trainer_read(h) else "")   # a Season Pass perk
                + card_bars(h) + f"{prime_row(h)}</div>")   # every horse's bars are public
             + "</div>")
