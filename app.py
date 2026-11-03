@@ -4257,7 +4257,7 @@ def claimers_page(qs=None):
     if c.CARD.get("day") == G["day"]:
         for r in c.CARD["races"]:
             group, sx, name, purse, tag, track = r["key"]
-            if not tag:
+            if not tag or race_off(r):                                     # gone off: nothing left to claim, so it isn't listed
                 continue
             for h in r["field"]:
                 if not getattr(h, "visitor", None):
@@ -4297,7 +4297,8 @@ def claimers_page(qs=None):
             f"You can claim {max(0, room)} more tonight.</p>")
     body = (f"<style>{PP_CSS}</style><style>.pgm{{margin:10px 0}}.pgm .pgh{{cursor:default}}</style>" + market_tabs("claimers") + note + head
             + f"<p class=sub id=list style='scroll-margin-top:8px'>{len(rows)} claimer{'s' if len(rows) != 1 else ''}{f' · page {pg} of {n}' if n > 1 else ''}</p>"
-            + (out or "<p class=sub>No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 11 PM") + ".</p>") + pager)
+            + (out or "<p class=sub>" + ("Every claimer on tonight's program has raced; tomorrow's posts at 11 PM" if any(r["key"][4] for r in c.CARD.get("races", [])) and c.CARD.get("day") == G["day"]
+                                         else "No claimers on tonight's program" + ("" if c.CARD.get("day") == G["day"] else "; the card is drawn at 11 PM")) + ".</p>") + pager)
     return page("Claimers", body)
 
 
