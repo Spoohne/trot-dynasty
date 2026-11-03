@@ -1,51 +1,81 @@
 # Ratings v2: one ruler, read off the race
 
 Branch `ratings-v2` (worktree `HarnessSim-v2`), 2026-11-03. A candidate to stand beside the live game; Patrick judges.
+Astra reviews 21 and 22 (`research/engine_lab/reviews/`).
 
 ## The rule
 
 One truth, one engine, and everything a player sees is a reading of it. Genes set the ceiling; the bars are what the
 horse can do today; the engine (`outcome.py`) races the bars and keeps a ledger of what decided it (`h.why`: role, depth,
-form, break); the choreographer draws that decision; the badge is read off the clock, nothing else.
+form, break, and now the kick and cruise it raced with); the choreographer draws that decision; the badge is read off
+the race, nothing else.
+
+## What the clock can't do (why the figure isn't the clock)
+
+Inside a field a bar is worth about a fifth of a second (`WITHIN`); between fields the clock moves about two seconds a bar.
+A beaten horse's time is the winner's class plus its margin, so the clock rates winners and nobody else. Review 21 made
+that call. Saga Spell shows it on the candidate: beaten in 2:03.0 with a figure of 1:54.6.
 
 ## What stays
 
-- `outcome.race` and its ledger, the choreographer, the tote (prices off `outcome.rating`), classes and claimers (they
-  still place horses by `h.est`, the handicapper's class rating), breeding, training.
-- Bars on the fixed pip scale (`outcome.bar`). Measured: 140 of 200,855 horse-seasons (3+) sit on a capped Speed bar,
-  324 on Stamina, so hidden headroom isn't worth a change.
+`outcome.race` and its ledger, the choreographer, the tote (prices off `outcome.rating`), classes and claimers (placed
+by `h.est`, the handicapper's class rating), breeding, training. Bars on the fixed pip scale: 140 of 200,855 horse-seasons
+(3+) sit on a capped Speed bar, 324 on Stamina, so hidden headroom isn't worth a change.
 
 ## What changes
 
-1. **A figure for every start.** `outcome.figure(h, track)` after each race: the horse's raw time, less the half-mile
-   allowance, less what its trip was worth in the model (`A[role] - b_depth * depth`, in seconds at `s_margin` lengths a
-   unit and a fifth of a second a length), shifted by one measured constant `FIG_REF` so that a horse's figures sit on
-   its own `best_mile` (the clock its bars predict). A start with a break has no figure (the time means nothing).
-   Stored as `results[i]["fig"]`, display seconds. Older starts without a ledger get the clock less the half allowance.
-2. **The badge: one ruler, mile seconds, cut at `MILE_TIERS`.**
-   - Proven (5+ starts): the median of the best three figures of the last ten starts. A horse in decline drops a tier
-     as its figures slow; nothing is remembered for it.
-   - Retired: the median of its best three figures ever (its prime).
-   - Unproven (under 5 starts): its predicted figure, `best_mile` of its bars (weanlings and yearlings already read
-     against their crop through `young_bar`), placed among the unproven horses its age and cut at the proven horses'
-     tier shares, as live does today with `bars_grade`; the score is the engine's own prediction instead of `CARD_W`.
-   `h.est` no longer makes a badge anywhere.
-3. **Form is visible after the fact.** The ledger's `form` draw (`s_form` is one sd) goes into the trip text when it
-   was big: "sharp tonight" over +1.3 sd, "flat tonight" under -1.3 sd. An upset reads as what it was.
-4. **Tells in the replay captions, from the ledger:** "X breaks stride" at the quarter for a breaker, "sharp tonight"
-   on the winner's caption when it was. Positions are the choreographer's; the captions only name what it drew.
-5. **The horse page:** each start shows its figure beside the clock; the header shows the figure the badge rests on;
-   the hollow badge is labelled UNPROVEN, not PEDIGREE.
+1. **A figure for every start** (`outcome.figure`, stored as `results[i]["fig"]`): the ledger's performance with the
+   trip taken out (the role's worth, the line's depth, a closer's extra kick), mapped to mile seconds by `FIG_FIT`, a
+   per-track line from the model's class units (`omega * cruise + (1 - omega) * kick`, K per bar) to `best_mile`, fitted
+   on the live save (777 horses: r -0.96 mile, -0.92 half). A breaker's start has no figure. Starts from before the
+   switch have none either; the badge reads the bars until three figures exist.
+2. **The badge, one ruler, mile seconds cut at `MILE_TIERS`** (`app.tier_label`):
+   - proven (5+ starts): the median of the last six figures (`badge_secs`), once three exist;
+   - retired: the median of its six best kept figures (its prime);
+   - unproven: `pred_mile` of its bars (the same line, so the prediction and the figures are one ruler by construction;
+     weanlings and yearlings already read against their crop) placed among the unproven horses its age and cut at the
+     proven horses' tier shares; labelled UNPROVEN, hollow;
+   - hysteresis `BADGE_HYST` 0.3 s: a line is crossed by that much before the badge moves.
+   `h.est` makes no badge anywhere.
+3. **Form is visible after the fact:** "sharp tonight" / "flat tonight" in the trip text past 1.3 sd of the night's form.
+4. **Tells in the captions, from the ledger:** "X breaks stride" at the quarter; ", sharp tonight" on a sharp winner's
+   finish caption. Positions stay the choreographer's.
+5. **Pages:** each start shows its figure under the clock (horse page and results page); the header shows the figure the
+   badge rests on; the help says a letter is earned from figures, read fairly for the trip.
 
-## Checks
+## Measured
 
-- `research/encyclopedia/sim100.py` 100 seasons on this branch: the tier shares season by season (live drifted from
-  4% S+ in season 5 to 25% in season 99 for active horses 3+), and whether the badge follows the career: purses by
-  badge at 3 and 4, and how many seasons a badge lags a decline.
-- `FIG_REF` measured on that world: median of (figure - best_mile) over horses 3+ with 5+ starts, by track.
-- The candidate served on 8113 from a copy of the live save (`TD_STORY=choreo`), beside trotdynasty.com.
+**Seven nights on a copy of the live save** (3,876 figured starts): figure - pred_mile median -0.11 s, sd 1.44 s on the
+mile (0.05 / 1.82 on the half). The spread is the night's form (0.15 units at 6.4 s a unit, about 1 s) plus freshness,
+tonic and driver, not the field. Active horses 3+: S+ 25 of 647 (3.9%) against live's 69 (10.7%) on the same save.
+
+**100-season fresh world** (`sim100.py` on the branch, `world100.db` in the worktree; `compare_badges.py`): 80,616 racing
+horse-seasons 2+. Truth = `pred_mile` of the horse's bars that season, cut at the tiers.
+
+| season | truth S+ / S | v2 | live |
+|---|---|---|---|
+| 5 | 2.3 / 4.9 | 2.9 / 2.3 | 1.8 / 2.7 |
+| 20 | 3.4 / 9.8 | 2.4 / 8.1 | 4.3 / 9.7 |
+| 60 | 6.4 / 14.2 | 6.4 / 13.0 | 9.4 / 13.8 |
+| 99 | 9.5 / 16.0 | 9.0 / 14.4 | 14.8 / 18.2 |
+
+The truth itself drifts (this world runs `sim.MUTATE` 0.10; the launch rule is 0.05): v2 tracks it, live overstates S+.
+
+| | same tier as truth | within one | mean secs off |
+|---|---|---|---|
+| v2, median of last six | 72.0% | 99.4% | 0.68 s |
+| v2, second-best of ten | 48.0% | 96.5% | 1.25 s |
+| live est badge | 52.4% | 96.1% | |
+
+Flips while the truth tier held (37,317 season pairs): v2 41.1%, live 51.9%; with 0.3 s hysteresis v2 33.5% (same-tier
+71.3%). Decline lag (7,275 declines): both catch it the same season about 60% of the time, 4-5% take three seasons or more.
+The jump at the fifth start isn't measurable from season rows (n 1).
+
+**Caveat (hypothesis):** the truth is the engine's own prediction, which v2 is fitted to; it shows v2 reads the engine
+faithfully, not that players will like it more. That is Patrick's comparison: the candidate on 8113 beside trotdynasty.com.
 
 ## Not in this round
 
 Tells drawn in the positions themselves (the duel's head-bob, a fractious start) belong to the choreographer, which the
-RaceGod thread is editing. Bars on a fixed breed-wide scale for the legends race: the pip scale already is one.
+RaceGod thread is editing. A forward-looking test (future purses by badge) needs per-start records the encyclopedia
+doesn't keep. Bars on a breed-wide fixed scale for the legends race: the pip scale already is one.

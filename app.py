@@ -3202,6 +3202,7 @@ MILE_TIERS = tuple((sim.retime(x), t) for x, t in ((107.5, "S+"), (109.5, "S"), 
 
 PED_STARTS = 5                 # under this many starts a horse's badge is read off its bars against its peers, shown hollow
 BADGE_LAST, BADGE_MIN = 6, 3   # ratings v2: the badge rests on the median of the last six figures, once there are three
+BADGE_HYST = 0.3               # seconds a figure must clear a tier line by before the badge changes
 
 
 def unproven(h):
@@ -3271,7 +3272,16 @@ def tier_label(h):
     secs = badge_secs(h)
     if secs is None:                                                           # every start a break, or retired unraced: its bars
         secs = predicted_mile(h)
-    return next((t for cut, t in MILE_TIERS if secs <= cut), "D")
+    t = next((tt for cut, tt in MILE_TIERS if secs <= cut), "D")
+    prev = getattr(h, "badge", None)                                           # hysteresis: a line is crossed by BADGE_HYST before the
+    if prev and prev != t:                                                     # badge moves (100-season world: flips 41% -> 34%, same-tier 72% -> 71%)
+        i = next(k for k, (_, tt) in enumerate(MILE_TIERS + ((None, "D"),)) if tt == prev)
+        up = MILE_TIERS[i - 1][0] if i else None
+        down = MILE_TIERS[i][0] if i < len(MILE_TIERS) else None
+        if not ((up is not None and secs <= up - BADGE_HYST) or (down is not None and secs > down + BADGE_HYST)):
+            t = prev
+    h.badge = t
+    return t
 
 
 def tier_base(h):
