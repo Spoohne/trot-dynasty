@@ -1017,10 +1017,26 @@ assert _ny_offset(datetime(2026, 3, 8, 7)) == timedelta(hours=-4) and _ny_offset
 assert _ny_offset(datetime(2026, 11, 1, 5)) == timedelta(hours=-4) and _ny_offset(datetime(2026, 11, 1, 6)) == timedelta(hours=-5)
 
 
-def ny_now():
-    """New York time; or, while the admin has the clock frozen for a look (G["frozen"] = "HH:MM"), today at that time."""
+def real_ny():
     u = datetime.now(timezone.utc).replace(tzinfo=None)
-    n = u + _ny_offset(u)
+    return u + _ny_offset(u)
+
+
+FAST_X = 24       # the admin's fast clock for testing: a game day (a race night, a week of the season) every real hour
+
+
+def speed():
+    """How many game seconds pass in a real one: FAST_X while the fast clock is on, else 1."""
+    return G["fast"]["x"] if G.get("fast") else 1
+
+
+def ny_now():
+    """New York time on the game's clock: real time; while the fast clock is on (G["fast"]), running FAST_X times
+    faster from the moment it was switched on; while the admin has it frozen (G["frozen"] = "HH:MM"), today at that time."""
+    n = real_ny()
+    if G.get("fast"):
+        f = G["fast"]
+        n = datetime.fromisoformat(f["virt0"]) + (n - datetime.fromisoformat(f["real0"])) * f["x"]
     if G.get("frozen"):
         hh, mm = map(int, G["frozen"].split(":"))
         n = n.replace(hour=hh, minute=mm, second=0, microsecond=0)
@@ -1173,7 +1189,7 @@ def countdown():
         if n >= at:
             at += timedelta(days=1)
         label = "First post"
-    left = int((at - n).total_seconds())
+    left = int((at - n).total_seconds() / speed())                            # in real time, whatever the game clock's speed
     ms = int((datetime.now(timezone.utc).timestamp() + left) * 1000)
     return (f"<small class=cd data-t={ms} data-l='{label}'>{label} in {left // 3600}h {left % 3600 // 60}m</small>"
             "<script>(()=>{const e=document.currentScript.previousElementSibling,f=()=>{const s=Math.max(0,(e.dataset.t-Date.now())/1e3|0);"
@@ -1667,7 +1683,7 @@ def tonight_card():
         log = P().get("pass_log")
         if log and log[0] == G["day"]:
             note = f"<div class=sub style='margin-top:6px'>Your manager{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} set{'s' if log[2] != 1 else ''} worked.</div>"
-    left = int((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400
+    left = int(((ny_now().replace(hour=20, minute=0, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400 / speed())
     chip = "entries closed" if closed else f"draw in {left // 3600}h {left % 3600 // 60:02d}m"
     if not rows:
         rows = "<div class=sub style='padding:6px 0'>Nothing owed before the draw.</div>"
@@ -1871,6 +1887,12 @@ def admin_page(msg=""):
                "<form method=post action=/admin/clock class=inline><button class=sec name=at value='19:45'>Freeze at 7:45 PM</button></form>"
                "<form method=post action=/admin/clock class=inline><button class=sec name=at value='19:00'>Freeze at 7:00 PM</button></form>"
                "<div class=sub style='width:100%'>For a look at the program and claims as players will see them. Unfreeze before race night.</div>")
+            + (f"<b style='width:100%'>Fast clock on: a week every hour (game time {ny_now():%a %I:%M %p})</b>"
+               "<form method=post action=/admin/clock class=inline><button name=fast value=0>Back to real time</button></form>"
+               if G.get("fast") else
+               f"<form method=post action=/admin/clock class=inline><button class=sec name=fast value={FAST_X}>Fast clock: a week every hour</button></form>")
+            + "<div class=sub style='width:100%'>For testing. The game's clock runs 24 times real time, so race night (7 to 11 PM) "
+              "takes 10 minutes and a new night starts every hour. Sale-board auctions still run a real day.</div>"
             + "</div>"
             + "<div class=secbar>Race night</div><div class=card style='display:flex;gap:8px;flex-wrap:wrap'>"
               "<form method=post action=/advance class=inline><button name=days value=1>Run a race night now</button></form>"
@@ -5669,6 +5691,13 @@ class H(BaseHTTPRequestHandler):
                 G.setdefault("team_msgs", []).append({"id": secrets.token_hex(4), "text": text, "at": time.time()}); save()
             return self.send(admin_page("Posted. Each player sees it once." if text else "Write a message first."))
         if p == "/admin/clock" and ME == ADMIN:
+            if "fast" in q:
+                if q["fast"] != "0" and not G.get("fast"):          # from now on, from where the clock is now: no jump
+                    G["fast"] = {"x": FAST_X, "real0": real_ny().isoformat(), "virt0": ny_now().isoformat()}
+                elif q["fast"] == "0" and G.pop("fast", None):      # back to real time: the next night is the next real 11 PM
+                    G["last_night"] = last_slot().isoformat()
+                save()
+                return self.send(admin_page("Fast clock on: a week every hour." if G.get("fast") else "Clock back to real time."))
             at = q.get("at", "")
             if at:
                 G["frozen"] = at
