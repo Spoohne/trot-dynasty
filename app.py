@@ -273,7 +273,7 @@ def saver():
             traceback.print_exc()
 
 
-IDENTITY = ("user", "pw", "salt", "stable", "named", "skin", "emblem", "emblem_lic", "owned", "marquee", "verified", "pass", "hide_tips", "theme_off", "drivers")
+IDENTITY = ("user", "pw", "salt", "stable", "named", "skin", "emblem", "emblem_lic", "owned", "marquee", "verified", "pass", "hide_tips", "theme_off", "drivers", "auto_enter")
 
 
 def new_world(years=HISTORY):
@@ -569,6 +569,9 @@ def tick():
     if G["day"] % c.YEAR == SPONSOR_WEEKS and G.get("sponsor_auction"):
         settle_sponsors()
     c.draw_claimers(G["horses"], G["ai"])                     # next week's claiming program goes up now
+    for o in list(G.get("players", {})):                      # the standing order: a barn that asked for it never misses a close
+        if P(o).get("auto_enter"):                            # (the trainer's picks for its fit, unentered horses; never a claimer)
+            trainers_entries(G["horses"], o)
     draw_program()                                            # and tomorrow's card is drawn and posted: a whole day to read it
     events = {o: [] for o in c.HUMAN}
     alive = {h.id for h in G["horses"]}
@@ -1914,6 +1917,8 @@ def admin_page(msg=""):
               "<div class=sub style='width:100%'>Until there's a store. Markers buy sponsorships and looks, never horses.</div></form>"
             + "<div class=secbar>Sponsorship auction</div><form method=post action=/admin/sponsor class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
               f"<button class=sec name=do value=open>Open for this season</button><button class=sec name=do value=close>Close and settle</button><div class=sub style='width:100%'>{len(G.get('sponsor_auction', {}))} stakes up for bids · {len(G.get('sponsors', {}))} sponsored this season. Opens itself at every year roll and settles after week {SPONSOR_WEEKS}.</div></form>"
+            + "<div class=secbar>Tomorrow's card</div><form method=post action=/admin/redraw class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
+              "<button class=sec>Redraw tomorrow's card</button><div class=sub style='width:100%'>Entries made since the draw go in; horses already carded stay in. For the fast clock, which leaves no window between a race and the close.</div></form>"
             + "<div class=secbar>Gift a horse</div><form method=post action=/admin/gift class=card style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>"
               f"<select name=o>{opts}</select><input name=h placeholder='Horse name' style='width:160px'><select name=mode><option value=exact>this horse</option><option value=like>one like it</option><option value=clone>an identical copy (dev)</option></select>"
               "<button>Give</button><div class=sub style='width:100%'>Exact: a computer barn's racer by name. Like: the nearest computer-owned racer of the same age by rating.</div></form>"
@@ -2015,7 +2020,8 @@ GUIDE = [
         ("Entries", "Tap Enter on a horse's card in your barn. Its stakes come first, then every race it qualifies for, one row "
          "each: the best-paying track on top, the other tracks folded underneath, and how strong its fields usually run. Sort by purse "
          "or best fit, or narrow to mile, half-mile or passing-lane tracks. Claiming races sit at the bottom, folded away. "
-         "Nothing in your barn races unless you enter it."),
+         "Nothing in your barn races unless you enter it, unless you leave a standing order in Barn identity: then the trainer "
+         "enters any fit horse you haven't by the close, never in a claimer."),
         ("Race classes", "<b>Opens</b> are for the best of each age; an older horse climbs from the Aged Open through the Open and the "
          "Preferred to the Invitational at the top of the ladder, the circuit's free-for-all, where the best meet whatever "
          "their age or their bankroll. The top races take only horses that belong in them, and a race too thin to run folds into "
@@ -2917,7 +2923,9 @@ def crest_page(msg=""):
                                      f"<div class=sub style='margin-top:10px'>Title</div><select name=title>{titles}</select>"
                                      "<div class=sub>Titles come with the trophy devices: win your way to them.</div>"
                                      f"<label class=sub style='display:block;margin-top:10px'><input type=checkbox name=theme value=1"
-                                     f"{'' if P().get('theme_off') else ' checked'}> Theme my barn page in my Prestige look</label>")]
+                                     f"{'' if P().get('theme_off') else ' checked'}> Theme my barn page in my Prestige look</label>"
+                                     f"<label class=sub style='display:block;margin-top:6px'><input type=checkbox name=auto_enter value=1"
+                                     f"{' checked' if P().get('auto_enter') else ''}> Standing order: if I haven't entered a fit horse by the close, the trainer enters it (never a claimer)</label>")]
     live = ("<script>(()=>{const f=document.getElementById('bld'),sv=f.querySelector('[value=save]'),st=document.getElementById('mqstate'),"
             "q=()=>new URLSearchParams(new FormData(f)).toString(),init=q(),"
             "up=e=>{const d=new FormData(f),t=d.get('tier')||1,v=document.getElementById('mqt'+t),k=+v.dataset.slots,"
@@ -2990,6 +2998,7 @@ def build_save(q):
     if t_ == "" or t_ in {CR.EARNED[k] for k in got}:
         P()["title"] = t_ or None
     P()["theme_off"] = not q.get("theme")
+    P()["auto_enter"] = bool(q.get("auto_enter"))
     if P().get("marquee"):
         top = prestige_of(ME)
         t = int(q["tier"]) if str(q.get("tier", "")).isdigit() and 1 <= int(q["tier"]) <= top else P()["marquee"].get("tier", top)
@@ -5846,6 +5855,16 @@ class H(BaseHTTPRequestHandler):
                     tick()
             back = q.get("back", "")
             return self.send("", 303, back if back.startswith("/horse/") else "/results")
+        if p == "/admin/redraw" and ME == ADMIN:
+            if c.CARD.get("day") != G["day"] or any(r.get("done") for r in c.CARD.get("races", [])):
+                return self.send(admin_page("No card to redraw: tonight's has started or none is drawn."))
+            for r in c.CARD["races"]:                                     # a carded entry was consumed by the draw: put it back
+                group, sex, name, purse, tag, track = r["key"]
+                for h in r["field"]:
+                    if h.owner in c.HUMAN and not getattr(h, "order", None):
+                        h.order = ("enter", name, purse, tag, track, r["v"]["id"])
+            draw_program()
+            return self.send(admin_page("Tomorrow's card is drawn again."))
         if p == "/admin/cash" and ME == ADMIN:
             try:
                 o, amt = int(q.get("o", "")), int(float(q.get("amt", "")))
