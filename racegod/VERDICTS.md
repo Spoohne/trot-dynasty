@@ -324,3 +324,42 @@ a sim engine would need its own tote fit, and even then the best horse at 29% sa
 
 Next for RaceGod, if Patrick agrees: V1 point 2 (post and front-end retune in the engine lab on real fields), then
 the choreographer. The prototype stays in `racegod/engine.py` for that.
+
+Patrick: retune next (2026-11-02).
+
+## V9 - Post and front-end retune (V1 point 2), 2026-11-02 (proposal; nothing shipped)
+
+**Method:** `racegod/retune.py`: differential evolution over the outcome model's post cost and trip values per
+track (`c_post`, `A_lead`, `A_pocket`, `A_fol`), one run of the 315 real fields per evaluation, loss = the post and
+favorite bands, the margin band, and the leaders' share of wins (half 30-45%, mile 22-35%, DECISIONS 207/238).
+The fit (loss 0.24 -> 0.04) pushed `c_post` to its ceiling on both tracks, so the proposal below is the fit with the
+half's post cost brought back by hand; every row is 3 runs of the 315 fields.
+
+| | Today | Proposed | Band |
+|---|---|---|---|
+| Half post 1 / post 8 wins | 20.9 / 7.4 HIGH | 23.7 / 3.7 | 19-27 / 1-6 |
+| Mile post 1 / post 8 wins | 10.1 LOW / 10.1 | 15.2 / 7.2 | 15-20 / 6-10 (soft) |
+| Favorite wins | 41.1 | 38.1 | 30-45 |
+| Median margin / photos | 1.7 / 11.2 | 2.0 / 8.1 | 1-3 / 5-15 |
+| Leaders' share of wins, half / mile | 36% / 20% | 44% / 34% | 30-45 / 22-35 |
+| Winning trips lead / pocket / first-over / mid-pack / behind | 29/17/13/21/20 | 40/12/4/34/11 | |
+| Northern Star, 12 starts | 6 wins, 12.9 L | 6 wins, 11.3 L | |
+
+**Proposed values** (`outcome.P`): half `c_post` 0.099 -> 0.15, `A_lead` 0.41 -> 0.78, `A_pocket` 0.31 -> 0.57,
+`A_fol` 0.10 -> 0.60; mile `c_post` 0.049 -> 0.25, `A_lead` 0.89 -> 1.24, `A_pocket` 0.77 -> 0.67, `A_fol` 0.26 -> 0.66.
+
+**What it buys (measured):** every post target in band, post 1 beats post 8 on the mile, leaders win at the chart
+rate on both tracks, favorite and margins stay in band.
+**What it costs (measured):** first-over winners fall from 13% to 4% and mid-pack ("followed") winners rise to 34%
+(the chart targets had first-over at 21% on the mile); photos drop a little.
+**Not checked:** DECISIONS 215's per-horse rule (more Speed never lowers a horse's win chance at any post) has not
+been rerun on these values; it must be before they ship. "Winner within 3 L at the half" and "half winner from the
+back" stay out of band under either setting: those are the story system placing winners by trip text, which V8's
+choreographer would fix, not this retune.
+**Noted in passing:** Northern Star, raced as he stands today, wins 6 of 12 lab starts under either setting
+(V4 had him 499 of 500 on day 2626 fields). Worth a look at his card: has he come off the boil, or did a stat move?
+
+### Proposed (awaiting Patrick)
+
+Run the per-horse check on the proposed values; if it passes, ship them in `outcome.py` (a deploy, no save change)
+and read the first real night with the audit. Or hold the trip-value changes and ship the post costs alone.
