@@ -3318,11 +3318,7 @@ def letter_line(h):
     if secs is None:
         return f"{tier_label(h)} on its bars{' at its peak' if h.age < h.peak_age else ''}" + (" · no clean miles yet" if h.starts else "")
     n = min(BADGE_LAST, sum(1 for r in getattr(h, "results", []) if r.get("fig") is not None))
-    t = tier_label(h)
-    ups = [(cut, tt) for cut, tt in MILE_TIERS if TIER_RANK[tt] < TIER_RANK.get(t, 5)]
-    nxt = (f"{ups[-1][1]} at {c.mile_time(ups[-1][0])} or better" if ups else
-           f"the top line is {c.mile_time(MILE_TIERS[0][0])}")
-    return f"{t} on its {'prime' if h.retired else f'last {n} miles'}, {c.mile_time(secs)} read fairly · {nxt}"
+    return f"{tier_label(h)} on its {'prime' if h.retired else f'last {n} miles'}"   # no figure or line shown (Patrick 2026-11-03: the trip-free read confuses beside the clock)
 
 
 def tier_label(h):
