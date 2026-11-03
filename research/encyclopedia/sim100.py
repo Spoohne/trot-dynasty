@@ -29,6 +29,7 @@ SEASONS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
 DB = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "research", "encyclopedia", "world100.db")
 BAR_KEYS = (("speed", "late_speed"), ("stamina", "stamina"), ("grit", "grit"), ("manners", "gait"))   # the live card (app.BARS)
 KEEP = 3                                                       # races kept per horse
+CHOREO_LAST = 5                                                # seasons whose every race goes through the choreographer
 
 
 def tier(h):
@@ -189,7 +190,9 @@ def main():
             db.commit()
             print(f"season {done}/{SEASONS}: {len(horses)} horses, {(time.time() - t0) / done:.1f} s a season", flush=True)
         sk.ai_nominate(horses, ai, d)
-        sk.run_today(d, horses)
+        c._story.CHOREO = True                                   # the choreographer (positions from a run of the decided result, the
+        sk.run_today(d, horses)                                  # replay hops) is slow: every stake, and every race in the last seasons
+        c._story.CHOREO = d >= (SEASONS - CHOREO_LAST) * c.YEAR
         horses = e.day(d, horses, ai, [])
         rec.night(d, horses)
         for h in horses:

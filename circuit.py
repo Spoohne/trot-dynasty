@@ -1186,7 +1186,7 @@ def run_race(r, alive, log):
         lead = next((h for h in order if "on the lead" in h.trip), None)
         if fo and lead and rows.get(fo.name) and abs(rows[fo.name]["behind"][4] - rows[lead.name]["behind"][4]) < 1.5:
             story["captions"].append([story["calls"][4], f"{fo.name} and {lead.name} go head and head"])
-        if len(order) > 1 and getattr(order[1], "margin_l", 9) < 1.0:
+        if len(order) > 1 and (getattr(order[1], "why", None) or {}).get("margin", 9) < 1.0:   # the story builder clears margin_l
             story["captions"].append([story["calls"][6] - 1.5, f"{order[0].name} and {order[1].name} fight it out"])
         story["captions"].sort(key=lambda x: x[0])
     line = tote_odds(field)
