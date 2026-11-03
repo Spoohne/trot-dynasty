@@ -17,6 +17,7 @@ GRIT_POP = dict(dur=(0.17, 1.424), gait=(0.09, 1.274), raw_sd=1.479, bar=(5.38, 
 SEC_PER_LENGTH = 0.2         # the replay's own conversion (a length is a fifth of a second)
 LUCK = 1.0                    # seconds: the best night a horse can have, beyond its rating's time (two night-swings)
 NOSE = 0.05                   # lengths: the least one finisher is behind another
+EASED = 6.0                   # lengths: a horse beaten by more is eased home, and its margin grows by the log past here (the honest clock's tail)
 RATE_W = dict(gate=.242, cruise=.304, kick=.391, grit=.064)   # the rating: bars weighted by worth (DECISIONS 217/224)
 TIME_FIT = (130.94, -2.733)  # mile seconds = a + b * rating: today's racing horses 3+ (n 660, r -0.93, resid 1.2 s)
 # Speed sets the clock (Patrick, 2026-11-02: "speed being the thing that directly correlates to how fast a horse can finish;
@@ -194,8 +195,12 @@ def race(field, track="mile", passing=False):
     # form and luck together) on one line, so the order, the margins and the clock are one thing and a beaten horse's time
     # is its own. Two horses are never closer than a nose.
     times, prev = {}, None
+    win = _secs(perf[order[0].id], track, half)
     for h in order:
-        t = _secs(perf[h.id], track, half)
+        m = (_secs(perf[h.id], track, half) - win) / SEC_PER_LENGTH
+        if m > EASED:                                          # a beaten horse is not driven out: the tail of a field
+            m = EASED + EASED * math.log1p((m - EASED) / EASED)   # stays within sight (25 L -> 15, 70 L -> 23)
+        t = win + m * SEC_PER_LENGTH
         if prev is not None:
             t = max(t, prev + NOSE * SEC_PER_LENGTH)
         times[h.id], prev = t, t

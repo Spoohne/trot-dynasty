@@ -21,7 +21,14 @@ allowance stays whole. Tier lines (`circuit.MILE_TIERS`): S+ 1:51.6, S 1:52.2, A
 handicapper's clock evidence (`TIME_FIT`) is the same fit on the new clock; `mile_secs` (the rating as a time) is
 refitted on 3.7M starts. Saved times, bests, records, replays and form lines move with `retime_v2.py` (`clock_v` 3).
 
-Measured on the review copy (400 races on a copy of the live save): winning time median 1:51.6, fastest 1:45.2
+The tail is eased (`EASED` 6 L): a horse beaten by more than six lengths is not driven out, and its margin grows by the
+log past there (25 L reads 15, 70 L reads 23), so a field stays within sight; its figure still reads its performance.
+Found in review (2026-11-03, Patrick on a Crown replay): with every horse at its own time the last flat horse was a median
+25.6 L back (90th 44 L), and the choreographer drew all of it in the stretch. After: last flat horse median 15.2 L, 90th
+18.4, max 21; winning margins unchanged (median 3.0, 90th 8.3). The choreographer also starts a well-beaten horse's fade
+early enough that it never loses more than a tenth of its speed (`fade_ft`).
+
+Measured on the review copy (400 races on a copy of the live save, before the eased tail): winning time median 1:51.6, fastest 1:45.2
 (Northern Star), winning margin median 3.4 L, photo finishes 9%. On the 100-season world's late seasons: 1:51.1,
 2.8 L, 10%. A horse's figures sit on its bars' predicted mile with sd 0.60 s (was 1.44 s on the old clock).
 

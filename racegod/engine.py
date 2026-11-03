@@ -142,6 +142,9 @@ def race(field, track="mile", passing=False, decided=None):
         e = {h.id: -0.6 * h.why["out"] for h in field}         # they leave in the ledger's gate order, a clear step apart
         leave = {h.id: steady[h.id] * (1 + E["launch"] + E["launch_gate"] * e[h.id]) for h in field}
         cap = {h.id: math.inf for h in field}
+        fade_ft = {h.id: max(E["drive_ft"], (fin_t[h.id] - fin_t[decided[0].id]) * steady[h.id] / 0.10) for h in field}   # a well-beaten horse
+    else:                                                      # starts giving way early enough never to lose more than a tenth of its speed
+        fade_ft = {h.id: E["drive_ft"] for h in field}
     yield_max = math.inf if decided else E["yield_max"]
     push = 0.04 if decided else E["push"]                    # choreographing, a horse going for its spot gets there
     ease = 2.0 if decided else E["ease"]       # choreographing, a horse keeps taking back until the file has a slot for it
@@ -165,7 +168,7 @@ def race(field, track="mile", passing=False, decided=None):
         for d in states:
             h, s, ln = d["h"], d["s"], round(d["lane"])
             st, r = steady[h.id], role[h.id]
-            drive = s >= MILE - E["drive_ft"]
+            drive = s >= MILE - fade_ft[h.id]
             ahead = min((o for o in states if o is not d and round(o["lane"]) == ln and o["s"] > s), key=lambda o: o["s"], default=None)
             gap = ahead["s"] - s if ahead else math.inf
             covered = gap < SLOT + 8

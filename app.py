@@ -2075,7 +2075,7 @@ GUIDE = [
          "that gets a soft trip in front runs a little quicker than its merit; one that does the work parked outside runs a little "
          "slower. A horse's letter is earned from its recent miles, read fairly for the trips it got, so a horse on the way up earns "
          "its letter on the track and one on the way down loses it the same way. A break tells you nothing about a horse's speed and "
-         "counts for nothing. Until a horse has raced enough, its letter is drawn hollow and read off its bars against horses its age."),
+         "counts for nothing. A well-beaten horse is eased home, and its time says so. Until a horse has raced enough, its letter is drawn hollow and read off its bars against horses its age."),
     ]),
     ("After the races", [
         ("Results and replays", "Results are spoiler-free: your starters are listed in post order, and you choose when to reveal each "
