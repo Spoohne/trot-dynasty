@@ -660,7 +660,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .fullorder{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:16px;background:#05070dcc}.fobox{width:min(440px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:2px solid var(--rule);border-top:3px solid var(--tote);padding:10px 12px}.foh{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}.foh span{color:var(--ink2);font-size:13px}.forow{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--rule2)}.forow.fome{background:#e8a33a22}.fopl{width:34px;flex:none}.fon{flex:1;min-width:0;display:flex;flex-direction:column}.fon small{color:var(--ink2);font-size:12px}.foo{width:44px;text-align:right;color:var(--ink2)}.fom{width:46px;text-align:right}.fohead{font-size:11px;color:var(--ink3);text-transform:uppercase;border-top:0}.mut{margin-top:10px;padding-top:8px;border-top:2px solid var(--rule)}.muh{display:flex;gap:6px;font-size:11px;color:var(--ink3);text-transform:uppercase;padding-bottom:4px}.muh span:first-child{flex:1;color:var(--tote);font-weight:700;letter-spacing:.1em}.murow{display:flex;align-items:center;gap:6px;padding:4px 0}.mun{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.muv{width:58px;text-align:right;font-variant-numeric:tabular-nums}.muex{display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--rule2);font-size:14px}
 .fotap{text-align:center;color:var(--ink3);font-size:12px;margin-top:10px}.fullbtn{margin-left:6px}
 .stat.otc{box-shadow:0 0 0 1px #fde68a,0 0 8px #f0abfcaa}.sv.otc{color:#fde68a;white-space:nowrap}
-.hown{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:8px 0;padding:6px 10px;background:#0b1120cc;border-left:3px solid var(--tote);font-size:14px}.hown .btag{font-weight:700;font-size:15px}.hownk{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--led)}.hbred{flex-basis:100%;font-size:12px;color:var(--ink2)}.hdr .mqbar{margin:0 0 8px}.parents{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pbox{display:flex;flex-direction:column;justify-content:center;min-height:52px;padding:6px 8px;border-radius:4px;border:2px solid #05070d;text-decoration:none;min-width:0;box-shadow:inset 0 -3px 0 #0003}.pbox small{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.85}.pbox b{font-size:14px;line-height:1.15;color:#fff;overflow-wrap:anywhere}.pbox.sire{background:#1f4fbf;color:#cfe0ff}.pbox.dam{background:#b8336a;color:#ffd6e6}.pbox.none{opacity:.55}
+.crow{border-bottom:1px solid var(--rule2)}.crow>summary{list-style:none;cursor:pointer;padding:6px 2px}.crow>summary::-webkit-details-marker{display:none}.crow[hidden]{display:none}.cdet{padding:2px 8px 10px 46px;font-size:13px;color:var(--ink2);display:flex;flex-direction:column;gap:4px}.cdet b{color:var(--led);font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}.cdet .btn{align-self:flex-start;width:auto;padding:4px 12px}.hown{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:8px 0;padding:6px 10px;background:#0b1120cc;border-left:3px solid var(--tote);font-size:14px}.hown .btag{font-weight:700;font-size:15px}.hownk{font:800 11px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--led)}.hbred{flex-basis:100%;font-size:12px;color:var(--ink2)}.hdr .mqbar{margin:0 0 8px}.parents{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pbox{display:flex;flex-direction:column;justify-content:center;min-height:52px;padding:6px 8px;border-radius:4px;border:2px solid #05070d;text-decoration:none;min-width:0;box-shadow:inset 0 -3px 0 #0003}.pbox small{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.85}.pbox b{font-size:14px;line-height:1.15;color:#fff;overflow-wrap:anywhere}.pbox.sire{background:#1f4fbf;color:#cfe0ff}.pbox.dam{background:#b8336a;color:#ffd6e6}.pbox.none{opacity:.55}
 .gtopic{border-bottom:1px solid var(--rule2);padding:2px 0}.gtopic summary{cursor:pointer;font-weight:700;padding:9px 2px;font-size:16px}.gtext{color:var(--ink2);line-height:1.5;padding:0 2px 12px;font-size:15px}.gtext b{color:var(--ink)}.tierrow{display:flex;align-items:center;gap:5px;margin:10px 0}.tierrow b{width:30px;height:30px;display:grid;place-items:center;color:#fff;font-weight:800;border:2px solid #05070d;border-radius:3px}.tierrow .tsp{width:36px;color:#111;background:linear-gradient(135deg,#f0abfc,#67e8f9,#fde68a)}.tierrow .tl{font-size:12px;color:var(--ink3);text-transform:uppercase}
 .enterplus.tonic{color:#14170f}.enterplus.tonic.on{background:#14170f!important;color:#e8eef4;box-shadow:0 0 0 2px var(--tc2),0 0 10px var(--tc2)!important}.tbadge{position:absolute;right:-5px;bottom:-5px;width:14px;height:14px;border-radius:50%;font:800 10px/14px system-ui;font-style:normal;text-align:center;background:#14170f;color:#fff;border:1px solid #fff6}.enterplus.tonic.on .tbadge{background:var(--tc2);color:#111;border-color:#111}.tline{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--tc2);border:1px solid var(--tc2);border-radius:10px;padding:0 7px 0 4px}.tb{display:block}.tbp{filter:drop-shadow(0 0 4px #c084fc99)}.invrow{display:flex;justify-content:space-between;gap:6px}.inv{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}.inv b{font-size:16px}.inv .sub{font-size:11px}.titem{display:flex;align-items:center;gap:12px}.tmid{flex:1;min-width:0}.tbig{flex:none}.tprem{border-image:linear-gradient(#f0abfc,#67e8f9,#fde68a) 1;background-image:linear-gradient(90deg,#c084fc2a,#38bdf812 40%,transparent 70%)}.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.tpick button{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px}.tpick button:disabled{opacity:.4}
 .prograce{border:1px solid var(--rule);border-radius:6px;margin:6px 0;padding:6px 10px;background:var(--panel)}.prograce summary{cursor:pointer;padding:4px 0}.pform{font-size:12px;color:var(--ink2)}.pml{font-size:16px}.pyou,.pplay{font-size:11px;padding:1px 5px;border-radius:3px;background:var(--tote);color:#111}.pplay{background:#5ab7e6}.pmine{background:#e8a33a1a}.hpick{font-size:13px;margin:4px 0 6px;color:var(--ink2)}.pvs{font-size:13px;color:#5ab7e6;margin:2px 0}.plane{font-size:11px;padding:1px 6px;border-radius:3px;background:#5ab7e6;color:#111;margin-left:6px}.prograce .prow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--rule2)}.prograce .pmid{flex:1;min-width:0}.prograce .pright{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
@@ -4110,7 +4110,42 @@ def results_list(h, n=10):
                  f"<span class=r10t>{c.mile_time(r['time'])}</span><span class=r10w>{'$' + format(round(r['won']), ',') if r['won'] else ''}</span>"
                  + (f"<a class=r10v href='/replay/{r['race_id']}'>▶ Watch replay</a>" if r.get("race_id") in c.STORIES else "") + "</div>")
     more = len(res) - n
-    return "<div class='card rlist10'>" + rows + (f"<div class=sub style='margin-top:6px'>Last {n} of {h.starts} starts</div>" if more > 0 else "") + "</div>"
+    return ("<div class='card rlist10'>" + rows + (f"<div class=sub style='margin-top:6px'>Last {n} of {h.starts} starts</div>" if more > 0 else "")
+            + f"<a class='btn sec' style='margin-top:8px' href='/career/{urlname(h.name)}'>Full career</a></div>")
+
+
+def career_page(name):
+    """Every start the game keeps for a horse, newest first, each opening into its detail (the trip, the finish, the field,
+    the purse, the replay), under the season ledger. A player's horse keeps its whole career; the circuit's keep their last thirty."""
+    h = next((x for x in G["horses"] + list(e.nursery) + list(sk.HALL) if x.name == name), None)
+    if not h:
+        return page("Full career", "<p class=sub>No such horse.</p>")
+    yr = c.year_of(G["day"])
+    led = sorted((getattr(h, "seasons", None) or {}).items())
+    seasons = "".join(f"<tr><td>Year {y}</td><td>{h.age - (yr - y)}yo</td><td>{r[0]}</td><td>{r[1]}-{r[2]}-{r[3]}</td><td class=money>${r[4]:,.0f}</td>"
+                      f"<td>{c.mile_time(r[5]) if r[5] < 999 else '—'}</td></tr>" for y, r in led if r[0])
+    ledger = (f"<div class=card><table class=etable><tr><th>Season</th><th>Age</th><th>Starts</th><th>W-P-S</th><th>Earned</th><th>Best</th></tr>{seasons}</table></div>"
+              if seasons else "")
+    res = list(reversed(getattr(h, "results", []) or []))
+    rows = ""
+    for r in res:
+        p = r["place"]
+        ordn = {1: "1st", 2: "2nd", 3: "3rd"}.get(p, f"{p}th")
+        head = (f"<span class='rp{' rp1' if p == 1 else ' rp3' if p <= 3 else ''}'>{ordn}</span>"
+                f"<span class=r10n>{esc(r['race'])}<span class=sub> · {esc(r.get('venue') or ('half-mile' if r['track'] == 'half' else 'mile'))}</span>"
+                + (f"<span class=r10d>Year {c.year_of(r['day'])} · Week {r['day'] % c.YEAR + 1}</span>" if r.get("day") is not None else "") + "</span>"
+                f"<span class=r10t>{c.mile_time(r['time'])}</span><span class=r10w>{'$' + format(round(r['won']), ',') if r['won'] else ''}</span>")
+        detail = (f"<div class=cdet><div><b>Trip</b> {esc(r.get('trip', ''))}</div>"
+                  + (f"<div><b>Finish</b> {esc(r['finish'])}</div>" if r.get("finish") else "")
+                  + f"<div><b>Field</b> {r.get('size', '?')} · <b>Purse</b> ${r.get('purse', 0):,.0f}"
+                  + (f" · <b>Earned</b> ${r['won']:,.0f}" if r.get("won") else "") + "</div>"
+                  + (f"<a class='btn sec' href='/replay/{r['race_id']}'>▶ Watch replay</a>" if r.get("race_id") in c.STORIES else "") + "</div>")
+        rows += f"<details class=crow data-pi><summary class=r10>{head}</summary>{detail}</details>"
+    kept = (f"<p class=sub>{len(res)} of {h.starts} starts kept" + ("" if len(res) >= h.starts else " (the circuit keeps a horse's last thirty)") + "</p>"
+            if res else "<p class=sub>No starts yet.</p>")
+    body = (f"<div class=proghead><span><a href='/horse/{urlname(h.name)}'>← {esc(h.name)}</a></span><span>{h.starts}-{h.wins} · ${h.earnings:,.0f}</span></div>"
+            + ledger + kept + (pbox(rows, len(res), 25) if rows else ""))
+    return page(f"{h.name}: full career", body)
 
 
 def trophy_case(h):
@@ -5658,6 +5693,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(entry_page(unquote(p[len("/enter/"):])))
         if p.startswith("/horse/"):
             return self.send(horse_page(unquote(p.split("/")[2]), "enter" in parse_qs(urlparse(self.path).query)))
+        if p.startswith("/career/"):
+            return self.send(career_page(unquote(p.split("/")[2])))
         if p.startswith("/mock/"):                          # design mockups: static files from mockups/
             root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mockups")
             path = os.path.normpath(os.path.join(root, p[len("/mock/"):]))

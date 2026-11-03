@@ -857,7 +857,9 @@ def record_result(h, name, track, place, purse, field_est, size=None):
     h.form = (getattr(h, "form", []) + [chart])[-10:]
     h.results = (getattr(h, "results", []) + [{"day": DAY[0], "race": name, "track": track, "place": place + 1, "time": h.last_time,
                                                  "won": won, "trip": h.trip, "finish": finish, "purse": purse, "size": size or FIELD[track],
-                                                 "fig": outcome.figure(h, track)}])[-30:]
+                                                 "fig": outcome.figure(h, track)}])
+    if getattr(h, "owner", None) not in HUMAN:                 # a player's horse keeps its whole career (the Full Career page); the circuit's keep 30
+        h.results = h.results[-30:]
     h.best = min(getattr(h, "best", 999), h.last_time)
     yr = getattr(h, "seasons", None)                          # the season ledger: {year: [starts, wins, places, shows, earnings, best]}
     if yr is None:
