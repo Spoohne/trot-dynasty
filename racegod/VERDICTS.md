@@ -469,3 +469,8 @@ text; they rebuild, less faithfully.
 Ship it behind the switch: deploy, set `TD_STORY=choreo` in the service environment, restart; tonight's card is then
 choreographed and the audit reads it. Rollback is unsetting the variable. The 93 rebuilt pairs are on
 http://127.0.0.1:8115/ (`-choreo` and `-story` per race) while this session runs.
+
+Patrick: deploy (2026-11-02). Code in commit 5eced9a; `TD_STORY=choreo` set in a systemd drop-in
+(`/etc/systemd/system/trotdynasty.service.d/choreo.conf`), service restarted, the process sees it, `story.CHOREO`
+True on the server. Rollback: delete the drop-in, daemon-reload, restart. Tonight's card is the first choreographed one;
+V12 reads it (audit + picture checks via `choreo_rebuild.py`'s checks on the live stories).
