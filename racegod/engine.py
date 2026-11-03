@@ -19,8 +19,8 @@ from outcome import K, LUCK, NOSE, SEC_PER_LENGTH, WITHIN, ROLES, P, DUEL, P_NON
 DT = 0.25
 MILE = 5280.0
 LANE_FT = 7.0
-SLOT = 16.0                    # nose to nose in single file (story.py SLOT: a horse and sulky and a little daylight)
-BODY_L = 1.5                   # lengths a horse and sulky take up: the least two in one lane can be apart at the wire
+SLOT = 20.0                    # nose to nose in single file: 16 ft on the screen (the story's length is a fifth of a second, ~10 ft here; the viewer draws 8)
+BODY_L = 2.0                   # lengths (fifths of a second) a horse and sulky take up, the viewer's 15.5 ft: the least two in one lane can be apart at the wire
 GEOM = {"mile": (1320.0, 1320.0, 320.0), "half": (800.0, 520.0, 300.0)}   # straight, turn, run-in, as race3.Track
 E = dict(                      # the run's own knobs, as racegod/engine_fit.py --de left them (2026-11-02, 14 generations; V7)
     launch=0.03, launch_gate=0.024,    # share of steady speed everyone adds leaving the gate, and per unit of gate
@@ -210,7 +210,7 @@ def race(field, track="mile", passing=False, decided=None):
                 d["tgt"] = 1                                      # pull out behind the first-over horse, into its cover
             if ln > 0 and d["tgt"] >= ln and not (r in (2, 3) and s >= move_s) and not drive:
                 senior_behind = any(o is not d and peck[o["h"].id] < peck[h.id] and round(o["lane"]) >= ln and 0 < s - o["s"] < 2 * SLOT for o in states)
-                if _clear(states, d, ln - 1) and not senior_behind:   # get to the rail when there's room, and nobody who ranks above it is still coming
+                if _clear(states, d, ln - 1, 0.6 * SLOT) and not senior_behind:   # get to the rail when there's room, and nobody who ranks above it is still coming
                     d["tgt"] = ln - 1
                 else:
                     inner = [o for o in states if o is not d and round(o["lane"]) == ln - 1 and abs(o["s"] - s) < SLOT]
@@ -316,8 +316,9 @@ def choreograph(order, track, passing=False):
     return story(order, track, passing)
 
 
-def _clear(states, d, lane):
-    return not any(o is not d and (round(o["lane"]) == lane or o["tgt"] == lane) and abs(o["s"] - d["s"]) < SLOT for o in states)
+def _clear(states, d, lane, behind=SLOT):
+    """Room in that lane: a slot ahead; `behind` ft behind (a horse crossing in front of one it has beaten needs less, the one behind takes back)."""
+    return not any(o is not d and (round(o["lane"]) == lane or o["tgt"] == lane) and (o["s"] - d["s"] < SLOT if o["s"] > d["s"] else d["s"] - o["s"] < behind) for o in states)
 
 
 def _at(path, tc):

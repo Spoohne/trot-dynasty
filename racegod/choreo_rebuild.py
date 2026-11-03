@@ -3,7 +3,7 @@ Reads a save copy, never writes it; the rebuilt stories go to a JSON for racegod
 the original as <id>-story). Also prints the picture checks: two horses in one lane within a body at the stretch or the
 wire, and lane changes between the stretch and the wire (what the viewer draws as going through each other).
     python racegod/choreo_rebuild.py <save.pkl> <out.json> [race id ...]      (no ids: every kept story since day 2626)"""
-import json, os, pickle, sys
+import copy, json, os, pickle, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import sim                                                     # noqa: E402
@@ -74,8 +74,9 @@ def main():
     stories = {rid: st for rid, st in save["stories"].items() if (rid in ids if ids else st["day"] >= 2626 and all(r.get("why") for r in st["horses"]))}
     kept, n_bad_new, n_bad_old = {}, 0, 0
     for rid, st in stories.items():
-        if any(r["name"] not in H for r in st["horses"]):
-            print(f"{rid}: a horse is gone from the save, skipped"); continue
+        for k, r in enumerate(st["horses"]):
+            if r["name"] not in H:                             # AI field fillers are not kept in the save: a stand-in, for the picture only
+                h = copy.copy(next(iter(H.values()))); h.name, h.id = r["name"], f"standin-{rid}-{k}"; H[h.name] = h
         s = rebuild(st, H)
         kept[f"{rid}-choreo"], kept[f"{rid}-story"] = s, dict(st, id=f"{rid}-story")
         b_new, b_old = checks(s), checks(st)

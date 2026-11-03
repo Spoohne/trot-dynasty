@@ -474,3 +474,22 @@ Patrick: deploy (2026-11-02). Code in commit 5eced9a; `TD_STORY=choreo` set in a
 (`/etc/systemd/system/trotdynasty.service.d/choreo.conf`), service restarted, the process sees it, `story.CHOREO`
 True on the server. Rollback: delete the drop-in, daemon-reload, restart. Tonight's card is the first choreographed one;
 V12 reads it (audit + picture checks via `choreo_rebuild.py`'s checks on the live stories).
+
+## V12 — the half-pulled-out horse (2026-11-02, after the first choreographed night)
+
+Patrick: Northern Star half pulls out and sits there (2654-hp-mile-Open-1); the 2 horse, Desert Melody, is parked out the whole race.
+
+**Measured.** The choreographer spaces the single file 16 ft nose to nose and writes "lengths behind" in the story's unit, a fifth of a second (about 10 ft at race speed). The viewer draws a length as 8 ft and lets no two runners in a lane come inside 15.5 ft (RACE.BODY). So every slot lands on the screen at 13 ft, the viewer treats the whole rail line as held up, and its go-round logic eases each horse half a lane out and leaves it there. Desert Melody in the live story: viewer lane 0.9 from 6 s to 78 s, story lane 0. Northern Star in 2653-hp-mile-Open-1: viewer lane 0.55 from 54 s to 78 s on a story lane of 0.
+
+**Change (racegod/engine.py).** SLOT 16 → 20 ft (16 ft on the screen) and BODY_L 1.5 → 2.0 L (the viewer's 15.5 ft). Not a driver rule; the units.
+
+**Rebuilt through the lab viewer (horse-seconds more than a quarter lane off the story lane):**
+
+| race | live story | slot 20 |
+|---|---|---|
+| 2654-hp-mile-Open-1 | 285 of 848 (Desert Melody 89) | 176 of 848 (Desert Melody 18) |
+| 2650-stake-S6725 | 443 of 1050 | 211 of 1050 |
+
+Desert Melody rebuilt: rail from 24 s to 78 s, out to lane 1 at the three-quarters as the story says. Northern Star in the Crown race: rail to 78 s, one tip-out, straight to the wire.
+
+**Open.** The remainder (about 20% of horse-seconds) is the viewer's own re-simulation: a beaten horse swings a lane wider in the stretch than its story lane (Desert Melody to lane 2 from 90 s in both versions), and the slot still narrows to 15 ft late in the third quarter as the viewer closes gaps. Next: once this is live, a nightly count of horse-seconds off the story lane per race. Stories already kept on live stay as they were; only new nights get the wider slot. AI field fillers are not kept in the save, so `choreo_rebuild.py` now uses stand-ins for them.
