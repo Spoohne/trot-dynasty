@@ -849,7 +849,8 @@ def record_result(h, name, track, place, purse, field_est, size=None):
         .replace("1th", "1st").replace("2th", "2nd").replace("3th", "3rd")
     h.form = (getattr(h, "form", []) + [chart])[-10:]
     h.results = (getattr(h, "results", []) + [{"day": DAY[0], "race": name, "track": track, "place": place + 1, "time": h.last_time,
-                                                 "won": won, "trip": h.trip, "finish": finish, "purse": purse, "size": size or FIELD[track]}])[-30:]
+                                                 "won": won, "trip": h.trip, "finish": finish, "purse": purse, "size": size or FIELD[track],
+                                                 "fig": outcome.figure(h, track)}])[-30:]
     h.best = min(getattr(h, "best", 999), h.last_time)
     yr = getattr(h, "seasons", None)                          # the season ledger: {year: [starts, wins, places, shows, earnings, best]}
     if yr is None:
@@ -1159,6 +1160,13 @@ def run_race(r, alive, log):
     drive(field, r.setdefault("drivers", {}), track)
     order = (outcome.race if ENGINE == "outcome" else race)(field, track, v.get("passing", False))
     story = _story.build(order, track, passing=v.get("passing", False))   # everything that can fail, before any result is written
+    if ENGINE == "outcome" and "captions" in story:                # ratings v2 tells: the ledger names what the picture drew
+        for h in order:
+            if (getattr(h, "why", None) or {}).get("broke"):
+                story["captions"].append([story["calls"][2], f"{h.name} breaks stride"])
+        if "sharp tonight" in order[0].trip:
+            story["captions"][-1][1] += ", sharp tonight"
+        story["captions"].sort(key=lambda x: x[0])
     line = tote_odds(field)
     r["settling"] = True                                # from here the result is being applied: no retry may apply it again
     for h in field:

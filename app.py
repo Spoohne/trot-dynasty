@@ -682,7 +682,7 @@ summary::after{content:'+';color:var(--ink3);font-weight:400} details[open] summ
 .tpmotes{position:absolute;inset:0;background-image:radial-gradient(#ffd75acc 1px,transparent 1.6px),radial-gradient(#ffe9a8aa 1px,transparent 1.6px);background-size:23px 29px,37px 41px;background-position:0 0,11px 7px;animation:tpmotes 9s linear infinite;opacity:.7}
 @keyframes tpmotes{to{background-position:0 290px,11px 417px}}
 .tpsp{box-shadow:0 0 0 3px transparent;outline:3px solid;animation:tpholo 6s linear infinite}@keyframes tpholo{0%{outline-color:#f9a8d4}25%{outline-color:#93c5fd}50%{outline-color:#86efac}75%{outline-color:#fde68a}100%{outline-color:#f9a8d4}}
-.tps{outline:3px solid #e8a33a}.port:has(.tp){background:none!important}.tier.ped,.sqt.ped{background:#0b1430e6!important;color:#e6e8ec!important;box-shadow:none!important;outline:2px dashed #e6e8ecb3;outline-offset:-4px;animation:none!important}.tier.ped.badge::after{content:'PEDIGREE';position:absolute;right:0;bottom:100%;margin-bottom:3px;font:800 8px 'Barlow Condensed',sans-serif;letter-spacing:.08em;color:#a4acb9;text-shadow:0 1px 2px #000;white-space:nowrap}.port .tp{outline:none;animation:none;display:block;position:absolute;inset:0;width:auto!important;height:auto!important}.port .tp img,.port .tp .tploop{width:100%!important;height:100%!important;object-fit:cover}
+.tps{outline:3px solid #e8a33a}.port:has(.tp){background:none!important}.tier.ped,.sqt.ped{background:#0b1430e6!important;color:#e6e8ec!important;box-shadow:none!important;outline:2px dashed #e6e8ecb3;outline-offset:-4px;animation:none!important}.tier.ped.badge::after{content:'UNPROVEN';position:absolute;right:0;bottom:100%;margin-bottom:3px;font:800 8px 'Barlow Condensed',sans-serif;letter-spacing:.08em;color:#a4acb9;text-shadow:0 1px 2px #000;white-space:nowrap}.port .tp{outline:none;animation:none;display:block;position:absolute;inset:0;width:auto!important;height:auto!important}.port .tp img,.port .tp .tploop{width:100%!important;height:100%!important;object-fit:cover}
 @media (prefers-reduced-motion:reduce){.tploop,.tpsweep,.tpmotes,.tpsp{animation:none}.tpsweep,.tpmotes{display:none}}
 .sq{position:relative;flex:0 0 auto;border:3px solid;border-radius:6px;background:#1c2430;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .sq img{display:block;width:100%;height:100%;object-fit:cover} .pimg{display:block;border:3px solid;border-radius:50%;background:#1c2430;object-fit:cover} .sqt{position:absolute;right:0;bottom:0;color:#fff;font-size:12px;font-weight:700;padding:1px 5px;border-radius:4px 0 0 0}
@@ -863,7 +863,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .phase b{font-family:'Barlow Condensed',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
 .r10{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule2);font-size:14px}.r10:last-of-type{border-bottom:0}
 .rp{min-width:34px;font-weight:700;color:var(--ink2)}.rp.rp3{color:var(--ink)}.rp.rp1{color:var(--win)}
-.r10n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r10d{display:block;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}.r10t{font-variant-numeric:tabular-nums;color:var(--ink2)}.r10w{min-width:62px;text-align:right;font-variant-numeric:tabular-nums;color:var(--win)}
+.r10n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r10d{display:block;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}.r10t{font-variant-numeric:tabular-nums;color:var(--ink2)}.r10f{display:block;font-size:11px;color:var(--ink3)}.r10w{min-width:62px;text-align:right;font-variant-numeric:tabular-nums;color:var(--win)}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
 .tcase{border:2px solid var(--rule);background:var(--well);padding:8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px}
 .tcase i{font-style:normal;font-size:24px;color:var(--led);width:28px;height:28px;display:flex;align-items:center;justify-content:center}.tcase.tcup{border-color:#b8900a}
@@ -2041,7 +2041,8 @@ GUIDE = [
         ("The vet's appraisal", "A young horse shows what it is over its starts. If you'd rather know sooner, the vet will "
          "appraise one of yours for a few Markers: the grade it should reach at its peak, told to you and nobody else. It "
          "changes nothing on the track; it only saves you the wait. Until a horse has raced a few times, its letter is drawn "
-         "hollow: that's what its bars say today against horses its age, and a youngster can still grow into more, or less."),
+         "hollow: that's what its bars say today against horses its age, and a youngster can still grow into more, or less. Once it has "
+         "raced a few times its letter is earned: it comes from its figures, each start read fairly for the trip it got, the latest ones counting."),
     ]),
     ("On the track", [
         ("How a race is run", "Every race on this circuit is run the same way for every barn, the house's horses included. Nothing "
@@ -2202,7 +2203,7 @@ TIP_SEQUENCE = [
     "Nothing in your barn races unless you enter it. Tap the + on a horse's card to enter it.",
     "A horse needs to be fresh to run its best. Rest it, or use a grooming slot to get it back sooner.",
     "Mile time is how fast a horse is expected to trot. Tier is the letter grade that comes with it: D up to S+.",
-    "A hollow, dashed letter is read off the horse's bars against horses its age. A horse earns its grade on the track once it has raced a few times.",
+    "A hollow, dashed letter is read off the horse's bars against horses its age. Once it has raced a few times its letter is earned: it comes from its figures, each start read fairly for the trip it got, the latest ones counting.",
     "Two yearlings came with your barn, papers paid. Find them on the Training tab; they join your racers at two.",
     "Youngsters are yours to make. The Training tab is their day sheet: jog, train, school or turn out, one job a day.",
     "Your mare is your way up. Buy the Breeder's License on the Breeding tab, and her foals can race for you.",
@@ -2511,7 +2512,7 @@ def young_bar(h, t):
     """A foal against its own crop (Patrick 2026-11-02): its place among the weanlings and yearlings, each allowing for its
     age, read off the grown horses' bars, so a top-tenth foal shows the bar a top-tenth racehorse has. Its own stats sit
     under the bottom of the scale. Weanlings and yearlings rank together: a crop can be three foals."""
-    key = (G["day"], t)
+    key = (c.DAY[0], t)
     if key not in _YOUNG:
         if len(_YOUNG) > 32:
             _YOUNG.clear()
@@ -2528,7 +2529,7 @@ _CROPS = {}
 
 def crops():
     """Every racing horse's bars, sorted, by crop (2, 3, aged): what a grade ranks against. Made once a day."""
-    key = (G["day"], len(G["horses"]))
+    key = (c.DAY[0], len(G["horses"]))
     if _CROPS.get("key") != key:
         by = collections.defaultdict(lambda: collections.defaultdict(list))
         for x in G["horses"]:
@@ -3123,7 +3124,8 @@ def card_header(h, own, price=None):
     return (f"<div class='card hdr'><div class=htop><div class='port t{tier_cls(h)}'><div class=stagelight></div>{portrait(h, 150)}<div class='tier {tier_cls(h)} badge'>{tier_label(h)}</div>{trophy(h)}{ribbon}</div>"
             f"<div class=hr><div class=hname>{esc(h.name)} {grade_chip}</div>"
             f"<div class=hline>{h.age}-year-old {coat} {sexname}, {h.starts} starts, {h.wins} wins</div>"
-            f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
+            + (f"<div class=hline>Figure {c.mile_time(badge_secs(h))} · {'its last six starts' if not h.retired else 'its prime'}</div>" if not unproven(h) and badge_secs(h) else "")
+            + f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
             + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if has_pass(ME) and trainer_read(h) else "")   # a Season Pass perk
                + card_bars(h) + f"{prime_row(h)}</div>")   # every horse's bars are public
@@ -3199,7 +3201,7 @@ MILE_TIERS = tuple((sim.retime(x), t) for x, t in ((107.5, "S+"), (109.5, "S"), 
 
 
 PED_STARTS = 5                 # under this many starts a horse's badge is read off its bars against its peers, shown hollow
-CARD_W = {"late_speed": .5, "stamina": .4, "gait": .1}     # Speed >> Stamina >>> Manners (Grit shows only once it has raced)
+BADGE_LAST, BADGE_MIN = 6, 3   # ratings v2: the badge rests on the median of the last six figures, once there are three
 
 
 def unproven(h):
@@ -3207,8 +3209,32 @@ def unproven(h):
     return not h.retired and h.starts < PED_STARTS
 
 
+def predicted_mile(h):
+    """The mile the horse's bars predict, on the figure ruler; weanlings and yearlings read against their crop."""
+    return c.outcome.pred_mile(dict(kick=bar_of(h, "late_speed"), cruise=bar_of(h, "stamina")))
+
+
 def card_score(h):
-    return sum(w * bar_of(h, t) for t, w in CARD_W.items())
+    return -predicted_mile(h)
+
+
+def fig_of(r):
+    """A start's figure, or None: a break, or a start from before figures were kept."""
+    return r.get("fig")
+
+
+def badge_secs(h, how="recent"):
+    """The figure a proven horse's badge rests on: the median of its last six figures (how="peak": the second-best of its
+    last ten, kept for the encyclopedia's comparison); a retired horse keeps the median of its six best (its prime). None
+    until three starts have left a figure."""
+    res = getattr(h, "results", [])
+    if h.retired:
+        figs = sorted(f for r in res if (f := fig_of(r)) is not None)[:BADGE_LAST]
+    elif how == "peak":
+        figs = sorted(f for r in res[-10:] if (f := fig_of(r)) is not None)[:2][-1:]
+    else:
+        figs = [f for r in res if (f := fig_of(r)) is not None][-BADGE_LAST:]
+    return c.st.median(figs) if len(figs) >= (1 if how == "peak" else BADGE_MIN) else None
 
 
 _GRADED = {}
@@ -3218,7 +3244,7 @@ def bars_grade(h):
     """An unproven horse's badge (Patrick 2026-11-02: the pedigree's guess told an owner nothing): its bars against the
     other unproven horses its age (weanlings and yearlings together: their bars already allow for age), cut at the
     shares the proven horses' badges come in, so a top-tenth foal wears what a top-tenth racehorse does."""
-    key = (G["day"], len(e.nursery), len(G["horses"]))
+    key = (c.DAY[0], len(e.nursery), len(G["horses"]))
     if key not in _GRADED:
         _GRADED.clear()
         proven = [tier_label(x) for x in G["horses"] if not unproven(x) and not x.retired and x.age >= 2]
@@ -3238,11 +3264,13 @@ def bars_grade(h):
 
 
 def tier_label(h):
+    """The badge (ratings v2): one ruler, mile seconds. A proven horse wears its recent figures; an unproven one its bars'
+    prediction against its peers. The handicapper's est makes no badge."""
     if unproven(h):
         return bars_grade(h)
-    if h.age < 2 or c.age_group(h) not in c.GROUP_STATS:                       # a foal hasn't raced: no rating yet
-        return h.tier
-    secs = c.mile_secs(c.peak_est(h) if h.retired else h.est)                 # a retired horse keeps the rating of its prime
+    secs = badge_secs(h)
+    if secs is None:                                                           # every start a break, or retired unraced: its bars
+        secs = predicted_mile(h)
     return next((t for cut, t in MILE_TIERS if secs <= cut), "D")
 
 
@@ -3967,6 +3995,7 @@ def results_page(qs=None):
                      + (f"<a class='btn sec rbtn' href='/replay/{r['race_id']}'>Watch</a>" if r.get("race_id") in c.STORIES else "")
                      + f"<button class='rbtn' onclick='reveal(this)'>Result</button></span>"
                      f"<span class='spoil rres'><span class='rfin{' rwin' if p == 1 else ''}'>{nth}</span> <span class=rtime>{c.mile_time(r['time'])}</span>"
+                     + (f" <span class=sub>fig {c.mile_time(f)}</span>" if (f := r.get('fig')) else "")
                      + (f"<span class=won>${r['won']:,.0f}</span>" if r["won"] else "")
                      + (f"<button class='sec rbtn fullbtn' onclick=\"fullOrder('{esc(r['race_id'])}')\">Full order</button>" if r.get("race_id") in c.STORIES else "")
                      + "</span></span></div>"
@@ -4011,7 +4040,7 @@ def results_list(h, n=10):
         rows += (f"<div class=r10><span class='rp{' rp1' if p == 1 else ' rp3' if p <= 3 else ''}'>{ordn}</span>"
                  f"<span class=r10n>{esc(r['race'])}<span class=sub> · {esc(r.get('venue') or ('half-mile' if r['track'] == 'half' else 'mile'))}</span>"
                  + (f"<span class=r10d>Year {c.year_of(r['day'])} · Week {r['day'] % c.YEAR + 1}</span>" if r.get("day") is not None else "") + "</span>"
-                 f"<span class=r10t>{c.mile_time(r['time'])}</span><span class=r10w>{'$' + format(round(r['won']), ',') if r['won'] else ''}</span>"
+                 f"<span class=r10t>{c.mile_time(r['time'])}<small class=r10f>{'fig ' + c.mile_time(f) if (f := fig_of(r)) else '—'}</small></span><span class=r10w>{'$' + format(round(r['won']), ',') if r['won'] else ''}</span>"
                  + (f"<a class=r10v href='/replay/{r['race_id']}'>▶ Watch replay</a>" if r.get("race_id") in c.STORIES else "") + "</div>")
     more = len(res) - n
     return "<div class='card rlist10'>" + rows + (f"<div class=sub style='margin-top:6px'>Last {n} of {h.starts} starts</div>" if more > 0 else "") + "</div>"

@@ -72,6 +72,47 @@ def best_mile(b, half=False):
     return SPEED_FIT[0] + SPEED_FIT[1] * b["kick"] + STAY * max(0.0, b["kick"] - b["cruise"]) + (sim.HALF_SLOWER if half else 0)
 
 
+# Ratings v2 (research/engine_lab/RATINGS_V2.md): the clock can't rate a beaten horse (inside a field a bar is worth a fifth of a
+# second, between fields two: a loser's time is mostly the winner's class), so a start's figure is read off the ledger instead:
+# the model's performance with the trip taken out (the role's worth, the line's depth, a closer's extra kick), in mile seconds
+# on the clock's own scale. FIG_FIT maps the model's class units (omega * cruise + (1 - omega) * kick, at K per bar) onto best_mile
+# over today's horses, so an unraced horse's predicted mile and a raced horse's figures are one ruler.
+FIG_FIT = {"mile": (116.968, -6.409), "half": (116.841, -6.106)}   # a + b * units: live save 2026-11-03, 777 horses 2+ (r -0.96 mile, -0.92 half)
+FORM_TELL = 1.3                                       # sd of the night's form past which the trip text says so
+
+
+def _A(p):
+    return (p["A_lead"], p["A_pocket"], p["A_fo"], p["A_fol"], 0.0)   # what each role is worth in the model (ROLES order)
+
+
+def _secs(units, track):
+    a, b = FIG_FIT[track]
+    to_raw = (sim.CLOCK_REF - sim.CLOCK_AT) / sim.CLOCK_K
+    return round(sim.clock(a + b * units + to_raw), 2)                  # the same floor as the race clock
+
+
+def class_units(b, track="mile"):
+    """A horse's class in the model's units, from its bars: what it brings to any trip."""
+    p = P[track]
+    return K * (p["omega"] * (b["cruise"] - 5) + (1 - p["omega"]) * (b["kick"] - 5))
+
+
+def pred_mile(b):
+    """The mile a horse's bars predict, on the figure ruler."""
+    return _secs(class_units(b), "mile")
+
+
+def figure(h, track):
+    """A start's figure: the ledger's performance with the trip taken out, as mile seconds. A breaker's start has none."""
+    why = getattr(h, "why", None)
+    if not why or "kick" not in why or why.get("broke"):
+        return None
+    p = P[track]
+    closing = why["role"] in ("followed", "back")
+    units = why["perf"] - (_A(p)[ROLES.index(why["role"])] - p["b_depth"] * why["depth"]) - p["k_close"] * closing * why["kick"]
+    return _secs(units, track)
+
+
 def race(field, track="mile", passing=False):
     """One race. Returns the finishing order; sets each horse's trip, raw_time and last_time like sim.race."""
     p, n, half = P["half" if track == "half" else "mile"], len(field), track == "half"
@@ -91,7 +132,7 @@ def race(field, track="mile", passing=False):
     e = {h.id: T[h.id]["gate"] - p["c_post"] * post + p["s_start"] * rng.gauss(0, 1) for post, h in enumerate(field)}
     out = sorted(field, key=lambda h: -e[h.id])                # order out of the gate
     w_k = 1 - p["omega"]
-    A = [p["A_lead"], p["A_pocket"], p["A_fo"], p["A_fol"], 0.0]
+    A = _A(p)
     role, depth = {}, {}
     lead = mover = None; pocket_taken = False; followers = 0; line = 0
     can_move = rng.random() >= P_NONE
@@ -150,10 +191,13 @@ def race(field, track="mile", passing=False):
                                    4: "sat in behind, came from off the pace" if depth[h.id] >= 2 and order.index(h) < 3 else "sat in behind"}[r]
         if broke[h.id]:
             trip += ", broke stride"
+        if abs(form[h.id]) > FORM_TELL * p["s_form"]:               # the night's form, once it was big enough to tell
+            trip += ", sharp tonight" if form[h.id] > 0 else ", flat tonight"
         h.trip = trip
         h.margin_l = (perf[order[0].id] - perf[h.id]) * p["s_margin"]   # lengths behind the winner: the story shows these as run
         h.why = dict(out=out.index(h) + 1, role=ROLES[r], depth=depth[h.id], perf=round(perf[h.id], 3),   # RaceGod's ledger: what decided it
-                     form=round(form[h.id], 3), broke=broke[h.id], model_l=round(h.margin_l, 2))
+                     form=round(form[h.id], 3), broke=broke[h.id], model_l=round(h.margin_l, 2),
+                     kick=round(T[h.id]["kick"], 3), cruise=round(T[h.id]["cruise"], 3))                 # as raced tonight (form in): the figure reads them back
     prev = prev0 = None
     for h in order:                                            # the speed limit, then the order: a horse pushed back carries the delay
         t0 = win_raw + h.margin_l * SEC_PER_LENGTH             # to those behind it, who keep their gaps (at least a nose)

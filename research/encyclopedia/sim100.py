@@ -36,6 +36,14 @@ def tier(h):
     return app.tier_label(h)
 
 
+def tier_live(h):
+    """The badge the live game cuts from the handicapper's est (app.tier_label before ratings v2), for the comparison."""
+    if h.age < 2 or c.age_group(h) not in c.GROUP_STATS:
+        return None
+    secs = c.mile_secs(c.peak_est(h) if h.retired else h.est)
+    return next((t for cut, t in app.MILE_TIERS if secs <= cut), "D")
+
+
 def grade_of(share):
     return next(g for cut, g in app.GRADE_CUT if share <= cut)
 
@@ -52,7 +60,8 @@ def open_db(path):
         best REAL, trophies TEXT, titles TEXT, last_season INTEGER, retired INTEGER, last_age INTEGER);
       CREATE TABLE seasons(id INTEGER, season INTEGER, age INTEGER, retired INTEGER, speed REAL, stamina REAL, grit REAL,
         manners REAL, g_speed TEXT, g_stamina TEXT, g_grit TEXT, g_manners TEXT, rating REAL, tier TEXT, starts INTEGER,
-        wins INTEGER, earnings REAL, season_earn REAL, gate REAL, best_mile REAL, PRIMARY KEY(id, season));   -- gate: early speed, not on the card; best_mile: outcome.best_mile
+        wins INTEGER, earnings REAL, season_earn REAL, gate REAL, best_mile REAL, fig_recent REAL, fig_peak REAL, tier_live TEXT, pred REAL,
+        PRIMARY KEY(id, season));   -- gate: early speed, not on the card; best_mile: outcome.best_mile; fig_*: ratings v2 badge figures; tier_live: the est badge; pred: outcome.pred_mile
       CREATE TABLE stories(rid TEXT PRIMARY KEY, day INTEGER, season INTEGER, name TEXT, purse REAL, stake INTEGER, json BLOB);   -- zlib'd JSON
       CREATE TABLE kept(id INTEGER, rid TEXT, score REAL, place INTEGER);
       CREATE TABLE meta(k TEXT PRIMARY KEY, v TEXT);
@@ -108,6 +117,7 @@ class Recorder:
     def season_end(self, season, horses):
         """Every horse's card and season at the end of a season, graded within its crop."""
         everyone = horses + list(e.nursery)
+        app.G["horses"] = horses                                      # the card reads a foal against the world's horses (app.young_bar)
         rows, crop = [], {}
         for h in everyone:
             bars = {k: app.bar_of(h, t) for k, t in BAR_KEYS}
@@ -128,9 +138,10 @@ class Recorder:
             out.append((h.id, season, h.age, int(h.retired), bars["speed"], bars["stamina"], bars["grit"], bars["manners"],
                         g["speed"], g["stamina"], g["grit"], g["manners"], rating, tier(h) if h.age >= 2 else None,
                         h.starts, h.wins, h.earnings, getattr(h, "earnings", 0) - getattr(h, "season0", 0), app.bar_of(h, "early_speed"),
-                        O.best_mile(O.bars(h, h.developed))))
+                        O.best_mile(O.bars(h, h.developed)), app.badge_secs(h), app.badge_secs(h, "peak"), tier_live(h),
+                        O.pred_mile(O.bars(h, h.developed))))
             self.horse_row(h, season)
-        self.db.executemany("INSERT OR REPLACE INTO seasons VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
+        self.db.executemany("INSERT OR REPLACE INTO seasons VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
         for hid, heap in self.best.items():
             self.db.execute("DELETE FROM kept WHERE id=?", (hid,))
             self.db.executemany("INSERT INTO kept VALUES(?,?,?,?)", [(hid, rid, s, pl) for s, rid, pl in heap])
