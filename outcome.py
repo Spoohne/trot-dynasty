@@ -12,7 +12,8 @@ import bisect, math, random
 import sim
 
 K = 0.36                     # model units per bar (0.4 / 1.1)
-PIP_STEPS = (-3.33, -2.5, -1.67, -0.83, 0.0, 0.83, 1.67, 3.7, 6.0)   # app.PIP_STEPS: the live bar scale
+PIP_STEPS = (-3.33, -2.5, -1.67, -0.83, 0.0, 0.83, 1.67, 3.7, 12.5)  # the bar scale: a full bar is the best in the world (the breed's top is
+MANNERS_STEPS = (-3.33, -2.5, -1.67, -0.83, 0.0, 0.83, 1.67, 3.7, 6.0)   # ~12; Patrick 2026-11-03, was 6.0). Manners keeps its own: a perfect trip fills it
 GRIT_POP = dict(dur=(0.17, 1.424), gait=(0.09, 1.274), raw_sd=1.479, bar=(5.38, 1.58))   # live save 2026-11-02 (v6_convert)
 SEC_PER_LENGTH = 0.2         # the replay's own conversion (a length is a fifth of a second)
 LUCK = 1.0                    # seconds: the best night a horse can have, beyond its rating's time (two night-swings)
@@ -44,9 +45,9 @@ rng = random.Random()
 
 def bar(v, gait=False):
     """A live stat on the live pip scale, made continuous (1 to 10). Manners tops out at a perfect trip (sim.GAIT_CAP)."""
-    if gait and v > PIP_STEPS[5]:
-        v = min(PIP_STEPS[-1], PIP_STEPS[5] + (v - PIP_STEPS[5]) * (PIP_STEPS[-1] - PIP_STEPS[5]) / (sim.GAIT_CAP - PIP_STEPS[5]))
-    xs = (-4.17,) + PIP_STEPS
+    if gait and v > MANNERS_STEPS[5]:
+        v = min(MANNERS_STEPS[-1], MANNERS_STEPS[5] + (v - MANNERS_STEPS[5]) * (MANNERS_STEPS[-1] - MANNERS_STEPS[5]) / (sim.GAIT_CAP - MANNERS_STEPS[5]))
+    xs = (-4.17,) + (MANNERS_STEPS if gait else PIP_STEPS)
     if v <= xs[0]:
         return 1.0
     if v >= xs[-1]:

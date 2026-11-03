@@ -39,6 +39,12 @@ above his 1:45.5), tier lines S+ 1:54.0 / S 1:54.6 / A 1:55.2 / B 1:56.2 / C 1:5
 fits (`TIME_FIT`, `MILE_FIT_V2`) follow it; `retime_v3.py` moves a save (clock_v 4). Measured on the kept races: winners'
 median 1:49.4 -> 1:51.8, at or near the record 22.5% -> 0.7% of career bests. Order and margins unchanged (a shift).
 
+**The bar's top (2026-11-03, Patrick: "I need bars to tell a clean story").** The tenth pip began at a hidden +6.0 with no
+ceiling, so a 6.4 and a 12.1 both filled it (the card hid what the engine knew). `PIP_STEPS` now ends at 12.5, the breed's
+top: a full bar is the best in the world. Manners keeps its own steps (`MANNERS_STEPS`): a perfect trip fills it by design.
+On the live world 21 of 2,409 bars moved, all past +3.7 (top 1%); one bar in the game is full (Crimson Ivy's Stamina).
+The engine reads the same bars, so the top few horses race a little slower and apart from each other.
+
 ## 2. Every bar races (`outcome.race`)
 
 - **Manners at the start** (`M_START` 0.3): a unit of manners is worth 0.3 of gate speed; a rank horse on a bad night
