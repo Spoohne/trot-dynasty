@@ -2112,7 +2112,7 @@ GUIDE = [
          "races the stake on the same terms as any other. The Crown is never for sale."),
     ] if SPONSORING else []) + [
         ("Markers", "The track's own chits, shown beside your cash when you hold any. Markers buy the look of "
-         "your barn; they never buy a horse, a cover, a claim or an entry, and they never turn into cash. They are hard to earn: "
+         "your barn and can unlock a barn upgrade; they never buy a horse, a cover, a claim or an entry, and they never turn into cash. They are hard to earn: "
          "a night counts once you've done something in the barn, and five nights in a row pay one, with a single night off forgiven. "
          "The Season Pass brings a few each season, and the season's titles pay them too."),
         ("Fair play", "Nothing you can buy for real money wins a race, buys a horse, or makes one grow faster: horses are earned on the "
@@ -2120,7 +2120,7 @@ GUIDE = [
          "sales that look wrong, such as horses passed between the same two barns for far under their worth, and a barn under review "
          "can race but not buy or sell until it's cleared."),
         ("Barn upgrades", "A bigger barn means more stalls, more grooming slots each week, and the Breeder's License and broodmare space "
-         "you need to breed your own."),
+         "you need to breed your own. Each step up is built with cash, or unlocked with Markers if you would rather keep the cash for horses."),
     ]),
     ("Stakes and the Crown", [
         ("Stakes", "The big races of the season, on the Stakes & Crown page. Most must be nominated in advance, with a fee to keep a horse "
@@ -5437,6 +5437,9 @@ BARN_BLURB = ["A humble start: a shed, a few stalls and a lot of hope.", "A prop
               "The estate. You're the king now."]
 
 
+UPGRADE_MK = {1: 30, 2: 45, 3: 90, 4: 180}   # a barn upgrade unlocked with Markers instead of cash (Patrick 2026-11-03), by level
+
+
 def upgrade_page():
     """Barn upgrades as milestones: each building a step up the ladder, built ones lit in their metal, the next one for sale,
     the rest still ahead."""
@@ -5446,8 +5449,9 @@ def upgrade_page():
         st = "built" if i <= lvl else "next" if i == lvl + 1 else "ahead"
         perks = [f"{n} stalls", f"{e.GROOM[i]} groom{'s' if e.GROOM[i] != 1 else ''}/wk"] + ([f"breeding barn of {head}"] if breed else [])
         act = ("<span class=upst>&#10003; Built</span>" if st == "built" else
-               f"<form method=post action=/upgrade><button onclick=\"return ask(this,'{'Buy' if 'license' in name else 'Build'} the {name} for ${price:,}?')\">{'Buy' if 'license' in name else 'Build'} · ${price:,}</button></form>"
-               if st == "next" else f"<span class=upst>${price:,}</span>")
+               f"<form method=post action=/upgrade><button{'' if e.cash.get(ME, 0) >= price else ' disabled'} onclick=\"return ask(this,'{'Buy' if 'license' in name else 'Build'} the {name} for ${price:,}?')\">{'Buy' if 'license' in name else 'Build'} · ${price:,}</button></form>"
+               f"<form method=post action=/upgrade><input type=hidden name=pay value=mk><button class=sec{'' if markers() >= UPGRADE_MK[i] else ' disabled'} onclick=\"return ask(this,'Unlock the {name} for {UPGRADE_MK[i]} Markers?')\">Unlock · {mk_tag(UPGRADE_MK[i])}</button></form>"
+               if st == "next" else f"<span class=upst>${price:,} · {mk_tag(UPGRADE_MK[i])}</span>")
         body += (f"<div class='upc up{i} {st}'><img src=/mock/brand/barns/{BARN_ART[i]}.png width=96 height=96 alt=''>"
                  f"<div class=upm><b>{esc(' '.join(w[0].upper() + w[1:] for w in name.split()))}</b><span class=sub>{BARN_BLURB[i]}</span>"
                  f"<div class=upk>{''.join(f'<span>{p}</span>' for p in perks)}</div></div><div class=upa>{act}</div></div>")
@@ -6162,7 +6166,12 @@ class H(BaseHTTPRequestHandler):
             except ValueError:
                 pass
         elif p == "/upgrade":
-            e.upgrade(ME)
+            nxt = e.level.get(ME, 0) + 1
+            if q.get("pay") == "mk":                                   # unlocked with Markers: they never become cash, so the level is paid for here
+                if nxt < len(e.LEVELS) and markers() >= UPGRADE_MK[nxt] and e.upgrade(ME, paid=True):
+                    mk_book(ME, -UPGRADE_MK[nxt], f"{e.LEVELS[nxt][0]} unlocked")
+            else:
+                e.upgrade(ME)
         elif p == "/license" and not e.can_breed(ME) and e.cash.get(ME, 0) >= license_cost(ME):   # all of it or none of it
             while not e.can_breed(ME) and e.upgrade(ME):
                 pass

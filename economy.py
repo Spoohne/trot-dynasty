@@ -120,12 +120,14 @@ def can_breed(owner):
     return LEVELS[level[owner]][2] if owner in human else True
 
 
-def upgrade(owner):
-    """Buy the next barn level. Returns its name, or None if there is none or no cash."""
+def upgrade(owner, paid=False):
+    """Buy the next barn level. Returns its name, or None if there is none or no cash. paid: already settled another way
+    (Markers), so no cash changes hands."""
     nxt = level.get(owner, 0) + 1
-    if nxt >= len(LEVELS) or cash.get(owner, 0) < LEVELS[nxt][3]:
+    if nxt >= len(LEVELS) or (not paid and cash.get(owner, 0) < LEVELS[nxt][3]):
         return None
-    book(owner, "barn", -LEVELS[nxt][3])
+    if not paid:
+        book(owner, "barn", -LEVELS[nxt][3])
     level[owner] = nxt
     return LEVELS[nxt][0]
 
