@@ -283,3 +283,44 @@ engine, carry the sim's lessons back as V1's retune (post slope, front-end value
 thing the sim can't be tuned around.
 
 Replays: http://127.0.0.1:8115/ while this session runs (`-sim` and `-today` twins per field).
+
+Patrick: one more session (2026-11-02).
+
+## V8 - Session 3: class as tank, and why the favorite still loses, 2026-11-02
+
+**Tried:** (1) class sizes the tank as well as the speed (`reserve_able`); (2) a horse that sat covered gets the
+model's extra kick in the drive (`drive_close`, the model's `k_close`). Both as knobs, refit by differential
+evolution (14 generations). **The fit set both to zero.** Loss 8.1 against V7's 5.1 (a different run, same noise);
+the favorite 26.7% either way. Both knobs are left in at 0; V7's knobs stand.
+
+**The measurement that explains it (315 fields, one run each).** Strip the trip terms out of each engine's
+performance and ask how often the field's best horse, by ability alone, wins:
+
+| | Today | Sim |
+|---|---|---|
+| Best-ability horse wins | **61%** | **29%** |
+| Tote favorite wins (odds fitted to today's engine) | 35% | 26% |
+| Ability gap, best to second (median) | 1.8 L | 1.1 L |
+
+Real fields on this circuit are tightly tiered: the best horse is a length or two better than the next. In the
+outcome model the trip terms are fixed bonuses with almost no noise, so a length of class decides most races. In the
+sim a trip is a run through traffic, yielding, wind and tank, and its cost varies by several lengths race to race;
+class of a length can't be seen through it. No knob changes that: cheaper trips drift the post and pace targets, and
+tank or kick for class were rejected by the fit. **Measured.** The hypothesis that one simulation needs less tuning
+than three systems (V5) is **not supported** for the one target players feel most: who wins.
+
+Also noted: "favorite wins" measures the tote as much as the engine. The odds are fitted to today's engine's winners;
+a sim engine would need its own tote fit, and even then the best horse at 29% says the race is too much of a lottery.
+
+### RaceGod's verdict
+
+**Stop the sim as the race engine.** Keep today's outcome engine deciding results. Carry back what the sim proved:
+- the replay should be the race, not a parse of trip text: the sim's `story()` can choreograph today's *decided*
+  result (the engine lab's caster, DECISIONS 229, reached 58% of races; a sim that is handed the finish order and
+  margins as constraints is the way to reach 100%), which removes the auditor's whole class of truth bugs;
+- the pace: the sim's fractions (a brush, a breather, the drive) in place of the fixed quarters;
+- post bias on the half-mile came out right from the crossing-over physics; V1's retune of `c_post` can use the
+  sim's numbers as the target curve.
+
+Next for RaceGod, if Patrick agrees: V1 point 2 (post and front-end retune in the engine lab on real fields), then
+the choreographer. The prototype stays in `racegod/engine.py` for that.

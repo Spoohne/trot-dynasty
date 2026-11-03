@@ -11,7 +11,7 @@ from speed_lab import fields                                   # noqa: E402
 KNOBS = dict(launch_gate=(0.005, 0.05), lead_soft=(-0.04, 0.0), lead_hot=(0.0, 0.04), push=(0.01, 0.06), drive=(0.0, 0.05),
              drive_kick=(0.0, 0.05), prof_kick=(0.0, 0.03), draft=(0.05, 0.25), wind=(0.0, 0.08), turn=(0.0, 0.15),
              duel=(0.0, 0.3), reserve=(1.0, 6.0), reserve_cruise=(0.0, 2.0), fade=(0.005, 0.04), ease=(1.0, 5.0),
-             push_fo=(0.02, 0.10), drive_able=(0.0, 0.06), yield_max=(20.0, 60.0))
+             push_fo=(0.02, 0.10), drive_able=(0.0, 0.06), yield_max=(20.0, 60.0), reserve_able=(0.0, 8.0), drive_close=(0.0, 0.06))
 TRIPS = {"on the lead": 29, "sat in behind": 22, "sat mid-pack": 21, "sat in the pocket": 16, "parked first-over": 13}   # today's engine, 315 fields x2
 
 
