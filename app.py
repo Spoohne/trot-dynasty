@@ -824,7 +824,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .tpa{font:800 26px/1 'Barlow Condensed',sans-serif;color:var(--tote);text-decoration:none;padding:4px 12px;border:1px solid var(--rule);background:var(--panel)}
 .tpn{text-align:center;min-width:0}.tpn b{display:block;font:800 22px 'Barlow Condensed',sans-serif;letter-spacing:.04em;color:#fff;text-shadow:2px 2px 0 #000}
 .tstrip{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 4px;margin-top:6px}.tsq{flex:0 0 auto;opacity:.55}.tsq.on{opacity:1;outline:2px solid var(--tote);outline-offset:2px}.tsq .sq{margin:0!important}
-.tmodel{text-align:center;background:#0b1120;border:1px solid var(--rule);padding:8px}.tmodel img{max-width:100%;image-rendering:pixelated}
+.tmodel{text-align:center;background:#0b1120;border:1px solid var(--rule);padding:8px}.tmodel img{max-width:100%;image-rendering:auto}
 .tpc{padding:10px 0;border-top:1px solid var(--rule2)}.mhead+.tpc{border-top:0}
 .tph{display:flex;justify-content:space-between;align-items:center;gap:8px}.tph b{font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase}
 .tw{cursor:pointer;display:inline-flex;align-items:center;gap:5px}.tw:has(input:checked){color:var(--tote-ink);background:var(--tote);border-color:var(--tote)}

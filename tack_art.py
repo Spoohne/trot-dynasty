@@ -1,14 +1,15 @@
-"""The Tack Room's horse model: frame 0 of the replay runner with the barn's gear painted on in its two colors.
+"""The Tack Room's horse model: frame 0 of the replay's 416 runner (the smoothed sheet the replay draws) with the barn's gear
+painted on in its two colors.
 shortcut: the pieces are pixel masks found on the stock frame (blue tack, wheel geometry, head and leg boxes), not drawn
 art; swap each for a SpriteCooked layer sheet when the kit goes into the replay."""
 import hashlib, math, os
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-FRAME = os.path.join(ROOT, "mockups", "pixel", "fe12_cycle.png")
+FRAME = os.path.join(ROOT, "mockups", "pixel", "fe12_cycle416.png")       # 6 across, 2 down, 416x202 a frame
 CACHE = os.path.join(ROOT, "mockups", "brand", "emblem", "cache")
-WRAPPED = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12.png")      # SpriteCook's leg wraps on the cycle, and the mask of them
-WMASK = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12_mask.png")
+WRAPPED = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12416.png")      # SpriteCook's leg wraps on the cycle, and the mask of them
+WMASK = os.path.join(ROOT, "mockups", "pixel", "tack", "wraps12_mask416.png")
 PIECES = ("harness", "mask", "wraps")
 _frame, _wrapped = [], []
 
@@ -16,7 +17,7 @@ _frame, _wrapped = [], []
 def frame0():
     if not _frame:
         im = Image.open(FRAME).convert("RGBA")
-        _frame.append(im.crop((0, 0, im.width // 12, im.height)))
+        _frame.append(im.crop((0, 0, im.width // 6, im.height // 2)))
     return _frame[0]
 
 
@@ -59,16 +60,16 @@ def paint(pieces, cols, c1, c2):
     col = lambda k: rgb(cols[k]) if str(cols.get(k, "")).startswith("#") else rgb(c1 if cols.get(k, "p") == "p" else c2)
     im = (wrapped0()[0] if "wraps" in pieces else frame0()).copy(); px = im.load(); W, H = im.size
     blue = lambda p: p[3] > 0 and p[2] > p[0] + 40 and p[2] > p[1] + 20
-    cx, cy, R = 30, 78, 20.5                                          # the wheel on the stock frame (hub and radius measured)
+    cx, cy, R = 60, 156, 41                                           # the wheel on the stock frame (hub and radius measured on the 208 frame, doubled)
     hm = None
     if "mask" in pieces:                                              # the hood overlay; the bridle on it turns to leather (leatherStraps)
         hood = Image.open(WRAPPED.replace("wraps12", "hood12")).convert("RGBA").crop((0, 0, W, H)); im.alpha_composite(hood); px = im.load()
         hm = Image.open(WMASK.replace("wraps12", "hood12")).convert("L").crop((0, 0, W, H)).load()
     near_hood = lambda x, y: hm is not None and any(0 <= x + dx < W and 0 <= y + dy < H and hm[x + dx, y + dy] >= 128
-                                                    for dy in (-2, -1, 0, 1, 2) for dx in (-2, -1, 0, 1, 2))
+                                                    for dy in range(-4, 5) for dx in range(-4, 5))
     on_h = "harness" in pieces                                        # Harness: jacket, harness and bike in its first color, helmet stripe in its second
     silks, trim = (col("harness"), col("harness2")) if on_h else (rgb(c1), rgb(c2))   # unfitted: the barn's colors, for the look
-    dys = [y for y in range(H) for x in range(60) if blue(px[x, y]) and math.hypot(x - cx, y - cy) > R]
+    dys = [y for y in range(H) for x in range(120) if blue(px[x, y]) and math.hypot(x - cx, y - cy) > R]
     helmet = min(dys) + .13 * (max(dys) - min(dys)) if dys else -1     # the replay's rule: the top of the driver's blue is his helmet
     for y in range(H):
         for x in range(W):
@@ -78,7 +79,7 @@ def paint(pieces, cols, c1, c2):
             if near_hood(x, y):
                 l = sum(p[:3]) / 765
                 px[x, y] = (int(34 + 70 * l), int(24 + 50 * l), int(18 + 36 * l), p[3])
-            elif x < 60 and y < helmet:
+            elif x < 120 and y < helmet:
                 px[x, y] = dye(p, trim)
             else:
                 px[x, y] = dye(p, silks)
@@ -96,15 +97,15 @@ def paint(pieces, cols, c1, c2):
 
 
 def render(pieces, cols, c1, c2):
-    """The model's PNG at 3x, cached like the emblems; returns its path under /mock."""
+    """The model's PNG at the 416 runner's own size, cached like the emblems; returns its path under /mock."""
     pieces = tuple(p for p in PIECES if p in pieces)
-    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v25"
+    key = "tack|" + ",".join(pieces) + "|" + ",".join(f"{k}{v}" for k, v in sorted(cols.items())) + f"|{c1}|{c2}|v26"
     name = hashlib.md5(key.encode()).hexdigest()[:12] + ".png"
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):
         os.makedirs(CACHE, exist_ok=True)
         im = paint(pieces, cols, c1, c2)
-        im.resize((im.width * 3, im.height * 3), Image.NEAREST).save(path)
+        im.save(path)                                                  # shown at this size: no nearest-pixel stretch
     return "/mock/brand/emblem/cache/" + name
 
 
