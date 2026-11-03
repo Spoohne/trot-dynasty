@@ -1165,9 +1165,22 @@ def run_race(r, alive, log):
         if "sharp tonight" in order[0].trip:
             story["captions"][-1][1] += ", sharp tonight"            # the win caption is last until the breaks go in
         when = {r["name"]: r.get("broke_at") for r in story["horses"]}
+        rows = {r["name"]: r for r in story["horses"]}
         for h in order:
-            if (getattr(h, "why", None) or {}).get("broke"):
+            why = getattr(h, "why", None) or {}
+            if why.get("fractious"):
+                story["captions"].append([0.5, f"{h.name} is fractious behind the car"])
+            if why.get("broke"):
                 story["captions"].append([when.get(h.name) or story["calls"][2], f"{h.name} breaks stride"])
+            r = rows.get(h.name)
+            if r and len(r["behind"]) == 7 and r["behind"][5] - r["behind"][4] >= 3 and order.index(h) >= 3:   # lost three lengths off the turn
+                story["captions"].append([story["calls"][5] - 1, f"{h.name} is backing up"])
+        fo = next((h for h in order if "first-over" in h.trip), None)
+        lead = next((h for h in order if "on the lead" in h.trip), None)
+        if fo and lead and rows.get(fo.name) and abs(rows[fo.name]["behind"][4] - rows[lead.name]["behind"][4]) < 1.5:
+            story["captions"].append([story["calls"][4], f"{fo.name} and {lead.name} go head and head"])
+        if any((getattr(h, "why", None) or {}).get("fight") for h in order[:2]):
+            story["captions"].append([story["calls"][6] - 1.5, f"{order[0].name} and {order[1].name} fight it out"])
         story["captions"].sort(key=lambda x: x[0])
     line = tote_odds(field)
     r["settling"] = True                                # from here the result is being applied: no retry may apply it again

@@ -1046,6 +1046,7 @@ function place(t, st, dt) {
     const sfr = Math.floor((h.d - gateLag(h)) / STRIDE_FT * r.fr + i * 3 * r.fr / FR), side = ((sfr % r.fr) + r.fr) % r.fr;   // the side card at its own frame count
     r.t.offset.x = (side % r.cols) / r.cols; r.t.offset.y = 1 - (Math.floor(side / r.cols) + 1) / r.rows; r.dt2.offset.x = frame / FR;
     const bk = RACE.H[i].broke;                                                   // broke stride (the story says when): a ragged, hopping gait for a few seconds
+    if (RACE.H[i].fractious && t > 0 && t < 2.5) { r.card.position.y += Math.abs(Math.sin(t * 11)) * 1.2; r.dt2.offset.x = ((frame * 2) % FR) / FR; }   // fractious behind the car: a hop or two leaving
     if (bk != null && t >= bk && t < bk + 3.5) { r.card.position.y += Math.abs(Math.sin((t - bk) * 9)) * 1.6; r.dt2.offset.x = ((frame * 2) % FR) / FR; r.t.offset.x = ((side * 2) % r.cols) / r.cols; }
     const lead = st.reduce((m, x) => Math.max(m, x.d), 0);
     const urging = t > RACE.FIN - 10 && t < RACE.FIN + .3 && lead - h.d < RACE.LEN * 4 && cam.position.distanceTo(p) < 700;   // driving for the line

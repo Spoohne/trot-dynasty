@@ -79,6 +79,9 @@ def best_mile(b, half=False):
 # over today's horses, so an unraced horse's predicted mile and a raced horse's figures are one ruler.
 FIG_FIT = {"mile": (116.968, -6.409), "half": (116.841, -6.106)}   # a + b * units: live save 2026-11-03, 777 horses 2+ (r -0.96 mile, -0.92 half)
 FORM_TELL = 1.3                                       # sd of the night's form past which the trip text says so
+M_START = 0.3                                         # Manners at the gate: a unit of manners is worth this much of a unit of gate speed
+FRACT = 0.15                                          # what a fractious start costs in performance (about a length on a mile)
+FIGHT_L, G_FIN = 1.0, 0.1                             # a head-and-head: within a length at the wire, a unit of grit edge is worth G_FIN units
 
 
 def _A(p):
@@ -129,7 +132,13 @@ def race(field, track="mile", passing=False):
     for h in field:
         for k in ("gate", "cruise", "kick"):
             T[h.id][k] += form[h.id]
-    e = {h.id: T[h.id]["gate"] - p["c_post"] * post + p["s_start"] * rng.gauss(0, 1) for post, h in enumerate(field)}
+    # the start (ratings v2): Manners get a horse away clean. A settled horse gains at the gate; a rank one on a bad night is
+    # fractious behind the car, leaves last and gives up ground (FRACT) it has to make back.
+    e, fractious = {}, {}
+    for post, h in enumerate(field):
+        z = rng.gauss(0, 1)
+        fractious[h.id] = T[h.id]["manners"] < 0 and z < -1.5 + 0.8 * T[h.id]["manners"]
+        e[h.id] = T[h.id]["gate"] + M_START * T[h.id]["manners"] - p["c_post"] * post + p["s_start"] * z - (3.0 if fractious[h.id] else 0.0)
     out = sorted(field, key=lambda h: -e[h.id])                # order out of the gate
     w_k = 1 - p["omega"]
     A = _A(p)
@@ -170,7 +179,16 @@ def race(field, track="mile", passing=False):
         broke[h.id] = rng.random() < 0.005 * math.exp(-2.88 * t["manners"])   # the manners curve (DECISIONS 163)
         closing = r in (3, 4)
         perf[h.id] = (p["omega"] * t["cruise"] + (w_k + p["k_close"] * closing) * t["kick"] + A[r] - p["b_depth"] * depth[h.id]
-                      + p["g"] * gdiff[h.id] + p["s_eps"] * rng.gauss(0, 1) - BREAK * broke[h.id])
+                      + p["g"] * gdiff[h.id] + p["s_eps"] * rng.gauss(0, 1) - BREAK * broke[h.id] - FRACT * fractious[h.id])
+    order = sorted(field, key=lambda h: -perf[h.id])
+    # the finish (ratings v2): Grit decides the head-and-heads. Two horses within FIGHT_L of each other at the wire fight it out,
+    # and the grittier one gets the bob.
+    fight = {h.id: False for h in field}
+    for a, b in zip(order, order[1:]):
+        if perf[a.id] - perf[b.id] < FIGHT_L / p["s_margin"]:
+            swing = G_FIN * (T[a.id]["grit"] - T[b.id]["grit"]) / 2
+            perf[a.id] += swing; perf[b.id] -= swing
+            fight[a.id] = fight[b.id] = True
     order = sorted(field, key=lambda h: -perf[h.id])
     # times (ratings v2, the honest clock): every horse runs its own time, read off its performance tonight (ability, trip,
     # form and luck together) on one line, so the order, the margins and the clock are one thing and a beaten horse's time
@@ -189,8 +207,12 @@ def race(field, track="mile", passing=False):
                                    1: "sat in the pocket, up the passing lane" if passing and beat_leader else "sat in the pocket",
                                    2: "parked first-over", 3: "sat mid-pack, moved after the half",
                                    4: "sat in behind, came from off the pace" if depth[h.id] >= 2 and order.index(h) < 3 else "sat in behind"}[r]
+        if fractious[h.id]:
+            trip += ", fractious at the start"
         if broke[h.id]:
             trip += ", broke stride"
+        if fight[h.id] and order.index(h) < 3:
+            trip += ", fought it out at the wire"
         if abs(form[h.id]) > FORM_TELL * p["s_form"]:               # the night's form, once it was big enough to tell
             trip += ", sharp tonight" if form[h.id] > 0 else ", flat tonight"
         h.trip = trip
@@ -198,7 +220,7 @@ def race(field, track="mile", passing=False):
         h.margin_l = (times[h.id] - win_raw) / SEC_PER_LENGTH   # lengths behind the winner, as the clock has it
         h.why = dict(out=out.index(h) + 1, role=ROLES[r], depth=depth[h.id], perf=round(perf[h.id], 3),   # RaceGod's ledger: what decided it
                      form=round(form[h.id], 3), broke=broke[h.id], model_l=round((perf[order[0].id] - perf[h.id]) * p["s_margin"], 2),
-                     margin=round(h.margin_l, 2), limited=False, ceiling=times[h.id],
+                     margin=round(h.margin_l, 2), limited=False, ceiling=times[h.id], fractious=fractious[h.id], fight=fight[h.id],
                      kick=round(T[h.id]["kick"], 3), cruise=round(T[h.id]["cruise"], 3))                 # as raced tonight (form in): the figure reads them back
     return order
 

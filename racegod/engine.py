@@ -341,7 +341,8 @@ def story(order, track, passing=False):
         rows.append({"name": h.name, "post": h.run["post"], "behind": [min(b, 40.0) for _, b in at], "lane": [ln for ln, _ in at], "place": place,   # 40 L: the viewer's wall, as story.build (RaceGod V3, open)
                      "time": fifth(h.last_time), "trip": h.trip, "stamina": round(cur[h.id]["stamina"], 2), "early": round(cur[h.id]["early_speed"], 2),
                      "coat": getattr(h, "coat", "bay"), "marking": getattr(h, "marking", "none"),
-                     "broke_at": round(h.run["broke_at"] * k, 1) if h.run.get("broke_at") is not None else None})   # when it broke, on the clock (the viewer's tell)
+                     "broke_at": round(h.run["broke_at"] * k, 1) if h.run.get("broke_at") is not None else None,
+                     "fractious": bool(getattr(h, "why", {}).get("fractious"))})   # when it broke, on the clock (the viewer's tell)
     rows[0]["behind"][6] = 0.0
     caps = [[0.0, "They're away"], [calls_t[1], f"{run['leader']} leaves for the lead"]]
     if run["fo"] and run["fo_at"]:
