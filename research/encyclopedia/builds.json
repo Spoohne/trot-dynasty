@@ -1,0 +1,186 @@
+{
+ "settings": {
+  "weights": {
+   "speed": 2,
+   "stamina": 1,
+   "grit": 1,
+   "manners": 0
+  },
+  "budgets": {
+   "Galaxy": 32,
+   "S+": 28.5,
+   "S": 26,
+   "A": 24,
+   "B": 21.5,
+   "C": 18,
+   "D": 14
+  }
+ },
+ "horses": [
+  {
+   "id": "mvzwft68",
+   "tier": "S",
+   "name": "Top End S-Tier",
+   "note": "This is a horse you know you're gonna make millions with over a career. What a gift.",
+   "speed": 8.8,
+   "stamina": 6.3,
+   "grit": 4.9,
+   "manners": 7.6,
+   "saved": "2026-11-02T23:37:44.048Z"
+  },
+  {
+   "id": "mvzwh2az",
+   "tier": "S",
+   "name": "Half Mile Master",
+   "note": "Great on the half-mile",
+   "speed": 7.1,
+   "stamina": 7.5,
+   "grit": 5.4,
+   "manners": 7.4,
+   "saved": "2026-11-02T23:38:42.539Z"
+  },
+  {
+   "id": "mvzwhvsb",
+   "tier": "S",
+   "name": "Speed Killer",
+   "note": "",
+   "speed": 9,
+   "stamina": 7.7,
+   "grit": 3.3,
+   "manners": 8.3,
+   "saved": "2026-11-02T23:39:20.747Z"
+  },
+  {
+   "id": "mvzwigye",
+   "tier": "S",
+   "name": "Is this even a good horse?",
+   "note": "",
+   "speed": 4.7,
+   "stamina": 8.9,
+   "grit": 6.4,
+   "manners": 9.9,
+   "saved": "2026-11-02T23:39:48.182Z"
+  },
+  {
+   "id": "mvzwiquj",
+   "tier": "S",
+   "name": "Mongo",
+   "note": "",
+   "speed": 4.4,
+   "stamina": 6.4,
+   "grit": 9.2,
+   "manners": 10,
+   "saved": "2026-11-02T23:40:01.003Z"
+  },
+  {
+   "id": "mvzwjbyq",
+   "tier": "S",
+   "name": "Shouldn't be an S Tier Based on Time",
+   "note": "",
+   "speed": 2.9,
+   "stamina": 7.1,
+   "grit": 10,
+   "manners": 10,
+   "saved": "2026-11-02T23:40:28.370Z"
+  },
+  {
+   "id": "mvzwk5bf",
+   "tier": "S+",
+   "name": "Slayer of Galaxies",
+   "note": "",
+   "speed": 9.4,
+   "stamina": 8.6,
+   "grit": 4,
+   "manners": 7.8,
+   "saved": "2026-11-02T23:41:06.411Z"
+  },
+  {
+   "id": "mvzxtbnk",
+   "tier": "Galaxy",
+   "name": "GALAXY BRAIN",
+   "note": "",
+   "speed": 10,
+   "stamina": 8.8,
+   "grit": 5.7,
+   "manners": 10,
+   "saved": "2026-11-03T00:16:14.144Z"
+  },
+  {
+   "id": "mvzxtuif",
+   "tier": "Galaxy",
+   "name": "GalaxyBoy",
+   "note": "",
+   "speed": 10,
+   "stamina": 7.1,
+   "grit": 7.4,
+   "manners": 10,
+   "saved": "2026-11-03T00:16:38.583Z"
+  },
+  {
+   "id": "mvzxui3x",
+   "tier": "S+",
+   "name": "SuperMan",
+   "note": "",
+   "speed": 8.4,
+   "stamina": 6.9,
+   "grit": 6.7,
+   "manners": 7.6,
+   "saved": "2026-11-03T00:17:09.165Z"
+  },
+  {
+   "id": "mvzxv9qv",
+   "tier": "S",
+   "name": "Funky",
+   "note": "",
+   "speed": 1.9,
+   "stamina": 10,
+   "grit": 8.1,
+   "manners": 10,
+   "saved": "2026-11-03T00:17:44.983Z"
+  },
+  {
+   "id": "mvzy0gag",
+   "tier": "Galaxy",
+   "name": "New GigaGalaxy",
+   "note": "",
+   "speed": 10,
+   "stamina": 10,
+   "grit": 3.5,
+   "manners": 9.7,
+   "saved": "2026-11-03T00:21:46.744Z"
+  },
+  {
+   "id": "mvzy14tq",
+   "tier": "S+",
+   "name": "Ideal",
+   "note": "",
+   "speed": 8.5,
+   "stamina": 6.8,
+   "grit": 6.7,
+   "manners": 10,
+   "saved": "2026-11-03T00:23:14.773Z"
+  },
+  {
+   "id": "mvzy1gsd",
+   "tier": "S",
+   "name": "IdealS",
+   "note": "",
+   "speed": 7.8,
+   "stamina": 6.5,
+   "grit": 4.9,
+   "manners": 9.8,
+   "saved": "2026-11-03T00:22:34.045Z"
+  },
+  {
+   "id": "mvzy1poo",
+   "tier": "A",
+   "name": "Ideal",
+   "note": "",
+   "speed": 6.6,
+   "stamina": 6.1,
+   "grit": 5.2,
+   "manners": 10,
+   "saved": "2026-11-03T00:22:45.576Z"
+  }
+ ]
+}

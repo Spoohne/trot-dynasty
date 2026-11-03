@@ -28,14 +28,14 @@ WITHIN = 0.1                 # inside one field, ceilings spread on the race mod
 ROLES = ("lead", "pocket", "first_over", "followed", "back")
 DUEL, P_NONE, N_FOLLOW, BREAK = 0.15, 0.10, 2, 3.0
 FO_MAX = {"half": 4, "mile": 5}
-P = {   # research/engine_lab/v4/fit_half.json, fit_mile.json (DECISIONS 224 refit)
-    "half": dict(g=0.25, s_form=0.15, s_choice=0.1, c_post=0.0994314106733373, s_start=0.02017397059465198,
-                 omega=0.5938761916108407, A_lead=0.4122946448648809, A_pocket=0.31396172750867324, A_fo=0.09299566675668958,
-                 A_fol=0.09574834786072772, s_eps=0.17798810007780796, s_margin=7.605805514239352, k_close=0.04303554691830236,
+P = {   # research/engine_lab/v4/fit_half.json, fit_mile.json (DECISIONS 224 refit); c_post, A_lead, A_pocket, A_fol retuned on real fields (RaceGod V9 candidate B, 2026-11-02)
+    "half": dict(g=0.25, s_form=0.15, s_choice=0.1, c_post=0.15, s_start=0.02017397059465198,
+                 omega=0.5938761916108407, A_lead=0.7798, A_pocket=0.5664, A_fo=0.09299566675668958,
+                 A_fol=0.35, s_eps=0.17798810007780796, s_margin=7.605805514239352, k_close=0.04303554691830236,
                  b_depth=0.39885805717373174),
-    "mile": dict(g=0.25, s_form=0.15, s_choice=0.1, c_post=0.04926660027735483, s_start=0.8370432667346848,
-                 omega=0.4703087097212123, A_lead=0.8944309419378034, A_pocket=0.7728020645420891, A_fo=0.8026769007091834,
-                 A_fol=0.2615173160574591, s_eps=0.027295459447580828, s_margin=6.0407761172731735, k_close=1.1015350803998327,
+    "mile": dict(g=0.25, s_form=0.15, s_choice=0.1, c_post=0.2471, s_start=0.8370432667346848,
+                 omega=0.4703087097212123, A_lead=1.2404, A_pocket=0.669, A_fo=0.8026769007091834,
+                 A_fol=0.4, s_eps=0.027295459447580828, s_margin=6.0407761172731735, k_close=1.1015350803998327,
                  b_depth=0.13223734814640054),
 }
 rng = random.Random()

@@ -1,0 +1,196 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Horse Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--rule2:#1b2539;--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--led:#ffb347;--win:#3fb96b;--loss:#e0704f}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(#0b1430,var(--paper) 360px) var(--paper);color:var(--ink);font:400 15px/1.4 'Barlow Semi Condensed',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+a{color:var(--led);text-decoration:none}
+header{border-bottom:1px solid var(--rule);padding:10px max(16px,env(safe-area-inset-left,0px));display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+h1{margin:0;font:800 24px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;text-shadow:2px 2px 0 #000}h1 span{color:var(--tote)}
+h2{margin:0 0 8px;font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+main{padding:14px max(16px,env(safe-area-inset-left,0px)) 40px;max-width:1200px;margin:0 auto;display:grid;gap:14px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;color:var(--ink2);font:800 16px 'Barlow Condensed',sans-serif;letter-spacing:.08em;padding:6px 12px;cursor:pointer}
+.tabs button.on{color:var(--ink);border-color:var(--tote)}.tabs small{color:var(--ink3);font-weight:600;margin-left:3px}
+.lay{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}.lay>*{min-width:0}
+@media(max-width:860px){.lay{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:14px}
+.meter{display:grid;gap:6px;margin-bottom:14px}
+.mtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.spent{font:700 30px 'Barlow Semi Condensed';color:var(--led);text-shadow:0 0 10px rgba(255,179,71,.45)}.spent small{font-size:16px;color:var(--ink2);text-shadow:none}
+.state{font:800 14px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase}.state.ok{color:var(--win)}.state.left{color:var(--ink2)}
+.track{height:10px;background:#0c1322;border:1px solid var(--rule);border-radius:3px;overflow:hidden}.fill{height:100%;background:var(--tote);transition:width .1s}
+.row{display:grid;grid-template-columns:92px minmax(0,1fr) 64px;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--rule2)}
+.row b{font:800 15px 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase}.row .cost{display:block;color:var(--ink3);font-size:12px}
+.sl{position:relative;padding-bottom:14px}
+.sl input{width:100%;accent-color:var(--tote)}
+.ghost{position:absolute;bottom:0;transform:translateX(-50%);font-size:11px;color:var(--ink3);white-space:nowrap}.ghost:before{content:"▲ "}
+.num{width:64px;background:#0c1322;border:1px solid var(--rule);color:var(--ink);font:700 17px 'Barlow Semi Condensed';padding:4px 6px;border-radius:3px;text-align:right}
+.shape{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.chip{border:1px solid var(--rule);border-radius:12px;padding:2px 10px;font-size:13px;color:var(--ink3)}.chip.ok{border-color:var(--win);color:var(--win)}.chip.no{border-color:var(--loss);color:var(--loss)}
+.read{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink2);margin-bottom:12px}.read b{color:var(--ink);font-size:18px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input.name,textarea,.set input{background:#0c1322;border:1px solid var(--rule);color:var(--ink);font:15px 'Barlow Semi Condensed';padding:6px 8px;border-radius:3px}
+input.name{flex:1;min-width:160px}textarea{width:100%;min-height:52px;margin-bottom:10px;resize:vertical}
+.btn{background:#26324c;border:0;color:var(--ink);padding:7px 13px;border-radius:3px;cursor:pointer;font:700 14px 'Barlow Semi Condensed'}
+.btn.gold{background:var(--tote);color:#2a1a03}.btn:disabled{opacity:.4;cursor:not-allowed}.btn.sm{padding:3px 9px;font-size:13px}
+.list{display:grid;gap:8px}
+.bh{border:1px solid var(--rule2);border-radius:4px;padding:9px 10px;background:#0d1524}
+.bh.edit{border-color:var(--tote)}
+.bh .t{display:flex;justify-content:space-between;gap:8px;align-items:center}.bh .nm{font-weight:700}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:7px 0 4px}
+.mini div{font-size:12px;color:var(--ink3)}.mini i{display:block;height:5px;background:#0c1322;border-radius:2px;margin-top:2px}.mini i span{display:block;height:100%;background:var(--tote);border-radius:2px}
+.mini div.m i span{background:var(--ink3)}
+.warn{color:var(--loss);font-size:12px}.note{color:var(--ink2);font-size:13px}
+.empty{color:var(--ink3);font-style:italic}
+details summary{cursor:pointer;font:800 14px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.set{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:10px}
+.set label{display:grid;gap:3px;font:800 11px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}.set input{width:100%}
+.hint{color:var(--ink3);font-size:13px;margin:8px 0 0}
+</style></head><body>
+<header><h1>Horse <span>Builder</span></h1><span class=hint style="margin:0">Spend each tier's budget. Speed costs double; Manners is free.</span><a href="/" style="margin-left:auto">← Encyclopedia</a></header>
+<main>
+  <div class=tabs id=tabs></div>
+  <div class=lay>
+    <div class=panel>
+      <div class=meter>
+        <div class=mtop><span class=spent id=spent></span><span class=state id=state></span></div>
+        <div class=track><div class=fill id=fill></div></div>
+      </div>
+      <div id=rows></div>
+      <div class=shape id=shape></div>
+      <div class=read id=read></div>
+      <textarea id=note placeholder="What kind of horse is this? (optional)"></textarea>
+      <div class=acts>
+        <input class=name id=name placeholder="Name this build">
+        <button class="btn gold" id=save>Save</button>
+        <button class=btn id=avg>Start from world average</button>
+        <button class=btn id=clear>Clear</button>
+      </div>
+      <p class=hint>▲ marks where this tier's horses sit in the 100-season world (average card, age 3 and up). Sliders stop at the budget.</p>
+    </div>
+    <div style="display:grid;gap:14px">
+      <div class=panel><h2 id=lh></h2><div class=list id=list></div></div>
+      <div class=panel><details><summary>Budgets</summary>
+        <div class=set id=set></div>
+        <p class=hint>Cost = each bar × its weight. Changing a budget or a weight flags builds that no longer fit.</p>
+      </details></div>
+    </div>
+  </div>
+</main>
+<script>
+const TIERS = ["Galaxy", "S+", "S", "A", "B", "C", "D"];
+const BARS = [["speed", "Speed"], ["stamina", "Stamina"], ["grit", "Grit"], ["manners", "Manners"]];
+// Speed costs double (it wins races); Manners is outside the budget. Budgets seeded from the world's active horses
+// by the live badge tier (avg 2×Speed + Stamina + Grit), rounded; Galaxy is a proposal (no live badge), past S+'s top tenth
+const DEFAULT = {weights: {speed: 2, stamina: 1, grit: 1, manners: 0}, budgets: {"Galaxy": 32, "S+": 28.5, "S": 26, "A": 24, "B": 21.5, "C": 18, "D": 14}};
+const SPEED_FIT = [128.26, -2.307];                            // outcome.SPEED_FIT: best mile from Speed (stay term left out)
+let S = {settings: DEFAULT, horses: []}, REF = {}, tier = "S", cur = blank(), editing = null;
+const $ = s => document.querySelector(s);
+const r1 = v => Math.round(v * 10) / 10;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]);
+function blank() { return {speed: 0, stamina: 0, grit: 0, manners: 0}; }
+const wt = k => S.settings.weights[k];
+const cost = h => BARS.reduce((a, [k]) => a + wt(k) * h[k], 0);
+const budget = t => S.settings.budgets[t];
+const onBudget = (h, t) => Math.abs(cost(h) - budget(t)) < 0.03;
+const mile = s => { const x = SPEED_FIT[0] + SPEED_FIT[1] * s; return `${Math.floor(x / 60)}:${(x % 60).toFixed(1).padStart(4, "0")}`; };
+
+function set(k, v) {                                           // never past the budget, never past 10
+  const room = wt(k) ? (budget(tier) - cost(cur)) / wt(k) + cur[k] : 10;
+  cur[k] = Math.max(0, Math.min(10, r1(Math.min(v, room + 1e-9))));
+  if (cur[k] > room + 1e-6) cur[k] = Math.floor(room * 10 + 1e-6) / 10;   // tolerance: 7.1 + 0.1 is 7.1999… in floats
+  draw();
+}
+
+function fromAverage() {
+  const a = REF[tier]; if (!a) return;
+  const base = {speed: a.speed, stamina: a.stamina, grit: a.grit, manners: a.manners};
+  const f = budget(tier) / cost(base);
+  cur = Object.fromEntries(BARS.map(([k]) => [k, Math.min(10, r1(base[k] * (wt(k) ? f : 1)))]));   // a free bar keeps the world's average
+  let gap = r1(budget(tier) - cost(cur));                      // rounding leftovers go where a tenth costs a tenth
+  for (const k of ["stamina", "grit", "speed"]) { const add = Math.max(-cur[k], Math.min(10 - cur[k], r1(gap / wt(k)))); cur[k] = r1(cur[k] + add); gap = r1(gap - add * wt(k)); }
+  draw();
+}
+
+function draw() {
+  const b = budget(tier), c = cost(cur), left = b - c;
+  $("#spent").innerHTML = `${c.toFixed(1)} <small>of ${b.toFixed(1)}</small>`;
+  const ok = onBudget(cur, tier);
+  $("#state").className = "state " + (ok ? "ok" : "left");
+  $("#state").textContent = ok ? "On budget" : `${left.toFixed(1)} left to spend`;
+  $("#fill").style.width = Math.min(100, c / b * 100) + "%";
+  for (const [k] of BARS) { $("#n_" + k).value = cur[k].toFixed(1); $("#s_" + k).value = cur[k]; }
+  const pairs = [["speed", "stamina"], ["stamina", "grit"], ["grit", "manners"]];
+  const nm = Object.fromEntries(BARS);
+  $("#shape").innerHTML = pairs.map(([a, z]) => `<span class="chip ${cur[a] > cur[z] ? "ok" : cur[a] < cur[z] ? "no" : ""}">${nm[a]} &gt; ${nm[z]}</span>`).join("");
+  $("#read").innerHTML = `<span>Fastest mile <b>${mile(cur.speed)}</b></span><span>Speed − Stamina <b>${(cur.speed - cur.stamina >= 0 ? "+" : "") + (cur.speed - cur.stamina).toFixed(1)}</b></span>`;
+  $("#save").disabled = !ok || !$("#name").value.trim();
+  $("#save").textContent = editing ? "Save changes" : "Save";
+  drawList();
+}
+
+function drawRows() {
+  const a = REF[tier];
+  $("#rows").innerHTML = BARS.map(([k, n]) => `<div class=row><div><b>${n}</b><span class=cost>${wt(k) === 1 ? "1 per point" : wt(k) ? `${wt(k)} per point` : "free, not in the budget"}</span></div>
+    <div class=sl><input type=range id=s_${k} min=0 max=10 step=0.1>${a ? `<span class=ghost style="left:${a[k] * 10}%">${a[k].toFixed(1)}</span>` : ""}</div>
+    <input class=num id=n_${k} type=number min=0 max=10 step=0.1></div>`).join("");
+  for (const [k] of BARS) {
+    $("#s_" + k).oninput = e => set(k, +e.target.value);
+    $("#n_" + k).onchange = e => set(k, +e.target.value || 0);
+  }
+}
+
+function drawTabs() {
+  $("#tabs").innerHTML = TIERS.map(t => `<button class="${t === tier ? "on" : ""}" data-t="${t}">${t}<small>${S.horses.filter(h => h.tier === t).length || ""}</small></button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach(b => b.onclick = () => { tier = b.dataset.t; editing = null; cur = blank(); $("#name").value = ""; $("#note").value = ""; drawTabs(); drawRows(); draw(); });
+}
+
+function drawList() {
+  const hs = S.horses.filter(h => h.tier === tier);
+  const a = REF[tier];
+  $("#lh").textContent = `${tier} builds · budget ${budget(tier)}` + (a ? ` · ${(a.share * 100).toFixed(1)}% of the world` : " · none in the world yet");
+  $("#list").innerHTML = hs.length ? hs.map(h => `<div class="bh ${editing === h.id ? "edit" : ""}"><div class=t><span class=nm>${esc(h.name)}</span>
+      <span><button class="btn sm" data-e="${h.id}">Edit</button> <button class="btn sm" data-d="${h.id}">Delete</button></span></div>
+      <div class=mini>${BARS.map(([k, n]) => `<div class="${k === "manners" ? "m" : ""}">${n} ${h[k].toFixed(1)}<i><span style="width:${h[k] * 10}%"></span></i></div>`).join("")}</div>
+      <span class=note>Fastest mile ${mile(h.speed)}${h.note ? " · " + esc(h.note) : ""}</span>
+      ${onBudget(h, tier) ? "" : `<div class=warn>Costs ${cost(h).toFixed(1)}: off this tier's budget now</div>`}</div>`).join("")
+    : `<div class=empty>No ${tier} horses built yet.</div>`;
+  $("#list").querySelectorAll("[data-e]").forEach(b => b.onclick = () => {
+    const h = S.horses.find(x => x.id === b.dataset.e); editing = h.id;
+    cur = {speed: h.speed, stamina: h.stamina, grit: h.grit, manners: h.manners}; $("#name").value = h.name; $("#note").value = h.note || ""; draw();
+  });
+  $("#list").querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
+    if (b.textContent !== "Sure?") { b.textContent = "Sure?"; return; }
+    S.horses = S.horses.filter(x => x.id !== b.dataset.d); if (editing === b.dataset.d) editing = null; persist(); drawTabs(); draw();
+  });
+}
+
+function drawSettings() {
+  $("#set").innerHTML = BARS.map(([k, n]) => `<label>${n} weight<input data-w="${k}" type=number min=0 max=5 step=0.25 value=${wt(k)}></label>`).join("") +
+    TIERS.map(t => `<label>${t} budget<input data-b="${t}" type=number min=1 max=40 step=0.5 value=${budget(t)}></label>`).join("");
+  $("#set").querySelectorAll("[data-w]").forEach(i => i.onchange = () => { S.settings.weights[i.dataset.w] = Math.max(0, Math.min(5, +i.value || 0)); persist(); drawRows(); draw(); });
+  $("#set").querySelectorAll("[data-b]").forEach(i => i.onchange = () => { S.settings.budgets[i.dataset.b] = Math.max(1, +i.value || 1); persist(); draw(); });
+}
+
+async function persist() {
+  await fetch("/api/builds", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(S)});
+}
+
+$("#save").onclick = () => {
+  const h = {id: editing || Date.now().toString(36), tier, name: $("#name").value.trim(), note: $("#note").value.trim(), ...cur, saved: new Date().toISOString()};
+  S.horses = editing ? S.horses.map(x => x.id === editing ? h : x) : [...S.horses, h];
+  editing = null; cur = blank(); $("#name").value = ""; $("#note").value = "";
+  persist(); drawTabs(); draw();
+};
+$("#avg").onclick = fromAverage;
+$("#clear").onclick = () => { editing = null; cur = blank(); $("#name").value = ""; $("#note").value = ""; draw(); };
+$("#name").oninput = draw;
+
+(async () => {
+  const [b, t] = await Promise.all([fetch("/api/builds").then(r => r.json()), fetch("/api/tiers").then(r => r.json())]);
+  S = {settings: b.settings && b.settings.weights ? b.settings : JSON.parse(JSON.stringify(DEFAULT)), horses: b.horses || []}; REF = t;
+  drawTabs(); drawRows(); drawSettings(); draw();
+})();
+</script></body></html>

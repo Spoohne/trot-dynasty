@@ -20,6 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 MOCK = os.path.join(ROOT, "mockups")
 DB = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "world100.db")
 NOTES = os.path.join(HERE, "notes.json")
+BUILDS = os.path.join(HERE, "builds.json")
 sys.path.insert(0, os.path.join(ROOT, "art"))
 import recolor                                                    # noqa: E402  the game's portraits, by coat and marking
 
@@ -153,6 +154,22 @@ def surprises(db, age):
     return {"plain": [dict(r) for r in plain], "flops": [dict(r) for r in flops], "top5": top5, "median": med}
 
 
+def tiers(db):
+    """Where the world's horses sit, per tier: the average card of every season raced at 3 and up (the builder's ghosts)."""
+    rows = db.execute("""SELECT tier, COUNT(*) n, AVG(speed) speed, AVG(stamina) stamina, AVG(grit) grit, AVG(manners) manners
+        FROM seasons WHERE age >= 3 AND retired = 0 GROUP BY tier""").fetchall()   # starts is career starts: a retired card is frozen
+    total = sum(r["n"] for r in rows) or 1
+    return {r["tier"]: dict(r, share=r["n"] / total) for r in rows}
+
+
+def builds(new=None):
+    """Patrick's hand-built horses, by tier, in builds.json beside this file. A post replaces the whole list."""
+    if new is not None:
+        json.dump(new, open(BUILDS + ".tmp", "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+        os.replace(BUILDS + ".tmp", BUILDS)
+    return json.load(open(BUILDS, encoding="utf-8")) if os.path.exists(BUILDS) else {"settings": None, "horses": []}
+
+
 def notes(new=None):
     n = json.load(open(NOTES, encoding="utf-8")) if os.path.exists(NOTES) else {"general": "", "horses": {}}
     if new:
@@ -197,6 +214,12 @@ class H(BaseHTTPRequestHandler):
                 return self.send(surprises(db, q.get("age", ["3"])[0]))
             if p == "/api/notes":
                 return self.send(notes())
+            if p == "/builder":
+                return self.send(open(os.path.join(HERE, "builder.html"), "rb").read(), "text/html; charset=utf-8")
+            if p == "/api/tiers":
+                return self.send(tiers(db))
+            if p == "/api/builds":
+                return self.send(builds())
             if p.startswith("/portrait/"):                          # /portrait/<coat>/<marking>.png
                 _, _, coat, mk = p.split("/")
                 path = recolor.portrait(coat, mk[:-4], 0, 128)
@@ -222,6 +245,9 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/api/notes":
             n = int(self.headers.get("Content-Length", 0))
             return self.send(notes(json.loads(self.rfile.read(n) or b"{}")))
+        if self.path == "/api/builds":
+            n = int(self.headers.get("Content-Length", 0))
+            return self.send(builds(json.loads(self.rfile.read(n) or b"{}")))
         return self.send({"error": "not found"}, code=404)
 
 

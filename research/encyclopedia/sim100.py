@@ -7,7 +7,7 @@ reading is written to a SQLite file as it goes, so the encyclopedia page can ope
 Recorded:
   horses     one row per horse (name, sex, coat, parents, foaled, style, trophies, titles, career totals), refreshed each season
   seasons    every horse at the end of every season: age, its card (Speed, Stamina, Grit, Manners bars, as the live card
-             shows them), each bar's grade in its crop, rating and tier, and the season's starts, wins and purses
+             shows them), each bar's grade in its crop, rating and the live badge tier, and the season's starts, wins and purses
   stories    the races kept for replay: every stake, and each horse's three best races (wins first, by purse)
   meta       progress (season reached, horses, seconds per season)
 """
@@ -28,13 +28,12 @@ O = c.outcome
 SEASONS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
 DB = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "research", "encyclopedia", "world100.db")
 BAR_KEYS = (("speed", "late_speed"), ("stamina", "stamina"), ("grit", "grit"), ("manners", "gait"))   # the live card (app.BARS)
-TIER_3UP = ((10.01, "Galaxy"), (7.55, "S+"), (6.59, "S"), (6.01, "A"), (5.25, "B"), (4.09, "C"))   # DECISIONS 236
-TIER_2YO = ((5.61, "Galaxy"), (5.36, "S+"), (4.18, "S"), (3.26, "A"), (2.42, "B"), (1.66, "C"))   # DECISIONS 237
 KEEP = 3                                                       # races kept per horse
 
 
-def tier(rating, age):
-    return next((t for cut, t in (TIER_2YO if age == 2 else TIER_3UP) if rating >= cut), "D")
+def tier(h):
+    """The badge the live game shows (app.tier_label): cut from the horse's rated mile, the same at any age."""
+    return app.tier_label(h)
 
 
 def grade_of(share):
@@ -127,7 +126,7 @@ class Recorder:
                 vals = crop.get((c.age_group(h), k)) if not h.retired and h.age >= 2 else None
                 g[k] = grade_of((len(vals) - bisect.bisect_left(vals, b - 1e-9)) / len(vals)) if vals else None
             out.append((h.id, season, h.age, int(h.retired), bars["speed"], bars["stamina"], bars["grit"], bars["manners"],
-                        g["speed"], g["stamina"], g["grit"], g["manners"], rating, tier(rating, h.age) if h.age >= 2 else None,
+                        g["speed"], g["stamina"], g["grit"], g["manners"], rating, tier(h) if h.age >= 2 else None,
                         h.starts, h.wins, h.earnings, getattr(h, "earnings", 0) - getattr(h, "season0", 0), app.bar_of(h, "early_speed"),
                         O.best_mile(O.bars(h, h.developed))))
             self.horse_row(h, season)
