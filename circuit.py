@@ -1137,12 +1137,15 @@ def run_race(r, alive, log):
     (group, sex, name, purse, tag, track), i, v = r["key"], r["i"], r["v"]
     taken_ids, raced = CARD.setdefault("taken", {}), CARD.setdefault("raced", set())
     field = [h for h in r["field"] if (id(h) in alive or getattr(h, "visitor", None)) and not h.retired and getattr(h, "order", None) != "stakes"]
-    if len(field) < 2:                                   # lost its field since the draw (a stake, a sale): no race
-        for h in field:
-            rest(h)
-            h.last = f"entered {race_title(group, name)}, the field came apart; rested"
+    if not field:
         r["done"] = True
         return
+    # lost horses since the draw (a stake, a sale, a retirement): shippers come in for them, so every horse still in goes
+    # to the gate (Patrick 2026-11-02: an entered horse always races)
+    while len(field) < max(2, min(len(r["field"]), MIN_FIELD)):
+        s = visitor(r["key"], field, r["field"])
+        s.post = max(getattr(x, "post", 0) for x in field) + 1
+        field.append(s); r["field"].append(s)
     if r.get("settling"):                               # a retry after a failure partway through settling: a result is never
         r["done"] = True                                # applied twice (starts, purses, claims); this race stays as far as it got
         return
