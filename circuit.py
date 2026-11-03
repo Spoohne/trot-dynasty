@@ -1118,18 +1118,24 @@ def pass_week(day, horses, raced):
         h.wk = None
 
 
-POST_FROM, POST_SPAN = 19 * 60, 230   # first post 7:00 PM New York time; each track's last post 230 minutes later (10:50)
+SITTINGS = (17 * 60, 20 * 60)   # race night goes in two sittings, 5 PM and 8 PM New York time (Patrick 2026-11-02); the
+POST_SPAN = 25                  # stakes go at the 8:30 close. Each track runs a sitting's races back to back over 25 minutes
+POST_FROM = SITTINGS[0]
 
 
 def post_times(races):
-    """Each track runs its own card through the evening: its races in program order, spaced evenly from first post
-    to last. r["post"] is minutes after midnight, New York time."""
-    by = {}
-    for r in sorted(races, key=lambda r: (r["key"][5], str(r["key"][0]), -r["key"][3])):
-        by.setdefault(r["v"]["name"], []).append(r)
-    for rs in by.values():
-        for k, r in enumerate(rs):
-            r["post"] = POST_FROM + (round(k * POST_SPAN / (len(rs) - 1)) if len(rs) > 1 else POST_SPAN // 2)
+    """Tonight's posts: the cheaper half of the card (by purse) at 5 PM, the richer half at 8 PM; each track runs its
+    share of a sitting in program order, spaced evenly. r["post"] is minutes after midnight, New York time."""
+    by_purse = sorted(races, key=lambda r: r["key"][3])
+    late = {id(r) for r in by_purse[len(by_purse) // 2:]}
+    for sitting, start in enumerate(SITTINGS):
+        by = {}
+        for r in sorted(races, key=lambda r: (r["key"][5], str(r["key"][0]), -r["key"][3])):
+            if (id(r) in late) == bool(sitting):
+                by.setdefault(r["v"]["name"], []).append(r)
+        for rs in by.values():
+            for k, r in enumerate(rs):
+                r["post"] = start + (round(k * POST_SPAN / (len(rs) - 1)) if len(rs) > 1 else 0)
 
 
 def run_race(r, alive, log):
