@@ -21,22 +21,25 @@ MILE = 5280.0
 LANE_FT = 7.0
 SLOT = 16.0                    # nose to nose in single file (story.py SLOT: a horse and sulky and a little daylight)
 GEOM = {"mile": (1320.0, 1320.0, 320.0), "half": (800.0, 520.0, 300.0)}   # straight, turn, run-in, as race3.Track
-E = dict(                      # the run's own knobs, as racegod/engine_fit.py left them (2026-11-02, 40 trials; V6)
-    launch=0.03, launch_gate=0.020,    # share of steady speed everyone adds leaving the gate, and per unit of gate
-    lead_soft=-0.031, lead_hot=0.025,  # the leader's pace off its steady speed: alone (effort-neutral into the wind), or pressed
-    push=0.021,                        # a horse going for a spot (the lead, the pocket, first-over) runs this much over steady
-    drive=0.045, drive_kick=0.013,      # the drive: everyone, plus per unit of kick
-    prof_kick=0.010,                   # a kick horse sits this much quieter per unit of kick, and has it back in the drive
-    draft=0.120, wind=0.027,            # share of effort cover saves; what racing uncovered costs
-    turn=0.048,                        # extra effort per lane out on a turn, racing uncovered
-    duel=0.182, duel_grit=0.5,         # a duel's extra effort, less this share per unit of grit
-    reserve=4.345, reserve_cruise=0.966,  # seconds of over-effort in the tank, and per unit of cruise
-    fade=0.022,                        # share of steady speed lost per second of overdraft
+E = dict(                      # the run's own knobs, as racegod/engine_fit.py --de left them (2026-11-02, 14 generations; V7)
+    launch=0.03, launch_gate=0.024,    # share of steady speed everyone adds leaving the gate, and per unit of gate
+    lead_soft=-0.029, lead_hot=0.036,  # the leader's pace off its steady speed: alone (effort-neutral into the wind), or pressed
+    push=0.010,                        # a horse going for a spot (the lead, the pocket) runs this much over steady
+    push_fo=0.031,                      # the first-over brush: over steady, until it's on the leader's flank (session 2)
+    drive_able=0.028,                   # the drive, per model unit of ability under the field's best: class shows at the finish (session 2)
+    yield_max=20.000,                    # ft a horse gives up letting others cross at the start, then the line is formed (session 2)
+    drive=0.050, drive_kick=0.011,      # the drive: everyone, plus per unit of kick
+    prof_kick=0.000,                   # a kick horse sits this much quieter per unit of kick, and has it back in the drive
+    draft=0.177, wind=0.056,            # share of effort cover saves; what racing uncovered costs
+    turn=0.060,                        # extra effort per lane out on a turn, racing uncovered
+    duel=0.072, duel_grit=0.5,         # a duel's extra effort, less this share per unit of grit
+    reserve=2.983, reserve_cruise=1.334,  # seconds of over-effort in the tank, and per unit of cruise
+    fade=0.032,                        # share of steady speed lost per second of overdraft
     follow_k=0.08, lane_rate=1.0,     # the following controller (ft/s per ft off the slot); lanes a second sideways
     move=(0.5, 0.75), move_w=(55, 45),   # where first-over pulls (share of the mile), and how often each
     drive_ft=1400.0, cap=1.08,        # where the drive starts; the speed limit on any instant, over the horse's own mile
     break_s=3.0, accel=3.0,           # seconds a breaker runs at half speed; ft/s^2 a horse changes speed
-    ease=3.859,                         # ft/s under the horse inside it a horse takes back to drop in behind
+    ease=4.514,                         # ft/s under the horse inside it a horse takes back to drop in behind
 )
 rng = random.Random()
 
@@ -126,7 +129,7 @@ def race(field, track="mile", passing=False):
     for post, h in enumerate(field):
         S[h.id] = dict(h=h, s=0.0, lane=float(post), tgt=post, v=0.85 * steady[h.id], E=E["reserve"] + E["reserve_cruise"] * T[h.id]["cruise"],
                        fin=None, limited=0.0, broke=rng.random() < 0.005 * math.exp(-2.88 * T[h.id]["manners"]),
-                       break_at=rng.uniform(300.0, 0.6 * MILE), break_until=None, path=[], out=out.index(h) + 1)
+                       break_at=rng.uniform(300.0, 0.6 * MILE), break_until=None, path=[], gave=0.0, out=out.index(h) + 1)
     move_s = rng.choices(E["move"], weights=E["move_w"])[0] * MILE
     t, quarters = 0.0, []
     while any(d["fin"] is None for d in S.values()) and t < 200:
@@ -149,7 +152,7 @@ def race(field, track="mile", passing=False):
             if s < 1320 and r != 0:
                 want = leave[h.id]                                # the first quarter is run on gate speed
             elif drive:
-                want = st * (1 + E["drive"] + E["drive_kick"] * T[h.id]["kick"] + quiet * (MILE - E["drive_ft"]) / E["drive_ft"])
+                want = st * (1 + E["drive"] + E["drive_kick"] * T[h.id]["kick"] + E["drive_able"] * (able[h.id] - able[ref.id]) + quiet * (MILE - E["drive_ft"]) / E["drive_ft"])
             elif r == 0:
                 clear = all(o is d or o["s"] < s - 0.6 * SLOT for o in states)
                 pressed = any(o is not d and round(o["lane"]) >= 1 and o["s"] > s - SLOT for o in states)
@@ -157,7 +160,9 @@ def race(field, track="mile", passing=False):
             elif r == 1 and s < MILE / 3 and not (ahead is lead or (ahead and ahead["s"] <= S[lead.id]["s"])):
                 want = st * (1 + E["push"])                       # the pocket: get in right behind the leader
             elif r == 2 and s >= move_s and S[lead.id]["s"] - s > 2.0:
-                want = st * (1 + E["push"])                       # first-over: up to the leader's flank
+                want = st * (1 + E["push_fo"])                    # first-over: brushes up to the leader's flank
+            elif r == 2 and s >= move_s:
+                want = S[lead.id]["v"] + 0.5                      # on the flank: sits on the leader, who has to answer
             else:
                 want = free * (1 - quiet)
             lane_max = 4 if s >= last_turn else 2
@@ -185,18 +190,18 @@ def race(field, track="mile", passing=False):
                     inner = [o for o in states if o is not d and round(o["lane"]) == ln - 1 and abs(o["s"] - s) < SLOT]
                     if inner and all(peck[h.id] < peck[o["h"].id] for o in inner):
                         want = max(want, leave[h.id] * (1 + E["push"]))   # it ranks above what's inside: push on and cross in front (they yield)
-                    elif inner:
+                    elif inner and d["gave"] < E["yield_max"]:
                         want = min(want, min(o["v"] for o in inner) - E["ease"])   # take back and drop in behind
-            if not drive and s < 0.6 * MILE and any(o is not d and round(o["lane"]) == ln + 1 and abs(o["s"] - s) < SLOT and peck[o["h"].id] < peck[h.id] for o in states):
+            if not drive and s < 0.6 * MILE and d["gave"] < E["yield_max"] and any(o is not d and round(o["lane"]) == ln + 1 and abs(o["s"] - s) < SLOT and peck[o["h"].id] < peck[h.id] for o in states):
                 want = min(want, d["v"] - E["ease"])              # a horse that ranks above it wants in: let it cross
+            d["gave"] += max(0.0, d["v"] - want) * DT             # what it has given up so far
             if d["broke"] and d["break_until"] is None and s >= d["break_at"]:
                 d["break_until"] = t + E["break_s"]
             if d["break_until"] is not None and t < d["break_until"]:
                 want = 0.5 * st
             over = (d["v"] / st) ** 3 * ((1 - E["draft"]) if covered else 1 + E["wind"] + (E["turn"] * max(0, ln) if on_turn(s) else 0)) - 1
-            if ((r == 0 and any(o is not d and round(o["lane"]) >= 1 and abs(o["s"] - s) < SLOT for o in states))
-                                     or (r == 2 and ln >= 1 and abs(S[lead.id]["s"] - s) < SLOT)):
-                over += E["duel"] * max(0.0, 1 - E["duel_grit"] * T[h.id]["grit"])
+            if r == 0 and any(o is not d and round(o["lane"]) >= 1 and abs(o["s"] - s) < SLOT for o in states):
+                over += E["duel"] * max(0.0, 1 - E["duel_grit"] * T[h.id]["grit"])   # the leader pays for being pressed; the presser arrived with momentum
             d["E"] = min(E["reserve"] + E["reserve_cruise"] * T[h.id]["cruise"], d["E"] - max(over, -0.3) * DT)
             if d["E"] < 0:
                 want = min(want, st * (1 + E["fade"] * d["E"]))

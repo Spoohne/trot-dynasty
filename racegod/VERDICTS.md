@@ -233,3 +233,53 @@ fields, not 40 random trials), then the same table again. Decision after that: a
 replays to watch meanwhile: `2629-stake-S6705-sim` (Clover Stakes, Northern Star from mid-pack in 1:47.4),
 `2626-gh-half-CLM1M-0-sim` (half-mile, won from mid-pack), `2626-ng-mile-NW2L6-2-sim` (mile, won from behind); each
 also has a `-today` twin from the live engine on the same field.
+
+Patrick: yes, session 2 (2026-11-02).
+
+## V7 - The simulated race, session 2: structure, then a real fit, 2026-11-02
+
+**Changed in `racegod/engine.py`:** the first-over horse brushes up to the leader's flank (`push_fo`) and then sits on
+it; only the leader pays the duel (the presser arrived with momentum); the drive scales with ability under the field's
+best (`drive_able`); a horse stops yielding at the start once it has given up `yield_max` feet (the line is formed).
+Then `engine_fit.py --de`: differential evolution, 10 knobs-sets x 14 generations, one run of the 315 fields each,
+loss = target bands (the favorite weighted x3) + today's winning-trip shares + laws + stragglers. Loss 28 -> 5.1.
+The fit put `yield_max` on its floor (nobody yields, outside horses stay 4-wide to the quarter, 46 pictures broken);
+the floor is now 20 ft, which costs some of the trip balance back. Both readings below.
+
+**Measured: 315 real fields x 2 runs each.**
+
+| | Today | Sim, fit as found (yield 5 ft) | Sim, yield 20 ft (kept) | Band |
+|---|---|---|---|---|
+| Half post 1 / post 8 wins | 20.6 / 8.0 HIGH | 29.4 HIGH / 5.2 | 21.2 / 6.1 (edge) | 19-27 / 1-6 |
+| Mile post 1 / post 8 wins | 10.4 LOW / 10.0 | 20.0 / 7.2 | 12.0 LOW / 10.8 (edge) | 15-20 / 6-10 (soft) |
+| Winner within 3 L at the half | 45.1 LOW | 81.3 | 82.4 | 60-90 |
+| Half winner 4+ L back | 42.3 HIGH | 4.6 | 5.2 | 0-15 |
+| Favorite wins | 40.0 | 26.7 LOW | 27.0 LOW | 30-45 |
+| Median margin / photos | 1.8 / 11.4 | 1.7 / 12.4 | 1.8 / 10.0 | 1-3 / 5-15 |
+| Speed limit set the time | 10.3 HIGH | 0.9 | 0.8 | 0-10 |
+| Races with a horse 20 L+ / 40 L+ back | 44.9% / 7.9% | 17.9% / 0% | 24.3% / 0.5% | |
+| Winning trips: lead / pocket / fo / mid / behind | 29/16/13/21/22 | 37/29/4/17/12 | 51/29/2/12/6 | |
+| Northern Star: wins / time / margin | 4 / 1:46.6 / 12.9 L | 3 / 1:47.6 / 13.0 L | 4 / 1:48.0 / 10.9 L | |
+| Laws broken | 0 | 46 of 630 (4-wide at the quarter) | 1 of 630 | |
+
+**Where it stands (measured).** Nine of ten targets in band or on the edge, against six for the live engine, and every
+replay true to its result. The pace, the post bias, where the winner sits at the half, stragglers and the speed limit
+are all better than today's. Two things are still wrong: **the favorite wins 27% (today 40%)** and **the front end
+wins too much** (lead + pocket 80%; first-over 2%, closers 6%). Both come from the same place: a trip in the sim
+costs more than a horse's class is worth, and the fit can only trade one against the other (yielding at the start
+buys the trip balance back but strands horses wide; the picture or the balance).
+
+**Hypothesis for what would fix it (not tried):** the model's `s_margin` scale is applied to steady speed (a class
+difference of one unit = 6 L over the mile), but the sim's trip costs are in seconds of tank, which the fit sized to
+make the trips matter at all. The two scales need fitting together, as one: class as a share of the tank as well as
+of the speed. That is a design change to the energy model, half a session, and the fit again.
+
+### Proposed (awaiting Patrick)
+
+Three ways to go. (a) **Adopt now behind TD_ENGINE** for a shadow week on a save copy (the nightly audit decides):
+better on nine measures, worse on the favorite and the trip mix; players would see more front-end winners and
+longer prices winning. (b) **One more session** on the class-vs-tank model, then decide. (c) **Stop**: keep today's
+engine, carry the sim's lessons back as V1's retune (post slope, front-end value). RaceGod's pick: (b); it is the one
+thing the sim can't be tuned around.
+
+Replays: http://127.0.0.1:8115/ while this session runs (`-sim` and `-today` twins per field).
