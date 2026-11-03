@@ -250,7 +250,7 @@ def on_aged_scale(x, group):
     return 55 + 15 * (x - m) / (s or 1)
 OBS_SD = 8.0             # how noisy one finishing position is as evidence of rating
 _TF_OLD = {"mile": 784.5 - 6.2 * 1.2, "half": 780.9 + 6.2 * HALF_SLOWER - 6.2 * 1.2}   # rating ~ a + b*seconds, fitted on the 10-27 clock's race seconds (display + 1.2)
-TIME_FIT = ({t: a - 6.2 * (sim.SQUEEZE_REF + (HALF_SLOWER if t == "half" else 0)) * (1 - 1 / sim.SQUEEZE) for t, a in _TF_OLD.items()},
+TIME_FIT = ({t: a - 6.2 * (sim.SQUEEZE_REF + (HALF_SLOWER if t == "half" else 0)) * (1 - 1 / sim.SQUEEZE) + 6.2 * sim.CLOCK_SHIFT / sim.SQUEEZE for t, a in _TF_OLD.items()},
             -6.2 / sim.SQUEEZE, 13.5)                        # the same fit on the honest clock (sim.squeeze): h.raw_time is now the time shown
 DROP_MARGIN = 0          # owner drops to a claimer once est is under the class it would race in
 YEAR = 52                # game weeks (real days) per game year
@@ -648,7 +648,7 @@ ABILITY_FIT = 53.58, 3.121        # est ~= a + b * race_score(age)
 MILE_TIERS = tuple((sim.squeeze(sim.retime(x)), t) for x, t in ((107.5, "S+"), (109.5, "S"), (112.0, "A"), (115.0, "B"), (119.0, "C")))
 
 
-MILE_FIT_V2 = 116.067, -0.0419    # seconds on the honest clock ~ a + b * est: 3.7M starts of the 100-season world (r -0.74, resid 0.8 s)
+MILE_FIT_V2 = 116.067 + sim.CLOCK_SHIFT, -0.0419    # seconds on the honest clock ~ a + b * est: 3.7M starts of the 100-season world (r -0.74, resid 0.8 s)
 
 
 def mile_secs(est):

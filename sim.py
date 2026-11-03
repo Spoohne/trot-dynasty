@@ -206,12 +206,13 @@ def retime(x, half=False):
 # pulled in about SQUEEZE_REF by SQUEEZE: a bar is worth about 0.8 s, four lengths, everywhere. The half-mile's own
 # allowance (HALF_SLOWER) is a track's slowness, not ability, and stays whole.
 SQUEEZE_REF, SQUEEZE = 112.0, 0.35
+CLOCK_SHIFT = 2.4                                   # the whole clock, slower: the fastest mile the engine can produce is 1:45.5 (Patrick 2026-11-03)
 
 
 def squeeze(x, half=False):
     """A time on the 2026-10-27 clock onto the honest clock."""
     hs = HALF_SLOWER if half else 0.0
-    return SQUEEZE_REF + (x - hs - SQUEEZE_REF) * SQUEEZE + hs
+    return SQUEEZE_REF + (x - hs - SQUEEZE_REF) * SQUEEZE + hs + CLOCK_SHIFT
 
 
 # seconds a point of each racing stat is worth. Speed is the headline stat by design: the one a player most wants,

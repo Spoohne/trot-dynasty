@@ -32,6 +32,13 @@ Measured on the review copy (400 races on a copy of the live save, before the ea
 (Northern Star), winning margin median 3.4 L, photo finishes 9%. On the 100-season world's late seasons: 1:51.1,
 2.8 L, 10%. A horse's figures sit on its bars' predicted mile with sd 0.60 s (was 1.44 s on the old clock).
 
+**The clock shifted 2.4 s slower (2026-11-03, live, `sim.CLOCK_SHIFT`).** Patrick, reading the 50-year history: half the breed
+had run at or near the real record (22.5% of horses with 10+ starts had a best of 1:47.0 or faster; the engine's ceiling,
+a 10/10 closer with a sharp night, luck and the bob, was 1:43.1). The whole line moved 2.4 s: ceiling 1:45.6 (the fifth
+above his 1:45.5), tier lines S+ 1:54.0 / S 1:54.6 / A 1:55.2 / B 1:56.2 / C 1:57.2, middle horse 1:56.2; the handicapper's
+fits (`TIME_FIT`, `MILE_FIT_V2`) follow it; `retime_v3.py` moves a save (clock_v 4). Measured on the kept races: winners'
+median 1:49.4 -> 1:51.8, at or near the record 22.5% -> 0.7% of career bests. Order and margins unchanged (a shift).
+
 ## 2. Every bar races (`outcome.race`)
 
 - **Manners at the start** (`M_START` 0.3): a unit of manners is worth 0.3 of gate speed; a rank horse on a bad night
