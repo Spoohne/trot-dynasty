@@ -2071,10 +2071,11 @@ GUIDE = [
          "half-mile track's tight turns."),
         ("Upsets", "The best horse doesn't always win. A bad trip, a hot pace, a break, a horse that's sharper tonight than its "
          "record says: harness racing has its surprises, and every so often something remarkable happens."),
-        ("Figures", "The clock tells you how fast the race went; a horse's <b>figure</b> tells you what it ran on its own account, "
-         "read fairly for the trip it got. A horse towed along behind a fast winner clocks a quick mile and a modest figure; one that "
-         "did all the work parked outside gets credit for it. A horse's letter is earned from its recent figures, so a horse on the "
-         "way down loses its letter as its figures slow. A break leaves no figure: the time tells you nothing."),
+        ("The clock and the letter", "Every horse's time is its own: what it ran that night, on that trip, in that form. A horse "
+         "that gets a soft trip in front runs a little quicker than its merit; one that does the work parked outside runs a little "
+         "slower. A horse's letter is earned from its recent miles, read fairly for the trips it got, so a horse on the way up earns "
+         "its letter on the track and one on the way down loses it the same way. A break tells you nothing about a horse's speed and "
+         "counts for nothing. Until a horse has raced enough, its letter is drawn hollow and read off its bars against horses its age."),
     ]),
     ("After the races", [
         ("Results and replays", "Results are spoiler-free: your starters are listed in post order, and you choose when to reveal each "
@@ -3128,7 +3129,7 @@ def card_header(h, own, price=None):
     return (f"<div class='card hdr'><div class=htop><div class='port t{tier_cls(h)}'><div class=stagelight></div>{portrait(h, 150)}<div class='tier {tier_cls(h)} badge'>{tier_label(h)}</div>{trophy(h)}{ribbon}</div>"
             f"<div class=hr><div class=hname>{esc(h.name)} {grade_chip}</div>"
             f"<div class=hline>{h.age}-year-old {coat} {sexname}, {h.starts} starts, {h.wins} wins</div>"
-            + (f"<div class=hline>Figure {c.mile_time(badge_secs(h))} · {'its prime' if h.retired else f'its last {n} starts' if (n := min(BADGE_LAST, sum(1 for r in h.results if r.get('fig')))) < BADGE_LAST else 'its last ten starts'}</div>" if not unproven(h) and badge_secs(h) else "")
+            + f"<div class=hline>{letter_line(h)}</div>"
             + f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
             + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if has_pass(ME) and trainer_read(h) else "")   # a Season Pass perk
@@ -3200,7 +3201,7 @@ CUP = ("<svg viewBox='0 0 12 12' width=100% height=100% shape-rendering=crispEdg
 
 # Displayed tiers are absolute, cut from the mile rating, so a tier means the same horse at any age: a promising
 # 2-year-old shows C or B until it is fast. (Classes, prices and breeding still use h.tier, the age-relative one.)
-MILE_TIERS = tuple((sim.squeeze(sim.retime(x)), t) for x, t in ((107.5, "S+"), (109.5, "S"), (112.0, "A"), (115.0, "B"), (119.0, "C")))   # on the honest clock (sim.squeeze)
+MILE_TIERS = c.MILE_TIERS                                      # on the honest clock (sim.squeeze); the breeding outlook cuts on the same lines
 # seconds for a mile, slower is D: the original cuts, moved exactly onto the 2026-10-27 clock (S+ ~1:50.9 ... C ~2:00.1)
 
 
@@ -3267,6 +3268,21 @@ def bars_grade(h):
     crop = peers.get(max(h.age, 1), [])
     above = (len(crop) - bisect.bisect_right(crop, card_score(h))) / max(1, len(crop))   # the share of its peers ahead of it
     return next((t for run, t in shares if above < run), "D")
+
+
+def letter_line(h):
+    """Why the horse wears its letter, in a line: the miles it rests on and the next line up (or down, at the top)."""
+    if unproven(h):
+        return f"{tier_label(h)} on its bars against horses its age · earns its letter at {PED_STARTS} starts"
+    secs = badge_secs(h)
+    if secs is None:
+        return f"{tier_label(h)} on its bars · no clean miles yet"
+    n = min(BADGE_LAST, sum(1 for r in getattr(h, "results", []) if r.get("fig") is not None))
+    t = tier_label(h)
+    ups = [(cut, tt) for cut, tt in MILE_TIERS if TIER_RANK[tt] < TIER_RANK.get(t, 5)]
+    nxt = (f"{ups[-1][1]} at {c.mile_time(ups[-1][0])} or better" if ups else
+           f"the top line is {c.mile_time(MILE_TIERS[0][0])}")
+    return f"{t} on its {'prime' if h.retired else f'last {n} miles'}, {c.mile_time(secs)} read fairly · {nxt}"
 
 
 def tier_label(h):
@@ -4837,9 +4853,9 @@ def breed_page(name):
     why = e.why_not_breed(m, ME, G["horses"])
     def outlook(s):
         (lo, mid, hi), width = e.foal_outlook(s, m, G["horses"])
-        tiers = "DCBAS"
+        tiers = ["D", "C", "B", "A", "S", "S+"]                                   # the foal's likely letter at its peak, on the same ruler as every badge
         bar = "".join(f"<i class='{'on' if tiers.index(lo) <= k <= tiers.index(hi) else ''}{' mid' if t == mid else ''}'>{t}</i>" for k, t in enumerate(tiers))
-        word = "tight" if width < 30 else "moderate" if width < 40 else "wide"
+        word = "tight" if width < 1.0 else "moderate" if width < 1.8 else "wide"   # seconds between a lucky and an unlucky foal
         nk = e.nick(s, m)
         tag = ({"golden": "<span class='nick gold'>&#9733; Golden cross</span>", "good": "<span class=nick>Good nick</span>",
                 "neutral": "<span class=nick>Neutral nick</span>", "poor": "<span class='nick poor'>Poor nick</span>"}[nk] if nk else
@@ -4848,6 +4864,8 @@ def breed_page(name):
         return f"<div class=outl><span class=sub>Foals</span><span class=tband>{bar}</span><span class=sub>{word} spread</span>{tag}</div>"
     def row(s, own):
         ks = [k for k in G["horses"] if k.sire is s]
+        raced = collections.Counter(tier_label(k) for k in ks if k.age >= 2 and not getattr(k, "unreg", False))   # his produce record: what his foals wear
+        produce = " · ".join(f"{raced[t]} {t}" for t in ("S+", "S", "A", "B", "C", "D") if raced[t])
         full = e.covers_sold(s) >= e.BOOK
         fee = 0 if own else e.stud_fee(s)
         close = e.too_close(s, m)
@@ -4857,7 +4875,8 @@ def breed_page(name):
         return (f"<div class=card><div class=brow><a href='/horse/{urlname(s.name)}'>{square_portrait(s, 64)}</a><div style='flex:1;min-width:0'>"
                 f"<a href='/horse/{urlname(s.name)}' class=bname>{esc(s.name)}</a> <span class=sub>{tier_label(s)} · {s.starts}-{s.wins} · ${s.earnings:,.0f}</span>"
                 f"<div class=sub>{len(ks)} foals · {sum(k.wins for k in ks)} wins · book {e.covers_sold(s)}/{e.BOOK}</div>"
-                f"<div class=money>{'your stallion · no fee' if own else f'${fee:,.0f}'}</div>{stud_bars(s)}</div><div>{btn}</div></div>{outlook(s)}"
+                + (f"<div class=sub>Produce: {produce}</div>" if produce else "")
+                + f"<div class=money>{'your stallion · no fee' if own else f'${fee:,.0f}'}</div>{stud_bars(s)}</div><div>{btn}</div></div>{outlook(s)}"
                 + (f"<div class='kin bad'>He is {close}: the registry won't take this mating.</div>" if close else "")   # inbreeding itself is for the breeder to find out
                 + "</div>")
     own = [h for h in mine() if h.retired and h.sex == "m"]

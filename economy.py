@@ -687,17 +687,17 @@ def foal_outlook(s, d, horses, n=160):
     """The likely range of this cross at its peak: public tiers at the 10th, 50th and 90th percentile of n imagined
     foals, each ranked against today's racing horses the way the game ranks them. The hidden nick only counts once
     it's been scouted, so the forecast never leaks it."""
-    raw = lambda h: 70 + 6 * h.race_score(h.peak_age)
-    pop = [raw(h) for h in horses if not h.retired]
-    m, sd = st.mean(pop), st.pstdev(pop) or 1
+    import outcome                                                            # ratings v2: the foal's letter at its peak, on the badge's own ruler
+    secs = lambda f: outcome.pred_mile(outcome.bars(f, {t: f.ceiling(t, f.peak_age) for t in sim.RACE_TRAITS}))
     state, ids, key, nk = sim.rng.getstate(), next(sim._ids), (s.line, d.line), sim.NICK[s.line, d.line]
     if key not in scouted:
         sim.NICK[key] = 0.0
     try:
-        r = sorted(55 + 15 * (raw(f) - m) / sd for f in (sim.breed(s, d) for _ in range(n)))
+        r = sorted(secs(f) for f in (sim.breed(s, d) for _ in range(n)))
     finally:                                                                  # imagined foals leave no trace on the game
         sim.rng.setstate(state); sim._ids = sim.count(ids); sim.NICK[key] = nk
-    return [c.tier_of(r[int(n * q)]) for q in (.1, .5, .9)], r[int(n * .9)] - r[int(n * .1)]
+    cut = lambda x: next((t for c_, t in c.MILE_TIERS if x <= c_), "D")
+    return [cut(r[int(n * q)]) for q in (.9, .5, .1)], r[int(n * .9)] - r[int(n * .1)]   # slowest, median, fastest: lo, mid, hi
 
 
 def shared(s, d):

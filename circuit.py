@@ -643,6 +643,11 @@ MILE_FIT = 128.63, -0.2857        # seconds = a + b * est
 ABILITY_FIT = 53.58, 3.121        # est ~= a + b * race_score(age)
 
 
+# The badge lines (ratings v2): mile seconds on the honest clock, the same horse at any age. The original cuts, moved onto the
+# 2026-10-27 clock (S+ ~1:50.9 ... C ~2:00.1), then squeezed with the breed. Slower than C is D.
+MILE_TIERS = tuple((sim.squeeze(sim.retime(x)), t) for x, t in ((107.5, "S+"), (109.5, "S"), (112.0, "A"), (115.0, "B"), (119.0, "C")))
+
+
 def mile_secs(est):
     """The rating as seconds for a mile, on the honest clock (sim.squeeze of the 2026-10-27 clock's reading)."""
     x = MILE_FIT[0] + MILE_FIT[1] * est                          # fitted on the old clock's linear part:

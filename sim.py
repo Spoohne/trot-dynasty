@@ -35,7 +35,8 @@ N_LOCI = 20
 MAJOR_LOCI = 2          # first loci of each trait have 3x effect
 NOISE_SD = 1.0          # non-genetic potential noise (student-t, heavy tail)
 SPREAD = 0.06           # extra foal-to-foal swing per point of gap between the parents' overall race scores
-MUTATE = 0.1            # chance each inherited gene is replaced by a fresh one: pulls a bred-up breed back toward average
+MUTATE = 0.05           # chance each inherited gene is replaced by a fresh one: pulls a bred-up breed back toward average (0.10 before
+                        # ratings v2; halved for the launch rules, DECISIONS 243: pedigree holds r ~0.2, S+ stays 3-4%, no runaway)
 FOAL_SCALE = 0.8        # shrinks a bred foal's whole deviation from average (genes and luck alike)
 FOAL_H = 0.65            # share of a bred foal's genetic value that shows in the horse: foals of stars regress to the mean (genes pass on whole)
 N_LINES = 6             # hidden sire/dam bloodlines for nicks
