@@ -419,3 +419,11 @@ the retune changes who the computer barns enter where.
 
 **Proposed (awaiting Patrick):** nudge the post costs only: half `c_post` 0.15 -> 0.12, mile 0.247 -> 0.20, then one
 more dry week. The trip values stay. Still open: first-over winners 6% (chart target about 20%): the duel rule.
+
+Patrick: nudge and rerun (2026-11-02). Post costs half 0.12, mile 0.20 in `outcome.py` (committed, **not deployed**);
+a fresh copy of the live save run forward seven nights, days 2632-2636 audited (400 races, all true):
+half post 1 / 8 = 24.4 / 3.9 (both in band), mile 18.5 / 4.3 (post 8 low, soft band, n 258: +-3 of noise),
+winner within 3 L at the half 57 (band 60-90), favorite 40.0, margin 2.1 L, photos 9.0%, speed limit 11.4% (was 8.1:
+one week's noise either side of 10), trips lead 43 / pocket 13 / first-over 6 / mid-pack 25 / behind 12.
+Seven of ten in band, the two post misses gone on the half. RaceGod: deploy the nudge; the mile's post 8 needs a
+bigger sample than a week to call.
