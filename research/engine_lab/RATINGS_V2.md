@@ -38,7 +38,7 @@ Measured (1,500 random fields of 8 live horses, Spearman of each bar with finish
 for single-bar interventions on identical fields and draws: 600 fields, one horse given one more bar of one stat, its
 win rate from 16.2%: kick +11.5, cruise +5.3, grit +2.5, gate +0.8, manners +0.8 (and its fractious starts 6.3% -> 3.5%).
 Review 23 also caught the fractious rule's sign (better manners made the bad night likelier); fixed, and the threshold set
-so about 2% of starters with poor manners are fractious.
+so about 3% of starters (all with poor manners) are fractious: 119 in the review copy's 400 races.
 
 ## 3. The letter (`app.tier_label`, `badge_secs`, `letter_line`)
 
