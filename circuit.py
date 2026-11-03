@@ -648,11 +648,12 @@ ABILITY_FIT = 53.58, 3.121        # est ~= a + b * race_score(age)
 MILE_TIERS = tuple((sim.squeeze(sim.retime(x)), t) for x, t in ((107.5, "S+"), (109.5, "S"), (112.0, "A"), (115.0, "B"), (119.0, "C")))
 
 
+MILE_FIT_V2 = 116.067, -0.0419    # seconds on the honest clock ~ a + b * est: 3.7M starts of the 100-season world (r -0.74, resid 0.8 s)
+
+
 def mile_secs(est):
-    """The rating as seconds for a mile, on the honest clock (sim.squeeze of the 2026-10-27 clock's reading)."""
-    x = MILE_FIT[0] + MILE_FIT[1] * est                          # fitted on the old clock's linear part:
-    at, k, _ = sim.CLOCK_OLD
-    return sim.squeeze(sim.clock(sim.CLOCK_REF + (x - at) / k))  # back to race seconds, onto the 10-27 clock, then squeezed
+    """The rating as seconds for a mile, on the honest clock."""
+    return MILE_FIT_V2[0] + MILE_FIT_V2[1] * est
 
 
 def mile_rating(h):
