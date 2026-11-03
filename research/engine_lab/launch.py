@@ -48,6 +48,8 @@ REG_FEE = e.REG_FEE            # registering a foal at 2
 STRATS = (("chaser", .3), ("studfarm", .2), ("flipper", .2), ("casual", .3))
 QUIT = {"chaser": .12, "studfarm": .12, "flipper": .2, "casual": .3}   # chance a bot leaves at a year turn
 MARES = {"chaser": 12, "studfarm": 12, "flipper": 2, "casual": 3}      # broodmares a bot keeps (its breeding barn caps it too)
+MARE_BAR = 58                  # a filly worth breeding from, on her public peak rating
+FEE_W = {"chaser": .5, "studfarm": 1, "flipper": 2, "casual": 2}    # rating points a bot gives up for each $10k of stud fee
 RESERVE = {"chaser": 60_000, "studfarm": 60_000, "flipper": 40_000, "casual": 120_000}
 CLAIMS_A_NIGHT = 2
 
@@ -214,14 +216,17 @@ def pick_sire(mare, owner, strat, horses):
           and (s.owner == owner or e.cash.get(owner, 0) - e.stud_fee(s) >= reserve)]
     if not ok:
         return None
-    if strat == "chaser":
-        return ok[0]                                                    # the best on the record
-    if strat == "studfarm":
-        own = [s for s in ok if s.owner == owner]
-        return own[0] if own and c.peak_est(own[0]) >= c.peak_est(ok[0]) - 5 else ok[0]
-    if strat == "flipper":
-        return min(ok[: max(1, len(ok) // 2)], key=e.stud_fee)          # the cheapest of the better half
-    return rng.choice(ok)
+    # value for money, with each owner's own taste: a chaser pays up for the record, a flipper wants a bargain; a full
+    # book is out (above), so demand spills to the next sire. Your own stallion covers free.
+    fee_w, taste = FEE_W[strat], 4 if strat == "casual" else 2
+    return max(ok, key=lambda s: c.peak_est(s) - fee_w * (0 if s.owner == owner else e.stud_fee(s)) / 10_000 + rng.gauss(0, taste))
+
+
+def mare_cap(o, strat, horses):
+    """How many broodmares a bot keeps, and the stallions it keeps (they share the breeding barn)."""
+    keep_m = [s for s in horses if s.owner == o and s.retired and s.sex == "m"
+              and (getattr(s, "listed", False) or (strat == "studfarm" and c.peak_est(s) >= 60))]
+    return max(1, min(MARES[strat], e.barn_head(o) - len(keep_m))), keep_m
 
 
 def want_racers(o, strat, horses):
@@ -249,10 +254,14 @@ def bot_week(horses, d, season):
                 c.retire(h)
             elif h.age >= 4 and scale(h) < 38:
                 e.scrap(h, o, horses)
+        cap, keep_m = mare_cap(o, strat, horses)
         mares = sorted((h for h in horses if h.owner == o and h.retired and h.sex == "f"), key=c.peak_est, reverse=True)
+        if e.can_breed(o):                                               # a breeder fills its band from its own good fillies,
+            for h in sorted((h for h in horses if h.owner == o and not h.retired and h.sex == "f" and h.age >= 4   # claimed ones too
+                             and c.peak_est(h) >= MARE_BAR), key=c.peak_est, reverse=True)[:max(0, cap - len(mares))]:
+                c.retire(h)
+            mares = sorted((h for h in horses if h.owner == o and h.retired and h.sex == "f"), key=c.peak_est, reverse=True)
         stallions = [h for h in horses if h.owner == o and h.retired and h.sex == "m"]
-        keep_m = [s for s in stallions if getattr(s, "listed", False) or (strat == "studfarm" and c.peak_est(s) >= 60)]
-        cap = max(1, min(MARES[strat], e.barn_head(o) - len(keep_m)))
         for h in mares[cap:] + [m for m in mares if c.peak_est(m) < 55] + [s for s in stallions if s not in keep_m]:
             if h in horses:
                 e.scrap(h, o, horses)                                    # stock it has no room or use for goes to the house
@@ -283,6 +292,15 @@ def bot_claims(horses):
             if best and best.est >= c.CLASS_RATING[r["key"][2]] + (4 if strat == "flipper" else 8):   # a horse rated over its class
                 c.CLAIMS[best.id] = o
                 n -= 1; room -= 1
+        # a breeder short of mares claims a filly to retire to its band (bot_week retires her): one a night
+        cap, _ = mare_cap(o, strat, horses)
+        short = e.can_breed(o) and sum(1 for h in horses if h.owner == o and h.retired and h.sex == "f") < cap
+        if short and strat != "flipper" and e.barn_size.get(o, 0) < e.stalls(o):
+            fillies = [(h, r["key"][4]) for r in races for h in r["field"] if h.sex == "f" and h.age >= 4 and h.owner != o
+                       and not getattr(h, "visitor", None) and h.id not in c.CLAIMS and c.peak_est(h) >= MARE_BAR
+                       and e.cash.get(o, 0) >= r["key"][4] + RESERVE[strat]]
+            if fillies:
+                c.CLAIMS[max(fillies, key=lambda x: c.peak_est(x[0]))[0].id] = o
 
 
 def year_turn_bots(horses, season):
