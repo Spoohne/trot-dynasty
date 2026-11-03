@@ -3124,7 +3124,7 @@ def card_header(h, own, price=None):
     return (f"<div class='card hdr'><div class=htop><div class='port t{tier_cls(h)}'><div class=stagelight></div>{portrait(h, 150)}<div class='tier {tier_cls(h)} badge'>{tier_label(h)}</div>{trophy(h)}{ribbon}</div>"
             f"<div class=hr><div class=hname>{esc(h.name)} {grade_chip}</div>"
             f"<div class=hline>{h.age}-year-old {coat} {sexname}, {h.starts} starts, {h.wins} wins</div>"
-            + (f"<div class=hline>Figure {c.mile_time(badge_secs(h))} · {'its last six starts' if not h.retired else 'its prime'}</div>" if not unproven(h) and badge_secs(h) else "")
+            + (f"<div class=hline>Figure {c.mile_time(badge_secs(h))} · {'its prime' if h.retired else f'its last {n} starts' if (n := min(BADGE_LAST, sum(1 for r in h.results if r.get('fig')))) < BADGE_LAST else 'its last six starts'}</div>" if not unproven(h) and badge_secs(h) else "")
             + f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
             + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if has_pass(ME) and trainer_read(h) else "")   # a Season Pass perk

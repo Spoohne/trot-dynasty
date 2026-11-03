@@ -41,7 +41,8 @@ by `h.est`, the handicapper's class rating), breeding, training. Bars on the fix
 4. **Tells in the captions, from the ledger:** "X breaks stride" at the quarter; ", sharp tonight" on a sharp winner's
    finish caption. Positions stay the choreographer's.
 5. **Pages:** each start shows its figure under the clock (horse page and results page); the header shows the figure the
-   badge rests on; the help says a letter is earned from figures, read fairly for the trip.
+   badge rests on and how many starts it comes from when fewer than six; the help says a letter is earned from figures,
+   read fairly for the trip.
 
 ## Measured
 
@@ -71,8 +72,12 @@ Flips while the truth tier held (37,317 season pairs): v2 41.1%, live 51.9%; wit
 71.3%). Decline lag (7,275 declines): both catch it the same season about 60% of the time, 4-5% take three seasons or more.
 The jump at the fifth start isn't measurable from season rows (n 1).
 
-**Caveat (hypothesis):** the truth is the engine's own prediction, which v2 is fitted to; it shows v2 reads the engine
-faithfully, not that players will like it more. That is Patrick's comparison: the candidate on 8113 beside trotdynasty.com.
+**Caveat (Astra, review 22):** the "truth" here is the engine's predicted clean-mile score, which v2 is fitted to, so the
+comparison favors v2 by construction; it shows v2 reads the engine faithfully, not that it tells a career better. Gate,
+grit, manners and the trip decide races beyond that score. Decline tracking shows no advantage (60% vs 59%). The
+residual spread's attribution to form and freshness is a hypothesis. An independent test needs per-start snapshots of
+both badges judged against future performance with class controlled, and the handoff at the fifth start logged; not
+built. That, and Patrick's own comparison of the candidate on 8113 beside trotdynasty.com, is what's left.
 
 ## Not in this round
 
