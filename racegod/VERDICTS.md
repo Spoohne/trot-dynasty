@@ -384,3 +384,9 @@ too, at 3 points. `racegod/retune_b.json` holds candidate B.
 **RaceGod's read:** ship candidate B's post costs and lead/pocket values; the one failing case is the duel rule
 (a horse out first who can't clear is pressed into a fight), which is a V-next of its own, not this retune. Patrick's
 call: ship B, or the post costs alone (`c_post` half 0.15, mile 0.25) and leave the trip values for after the duel rule.
+
+Patrick: ship candidate B (2026-11-02). Deployed in commit e9960fd (`outcome.P`: half c_post 0.15, A_lead 0.78,
+A_pocket 0.57, A_fol 0.35; mile c_post 0.247, A_lead 1.24, A_pocket 0.67, A_fol 0.40). Smoke test on a save copy, 315
+fields x 2: half post 1 / 8 = 26.7 / 3.1, mile 18.8 / 6.0, favorite 38.7, margin 2.0 L, no laws broken. No save change.
+Next: read the first real night with `audit.py --since <tonight>` and write V10. Open: the duel rule (the one per-horse
+case), the choreographer (V8), the 40 L wall (V3).
