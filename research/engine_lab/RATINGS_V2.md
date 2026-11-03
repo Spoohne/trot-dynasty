@@ -34,19 +34,28 @@ Measured on the review copy (400 races on a copy of the live save): winning time
   bob. 43% of starters are in a fight; the caption fires only when the winning margin is inside a length (12% of races).
 
 Measured (1,500 random fields of 8 live horses, Spearman of each bar with finishing place): grit .30 -> .37, manners
-.40 -> .47, kick .57 -> .59, cruise .50 -> .50, gate .50 -> .47 (manners now shares the start).
+.40 -> .47, kick .57 -> .59, cruise .50 -> .50, gate .50 -> .47 (manners now shares the start). Astra (review 23) asked
+for single-bar interventions on identical fields and draws: 600 fields, one horse given one more bar of one stat, its
+win rate from 16.2%: kick +11.5, cruise +5.3, grit +2.5, gate +0.8, manners +0.8 (and its fractious starts 6.3% -> 3.5%).
+Review 23 also caught the fractious rule's sign (better manners made the bad night likelier); fixed, and the threshold set
+so about 2% of starters with poor manners are fractious.
 
 ## 3. The letter (`app.tier_label`, `badge_secs`, `letter_line`)
 
 Proven (5+ starts): the median of the last ten figures, where a figure is the start's own time read fairly for the trip
-(`outcome.figure`: the role's worth, the line's depth, a closer's extra kick taken out), needs three; hysteresis 0.3 s.
+(`outcome.figure`: the role's worth, the line's depth, a closer's extra kick taken out), needs three; hysteresis 0.1 s
+(rechecked on the honest clock: flips while the ability tier held 38.8% -> 33.0%, same tier 72.9% -> 70.9%; 0.3 s would
+have cost ten points of agreement on the tighter ruler).
 Unproven: the bars' predicted mile against age peers mapped onto the proven shares (hollow, UNPROVEN). Retired: the
 median of its ten best. The line under the name says why: "A on its last 10 miles, 1:53.1 read fairly · S at 1:52.2 or
 better". `h.est` makes no badge; classes, claimers and the tote are unchanged.
 
 Window study (every start of a 100-season world logged, `badge_windows.py`): windows 4..15 all beat shorter ones on
 every count; ten chosen so a decline shows within a few starts. On the new world: same tier as the bars' predicted mile
-72.9%, flips while it held 38.8%, next-season purses rank correlation .72 / .68 / .59 / .57 at ages 3-6.
+72.9%, flips while it held 38.8%, next-season purses rank correlation .72 / .68 / .59 / .57 at ages 3-6. Decline delay
+in starts (5,636 horses whose predicted tier dropped a full tier and stayed down ten starts): the letter follows within
+0 starts for half of them, within 4 for three in four, and 4% hadn't dropped after 20. The handoff at the fifth start
+(peer letter to earned letter) is still provisional: not measured.
 
 ## 4. The replay (`circuit.run_race` captions, `racegod/engine.py` story, `race.js`, `replay_hd2d.html`)
 
@@ -60,8 +69,10 @@ races: 81 breaks, 62 fractious, 50 fights, 37 backing up, 12 head and head, 97 s
 ## 5. Breeding (`economy.foal_outlook`, `app.breed_page`, `sim.MUTATE`)
 
 The mating outlook imagines 160 foals as before, but reads each at its peak on the badge's own ruler (`pred_mile` cut
-at `MILE_TIERS`, S+ included); spread words on terciles of today's crosses (tight < 1.9 s, moderate < 2.2). Each
-stallion shows his produce record (what his raced foals wear). `MUTATE` 0.10 -> 0.05, the launch rule (DECISIONS 243).
+at `MILE_TIERS`, S+ included); spread words on terciles of today's crosses (tight < 1.9 s, moderate < 2.2). It is
+labelled as what it is, "Foals, at their peak": a projection of ability, not the letter a foal will earn (development,
+racing and the window stand between). Each stallion shows his produce record (what his raced foals wear, and how many
+raced). `MUTATE` 0.10 -> 0.05, the launch rule (DECISIONS 243).
 
 ## Drift and pedigree (100 seasons, `world100.db`)
 
@@ -75,6 +86,9 @@ only its top horses, so the parents hardly differ); not resolved in this round.
 
 - A manners tell beyond the start and breaks (the engine has none); the duel's head-bob in the positions themselves.
 - The replay hop was checked in the story data and caption timing, not watched (the pane runs replays at reduced motion).
+  Astra (review 23): watch a break, a fractious start and a close fight at normal motion before judging the replay.
+- `SQUEEZE` 0.35 is a retake decision, not a measured optimum (Astra): margins now run 2.8-3.4 L median against the old
+  under-2 L target; the knob is `sim.SQUEEZE`, and an affine squeeze changes no order and no win probability.
 - `racegod/engine.py` carries two small additions here (break time, fractious flag) that will conflict with the RaceGod
   thread's uncommitted rewrite.
 - Live's own badge can't be compared on this world any more (its est reads the new clock); the comparison that counts

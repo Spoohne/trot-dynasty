@@ -137,7 +137,7 @@ def race(field, track="mile", passing=False):
     e, fractious = {}, {}
     for post, h in enumerate(field):
         z = rng.gauss(0, 1)
-        fractious[h.id] = T[h.id]["manners"] < 0 and z < -1.5 + 0.8 * T[h.id]["manners"]
+        fractious[h.id] = T[h.id]["manners"] < 0 and z < -2.0 - 0.8 * T[h.id]["manners"]   # the worse the manners, the easier the bad night (Astra, review 23)
         e[h.id] = T[h.id]["gate"] + M_START * T[h.id]["manners"] - p["c_post"] * post + p["s_start"] * z - (3.0 if fractious[h.id] else 0.0)
     out = sorted(field, key=lambda h: -e[h.id])                # order out of the gate
     w_k = 1 - p["omega"]

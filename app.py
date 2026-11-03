@@ -3208,7 +3208,7 @@ MILE_TIERS = c.MILE_TIERS                                      # on the honest c
 PED_STARTS = 5                 # under this many starts a horse's badge is read off its bars against its peers, shown hollow
 BADGE_LAST, BADGE_MIN = 10, 3  # ratings v2: the badge rests on the median of the last ten figures, once there are three (badge_windows.py:
                                # 4..15 all beat live on reading the horse; 10 keeps a decline visible within a few starts)
-BADGE_HYST = 0.3               # seconds a figure must clear a tier line by before the badge changes
+BADGE_HYST = 0.1               # seconds a figure must clear a tier line by before the badge changes (on the honest clock: flips 39% -> 33%, same-tier 73% -> 71%)
 
 
 def unproven(h):
@@ -3295,7 +3295,7 @@ def tier_label(h):
         secs = predicted_mile(h)
     t = next((tt for cut, tt in MILE_TIERS if secs <= cut), "D")
     prev = getattr(h, "badge", None)                                           # hysteresis: a line is crossed by BADGE_HYST before the
-    if prev and prev != t:                                                     # badge moves (100-season world: flips 41% -> 34%, same-tier 72% -> 71%)
+    if prev and prev != t:                                                     # badge moves
         i = next(k for k, (_, tt) in enumerate(MILE_TIERS + ((None, "D"),)) if tt == prev)
         up = MILE_TIERS[i - 1][0] if i else None
         down = MILE_TIERS[i][0] if i < len(MILE_TIERS) else None
@@ -4861,11 +4861,11 @@ def breed_page(name):
                 "neutral": "<span class=nick>Neutral nick</span>", "poor": "<span class='nick poor'>Poor nick</span>"}[nk] if nk else
                f"<form method=post action=/scout class=inl><input type=hidden name=h value='{esc(m.name)}'><input type=hidden name=s value='{esc(s.name)}'>"
                f"<button class=sec onclick=\"return ask(this,'Pay a pedigree scout ${e.SCOUT_FEE:,} to rate this cross?')\">Scout nick ${e.SCOUT_FEE:,}</button></form>")
-        return f"<div class=outl><span class=sub>Foals</span><span class=tband>{bar}</span><span class=sub>{word} spread</span>{tag}</div>"
+        return f"<div class=outl><span class=sub title='the letter a foal of this cross would likely carry at its peak: a projection, not a promise'>Foals, at their peak</span><span class=tband>{bar}</span><span class=sub>{word} spread</span>{tag}</div>"
     def row(s, own):
         ks = [k for k in G["horses"] if k.sire is s]
         raced = collections.Counter(tier_label(k) for k in ks if k.age >= 2 and not getattr(k, "unreg", False))   # his produce record: what his foals wear
-        produce = " · ".join(f"{raced[t]} {t}" for t in ("S+", "S", "A", "B", "C", "D") if raced[t])
+        produce = " · ".join(f"{raced[t]} {t}" for t in ("S+", "S", "A", "B", "C", "D") if raced[t]) + (f" (of {sum(raced.values())} raced)" if raced else "")
         full = e.covers_sold(s) >= e.BOOK
         fee = 0 if own else e.stud_fee(s)
         close = e.too_close(s, m)
