@@ -231,6 +231,7 @@ def run_today(day, horses):
         import story as _story
         c.STORIES[rid] = dict(_story.build(order, "mile", passing=True), id=rid, name=s.name, purse=s.purse, day=day, venue="Harness Park", passing=True,
                               sponsor=getattr(s, "sponsor", None))   # stakes nights are the flagship's; a sponsored stake carries its barn into the replay
+        c.tells(c.STORIES[rid], order)
         c.drove(order, c.STORIES[rid]["horses"], c.year_of(day))
         for row, h in zip(c.STORIES[rid]["horses"], order):  # odds at post time and RaceGod's ledger, as overnights keep them
             row["odds"] = "%d-%d" % line[h.id]

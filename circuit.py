@@ -1146,6 +1146,34 @@ def post_times(races):
                 r["post"] = start + (round(k * POST_SPAN / (len(rs) - 1)) if len(rs) > 1 else 0)
 
 
+def tells(story, order):
+    """Ratings v2 tells: the ledger names what the picture drew (every bar races). Also the stakes' stories."""
+    if ENGINE != "outcome" or "captions" not in story:
+        return story
+    if "sharp tonight" in order[0].trip:
+        story["captions"][-1][1] += ", sharp tonight"            # the win caption is last until the breaks go in
+    when = {r["name"]: r.get("broke_at") for r in story["horses"]}
+    rows = {r["name"]: r for r in story["horses"]}
+    for h in order:
+        why = getattr(h, "why", None) or {}
+        if why.get("fractious"):
+            story["captions"].append([0.5, f"{h.name} is fractious behind the car"])
+        if why.get("broke"):
+            story["captions"].append([when.get(h.name) or story["calls"][2], f"{h.name} breaks stride"])
+    lost = {h.name: rows[h.name]["behind"][5] - rows[h.name]["behind"][4] for h in order if h.name in rows and len(rows[h.name]["behind"]) == 7}
+    worst = max(lost, key=lost.get, default=None)
+    if worst and lost[worst] >= 6 and rows[worst]["behind"][4] <= 3:     # was up with them at the three-quarters, then gave way
+        story["captions"].append([story["calls"][5] - 1, f"{worst} is backing up"])
+    fo = next((h for h in order if "first-over" in h.trip), None)
+    lead = next((h for h in order if "on the lead" in h.trip), None)
+    if fo and lead and rows.get(fo.name) and abs(rows[fo.name]["behind"][4] - rows[lead.name]["behind"][4]) < 1.5:
+        story["captions"].append([story["calls"][4], f"{fo.name} and {lead.name} go head and head"])
+    if len(order) > 1 and (getattr(order[1], "why", None) or {}).get("margin", 9) < 1.0:   # the story builder clears margin_l
+        story["captions"].append([story["calls"][6] - 1.5, f"{order[0].name} and {order[1].name} fight it out"])
+    story["captions"].sort(key=lambda x: x[0])
+
+    return story
+
 def run_race(r, alive, log):
     """One race off at its post time: the vet, the drive, the race, the result, the story and the claims."""
     (group, sex, name, purse, tag, track), i, v = r["key"], r["i"], r["v"]
@@ -1167,28 +1195,7 @@ def run_race(r, alive, log):
     drive(field, r.setdefault("drivers", {}), track)
     order = (outcome.race if ENGINE == "outcome" else race)(field, track, v.get("passing", False))
     story = _story.build(order, track, passing=v.get("passing", False))   # everything that can fail, before any result is written
-    if ENGINE == "outcome" and "captions" in story:                # ratings v2 tells: the ledger names what the picture drew
-        if "sharp tonight" in order[0].trip:
-            story["captions"][-1][1] += ", sharp tonight"            # the win caption is last until the breaks go in
-        when = {r["name"]: r.get("broke_at") for r in story["horses"]}
-        rows = {r["name"]: r for r in story["horses"]}
-        for h in order:
-            why = getattr(h, "why", None) or {}
-            if why.get("fractious"):
-                story["captions"].append([0.5, f"{h.name} is fractious behind the car"])
-            if why.get("broke"):
-                story["captions"].append([when.get(h.name) or story["calls"][2], f"{h.name} breaks stride"])
-        lost = {h.name: rows[h.name]["behind"][5] - rows[h.name]["behind"][4] for h in order if h.name in rows and len(rows[h.name]["behind"]) == 7}
-        worst = max(lost, key=lost.get, default=None)
-        if worst and lost[worst] >= 6 and rows[worst]["behind"][4] <= 3:     # was up with them at the three-quarters, then gave way
-            story["captions"].append([story["calls"][5] - 1, f"{worst} is backing up"])
-        fo = next((h for h in order if "first-over" in h.trip), None)
-        lead = next((h for h in order if "on the lead" in h.trip), None)
-        if fo and lead and rows.get(fo.name) and abs(rows[fo.name]["behind"][4] - rows[lead.name]["behind"][4]) < 1.5:
-            story["captions"].append([story["calls"][4], f"{fo.name} and {lead.name} go head and head"])
-        if len(order) > 1 and (getattr(order[1], "why", None) or {}).get("margin", 9) < 1.0:   # the story builder clears margin_l
-            story["captions"].append([story["calls"][6] - 1.5, f"{order[0].name} and {order[1].name} fight it out"])
-        story["captions"].sort(key=lambda x: x[0])
+    tells(story, order)
     line = tote_odds(field)
     r["settling"] = True                                # from here the result is being applied: no retry may apply it again
     for h in field:
