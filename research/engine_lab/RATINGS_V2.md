@@ -45,6 +45,22 @@ top: a full bar is the best in the world. Manners keeps its own steps (`MANNERS_
 On the live world 21 of 2,409 bars moved, all past +3.7 (top 1%); one bar in the game is full (Crimson Ivy's Stamina).
 The engine reads the same bars, so the top few horses race a little slower and apart from each other.
 
+**The trips cut to variety (2026-11-03, Patrick: "I don't ever want to see a horse like Northern Star get beat by a
+marginally better horse to the tune of 9+ lengths"; "preferred position was meant to add variety, not lead to this").**
+The ledger of that race: the two horses scored equal (both capped at 10 then), the 9 L were the trip (the following trip
+with the closer's kick, 0.53 units) and the night's form (0.36). The fitted trip worths paid the lead 1.24 units (7.5 L) over
+sitting back for an ordinary horse, the closer's kick 1.10 per unit of Speed (twice what the Speed itself was worth), and a
+fast leaver could not take the following trip (it only existed once a first-over horse had pulled). Now (`outcome.P`):
+A_lead 0.25, A_pocket 0.15, A_fo 0.05, A_fol 0.15, k_close 0.10, b_depth 0.06, s_form 0.06; `FOLLOW_EARLY`. Preferred
+Position was never an engine input (a label from the early/late balance) and stays as one.
+Measured (`research/engine_lab/retune_lab.py`, live copy): Northern Star v Crimson Ivy 1000 Invitationals, NS 64% -> 87%,
+CI by 5+ L 18% -> 0%, within 2 L 10% -> 25%; a horse's night-to-night margin sd on the same field 1.5 L (breaks 1.4%);
+pairs a length apart: the better ahead 56% -> 63%, its worst loss 13.8 -> 13.0 L (breaks); one more bar: kick +12.2,
+cruise +11.2, grit +3.0, gate +0.5, manners +0.2 (the start bars now count only at the start and in a fight: open).
+The clock: the trips were seconds, so `CLOCK_SHIFT` goes 2.4 -> 0 (ceiling 1:46.0, tiers S+ 1:51.6 .. C 1:54.8, middle
+1:53.8); three dry nights: winners' median 1:52.0 as before, fastest 1:49.0, winning margin median 3.2 -> 1.8 L, last flat
+horse 15.5 -> 11.3 L. Times stay as run; stored figures move -2.4 s with `retime_v4.py` (clock_v 5); letters unchanged.
+
 ## 2. Every bar races (`outcome.race`)
 
 - **Manners at the start** (`M_START` 0.3): a unit of manners is worth 0.3 of gate speed; a rank horse on a bad night

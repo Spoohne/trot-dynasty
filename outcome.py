@@ -31,14 +31,17 @@ ROLES = ("lead", "pocket", "first_over", "followed", "back")
 DUEL, P_NONE, N_FOLLOW, BREAK = 0.15, 0.10, 2, 3.0
 FO_MAX = {"half": 4, "mile": 5}
 P = {   # research/engine_lab/v4/fit_half.json, fit_mile.json (DECISIONS 224 refit); c_post, A_lead, A_pocket, A_fol retuned on real fields (RaceGod V9 candidate B, 2026-11-02)
-    "half": dict(g=0.25, s_form=0.15, s_choice=0.1, c_post=0.12, s_start=0.02017397059465198,
-                 omega=0.5938761916108407, A_lead=0.7798, A_pocket=0.5664, A_fo=0.09299566675668958,
-                 A_fol=0.35, s_eps=0.17798810007780796, s_margin=7.605805514239352, k_close=0.04303554691830236,
-                 b_depth=0.39885805717373174),
-    "mile": dict(g=0.25, s_form=0.15, s_choice=0.1, c_post=0.20, s_start=0.8370432667346848,
-                 omega=0.4703087097212123, A_lead=1.2404, A_pocket=0.669, A_fo=0.8026769007091834,
-                 A_fol=0.4, s_eps=0.027295459447580828, s_margin=6.0407761172731735, k_close=1.1015350803998327,
-                 b_depth=0.13223734814640054),
+    # The trips worth little (Patrick 2026-11-03: a trip is variety, never an advantage; a marginally better horse must not lose
+    # by nine lengths): the role worths, the closer's kick, the line's depth and the night's form cut to a tenth or so of the
+    # fitted values (research/engine_lab/retune_lab.py measured each step; the fitted values are in git before this commit).
+    "half": dict(g=0.25, s_form=0.06, s_choice=0.1, c_post=0.12, s_start=0.02017397059465198,
+                 omega=0.5938761916108407, A_lead=0.25, A_pocket=0.15, A_fo=0.05,
+                 A_fol=0.15, s_eps=0.17798810007780796, s_margin=7.605805514239352, k_close=0.04303554691830236,
+                 b_depth=0.06),
+    "mile": dict(g=0.25, s_form=0.06, s_choice=0.1, c_post=0.20, s_start=0.8370432667346848,
+                 omega=0.4703087097212123, A_lead=0.25, A_pocket=0.15, A_fo=0.05,
+                 A_fol=0.15, s_eps=0.027295459447580828, s_margin=6.0407761172731735, k_close=0.10,
+                 b_depth=0.06),
 }
 rng = random.Random()
 
@@ -83,6 +86,7 @@ FIG_FIT = {"mile": (116.968, -6.409), "half": (116.841, -6.106)}   # a + b * uni
 FORM_TELL = 1.3                                       # sd of the night's form past which the trip text says so
 M_START = 0.3                                         # Manners at the gate: a unit of manners is worth this much of a unit of gate speed
 FRACT = 0.15                                          # what a fractious start costs in performance (about a length on a mile)
+FOLLOW_EARLY = True                                   # the following trip can be taken before a first-over horse exists (the retune lab)
 FIGHT_L, G_FIN = 1.0, 0.1                             # a head-and-head: within a length at the wire, a unit of grit edge is worth G_FIN units
 
 
@@ -158,7 +162,7 @@ def race(field, track="mile", passing=False):
         press = k == 1 and e[out[0].id] - e[out[1].id] < DUEL
         if mover is None and (press or (2 <= k <= FO_MAX["half" if half else "mile"] and can_move)):
             v[2] = A[2] + w_k * kh + p["g"] * (t["grit"] - lg)
-        if mover is not None and followers < N_FOLLOW:
+        if (mover is not None or FOLLOW_EARLY) and followers < N_FOLLOW:   # a fast leaver may take the cover that comes (Patrick 2026-11-03)
             v[3] = A[3] + (w_k + p["k_close"]) * kh
         v[4] = (w_k + p["k_close"]) * kh - p["b_depth"] * line
         noisy = [x + p["s_choice"] * -math.log(-math.log(rng.random() or 1e-12)) for x in v]   # Gumbel: imperfect drivers

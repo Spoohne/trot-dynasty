@@ -206,7 +206,8 @@ def retime(x, half=False):
 # pulled in about SQUEEZE_REF by SQUEEZE: a bar is worth about 0.8 s, four lengths, everywhere. The half-mile's own
 # allowance (HALF_SLOWER) is a track's slowness, not ability, and stays whole.
 SQUEEZE_REF, SQUEEZE = 112.0, 0.35
-CLOCK_SHIFT = 2.4                                   # the whole clock, slower: the fastest mile the engine can produce is 1:45.5 (Patrick 2026-11-03)
+CLOCK_SHIFT = 0.0                                   # the whole clock, slower or faster: 2.4 while the trips were worth seconds (2026-11-03), 0 since the trips
+                                                    # were cut to variety; the fastest mile the engine can produce stays about 1:45.6-1:45.9 (Patrick)
 
 
 def squeeze(x, half=False):
