@@ -2071,6 +2071,10 @@ GUIDE = [
          "half-mile track's tight turns."),
         ("Upsets", "The best horse doesn't always win. A bad trip, a hot pace, a break, a horse that's sharper tonight than its "
          "record says: harness racing has its surprises, and every so often something remarkable happens."),
+        ("Figures", "The clock tells you how fast the race went; a horse's <b>figure</b> tells you what it ran on its own account, "
+         "read fairly for the trip it got. A horse towed along behind a fast winner clocks a quick mile and a modest figure; one that "
+         "did all the work parked outside gets credit for it. A horse's letter is earned from its recent figures, so a horse on the "
+         "way down loses its letter as its figures slow. A break leaves no figure: the time tells you nothing."),
     ]),
     ("After the races", [
         ("Results and replays", "Results are spoiler-free: your starters are listed in post order, and you choose when to reveal each "
