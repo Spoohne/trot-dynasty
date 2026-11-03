@@ -390,3 +390,32 @@ A_pocket 0.57, A_fol 0.35; mile c_post 0.247, A_lead 1.24, A_pocket 0.67, A_fol 
 fields x 2: half post 1 / 8 = 26.7 / 3.1, mile 18.8 / 6.0, favorite 38.7, margin 2.0 L, no laws broken. No save change.
 Next: read the first real night with `audit.py --since <tonight>` and write V10. Open: the duel rule (the one per-horse
 case), the choreographer (V8), the 40 L wall (V3).
+
+## V10 - A week under candidate B, on a copy, 2026-11-02 (Patrick: "what are we waiting for?")
+
+**Method:** `racegod/dry_week.py` runs a copy of the live save (taken after the deploy) forward seven race nights
+through `app.checked_tick` (every night check passed); the same seven nights again on another copy under the previous
+values (commit 7a1a7bf). The game keeps the last 400 stories, so the audit reads days 2632-2636 (5 nights, 400 races)
+of each. Fields are as the game drew them, which the lab couldn't do. Nothing live was touched.
+
+| | Previous values | Candidate B (live now) | Band |
+|---|---|---|---|
+| Half post 1 / post 8 wins | 20.4 / 4.5 | **29.9 HIGH** / 3.0 | 19-27 / 1-6 |
+| Mile post 1 / post 8 wins | 8.7 LOW / 7.7 | 19.0 / **4.9 LOW** | 15-20 / 6-10 (soft) |
+| Winner within 3 L at the half | 48.0 LOW | 60.0 | 60-90 |
+| Half winner 4+ L back at the half | 34.3 HIGH | 24.6 HIGH | 0-15 |
+| Favorite wins | 39.2 | 36.0 | 30-45 |
+| Median margin / photos | 1.6 / 8.2 | 2.0 / 11.2 | 1-3 / 5-15 |
+| Speed limit set the time | 11.0 HIGH | 8.1 | 0-10 |
+| Winning trips lead / pocket / fo / mid / behind | 28/20/13/22/18 | 45/14/6/24/10 | |
+| Last horse (median) / 40 L+ races | 15.8 L / 3% | 17.7 L / 4% | |
+| Laws broken | 0 of 400 | 0 of 400 | |
+| Northern Star | won S6665 in 1:44.4 | won S6665 in 1:44.4 | |
+
+**Measured.** Eight of ten in band against six before; the mile's post 1 now beats post 8 (19.0 vs 4.9) and the
+winner is at the half with the leaders. Two misses, both post costs a touch strong on fields as drawn: half post 1 at
+29.9 (the lab, on fields as they stood, said 26.7), mile post 8 at 4.9. The drawn fields differ from the lab's because
+the retune changes who the computer barns enter where.
+
+**Proposed (awaiting Patrick):** nudge the post costs only: half `c_post` 0.15 -> 0.12, mile 0.247 -> 0.20, then one
+more dry week. The trip values stay. Still open: first-over winners 6% (chart target about 20%): the duel rule.
