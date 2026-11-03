@@ -4855,7 +4855,7 @@ def breed_page(name):
         (lo, mid, hi), width = e.foal_outlook(s, m, G["horses"])
         tiers = ["D", "C", "B", "A", "S", "S+"]                                   # the foal's likely letter at its peak, on the same ruler as every badge
         bar = "".join(f"<i class='{'on' if tiers.index(lo) <= k <= tiers.index(hi) else ''}{' mid' if t == mid else ''}'>{t}</i>" for k, t in enumerate(tiers))
-        word = "tight" if width < 1.0 else "moderate" if width < 1.8 else "wide"   # seconds between a lucky and an unlucky foal
+        word = "tight" if width < 1.9 else "moderate" if width < 2.2 else "wide"   # seconds between a lucky and an unlucky foal: terciles of today's crosses
         nk = e.nick(s, m)
         tag = ({"golden": "<span class='nick gold'>&#9733; Golden cross</span>", "good": "<span class=nick>Good nick</span>",
                 "neutral": "<span class=nick>Neutral nick</span>", "poor": "<span class='nick poor'>Poor nick</span>"}[nk] if nk else
