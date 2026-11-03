@@ -2509,3 +2509,19 @@ Newest at the bottom. **M** = measured (experiment named), **H** = hypothesis (n
      the new stats (the engine converts live stats each race, so breeding still works), cast replays (replays are the
      story system's, now with true margins). The deploy commit also carried the whip-overlay session's untracked
      runner2 art (unused by the game).
+
+## Launch world (2026-11-02, research/engine_lab/launch.py + launch_report.py)
+
+241. **D (Patrick):** plan for 50-100 players at the high end. AI Filler Barns (a generated batch: never breed, fill
+     gaps, the middle difficulty) and Player-Bot Barns (simulated players) in all testing. Foals take nursery space,
+     apart from racing stalls and far bigger (two crops per broodmare slot). Breeding should lead, not by a runaway;
+     it's a yearly churn where only the best are registered. A famous sire may dominate if demand is there. **The public
+     stud book is an optional luxury: zero stallions stood a year is fine**; players breed their own lines or buy.
+242. **M (rounds 1-5, 3 seeds x 50/100 players x 100 seasons each; results in launch/v1_stalls .. v4_private):** with
+     private stallions (round 4) lines form (63-69% of foals by the barn's own sire, 27-33 sires a season), S+ holds at
+     3-4%, breeding leads (chasers $2.2M/$0.9M a season vs flippers $1.3M/$0.8M at 50/100 players), no barn over 11% of
+     purses, the best line stays 1.5-2.3 rating-score points over the middle. Weak spots: pedigree fades (r 0.30 -> 0.10-
+     0.17), late joiners earn about half in their first three seasons.
+243. **D (Patrick, round 5):** gene-revert chance halved for the launch rules, sim.MUTATE 0.10 -> 0.05: pedigree r late on
+     0.13 -> 0.20 (50 players), 0.10-0.17 -> 0.16-0.18 (100), S+ 3.5-4%, no runaway. Not applied to the live game yet:
+     it goes in with the launch rules (fresh world). Still open: late joiners.

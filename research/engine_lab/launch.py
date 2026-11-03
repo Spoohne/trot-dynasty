@@ -30,7 +30,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 CHECK = sys.argv[1:2] == ["check"]
 PLAYERS, SEED = (12, 7) if CHECK else (int(sys.argv[1]), int(sys.argv[2]))
 SEASONS = 6 if CHECK else int(sys.argv[3]) if len(sys.argv) > 3 else 100
-MUTATE = float(sys.argv[4]) if len(sys.argv) > 4 else None   # a test of the gene-revert chance (sim.MUTATE; None: the game's own)
+MUTATE = float(sys.argv[4]) if len(sys.argv) > 4 else 0.05   # the gene-revert chance (sim.MUTATE): 0.05 is the launch rule (DECISIONS 243)
 OUT = os.path.join(HERE, "launch")
 os.makedirs(OUT, exist_ok=True)
 DB = os.path.join(OUT, "check.db" if CHECK else f"p{PLAYERS}_s{SEED}" + (f"_m{MUTATE:g}" if MUTATE is not None else "") + ".db")
