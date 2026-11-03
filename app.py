@@ -2487,10 +2487,32 @@ GRADE_CUT = ((.001, "Galaxy"), (.02, "S+"), (.22, "S"), (.40, "A"), (.63, "B"), 
 
 
 def bar_of(h, t, stats=None):
-    """A stat as its bar, 1 to 10, on the race engine's scale (outcome.bar); Grit comes from the horse's toughness genes."""
+    """A stat as its bar, 1 to 10, on the race engine's scale (outcome.bar); Grit comes from the horse's toughness genes.
+    An unraced weanling or yearling reads against its own crop (young_bar)."""
     if t == "grit":
         return getattr(h, "grit_bar", None) or c.outcome.grit_bar(h)
+    if stats is None and h.age <= 1 and not h.starts:
+        return young_bar(h, t)
     return c.outcome.bar((stats or h.developed)[t], gait=t == "gait")
+
+
+_YOUNG = {}
+
+
+def young_bar(h, t):
+    """A foal against its own crop (Patrick 2026-11-02): its place among the weanlings and yearlings, each allowing for its
+    age, read off the grown horses' bars, so a top-tenth foal shows the bar a top-tenth racehorse has. Its own stats sit
+    under the bottom of the scale. Weanlings and yearlings rank together: a crop can be three foals."""
+    key = (G["day"], t)
+    if key not in _YOUNG:
+        if len(_YOUNG) > 32:
+            _YOUNG.clear()
+        crop = sorted(x.developed[t] - x.age_adj() for x in list(e.nursery) + G["horses"] if x.age <= 1)
+        grown = sorted(c.outcome.bar(x.developed[t], gait=t == "gait") for x in G["horses"] if not x.retired and x.age >= 3)
+        _YOUNG[key] = crop, grown or [1.0]
+    crop, grown = _YOUNG[key]
+    share = bisect.bisect_left(crop, h.developed[t] - h.age_adj()) / max(1, len(crop) - 1)
+    return grown[min(len(grown) - 1, round(share * (len(grown) - 1)))]
 
 
 _CROPS = {}
