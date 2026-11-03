@@ -4752,7 +4752,7 @@ def market_page(qs=None):
                  f"<b><a href='/horse/{urlname(h.name)}'>{esc(h.name)}</a></b>{'<span class=retchip>RETIRED</span>' if h.retired else ''} <span class=sub>{h.age}yo {coat} {sex_word(h)} · {h.starts}-{h.wins} ${h.earnings:,.0f} · {sire}</span>"
                  + ("" if getattr(h, "form", None) else "<div class=chart>unraced</div>")
                  + f"<div class=sub style='margin-top:3px'>Best time <b class=money>{best_time(h)}</b></div>{stud_bars(h)}</div>"
-                 f"<div style='text-align:center;min-width:96px'><div class='tier {tier_cls(h)}' style='margin:0 auto 4px'>{tier_label(h)}</div>"
+                 f"<div style='text-align:center;flex:0 0 130px'><div class='tier {tier_cls(h)}' style='margin:0 auto 4px'>{tier_label(h)}</div>"   # a fixed column: a long bid line wraps instead of squeezing the horse
                  f"<div class=money style='font-size:17px'>${a['price']:,.0f}</div><div class=sub style='font-size:11px'>{who}</div>"
                  f"<div class=sub style='font-size:11px;{'color:var(--loss)' if hot else ''}'>⏱ {left(a['ends'] - now)}</div>{act}</div></div></div>")
     if not rows:
