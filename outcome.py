@@ -17,6 +17,7 @@ GRIT_POP = dict(dur=(0.17, 1.424), gait=(0.09, 1.274), raw_sd=1.479, bar=(5.38, 
 SEC_PER_LENGTH = 0.2         # the replay's own conversion (a length is a fifth of a second)
 LUCK = 1.0                    # seconds: the best night a horse can have, beyond its rating's time (two night-swings)
 NOSE = 0.05                   # lengths: the least one finisher is behind another
+EASED = 6.0                   # lengths: a horse beaten by more is eased home, and its margin grows by the log past here (the honest clock's tail)
 RATE_W = dict(gate=.242, cruise=.304, kick=.391, grit=.064)   # the rating: bars weighted by worth (DECISIONS 217/224)
 TIME_FIT = (130.94, -2.733)  # mile seconds = a + b * rating: today's racing horses 3+ (n 660, r -0.93, resid 1.2 s)
 # Speed sets the clock (Patrick, 2026-11-02: "speed being the thing that directly correlates to how fast a horse can finish;
@@ -72,6 +73,50 @@ def best_mile(b, half=False):
     return SPEED_FIT[0] + SPEED_FIT[1] * b["kick"] + STAY * max(0.0, b["kick"] - b["cruise"]) + (sim.HALF_SLOWER if half else 0)
 
 
+# Ratings v2 (research/engine_lab/RATINGS_V2.md): the clock can't rate a beaten horse (inside a field a bar is worth a fifth of a
+# second, between fields two: a loser's time is mostly the winner's class), so a start's figure is read off the ledger instead:
+# the model's performance with the trip taken out (the role's worth, the line's depth, a closer's extra kick), in mile seconds
+# on the clock's own scale. FIG_FIT maps the model's class units (omega * cruise + (1 - omega) * kick, at K per bar) onto best_mile
+# over today's horses, so an unraced horse's predicted mile and a raced horse's figures are one ruler.
+FIG_FIT = {"mile": (116.968, -6.409), "half": (116.841, -6.106)}   # a + b * units: live save 2026-11-03, 777 horses 2+ (r -0.96 mile, -0.92 half)
+FORM_TELL = 1.3                                       # sd of the night's form past which the trip text says so
+M_START = 0.3                                         # Manners at the gate: a unit of manners is worth this much of a unit of gate speed
+FRACT = 0.15                                          # what a fractious start costs in performance (about a length on a mile)
+FIGHT_L, G_FIN = 1.0, 0.1                             # a head-and-head: within a length at the wire, a unit of grit edge is worth G_FIN units
+
+
+def _A(p):
+    return (p["A_lead"], p["A_pocket"], p["A_fo"], p["A_fol"], 0.0)   # what each role is worth in the model (ROLES order)
+
+
+def _secs(units, track, half=False):
+    """Model units to seconds on the honest clock: the fitted line (on the 2026-10-27 clock) squeezed (sim.squeeze)."""
+    a, b = FIG_FIT[track]
+    return round(sim.squeeze(a + b * units) + (sim.HALF_SLOWER if half else 0.0), 2)
+
+
+def class_units(b, track="mile"):
+    """A horse's class in the model's units, from its bars: what it brings to any trip."""
+    p = P[track]
+    return K * (p["omega"] * (b["cruise"] - 5) + (1 - p["omega"]) * (b["kick"] - 5))
+
+
+def pred_mile(b):
+    """The mile a horse's bars predict, on the figure ruler."""
+    return _secs(class_units(b), "mile")
+
+
+def figure(h, track):
+    """A start's figure: the ledger's performance with the trip taken out, as mile seconds. A breaker's start has none."""
+    why = getattr(h, "why", None)
+    if not why or "kick" not in why or why.get("broke"):
+        return None
+    p = P[track]
+    closing = why["role"] in ("followed", "back")
+    units = why["perf"] - (_A(p)[ROLES.index(why["role"])] - p["b_depth"] * why["depth"]) - p["k_close"] * closing * why["kick"]
+    return _secs(units, track)                                  # as a mile: the half's allowance is the track's, not the horse's
+
+
 def race(field, track="mile", passing=False):
     """One race. Returns the finishing order; sets each horse's trip, raw_time and last_time like sim.race."""
     p, n, half = P["half" if track == "half" else "mile"], len(field), track == "half"
@@ -88,10 +133,16 @@ def race(field, track="mile", passing=False):
     for h in field:
         for k in ("gate", "cruise", "kick"):
             T[h.id][k] += form[h.id]
-    e = {h.id: T[h.id]["gate"] - p["c_post"] * post + p["s_start"] * rng.gauss(0, 1) for post, h in enumerate(field)}
+    # the start (ratings v2): Manners get a horse away clean. A settled horse gains at the gate; a rank one on a bad night is
+    # fractious behind the car, leaves last and gives up ground (FRACT) it has to make back.
+    e, fractious = {}, {}
+    for post, h in enumerate(field):
+        z = rng.gauss(0, 1)
+        fractious[h.id] = T[h.id]["manners"] < 0 and z < -2.0 - 0.8 * T[h.id]["manners"]   # the worse the manners, the easier the bad night (Astra, review 23)
+        e[h.id] = T[h.id]["gate"] + M_START * T[h.id]["manners"] - p["c_post"] * post + p["s_start"] * z - (3.0 if fractious[h.id] else 0.0)
     out = sorted(field, key=lambda h: -e[h.id])                # order out of the gate
     w_k = 1 - p["omega"]
-    A = [p["A_lead"], p["A_pocket"], p["A_fo"], p["A_fol"], 0.0]
+    A = _A(p)
     role, depth = {}, {}
     lead = mover = None; pocket_taken = False; followers = 0; line = 0
     can_move = rng.random() >= P_NONE
@@ -129,18 +180,31 @@ def race(field, track="mile", passing=False):
         broke[h.id] = rng.random() < 0.005 * math.exp(-2.88 * t["manners"])   # the manners curve (DECISIONS 163)
         closing = r in (3, 4)
         perf[h.id] = (p["omega"] * t["cruise"] + (w_k + p["k_close"] * closing) * t["kick"] + A[r] - p["b_depth"] * depth[h.id]
-                      + p["g"] * gdiff[h.id] + p["s_eps"] * rng.gauss(0, 1) - BREAK * broke[h.id])
+                      + p["g"] * gdiff[h.id] + p["s_eps"] * rng.gauss(0, 1) - BREAK * broke[h.id] - FRACT * fractious[h.id])
     order = sorted(field, key=lambda h: -perf[h.id])
-    # times (DECISIONS 216, 239): the bars estimate the mile time. The winner runs its own rating's time, give or take a
-    # night's variation; everyone else is the winner plus its margin. Board, clock and replay agree.
-    # The speed limit (Patrick, 2026-11-02: "there's just a hard limit on how fast a horse can go. Period."): no horse, winner
-    # or beaten, runs faster than its own rating's time less LUCK. A beaten horse that would have to be quicker than that to
-    # be this close is beaten by more; the order stands, and the margins are re-read from the times.
-    to_raw = (sim.CLOCK_REF - sim.CLOCK_AT) / sim.CLOCK_K                # display seconds back to race seconds (the clock is linear above its floor)
-    limit = {h.id: best_mile(bars(h, stats[h.id]), half) - LUCK + to_raw for h in field}
-    w = order[0]
-    limit = {h.id: limit[w.id] + WITHIN * (limit[h.id] - limit[w.id]) for h in field}   # the winner's class sets the clock; the rest sit behind on the model's scale
-    win_raw = max(limit[w.id] + LUCK + rng.gauss(0, 0.5), limit[w.id])
+    # the finish (ratings v2): Grit decides the head-and-heads. Two horses within FIGHT_L of each other at the wire fight it out,
+    # and the grittier one gets the bob.
+    fight = {h.id: False for h in field}
+    for a, b in zip(order, order[1:]):
+        if perf[a.id] - perf[b.id] < FIGHT_L / p["s_margin"]:
+            swing = G_FIN * (T[a.id]["grit"] - T[b.id]["grit"]) / 2
+            perf[a.id] += swing; perf[b.id] -= swing
+            fight[a.id] = fight[b.id] = True
+    order = sorted(field, key=lambda h: -perf[h.id])
+    # times (ratings v2, the honest clock): every horse runs its own time, read off its performance tonight (ability, trip,
+    # form and luck together) on one line, so the order, the margins and the clock are one thing and a beaten horse's time
+    # is its own. Two horses are never closer than a nose.
+    times, prev = {}, None
+    win = _secs(perf[order[0].id], track, half)
+    for h in order:
+        m = (_secs(perf[h.id], track, half) - win) / SEC_PER_LENGTH
+        if m > EASED:                                          # a beaten horse is not driven out: the tail of a field
+            m = EASED + EASED * math.log1p((m - EASED) / EASED)   # stays within sight (25 L -> 15, 70 L -> 23)
+        t = win + m * SEC_PER_LENGTH
+        if prev is not None:
+            t = max(t, prev + NOSE * SEC_PER_LENGTH)
+        times[h.id], prev = t, t
+    win_raw = times[order[0].id]
     for post, h in enumerate(field, 1):
         r = role[h.id]
         beat_leader = perf[h.id] > perf[lead.id]
@@ -148,24 +212,21 @@ def race(field, track="mile", passing=False):
                                    1: "sat in the pocket, up the passing lane" if passing and beat_leader else "sat in the pocket",
                                    2: "parked first-over", 3: "sat mid-pack, moved after the half",
                                    4: "sat in behind, came from off the pace" if depth[h.id] >= 2 and order.index(h) < 3 else "sat in behind"}[r]
+        if fractious[h.id]:
+            trip += ", fractious at the start"
         if broke[h.id]:
             trip += ", broke stride"
+        if fight[h.id] and order.index(h) < 3:
+            trip += ", fought it out at the wire"
+        if abs(form[h.id]) > FORM_TELL * p["s_form"]:               # the night's form, once it was big enough to tell
+            trip += ", sharp tonight" if form[h.id] > 0 else ", flat tonight"
         h.trip = trip
-        h.margin_l = (perf[order[0].id] - perf[h.id]) * p["s_margin"]   # lengths behind the winner: the story shows these as run
+        h.raw_time = h.last_time = times[h.id]
+        h.margin_l = (times[h.id] - win_raw) / SEC_PER_LENGTH   # lengths behind the winner, as the clock has it
         h.why = dict(out=out.index(h) + 1, role=ROLES[r], depth=depth[h.id], perf=round(perf[h.id], 3),   # RaceGod's ledger: what decided it
-                     form=round(form[h.id], 3), broke=broke[h.id], model_l=round(h.margin_l, 2))
-    prev = prev0 = None
-    for h in order:                                            # the speed limit, then the order: a horse pushed back carries the delay
-        t0 = win_raw + h.margin_l * SEC_PER_LENGTH             # to those behind it, who keep their gaps (at least a nose)
-        t = max(t0, limit[h.id])
-        if prev is not None:
-            t = max(t, prev + max(NOSE * SEC_PER_LENGTH, t0 - prev0))
-        h.raw_time, prev, prev0 = t, t, t0
-        h.margin_l = (t - win_raw) / SEC_PER_LENGTH
-        h.last_time = sim.clock(t, half)
-        h.why["limited"] = t > t0 + 1e-9                         # the speed limit, not the model, set this horse's time
-        h.why["margin"] = round(h.margin_l, 2)
-        h.why["ceiling"] = round(limit[h.id], 2)               # race seconds: the fastest this horse could go tonight
+                     form=round(form[h.id], 3), broke=broke[h.id], model_l=round((perf[order[0].id] - perf[h.id]) * p["s_margin"], 2),
+                     margin=round(h.margin_l, 2), limited=False, ceiling=times[h.id], fractious=fractious[h.id], fight=fight[h.id],
+                     kick=round(T[h.id]["kick"], 3), cruise=round(T[h.id]["cruise"], 3))                 # as raced tonight (form in): the figure reads them back
     return order
 
 

@@ -35,7 +35,8 @@ N_LOCI = 20
 MAJOR_LOCI = 2          # first loci of each trait have 3x effect
 NOISE_SD = 1.0          # non-genetic potential noise (student-t, heavy tail)
 SPREAD = 0.06           # extra foal-to-foal swing per point of gap between the parents' overall race scores
-MUTATE = 0.1            # chance each inherited gene is replaced by a fresh one: pulls a bred-up breed back toward average
+MUTATE = 0.05           # chance each inherited gene is replaced by a fresh one: pulls a bred-up breed back toward average (0.10 before
+                        # ratings v2; halved for the launch rules, DECISIONS 243: pedigree holds r ~0.2, S+ stays 3-4%, no runaway)
 FOAL_SCALE = 0.8        # shrinks a bred foal's whole deviation from average (genes and luck alike)
 FOAL_H = 0.65            # share of a bred foal's genetic value that shows in the horse: foals of stars regress to the mean (genes pass on whole)
 N_LINES = 6             # hidden sire/dam bloodlines for nicks
@@ -197,6 +198,20 @@ def unclock_old(x):
 def retime(x, half=False):
     """A saved old-clock time on the new clock."""
     return clock(unclock_old(x), half)
+
+
+# The honest clock (ratings v2, 2026-11-03): every horse runs its own time, read off the race model's performance, so one bar
+# is worth the same at the wire and on the clock. On the 2026-10-27 clock a bar was worth 2.3 s between horses but only a
+# fifth of a second inside a field (a beaten horse's time was the winner's class plus its margin). The breed's spread is
+# pulled in about SQUEEZE_REF by SQUEEZE: a bar is worth about 0.8 s, four lengths, everywhere. The half-mile's own
+# allowance (HALF_SLOWER) is a track's slowness, not ability, and stays whole.
+SQUEEZE_REF, SQUEEZE = 112.0, 0.35
+
+
+def squeeze(x, half=False):
+    """A time on the 2026-10-27 clock onto the honest clock."""
+    hs = HALF_SLOWER if half else 0.0
+    return SQUEEZE_REF + (x - hs - SQUEEZE_REF) * SQUEEZE + hs
 
 
 # seconds a point of each racing stat is worth. Speed is the headline stat by design: the one a player most wants,

@@ -249,8 +249,9 @@ def on_aged_scale(x, group):
     m, s = GROUP_STATS[group]
     return 55 + 15 * (x - m) / (s or 1)
 OBS_SD = 8.0             # how noisy one finishing position is as evidence of rating
-TIME_FIT = {"mile": 784.5, "half": 780.9 + 6.2 * HALF_SLOWER}, -6.2, 13.5   # rating ~ a[track] + b*seconds, residual sd, on the race's
-                                                                             # internal seconds (h.raw_time); the clock is for show
+_TF_OLD = {"mile": 784.5 - 6.2 * 1.2, "half": 780.9 + 6.2 * HALF_SLOWER - 6.2 * 1.2}   # rating ~ a + b*seconds, fitted on the 10-27 clock's race seconds (display + 1.2)
+TIME_FIT = ({t: a - 6.2 * (sim.SQUEEZE_REF + (HALF_SLOWER if t == "half" else 0)) * (1 - 1 / sim.SQUEEZE) for t, a in _TF_OLD.items()},
+            -6.2 / sim.SQUEEZE, 13.5)                        # the same fit on the honest clock (sim.squeeze): h.raw_time is now the time shown
 DROP_MARGIN = 0          # owner drops to a claimer once est is under the class it would race in
 YEAR = 52                # game weeks (real days) per game year
 SHAPE_CAP = 1.0          # how far training can push one trait above (or below) the genetic ceiling. With DEV_W, two seasons of the
@@ -642,11 +643,17 @@ MILE_FIT = 128.63, -0.2857        # seconds = a + b * est
 ABILITY_FIT = 53.58, 3.121        # est ~= a + b * race_score(age)
 
 
+# The badge lines (ratings v2): mile seconds on the honest clock, the same horse at any age. The original cuts, moved onto the
+# 2026-10-27 clock (S+ ~1:50.9 ... C ~2:00.1), then squeezed with the breed. Slower than C is D.
+MILE_TIERS = tuple((sim.squeeze(sim.retime(x)), t) for x, t in ((107.5, "S+"), (109.5, "S"), (112.0, "A"), (115.0, "B"), (119.0, "C")))
+
+
+MILE_FIT_V2 = 116.067, -0.0419    # seconds on the honest clock ~ a + b * est: 3.7M starts of the 100-season world (r -0.74, resid 0.8 s)
+
+
 def mile_secs(est):
-    """The rating as seconds for a mile, leaning against the same floor as the race clock."""
-    x = MILE_FIT[0] + MILE_FIT[1] * est                          # fitted on the old clock's linear part:
-    at, k, _ = sim.CLOCK_OLD
-    return sim.clock(sim.CLOCK_REF + (x - at) / k)               # back to race seconds, then onto today's clock
+    """The rating as seconds for a mile, on the honest clock."""
+    return MILE_FIT_V2[0] + MILE_FIT_V2[1] * est
 
 
 def mile_rating(h):
@@ -849,7 +856,8 @@ def record_result(h, name, track, place, purse, field_est, size=None):
         .replace("1th", "1st").replace("2th", "2nd").replace("3th", "3rd")
     h.form = (getattr(h, "form", []) + [chart])[-10:]
     h.results = (getattr(h, "results", []) + [{"day": DAY[0], "race": name, "track": track, "place": place + 1, "time": h.last_time,
-                                                 "won": won, "trip": h.trip, "finish": finish, "purse": purse, "size": size or FIELD[track]}])[-30:]
+                                                 "won": won, "trip": h.trip, "finish": finish, "purse": purse, "size": size or FIELD[track],
+                                                 "fig": outcome.figure(h, track)}])[-30:]
     h.best = min(getattr(h, "best", 999), h.last_time)
     yr = getattr(h, "seasons", None)                          # the season ledger: {year: [starts, wins, places, shows, earnings, best]}
     if yr is None:
@@ -1138,6 +1146,34 @@ def post_times(races):
                 r["post"] = start + (round(k * POST_SPAN / (len(rs) - 1)) if len(rs) > 1 else 0)
 
 
+def tells(story, order):
+    """Ratings v2 tells: the ledger names what the picture drew (every bar races). Also the stakes' stories."""
+    if ENGINE != "outcome" or "captions" not in story:
+        return story
+    if "sharp tonight" in order[0].trip:
+        story["captions"][-1][1] += ", sharp tonight"            # the win caption is last until the breaks go in
+    when = {r["name"]: r.get("broke_at") for r in story["horses"]}
+    rows = {r["name"]: r for r in story["horses"]}
+    for h in order:
+        why = getattr(h, "why", None) or {}
+        if why.get("fractious"):
+            story["captions"].append([0.5, f"{h.name} is fractious behind the car"])
+        if why.get("broke"):
+            story["captions"].append([when.get(h.name) or story["calls"][2], f"{h.name} breaks stride"])
+    lost = {h.name: rows[h.name]["behind"][5] - rows[h.name]["behind"][4] for h in order if h.name in rows and len(rows[h.name]["behind"]) == 7}
+    worst = max(lost, key=lost.get, default=None)
+    if worst and lost[worst] >= 6 and rows[worst]["behind"][4] <= 3:     # was up with them at the three-quarters, then gave way
+        story["captions"].append([story["calls"][5] - 1, f"{worst} is backing up"])
+    fo = next((h for h in order if "first-over" in h.trip), None)
+    lead = next((h for h in order if "on the lead" in h.trip), None)
+    if fo and lead and rows.get(fo.name) and abs(rows[fo.name]["behind"][4] - rows[lead.name]["behind"][4]) < 1.5:
+        story["captions"].append([story["calls"][4], f"{fo.name} and {lead.name} go head and head"])
+    if len(order) > 1 and (getattr(order[1], "why", None) or {}).get("margin", 9) < 1.0:   # the story builder clears margin_l
+        story["captions"].append([story["calls"][6] - 1.5, f"{order[0].name} and {order[1].name} fight it out"])
+    story["captions"].sort(key=lambda x: x[0])
+
+    return story
+
 def run_race(r, alive, log):
     """One race off at its post time: the vet, the drive, the race, the result, the story and the claims."""
     (group, sex, name, purse, tag, track), i, v = r["key"], r["i"], r["v"]
@@ -1159,6 +1195,7 @@ def run_race(r, alive, log):
     drive(field, r.setdefault("drivers", {}), track)
     order = (outcome.race if ENGINE == "outcome" else race)(field, track, v.get("passing", False))
     story = _story.build(order, track, passing=v.get("passing", False))   # everything that can fail, before any result is written
+    tells(story, order)
     line = tote_odds(field)
     r["settling"] = True                                # from here the result is being applied: no retry may apply it again
     for h in field:

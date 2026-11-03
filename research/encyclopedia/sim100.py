@@ -29,11 +29,20 @@ SEASONS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
 DB = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "research", "encyclopedia", "world100.db")
 BAR_KEYS = (("speed", "late_speed"), ("stamina", "stamina"), ("grit", "grit"), ("manners", "gait"))   # the live card (app.BARS)
 KEEP = 3                                                       # races kept per horse
+CHOREO_LAST = 5                                                # seasons whose every race goes through the choreographer
 
 
 def tier(h):
     """The badge the live game shows (app.tier_label): cut from the horse's rated mile, the same at any age."""
     return app.tier_label(h)
+
+
+def tier_live(h):
+    """The badge the live game cuts from the handicapper's est (app.tier_label before ratings v2), for the comparison."""
+    if h.age < 2 or c.age_group(h) not in c.GROUP_STATS:
+        return None
+    secs = c.mile_secs(c.peak_est(h) if h.retired else h.est)
+    return next((t for cut, t in app.MILE_TIERS if secs <= cut), "D")
 
 
 def grade_of(share):
@@ -52,9 +61,11 @@ def open_db(path):
         best REAL, trophies TEXT, titles TEXT, last_season INTEGER, retired INTEGER, last_age INTEGER);
       CREATE TABLE seasons(id INTEGER, season INTEGER, age INTEGER, retired INTEGER, speed REAL, stamina REAL, grit REAL,
         manners REAL, g_speed TEXT, g_stamina TEXT, g_grit TEXT, g_manners TEXT, rating REAL, tier TEXT, starts INTEGER,
-        wins INTEGER, earnings REAL, season_earn REAL, gate REAL, best_mile REAL, PRIMARY KEY(id, season));   -- gate: early speed, not on the card; best_mile: outcome.best_mile
+        wins INTEGER, earnings REAL, season_earn REAL, gate REAL, best_mile REAL, fig_recent REAL, fig_peak REAL, tier_live TEXT, pred REAL,
+        PRIMARY KEY(id, season));   -- gate: early speed, not on the card; best_mile: outcome.best_mile; fig_*: ratings v2 badge figures; tier_live: the est badge; pred: outcome.pred_mile
       CREATE TABLE stories(rid TEXT PRIMARY KEY, day INTEGER, season INTEGER, name TEXT, purse REAL, stake INTEGER, json BLOB);   -- zlib'd JSON
       CREATE TABLE kept(id INTEGER, rid TEXT, score REAL, place INTEGER);
+      CREATE TABLE starts(id INTEGER, day INTEGER, track TEXT, place INTEGER, won REAL, fig REAL, est REAL, pred REAL);   -- every start: ratings v2 figure, live est after it, the bars' predicted mile that night
       CREATE TABLE meta(k TEXT PRIMARY KEY, v TEXT);
       CREATE INDEX seasons_season ON seasons(season); CREATE INDEX kept_id ON kept(id); CREATE INDEX kept_rid ON kept(rid);
     """)
@@ -108,6 +119,7 @@ class Recorder:
     def season_end(self, season, horses):
         """Every horse's card and season at the end of a season, graded within its crop."""
         everyone = horses + list(e.nursery)
+        app.G["horses"] = horses                                      # the card reads a foal against the world's horses (app.young_bar)
         rows, crop = [], {}
         for h in everyone:
             bars = {k: app.bar_of(h, t) for k, t in BAR_KEYS}
@@ -128,9 +140,10 @@ class Recorder:
             out.append((h.id, season, h.age, int(h.retired), bars["speed"], bars["stamina"], bars["grit"], bars["manners"],
                         g["speed"], g["stamina"], g["grit"], g["manners"], rating, tier(h) if h.age >= 2 else None,
                         h.starts, h.wins, h.earnings, getattr(h, "earnings", 0) - getattr(h, "season0", 0), app.bar_of(h, "early_speed"),
-                        O.best_mile(O.bars(h, h.developed))))
+                        O.best_mile(O.bars(h, h.developed)), app.badge_secs(h), app.badge_secs(h, "peak"), tier_live(h),
+                        O.pred_mile(O.bars(h, h.developed))))
             self.horse_row(h, season)
-        self.db.executemany("INSERT OR REPLACE INTO seasons VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
+        self.db.executemany("INSERT OR REPLACE INTO seasons VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
         for hid, heap in self.best.items():
             self.db.execute("DELETE FROM kept WHERE id=?", (hid,))
             self.db.executemany("INSERT INTO kept VALUES(?,?,?,?)", [(hid, rid, s, pl) for s, rid, pl in heap])
@@ -150,6 +163,12 @@ class Recorder:
 def main():
     db = open_db(DB)
     rec = Recorder(db)
+    starts, record = [], c.record_result
+    def logged(h, name, track, place, purse, field_est, size=None):          # every start, for replaying badge windows offline
+        record(h, name, track, place, purse, field_est, size)
+        r = h.results[-1]
+        starts.append((h.id, r["day"], track, r["place"], r["won"], r["fig"], h.est, O.pred_mile(O.bars(h, h.developed))))
+    c.record_result = logged
     c.HUMAN.clear(); c.STORIES.clear(); c.RECORDS.clear(); sk.CHAMPIONS.clear(); sk.HALL.clear(); sk.RATINGS.clear(); app._names.USED.clear()
     e.ROLLED[0] = None; c.EPOCH[0] = 0                          # Year 0 is the first season, so trophies read "Year 37 ..." = season 37
     horses = e.world(barns=app.BARNS)
@@ -163,6 +182,7 @@ def main():
         c.DAY[0] = d
         if d % c.YEAR == 0 and d:
             rec.season_end(d // c.YEAR - 1, horses)               # the season just finished, before the year turns
+            db.executemany("INSERT INTO starts VALUES(?,?,?,?,?,?,?,?)", starts); starts.clear()
             sk.year_tick(horses, ai, d)
             done = d // c.YEAR
             db.execute("INSERT OR REPLACE INTO meta VALUES('season_done', ?)", (str(done),))
@@ -170,13 +190,16 @@ def main():
             db.commit()
             print(f"season {done}/{SEASONS}: {len(horses)} horses, {(time.time() - t0) / done:.1f} s a season", flush=True)
         sk.ai_nominate(horses, ai, d)
-        sk.run_today(d, horses)
+        c._story.CHOREO = True                                   # the choreographer (positions from a run of the decided result, the
+        sk.run_today(d, horses)                                  # replay hops) is slow: every stake, and every race in the last seasons
+        c._story.CHOREO = d >= (SEASONS - CHOREO_LAST) * c.YEAR
         horses = e.day(d, horses, ai, [])
         rec.night(d, horses)
         for h in horses:
             if getattr(h, "order", None) == "stakes":
                 h.order = None
     rec.season_end(SEASONS - 1, horses)
+    db.executemany("INSERT INTO starts VALUES(?,?,?,?,?,?,?,?)", starts)
     db.execute("INSERT OR REPLACE INTO meta VALUES('season_done', ?)", (str(SEASONS),))
     db.execute("INSERT OR REPLACE INTO meta VALUES('finished', ?)", (time.strftime("%Y-%m-%d %H:%M"),))
     db.commit()
