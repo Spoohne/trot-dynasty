@@ -282,6 +282,17 @@ def race(field, track="mile", passing=False, decided=None):
                 ln += 1.0
             taken.append((ln, b))
             at[h.id][6] = (ln, b); at[h.id][5] = (ln, at[h.id][5][1])
+        def crossed(h, o):                                     # the two swap order between the stretch call and the wire
+            return (at[o.id][5][1] < at[h.id][5][1]) != (at[o.id][6][1] < at[h.id][6][1])
+        for _ in range(6):                                     # a pass inside one lane can't be drawn (the viewer won't run a horse
+            moved = False                                      # through another): the passer pulls out a lane, until the picture is clean
+            for h in order:
+                ln, b = at[h.id][6]
+                while ln < 4 and any(o is not h and at[o.id][6][0] == ln and (abs(at[o.id][6][1] - b) < BODY_L or (crossed(h, o) and b < at[o.id][6][1])) for o in field):
+                    ln += 1.0; moved = True
+                at[h.id][6] = (ln, b); at[h.id][5] = (ln, at[h.id][5][1])
+            if not moved:
+                break
     leader3 = max(field, key=lambda h: -at[h.id][3][1])
     rail3 = sorted((h for h in field if at[h.id][3][0] == 0 and h is not leader3), key=lambda h: at[h.id][3][1])
     pocket3 = rail3[0] if rail3 and at[leader3.id][3][0] == 0 else None
