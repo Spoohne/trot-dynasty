@@ -861,7 +861,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .phase b{font-family:'Barlow Condensed',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
 .r10{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule2);font-size:14px}.r10:last-of-type{border-bottom:0}
 .rp{min-width:34px;font-weight:700;color:var(--ink2)}.rp.rp3{color:var(--ink)}.rp.rp1{color:var(--win)}
-.r10n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r10t{font-variant-numeric:tabular-nums;color:var(--ink2)}.r10w{min-width:62px;text-align:right;font-variant-numeric:tabular-nums;color:var(--win)}
+.r10n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r10d{display:block;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}.r10t{font-variant-numeric:tabular-nums;color:var(--ink2)}.r10w{min-width:62px;text-align:right;font-variant-numeric:tabular-nums;color:var(--win)}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
 .tcase{border:2px solid var(--rule);background:var(--well);padding:8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px}
 .tcase i{font-style:normal;font-size:24px;color:var(--led);width:28px;height:28px;display:flex;align-items:center;justify-content:center}.tcase.tcup{border-color:#b8900a}
@@ -3902,7 +3902,8 @@ def results_list(h, n=10):
         p = r["place"]
         ordn = {1: "1st", 2: "2nd", 3: "3rd"}.get(p, f"{p}th")
         rows += (f"<div class=r10><span class='rp{' rp1' if p == 1 else ' rp3' if p <= 3 else ''}'>{ordn}</span>"
-                 f"<span class=r10n>{esc(r['race'])}<span class=sub> · {esc(r.get('venue') or ('half-mile' if r['track'] == 'half' else 'mile'))}</span></span>"
+                 f"<span class=r10n>{esc(r['race'])}<span class=sub> · {esc(r.get('venue') or ('half-mile' if r['track'] == 'half' else 'mile'))}</span>"
+                 + (f"<span class=r10d>Year {c.year_of(r['day'])} · Week {r['day'] % c.YEAR + 1}</span>" if r.get("day") is not None else "") + "</span>"
                  f"<span class=r10t>{c.mile_time(r['time'])}</span><span class=r10w>{'$' + format(round(r['won']), ',') if r['won'] else ''}</span>"
                  + (f"<a class=r10v href='/replay/{r['race_id']}'>▶ Watch replay</a>" if r.get("race_id") in c.STORIES else "") + "</div>")
     more = len(res) - n
