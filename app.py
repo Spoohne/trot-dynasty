@@ -3128,7 +3128,7 @@ def card_header(h, own, price=None):
     return (f"<div class='card hdr'><div class=htop><div class='port t{tier_cls(h)}'><div class=stagelight></div>{portrait(h, 150)}<div class='tier {tier_cls(h)} badge'>{tier_label(h)}</div>{trophy(h)}{ribbon}</div>"
             f"<div class=hr><div class=hname>{esc(h.name)} {grade_chip}</div>"
             f"<div class=hline>{h.age}-year-old {coat} {sexname}, {h.starts} starts, {h.wins} wins</div>"
-            + (f"<div class=hline>Figure {c.mile_time(badge_secs(h))} · {'its prime' if h.retired else f'its last {n} starts' if (n := min(BADGE_LAST, sum(1 for r in h.results if r.get('fig')))) < BADGE_LAST else 'its last six starts'}</div>" if not unproven(h) and badge_secs(h) else "")
+            + (f"<div class=hline>Figure {c.mile_time(badge_secs(h))} · {'its prime' if h.retired else f'its last {n} starts' if (n := min(BADGE_LAST, sum(1 for r in h.results if r.get('fig')))) < BADGE_LAST else 'its last ten starts'}</div>" if not unproven(h) and badge_secs(h) else "")
             + f"<div class=hown>{'Owned and bred by ' + esc(bred) if bred == barn_name(h.owner) else f'Owned by {esc(barn_name(h.owner))} · bred by {esc(bred)}'}</div>"
             + (f"<div class=act>{action}</div>" if action else "") + "</div></div>"
             + (f"<div class=hbars>" + (f"<p class=tread>{trainer_read(h)}<small>— {'Trainer' if h.starts else 'Trainer’s early read'}</small></p>" if has_pass(ME) and trainer_read(h) else "")   # a Season Pass perk
@@ -3205,7 +3205,8 @@ MILE_TIERS = tuple((sim.retime(x), t) for x, t in ((107.5, "S+"), (109.5, "S"), 
 
 
 PED_STARTS = 5                 # under this many starts a horse's badge is read off its bars against its peers, shown hollow
-BADGE_LAST, BADGE_MIN = 6, 3   # ratings v2: the badge rests on the median of the last six figures, once there are three
+BADGE_LAST, BADGE_MIN = 10, 3  # ratings v2: the badge rests on the median of the last ten figures, once there are three (badge_windows.py:
+                               # 4..15 all beat live on reading the horse; 10 keeps a decline visible within a few starts)
 BADGE_HYST = 0.3               # seconds a figure must clear a tier line by before the badge changes
 
 
@@ -3229,8 +3230,8 @@ def fig_of(r):
 
 
 def badge_secs(h, how="recent"):
-    """The figure a proven horse's badge rests on: the median of its last six figures (how="peak": the second-best of its
-    last ten, kept for the encyclopedia's comparison); a retired horse keeps the median of its six best (its prime). None
+    """The figure a proven horse's badge rests on: the median of its last ten figures (how="peak": the second-best of its
+    last ten, kept for the encyclopedia's comparison); a retired horse keeps the median of its ten best (its prime). None
     until three starts have left a figure."""
     res = getattr(h, "results", [])
     if h.retired:

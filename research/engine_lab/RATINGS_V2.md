@@ -30,8 +30,8 @@ by `h.est`, the handicapper's class rating), breeding, training. Bars on the fix
    on the live save (777 horses: r -0.96 mile, -0.92 half). A breaker's start has no figure. Starts from before the
    switch have none either; the badge reads the bars until three figures exist.
 2. **The badge, one ruler, mile seconds cut at `MILE_TIERS`** (`app.tier_label`):
-   - proven (5+ starts): the median of the last six figures (`badge_secs`), once three exist;
-   - retired: the median of its six best kept figures (its prime);
+   - proven (5+ starts): the median of the last ten figures (`badge_secs`), once three exist;
+   - retired: the median of its ten best kept figures (its prime);
    - unproven: `pred_mile` of its bars (the same line, so the prediction and the figures are one ruler by construction;
      weanlings and yearlings already read against their crop) placed among the unproven horses its age and cut at the
      proven horses' tier shares; labelled UNPROVEN, hollow;
@@ -78,6 +78,26 @@ grit, manners and the trip decide races beyond that score. Decline tracking show
 residual spread's attribution to form and freshness is a hypothesis. An independent test needs per-start snapshots of
 both badges judged against future performance with class controlled, and the handoff at the fifth start logged; not
 built. That, and Patrick's own comparison of the candidate on 8113 beside trotdynasty.com, is what's left.
+
+## The window, and the independent test (second 100-season run, every start logged: `badge_windows.py`)
+
+213,824 season ends. Each badge replayed start by start from the logged figures (v2) or the est after the start (live),
+scored at each horse's last start of the season: "now" = same tier as the bars' predicted mile that night; flips while
+that predicted tier held; and the independent one, rank correlation with **next season's purses per start**, by age.
+
+| badge | now | flips | next-season purses, age 3 / 4 / 5 / 6 |
+|---|---|---|---|
+| v2 last 4 | 68.2% | 44.7% | .691 / .687 / .594 / .600 |
+| v2 last 6 | 72.9% | 39.8% | .706 / .698 / .608 / .612 |
+| v2 last 10 | 77.5% | 34.5% | .719 / .706 / .624 / .620 |
+| v2 last 15 | 79.9% | 31.2% | .726 / .713 / .628 / .628 |
+| live est | 45.4% | 50.9% | .676 / **.741** / **.658** / **.649** |
+
+Decided: the last ten (longer is steadier on every count, but a decline must show within a few starts). **Live's badge
+predicts next season's purses better from age 4 on** (hypothesis for why: est folds in who the horse beat, so gate, grit
+and manners reach it, and the classes a horse is placed in are set by est, which feeds the same purses); v2 reads the
+horse's speed and stamina, the ruler the tiers were cut on. That is the real choice for Patrick: a badge that says how
+fast the horse is (v2, honest about decline, no drift) or one that says how it fares (live, a rating in a time's clothes).
 
 ## Not in this round
 
