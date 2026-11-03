@@ -49,6 +49,8 @@ STRATS = (("chaser", .3), ("studfarm", .2), ("flipper", .2), ("casual", .3))
 QUIT = {"chaser": .12, "studfarm": .12, "flipper": .2, "casual": .3}   # chance a bot leaves at a year turn
 MARES = {"chaser": 12, "studfarm": 12, "flipper": 2, "casual": 3}      # broodmares a bot keeps (its breeding barn caps it too)
 MARE_BAR = 58                  # a filly worth breeding from, on her public peak rating
+SIRE_BAR = 60                  # a colt worth standing to your own mares (Patrick: a public book is optional; lines are private)
+SIRES = {"chaser": 2, "studfarm": 3, "flipper": 0, "casual": 1}    # private stallions a bot keeps for its own mares
 FEE_W = {"chaser": .5, "studfarm": 1, "flipper": 2, "casual": 2}    # rating points a bot gives up for each $10k of stud fee
 RESERVE = {"chaser": 60_000, "studfarm": 60_000, "flipper": 40_000, "casual": 120_000}
 CLAIMS_A_NIGHT = 2
@@ -212,7 +214,8 @@ def leave(horses, owner, season):
 def pick_sire(mare, owner, strat, horses):
     """Bots read the stud book the way players do: by each stallion's public record and fee."""
     reserve = RESERVE[strat]
-    ok = [s for s in studs(horses) if e.covers_sold(s) < e.BOOK and not e.too_close(s, mare)
+    own = [s for s in horses if s.owner == owner and s.retired and s.sex == "m" and s not in studs(horses)]   # covers its own mares free
+    ok = [s for s in studs(horses) + own if e.covers_sold(s) < e.BOOK and not e.too_close(s, mare)
           and (s.owner == owner or e.cash.get(owner, 0) - e.stud_fee(s) >= reserve)]
     if not ok:
         return None
@@ -224,8 +227,9 @@ def pick_sire(mare, owner, strat, horses):
 
 def mare_cap(o, strat, horses):
     """How many broodmares a bot keeps, and the stallions it keeps (they share the breeding barn)."""
-    keep_m = [s for s in horses if s.owner == o and s.retired and s.sex == "m"
-              and (getattr(s, "listed", False) or (strat == "studfarm" and c.peak_est(s) >= 60))]
+    mine = sorted((s for s in horses if s.owner == o and s.retired and s.sex == "m"), key=c.peak_est, reverse=True)
+    keep_m = [s for s in mine if getattr(s, "listed", False)] + [s for s in mine if not getattr(s, "listed", False)
+                                                               and c.peak_est(s) >= SIRE_BAR][:SIRES[strat]]   # private stallions
     return max(1, min(MARES[strat], e.barn_head(o) - len(keep_m))), keep_m
 
 
@@ -248,8 +252,9 @@ def bot_week(horses, d, season):
             if h.retired:
                 continue
             past = h.age >= 10 or (h.age >= 7 and h.est < c.peak_est(h) - 12)
-            breed_now = strat in ("chaser", "studfarm") and ((h.sex == "f" and h.age >= 5 and c.peak_est(h) >= 62)
-                                                             or (h.sex == "m" and h.age >= 6 and c.peak_est(h) >= 66))
+            sires = sum(1 for s in horses if s.owner == o and s.retired and s.sex == "m")
+            breed_now = (strat in ("chaser", "studfarm") and h.sex == "f" and h.age >= 5 and c.peak_est(h) >= 62) \
+                or (e.can_breed(o) and h.sex == "m" and h.age >= 5 and c.peak_est(h) >= SIRE_BAR + 4 and sires < SIRES[strat])
             if past or breed_now:
                 c.retire(h)
             elif h.age >= 4 and scale(h) < 38:
@@ -356,9 +361,17 @@ def measure(season, horses, born):
         out["sires_used"], out["top5_share"] = len(by), sum(top[:5]) / len(born)
         out["foal_pot"] = st.mean(pot(f) for f in born)
         out["from_curated"] = sum(f.sire.owner == "book" for f in born) / len(born)
+        out["own_sire"] = sum(f.sire.owner == f.owner for f in born) / len(born)       # bred to the barn's own stallion
         if len(born) >= 20:
             mid = [(pot(f.sire) + pot(f.dam)) / 2 for f in born]
             out["pedigree_r"] = st.correlation(mid, [pot(f) for f in born])
+    herds = {}                                                     # each breeding barn's homebred racers: how far apart the lines are
+    for h in racers:
+        if h.owner in bots and getattr(h, "breeder", None) == h.owner:
+            herds.setdefault(h.owner, []).append(pot(h))
+    means = sorted(st.mean(v) for v in herds.values() if len(v) >= 3)
+    if len(means) >= 3:
+        out["herd_top"], out["herd_median"] = means[-1], st.median(means)
     purses = {}                                                    # each barn's purses booked this season (a claimed horse's
     for o, led in e.ledger.items():                                # earlier earnings stay with the barn that won them)
         purses[o] = led.get("purses", 0) - BOOKED.get(o, 0)

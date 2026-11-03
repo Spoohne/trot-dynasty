@@ -43,7 +43,7 @@ def main():
         done = min(len(r) for _, _, r in runs)
         print(f"\n=== {players} players: {len(runs)} worlds, {done} seasons each ===")
         print(f"{'seasons':8}{'players':>8}{'S+ all':>8}{'S+ fill':>9}{'S+ bred':>8}{'fill pot':>9}{'bred pot':>9}{'foal pot':>9}"
-              f"{'foals':>7}{'sires':>6}{'top5':>6}{'curated':>8}{'listed':>7}{'ped r':>7}{'bots $':>9}{'top barn':>9}")
+              f"{'foals':>7}{'sires':>6}{'top5':>6}{'own sire':>9}{'listed':>7}{'ped r':>7}{'herd top':>9}{'herd mid':>9}{'bots $':>9}{'top barn':>9}")
         g = lambda m, grp, k: m["groups"].get(grp, {}).get(k)
         for lo, hi, lab in SPANS:
             if lo >= done:
@@ -53,8 +53,8 @@ def main():
                   f"{f(col(lambda m: g(m, 'ai', 's_plus')), '9.1%')}{f(col(lambda m: g(m, 'bred', 's_plus')), '8.1%')}"
                   f"{f(col(lambda m: g(m, 'ai', 'pot')), '9.2f')}{f(col(lambda m: g(m, 'bred', 'pot')), '9.2f')}"
                   f"{f(col(lambda m: m.get('foal_pot')), '9.2f')}{f(col(lambda m: m['foals']), '7.0f')}{f(col(lambda m: m.get('sires_used')), '6.0f')}"
-                  f"{f(col(lambda m: m.get('top5_share')), '6.0%')}{f(col(lambda m: m['book']['curated']), '8.0f')}{f(col(lambda m: m['book']['listed']), '7.0f')}"
-                  f"{f(col(lambda m: m.get('pedigree_r')), '7.2f')}{f(col(lambda m: m['player_purse_share']), '9.0%')}{f(col(lambda m: m['top_barn_share']), '9.1%')}")
+                  f"{f(col(lambda m: m.get('top5_share')), '6.0%')}{f(col(lambda m: m.get('own_sire')), '9.0%')}{f(col(lambda m: m['book']['listed']), '7.0f')}"
+                  f"{f(col(lambda m: m.get('pedigree_r')), '7.2f')}{f(col(lambda m: m.get('herd_top')), '9.2f')}{f(col(lambda m: m.get('herd_median')), '9.2f')}{f(col(lambda m: m['player_purse_share']), '9.0%')}{f(col(lambda m: m['top_barn_share']), '9.1%')}")
         worst = max((m["top_barn_share"], m["season"], os.path.basename(p)) for p, _, r in runs for m in r)
         print(f"biggest single barn: {worst[0]:.1%} of all purses (season {worst[1] + 1}, {worst[2]})")
         # each kind of player: purses a season while active, and how long it stays
