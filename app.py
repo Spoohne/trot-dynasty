@@ -1696,30 +1696,38 @@ def picks_section():
             f"<div class=sub style='margin:4px 0 12px'>A program for each stake on tonight's card, a pick under each, one slip to submit.</div>")
 
 
-def tonight_card():
-    """The Barn tab's one card of chores: each with its count and its own button, the draw countdown in the chip. When
-    nothing is owed it stays as a quiet line, so the screen doesn't jump night to night."""
-    row = lambda n, what, href, label, sec=False: (f"<div class=erow2><span><b>{n}</b> <span class=sub>{what}</span></span>"
-                                                 f"<a class='btn{' sec' if sec else ''}' href={href} style='width:auto;margin:0'>{label}</a></div>")
-    rows = ""
-    if c.CARD.get("day") == G["day"]:
-        n = sum(1 for r in c.CARD["races"] if any(h.owner == ME for h in r["field"]))
-        if n:
-            rows += row(f"{n} race{'s' if n != 1 else ''}", "of yours on tonight's program", "/program", "Program", True)
-    closed = entries_closed()                                                        # entering is done from each horse's card, not here
-    open_picks = [s_ for s_ in stakes_tonight() if s_.id not in G.get("picks", {}).get(ME, {}) and len(nominees(s_)) >= 2]
-    if open_picks:
-        rows += row(f"{len(open_picks)} stake{'s' if len(open_picks) != 1 else ''}", "tonight, picks open", "/picks", "Pick", True)
-    note = ""
-    if has_pass(ME):
-        log = P().get("pass_log")
-        if log and log[0] == G["day"]:
-            note = f"<div class=sub style='margin-top:6px'>Your manager{' (you were away)' if log[3] else ''}: {log[1]} entered by the trainer, {log[2]} set{'s' if log[2] != 1 else ''} worked.</div>"
-    left = int(((ny_now().replace(hour=CLOSE // 60, minute=CLOSE % 60, second=0, microsecond=0) - ny_now()).total_seconds()) % 86400 / speed())
-    chip = "entries closed" if closed else f"draw in {left // 3600}h {left % 3600 // 60:02d}m"
-    if not rows:
-        rows = "<div class=sub style='padding:6px 0'>Nothing owed before the draw.</div>"
-    return (f"<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Tonight</b><span class=pchip>{chip}</span></div>{rows}{note}</div>")
+def stakes_open(o=None):
+    """Every (stake, horse, fee) where one of the barn's racers can still be nominated, soonest-closing first."""
+    o = ME if o is None else o
+    out = []
+    for s_ in sorted(sk.CALENDAR, key=lambda x: x.week):
+        fee = s_.fee(G["day"])
+        if fee is None or s_.result:
+            continue
+        for h in G["horses"]:
+            if h.owner == o and not h.retired and s_.eligible(h) and h not in s_.noms                     and not any(h in x.noms for x in sk.CALENDAR if x.week == s_.week):
+                out.append((s_, h, fee))
+    return out
+
+
+def stakes_reminder():
+    """The Barn tab's reminder: horses of yours a stake is open to whose nominations close within three weeks, until you
+    nominate or dismiss them. Dismissing hides the ones shown; the next stakes to close bring the box back."""
+    gone, wk = set(P().get("stake_seen", [])), G["day"] % c.YEAR
+    left = lambda s_: s_.week - wk - sk.CLOSE                  # race nights before nominations close
+    todo = [(s_, h, fee) for s_, h, fee in stakes_open() if f"{s_.id}:{h.id}" not in gone and left(s_) <= 2]
+    if not todo:
+        return ""
+    closes = lambda s_: "closes this week" if left(s_) == 0 else "closes next week" if left(s_) == 1 else f"closes in {left(s_)} weeks"
+    rows = "".join(
+        f"<div class=erow2><span><b>{esc(h.name)}</b> <span class=sub>{esc(s_.name)} · week {s_.week + 1} · ${fee:,.0f} · {closes(s_)}</span></span>"
+        f"<form method=post action=/nominate class=inline><input type=hidden name=h value='{esc(h.name)}'><input type=hidden name=s value={s_.id}>"
+        f"<button style='width:auto;margin:0'>Nominate</button></form></div>" for s_, h, fee in todo[:4])
+    more = f"<div class=sub style='margin-top:6px'>{len(todo) - 4} more on <a href=/stakes>the stakes calendar</a>.</div>" if len(todo) > 4 else ""
+    keys = ",".join(f"{s_.id}:{h.id}" for s_, h, _ in todo)
+    return (f"<div class='card hc mgr' style='--tc:#c9922e'><div class=mhead><b>Stakes open</b>"
+            f"<form method=post action=/stake_seen class=inline><input type=hidden name=k value='{keys}'>"
+            f"<button class=sec aria-label='Dismiss' style='width:auto;margin:0;padding:2px 10px'>&times;</button></form></div>{rows}{more}</div>")
 
 
 def barn_strip():
@@ -3737,7 +3745,7 @@ def barn_page(qs=None):
     owe = (f"<div class='card ev' style='border-color:var(--loss)'><b>Training bill overdue: ${owe:,.0f}</b><div class=sub>Your trainer's "
            "day rate and the farm's board ran past your cash. It comes out of your next purses. Selling or retiring a horse that isn't "
            "earning brings the bill down.</div></div>" if owe else "")
-    return page("Your barn", menu + owe + tonight_card() + barn_strip() + ev + cards + wipe)   # the entry box is off the barn page for now; entries are on /entries
+    return page("Your barn", menu + owe + stakes_reminder() + barn_strip() + ev + cards + wipe)   # the entry box is off the barn page for now; entries are on /entries
 
 
 def entries_page(qs=None):
@@ -5946,6 +5954,10 @@ class H(BaseHTTPRequestHandler):
                 for x in mine():
                     if c.trainer_of(x) is not t:
                         c.assign(x, t)
+        elif p == "/stake_seen":                                  # the barn's stakes reminder, dismissed: these stay hidden
+            P()["stake_seen"] = (P().get("stake_seen", []) + [k for k in q.get("k", "").split(",") if k])[-400:]
+            save()
+            return self.send("", 303, "/")
         elif p == "/nominate" and h and h.owner == ME:
             s = next((s for s in sk.CALENDAR if s.id == q.get("s")), None)
             if s:
