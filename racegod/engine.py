@@ -20,6 +20,7 @@ DT = 0.25
 MILE = 5280.0
 LANE_FT = 7.0
 SLOT = 16.0                    # nose to nose in single file (story.py SLOT: a horse and sulky and a little daylight)
+BODY_L = 1.5                   # lengths a horse and sulky take up: the least two in one lane can be apart at the wire
 GEOM = {"mile": (1320.0, 1320.0, 320.0), "half": (800.0, 520.0, 300.0)}   # straight, turn, run-in, as race3.Track
 E = dict(                      # the run's own knobs, as racegod/engine_fit.py --de left them (2026-11-02, 14 generations; V7)
     launch=0.03, launch_gate=0.024,    # share of steady speed everyone adds leaving the gate, and per unit of gate
@@ -101,7 +102,10 @@ def _choose(out, T, p, half):
     return role, depth, lead, mover
 
 
-def race(field, track="mile", passing=False):
+def race(field, track="mile", passing=False, decided=None):
+    """decided: the finishing order as another engine decided it (each horse with .why, .raw_time, .margin_l, .trip): the run
+    then choreographs that result (the gate order and trips from the ledger, the finish steered to the decided times) and
+    returns it unchanged, with .run set for story(). Traffic is still real: nobody goes through anybody."""
     half = track == "half"
     p = P["half" if half else "mile"]
     straight, turn, run_in = GEOM["half" if half else "mile"]
@@ -126,12 +130,27 @@ def race(field, track="mile", passing=False):
     leave = {h.id: steady[h.id] * (1 + E["launch"] + E["launch_gate"] * (e[h.id] + p["c_post"] * post)) for post, h in enumerate(field)}   # how each one leaves the car
     out = sorted(field, key=lambda h: -e[h.id])                 # the order the drivers expect to be in, and plan their trips on
     role, depth, lead, mover = _choose(out, T, p, half)
+    fin_t = {}
+    if decided:                                                # the ledger's gate order and trips; speeds from the decided times
+        out = sorted(field, key=lambda h: h.why["out"])
+        role = {h.id: ROLES.index(h.why["role"]) for h in field}
+        depth = {h.id: h.why.get("depth", 0) for h in field}
+        lead = next((h for h in field if role[h.id] == 0), out[0]); role[lead.id] = 0
+        mover = next((h for h in field if role[h.id] == 2), None)
+        fin_t = {h.id: h.raw_time for h in field}
+        steady = {h.id: MILE / fin_t[decided[0].id] for h in field}   # the field travels at the winner's pace until the drive; the drive sorts the finish
+        e = {h.id: -0.6 * h.why["out"] for h in field}         # they leave in the ledger's gate order, a clear step apart
+        leave = {h.id: steady[h.id] * (1 + E["launch"] + E["launch_gate"] * e[h.id]) for h in field}
+        cap = {h.id: math.inf for h in field}
+    yield_max = math.inf if decided else E["yield_max"]
+    push = 0.04 if decided else E["push"]                    # choreographing, a horse going for its spot gets there
+    ease = 2.0 if decided else E["ease"]       # choreographing, a horse keeps taking back until the file has a slot for it
     peck = {h.id: (0 if role[h.id] == 0 else 1 if role[h.id] == 1 else 2 + out.index(h)) for h in field}   # who yields to whom crossing over: the leader, the pocket, then gate order (DECISIONS 193)
-    tank = {h.id: max(0.5, E["reserve"] + E["reserve_cruise"] * T[h.id]["cruise"] + E["reserve_able"] * (able[h.id] - able[ref.id])) for h in field}   # class is tank as well as speed (session 3)
+    tank = {h.id: math.inf if decided else max(0.5, E["reserve"] + E["reserve_cruise"] * T[h.id]["cruise"] + E["reserve_able"] * (able[h.id] - able[ref.id])) for h in field}   # class is tank as well as speed (session 3)
     S = {}
     for post, h in enumerate(field):
         S[h.id] = dict(h=h, s=0.0, lane=float(post), tgt=post, v=0.85 * steady[h.id], E=tank[h.id],
-                       fin=None, limited=0.0, broke=rng.random() < 0.005 * math.exp(-2.88 * T[h.id]["manners"]),
+                       fin=None, limited=0.0, broke=("broke" in h.trip) if decided else rng.random() < 0.005 * math.exp(-2.88 * T[h.id]["manners"]),
                        break_at=rng.uniform(300.0, 0.6 * MILE), break_until=None, path=[], gave=0.0, out=out.index(h) + 1)
     move_s = rng.choices(E["move"], weights=E["move_w"])[0] * MILE
     t, quarters = 0.0, []
@@ -152,7 +171,9 @@ def race(field, track="mile", passing=False):
             covered = gap < SLOT + 8
             free = st * (1 - E["draft"]) ** (-1 / 3) if covered else st   # the pace cover pays for
             quiet = E["prof_kick"] * T[h.id]["kick"]                     # a closer's profile: quieter early, all of it back in the drive
-            if s < 1320 and r != 0:
+            if decided and drive:
+                want = max(0.8 * st, (MILE - s) / max(fin_t[h.id] - t, DT))   # steered to the decided time at the wire
+            elif s < 1320 and r != 0:
                 want = leave[h.id]                                # the first quarter is run on gate speed
             elif drive:
                 want = st * (1 + E["drive"] + (E["drive_kick"] + E["drive_close"] * (r in (3, 4))) * T[h.id]["kick"] + E["drive_able"] * (able[h.id] - able[ref.id])
@@ -160,9 +181,9 @@ def race(field, track="mile", passing=False):
             elif r == 0:
                 clear = all(o is d or o["s"] < s - 0.6 * SLOT for o in states)
                 pressed = any(o is not d and round(o["lane"]) >= 1 and o["s"] > s - SLOT for o in states)
-                want = (leave[h.id] if s < 1320 else st * (1 + (E["lead_hot"] if pressed else E["lead_soft"]))) if clear else st * (1 + E["push"]) if s < MILE / 3 else free   # brushes to the quarter, then a breather
+                want = (leave[h.id] if s < 1320 else st * (1 + (E["lead_hot"] if pressed else E["lead_soft"]))) if clear else st * (1 + push) if s < MILE / 3 else free   # brushes to the quarter, then a breather
             elif r == 1 and s < MILE / 3 and not (ahead is lead or (ahead and ahead["s"] <= S[lead.id]["s"])):
-                want = st * (1 + E["push"])                       # the pocket: get in right behind the leader
+                want = st * (1 + push)                       # the pocket: get in right behind the leader
             elif r == 2 and s >= move_s and S[lead.id]["s"] - s > 2.0:
                 want = st * (1 + E["push_fo"])                    # first-over: brushes up to the leader's flank
             elif r == 2 and s >= move_s:
@@ -170,14 +191,14 @@ def race(field, track="mile", passing=False):
             else:
                 want = free * (1 - quiet)
             lane_max = 4 if s >= last_turn else 2
-            if r == 1 and s < 1320 and ahead is not None and ahead is not S[lead.id] and S[lead.id]["s"] > s:
-                want = max(want, st * (1 + E["push"]))            # the pocket: up behind the leader
+            if r == 1 and s < 1320 and ahead is not S[lead.id] and S[lead.id]["s"] > s:
+                want = max(want, st * (1 + push))            # the pocket: up behind the leader
             if ahead and gap < 2 * SLOT:                          # a horse in front in this lane: sit on it, or get round it
                 v_f = ahead["v"] + E["follow_k"] * (gap - SLOT)
                 if want > v_f and gap < 1.5 * SLOT:
                     if drive and ln < lane_max and _clear(states, d, ln + 1):
                         d["tgt"] = ln + 1
-                    elif drive and passing and ln == 0 and s >= last_turn and _clear(states, d, -1):
+                    elif drive and passing and ln == 0 and s >= last_turn and _clear(states, d, -1) and (not decided or "passing lane" in h.trip):
                         d["tgt"] = -1
                     else:
                         want = v_f                                # boxed
@@ -188,16 +209,18 @@ def race(field, track="mile", passing=False):
             if r == 3 and mover and s >= move_s and S[mover.id]["s"] > s + 0.5 * SLOT and round(S[mover.id]["lane"]) == 1 and ln == 0:
                 d["tgt"] = 1                                      # pull out behind the first-over horse, into its cover
             if ln > 0 and d["tgt"] >= ln and not (r in (2, 3) and s >= move_s) and not drive:
-                if _clear(states, d, ln - 1):                     # get to the rail when there's room
+                senior_behind = any(o is not d and peck[o["h"].id] < peck[h.id] and round(o["lane"]) >= ln and 0 < s - o["s"] < 2 * SLOT for o in states)
+                if _clear(states, d, ln - 1) and not senior_behind:   # get to the rail when there's room, and nobody who ranks above it is still coming
                     d["tgt"] = ln - 1
                 else:
                     inner = [o for o in states if o is not d and round(o["lane"]) == ln - 1 and abs(o["s"] - s) < SLOT]
                     if inner and all(peck[h.id] < peck[o["h"].id] for o in inner):
-                        want = max(want, leave[h.id] * (1 + E["push"]))   # it ranks above what's inside: push on and cross in front (they yield)
-                    elif inner and d["gave"] < E["yield_max"]:
-                        want = min(want, min(o["v"] for o in inner) - E["ease"])   # take back and drop in behind
-            if not drive and s < 0.6 * MILE and d["gave"] < E["yield_max"] and any(o is not d and round(o["lane"]) == ln + 1 and abs(o["s"] - s) < SLOT and peck[o["h"].id] < peck[h.id] for o in states):
-                want = min(want, d["v"] - E["ease"])              # a horse that ranks above it wants in: let it cross
+                        want = max(want, leave[h.id] * (1 + push))   # it ranks above what's inside: push on and cross in front (they yield)
+                    elif inner and d["gave"] < yield_max:
+                        want = min(want, min(o["v"] for o in inner) - ease)   # take back and drop in behind
+            seniors = [o for o in states if o is not d and round(o["lane"]) == ln + 1 and abs(o["s"] - s) < SLOT and peck[o["h"].id] < peck[h.id]]
+            if not drive and s < 0.6 * MILE and d["gave"] < yield_max and seniors:
+                want = min(want, min(o["v"] for o in seniors) - ease)   # a horse that ranks above it wants in: let it cross
             d["gave"] += max(0.0, d["v"] - want) * DT             # what it has given up so far
             if d["broke"] and d["break_until"] is None and s >= d["break_at"]:
                 d["break_until"] = t + E["break_s"]
@@ -206,7 +229,7 @@ def race(field, track="mile", passing=False):
             over = (d["v"] / st) ** 3 * ((1 - E["draft"]) if covered else 1 + E["wind"] + (E["turn"] * max(0, ln) if on_turn(s) else 0)) - 1
             if r == 0 and any(o is not d and round(o["lane"]) >= 1 and abs(o["s"] - s) < SLOT for o in states):
                 over += E["duel"] * max(0.0, 1 - E["duel_grit"] * T[h.id]["grit"])   # the leader pays for being pressed; the presser arrived with momentum
-            d["E"] = min(tank[h.id], d["E"] - max(over, -0.3) * DT)
+            d["E"] = min(tank[h.id], d["E"] - max(over, -0.3) * DT) if not decided else d["E"]
             if d["E"] < 0:
                 want = min(want, st * (1 + E["fade"] * d["E"]))
             if want > cap[h.id]:
@@ -224,10 +247,12 @@ def race(field, track="mile", passing=False):
     for d in S.values():
         if d["fin"] is None:
             d["fin"] = t + (MILE - d["s"]) / max(d["v"], 1.0)
-    order = sorted(field, key=lambda h: S[h.id]["fin"])
+    global _LAST
+    _LAST = S                                                  # the last run's states, for the lab to look at
+    order = list(decided) if decided else sorted(field, key=lambda h: S[h.id]["fin"])
     win = S[order[0].id]["fin"]
     prev = None
-    for h in order:
+    for h in ([] if decided else order):                       # a decided result keeps its times
         d = S[h.id]
         tf = d["fin"] if prev is None else max(d["fin"], prev + NOSE * SEC_PER_LENGTH)
         h.raw_time, prev = tf, tf
@@ -244,12 +269,26 @@ def race(field, track="mile", passing=False):
             at[h.id][c] = (round(float(round(ln)), 1), round((s_lead - s) / (SEC_PER_LENGTH * max(v_lead, 1.0)), 2))
     for h in field:
         at[h.id][6] = (at[h.id][6][0], round(h.margin_l, 2))
+    if decided:                                                # hold the stretch line to the wire; two in a lane never closer than a body
+        for h in field:
+            at[h.id][6] = (at[h.id][5][0], at[h.id][6][1])
+        taken = []
+        for h in order:
+            ln, b = at[h.id][6]
+            while any(pl == ln and abs(pb - b) < BODY_L for pl, pb in taken) and ln < 4:
+                ln += 1.0
+            taken.append((ln, b))
+            at[h.id][6] = (ln, b); at[h.id][5] = (ln, at[h.id][5][1])
     leader3 = max(field, key=lambda h: -at[h.id][3][1])
     rail3 = sorted((h for h in field if at[h.id][3][0] == 0 and h is not leader3), key=lambda h: at[h.id][3][1])
     pocket3 = rail3[0] if rail3 and at[leader3.id][3][0] == 0 else None
     outside4 = sorted((h for h in field if at[h.id][4][0] >= 1), key=lambda h: at[h.id][4][1])
     for post, h in enumerate(field, 1):
         d, r = S[h.id], role[h.id]
+        if decided:
+            h.run = dict(calls=calls_t, quarters=[0.0, q1, q2, q3, win], at=at[h.id], post=post, leader=leader3.name, fo=outside4[0].name if outside4 else None,
+                         fo_at=next((calls_t[c] for c in (3, 4) if outside4 and at[outside4[0].id][c][0] >= 1), None), passing=passing)
+            continue
         if h is leader3:
             how = "on the lead"
         elif h is pocket3:
@@ -267,6 +306,14 @@ def race(field, track="mile", passing=False):
         h.run = dict(calls=calls_t, quarters=[0.0, q1, q2, q3, win], at=at[h.id], post=post, leader=leader3.name, fo=outside4[0].name if outside4 else None,
                      fo_at=next((calls_t[c] for c in (3, 4) if outside4 and at[outside4[0].id][c][0] >= 1), None), passing=passing)
     return order
+
+
+def choreograph(order, track, passing=False):
+    """The replay's story for a result another engine decided: the run plays the ledger's trips to the decided finish."""
+    field = sorted(order, key=lambda h: h.post)
+    rng.seed(sum(int(h.raw_time * 10) for h in order))
+    race(field, track, passing, decided=order)
+    return story(order, track, passing)
 
 
 def _clear(states, d, lane):

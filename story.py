@@ -13,7 +13,7 @@ How a harness race unfolds, and what this reproduces:
 A story is a dict the replay reads straight: calls (seconds), leader quarters, and per horse the
 lengths behind the leader and the lane (0 = rail, 1 = parked, 2 = three-wide) at each call.
 """
-import random
+import os, random
 
 CALLS = ("start", "gate", "quarter", "half", "three", "stretch", "finish")
 LEN = 8.0                      # feet in a length
@@ -27,9 +27,18 @@ def _fractions(final):
     return tt
 
 
+CHOREO = os.environ.get("TD_STORY", "") == "choreo"       # RaceGod V11: positions from a run of the decided result (racegod/engine.py); off unless TD_STORY=choreo
+
+
 def build(order, track, rng=None, passing=False):
     """order: horses in finishing order, each with .trip, .last_time, .post (1-based) and a
     current early_speed/late_speed (from .current(track)). Returns the story."""
+    if CHOREO and all(getattr(h, "why", None) and getattr(h, "raw_time", None) for h in order):
+        try:
+            from racegod import engine
+            return engine.choreograph(order, track, passing)
+        except Exception:                                       # the picture must never cost a race night: fall back to the placed story
+            import traceback; traceback.print_exc()
     rng = rng or random.Random(sum(int(h.last_time * 10) for h in order))
     n = len(order)
     win = order[0].last_time

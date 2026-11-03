@@ -430,3 +430,42 @@ bigger sample than a week to call.
 
 Patrick: deploy (2026-11-02). Post costs half 0.12 / mile 0.20 live, commit f90a396; no save change. Next: audit the
 real nights as they accumulate (`audit.py --since 2630` on a live copy) and write V11 when there's a week of them.
+
+## V11 - The choreographer: the replay from a run of the decided result, 2026-11-02 (Patrick: "build it")
+
+**Why (measured on the Sandhill Downs Cup, 2630-stake-S6697, watched live):** `story.build` placed nine of twelve
+horses in one lane at the wire a length apart (a horse and sulky is a length and a half) and moved most of them a lane
+between the stretch call and the finish call, which the viewer draws as bodies overlapping and horses passing through
+each other. Its one rule for a pass (go outside everyone you passed) can't cope with a closer's race.
+
+**Built:** `racegod/engine.py` `choreograph(order, track, passing)`: the run takes the decided result (the ledger's gate
+order and trips, the decided times and margins), plays the trips with real traffic (lanes, slots, nobody within a body
+of anybody, drivers yield only upward, juniors can't drop in ahead of a senior still outside), steers each horse to its
+decided time through the drive, holds the stretch line to the wire, and returns the result unchanged with positions at
+the seven calls. `story.build` uses it when `TD_STORY=choreo` is set and every horse carries a ledger, and falls back to
+the placed story on any error (the picture never costs a race night). `racegod/choreo_rebuild.py` rebuilds kept
+stories through it and counts picture faults; `replay_server.py` shows them.
+
+**Measured, 93 kept races with a ledger from the live save, both ways:**
+
+| | Placed story (live) | Choreographed |
+|---|---|---|
+| Races with two horses in one lane within a body, at the stretch call | 170 cases | 21 |
+| ... at the wire | 127 | 4 |
+| Lane changes between the stretch call and the wire (the "through each other") | 263 | 0 |
+| Races with any picture fault | 90 of 93 | 21 of 93 |
+| Audit laws broken (truth to the result) | 0 | 0 |
+| Time per race | - | about 30 ms |
+
+The Cup itself: 18 faults placed, 0 choreographed; the pocket horse is in the pocket, the first-over horse pulls when
+the caption says, Lucky Magic comes three wide from last and the wire is the board. Watched in the viewer.
+**Left:** the 21 stretch-call overlaps are horses sitting closer than a body in the drive while blocked (the follow
+controller's slot is 16 ft, a body is 14); a slot of 18 ft or a check at the stretch call would clear most. Also
+the 40 L wall is still applied (V3). Stories from before the ledger (older stakes) get a ledger read off their trip
+text; they rebuild, less faithfully.
+
+### Proposed (awaiting Patrick)
+
+Ship it behind the switch: deploy, set `TD_STORY=choreo` in the service environment, restart; tonight's card is then
+choreographed and the audit reads it. Rollback is unsetting the variable. The 93 rebuilt pairs are on
+http://127.0.0.1:8115/ (`-choreo` and `-story` per race) while this session runs.
