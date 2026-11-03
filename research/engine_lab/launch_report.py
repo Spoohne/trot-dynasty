@@ -1,6 +1,6 @@
 """Reads the launch-scenario worlds (launch.py) and answers Patrick's questions, seeds averaged per player count:
 does the player herd drift, does S+ stay rare, does pedigree matter, do a few sires take over, how far do players pull
-away from the AI, can a late joiner compete, and does any kind of player break the world.
+away from the AI Filler Barns, can a late joiner compete, and does any kind of player break the world.
 
   python research/engine_lab/launch_report.py            every research/engine_lab/launch/p*_s*.db
 """
@@ -42,16 +42,16 @@ def main():
     for players, runs in sorted(W.items()):
         done = min(len(r) for _, _, r in runs)
         print(f"\n=== {players} players: {len(runs)} worlds, {done} seasons each ===")
-        print(f"{'seasons':8}{'players':>8}{'S+ all':>8}{'S+ AI':>7}{'S+ bred':>8}{'AI pot':>8}{'bred pot':>9}{'foal pot':>9}"
-              f"{'foals':>7}{'sires':>6}{'top5':>6}{'curated':>8}{'listed':>7}{'ped r':>7}{'player $':>9}{'top barn':>9}")
+        print(f"{'seasons':8}{'players':>8}{'S+ all':>8}{'S+ fill':>9}{'S+ bred':>8}{'fill pot':>9}{'bred pot':>9}{'foal pot':>9}"
+              f"{'foals':>7}{'sires':>6}{'top5':>6}{'curated':>8}{'listed':>7}{'ped r':>7}{'bots $':>9}{'top barn':>9}")
         g = lambda m, grp, k: m["groups"].get(grp, {}).get(k)
         for lo, hi, lab in SPANS:
             if lo >= done:
                 continue
             col = lambda get: avg([span_mean(r, lo, hi, get) for _, _, r in runs])
             print(f"{lab:8}{f(col(lambda m: m['players']), '8.0f')}{f(col(lambda m: m['s_plus_all']), '8.1%')}"
-                  f"{f(col(lambda m: g(m, 'ai', 's_plus')), '7.1%')}{f(col(lambda m: g(m, 'bred', 's_plus')), '8.1%')}"
-                  f"{f(col(lambda m: g(m, 'ai', 'pot')), '8.2f')}{f(col(lambda m: g(m, 'bred', 'pot')), '9.2f')}"
+                  f"{f(col(lambda m: g(m, 'ai', 's_plus')), '9.1%')}{f(col(lambda m: g(m, 'bred', 's_plus')), '8.1%')}"
+                  f"{f(col(lambda m: g(m, 'ai', 'pot')), '9.2f')}{f(col(lambda m: g(m, 'bred', 'pot')), '9.2f')}"
                   f"{f(col(lambda m: m.get('foal_pot')), '9.2f')}{f(col(lambda m: m['foals']), '7.0f')}{f(col(lambda m: m.get('sires_used')), '6.0f')}"
                   f"{f(col(lambda m: m.get('top5_share')), '6.0%')}{f(col(lambda m: m['book']['curated']), '8.0f')}{f(col(lambda m: m['book']['listed']), '7.0f')}"
                   f"{f(col(lambda m: m.get('pedigree_r')), '7.2f')}{f(col(lambda m: m['player_purse_share']), '9.0%')}{f(col(lambda m: m['top_barn_share']), '9.1%')}")

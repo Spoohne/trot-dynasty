@@ -1,12 +1,12 @@
 """Launch scenario v1 (DECISIONS 58-74; Patrick 2026-11-02: plan for 50-100 players at the high end).
 
 A fresh world run season after season under the launch breeding rules, with player bots in it:
-  - AI barns never breed. Each year turn their racing strings are topped up with 2-year-olds from a fixed recipe
+  - AI Filler Barns (the computer's) never breed. Each year turn their racing strings are topped up with 2-year-olds from a fixed recipe
     (AI_SHIFT, the founders' own stock), holding AI_RACERS racers in all, less what the players race (floor AI_FLOOR).
   - The stud book at Year 0 is a curated set of CURATED stallions (owner "book"). They stand until 20. After that the
     book is only what players list, at LIST_FEE a season. AI stallions never stand.
   - AI horses race in claimers, so players can claim them (2 claims a night each, as live); claimed horses race and breed.
-  - Player bots arrive as a trickle and some quit each season. Four kinds (STRATS): chasers breed best-to-best from
+  - Player-Bot Barns (simulated players) arrive as a trickle and some quit each season. Four kinds (STRATS): chasers breed best-to-best from
     the public record, stud farms stand and list their colts, flippers claim and buy house horses, casual players
     do a little of everything. Bots only see what players see: public estimates, never genes.
 Recorded beside the encyclopedia's tables (same file layout, so research/encyclopedia/serve.py can open it):
@@ -29,7 +29,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 CHECK = sys.argv[1:2] == ["check"]
 PLAYERS, SEED = (12, 7) if CHECK else (int(sys.argv[1]), int(sys.argv[2]))
-SEASONS = 4 if CHECK else int(sys.argv[3]) if len(sys.argv) > 3 else 100
+SEASONS = 6 if CHECK else int(sys.argv[3]) if len(sys.argv) > 3 else 100
 OUT = os.path.join(HERE, "launch")
 os.makedirs(OUT, exist_ok=True)
 DB = os.path.join(OUT, "check.db" if CHECK else f"p{PLAYERS}_s{SEED}.db")
@@ -88,6 +88,12 @@ _stalls, _head, _can = e.stalls, e.barn_head, e.can_breed
 e.stalls = lambda o: e.LEVELS[e.level.get(o, 0)][1] if o in bots else _stalls(o)
 e.barn_head = lambda o: e.LEVELS[e.level.get(o, 0)][4] if o in bots else _head(o)
 e.can_breed = lambda o: e.LEVELS[e.level.get(o, 0)][2] if o in bots else _can(o)
+# Patrick 2026-11-02: foals take nursery space, apart from racing stalls and far bigger: two crops per broodmare slot.
+# book_mare checks racing stalls + foals on the way, so for a bot "on the way" reads as just enough to pass while the
+# nursery has room, and as full when it hasn't. A racing stall is needed only at 2, when the foal is registered.
+_on_the_way = e.on_the_way
+nursery_cap = lambda o: 2 * e.barn_head(o)
+e.on_the_way = lambda o: (-e.barn_size.get(o, 0) if _on_the_way(o) < nursery_cap(o) else 10 ** 6) if o in bots else _on_the_way(o)
 AIM = {"chaser": 4, "studfarm": 4, "flipper": 3, "casual": 2}    # the barn level each kind saves up for
 
 
@@ -151,10 +157,12 @@ e.new_year = new_year
 
 
 def register(horses):
-    """A bot's 2-year-olds graduate for the registration fee; a weak one, or one it can't pay for, goes to the house."""
-    for h in [h for h in horses if h.owner in bots and h.age == 2 and getattr(h, "breeder", None) == h.owner and not getattr(h, "reg", False)]:
+    """A bot's crop turns 2: it registers the best it has a racing stall and the fee for; the rest go to the house."""
+    grads = [h for h in horses if h.owner in bots and h.age == 2 and getattr(h, "breeder", None) == h.owner and not getattr(h, "reg", False)]
+    for h in sorted(grads, key=scale, reverse=True):
         b = bots[h.owner]
-        keep = b["quit"] is None and e.cash.get(h.owner, 0) >= REG_FEE + RESERVE[b["strat"]] / 2 \
+        racers = sum(1 for x in horses if x.owner == h.owner and not x.retired and (x not in grads or getattr(x, "reg", False)))
+        keep = b["quit"] is None and racers < e.stalls(h.owner) and e.cash.get(h.owner, 0) >= REG_FEE + RESERVE[b["strat"]] / 2 \
             and (b["strat"] == "casual" or scale(h) >= 45)
         if keep:
             e.book(h.owner, "registry", -REG_FEE)
@@ -217,10 +225,10 @@ def pick_sire(mare, owner, strat, horses):
 
 
 def want_racers(o, strat, horses):
-    """Racing stalls a bot fills, leaving room for the foals its mares will bring (they need stalls at 2)."""
+    """Racing stalls a bot fills, keeping a few open for the best of each crop it registers at 2."""
     mares = sum(1 for h in horses if h.owner == o and h.retired and h.sex == "f")
-    keep = 0 if strat == "flipper" else min(e.stalls(o) // 2, 2 * mares if e.can_breed(o) else 0)
-    return max(2, e.stalls(o) - keep - e.on_the_way(o))
+    keep = 0 if strat == "flipper" or not e.can_breed(o) else min(e.stalls(o) // 3, (mares + 1) // 2)
+    return max(2, e.stalls(o) - keep)
 
 
 def bot_week(horses, d, season):
@@ -347,7 +355,7 @@ def main():
     db = S100.open_db(DB)
     db.executescript("""
       CREATE TABLE bots(owner TEXT, season INTEGER, strat TEXT, arrived INTEGER, quit INTEGER, cash REAL, racers INTEGER,
-        mares INTEGER, stallions INTEGER, purses REAL, PRIMARY KEY(owner, season));
+        mares INTEGER, stallions INTEGER, purses REAL, level INTEGER, PRIMARY KEY(owner, season));
       CREATE TABLE foals(id INTEGER PRIMARY KEY, season INTEGER, owner TEXT, strat TEXT, sire INTEGER, dam INTEGER,
         sire_src TEXT, pot REAL, mid REAL);
       CREATE TABLE world(season INTEGER PRIMARY KEY, json TEXT);
@@ -380,11 +388,11 @@ def main():
                 (f.id, season - 1, str(f.owner), bots.get(f.owner, {}).get("strat"), f.sire.id, f.dam.id,
                  "curated" if f.sire.owner == "book" else "listed" if getattr(f.sire, "listed", False) else "own",
                  pot(f), (pot(f.sire) + pot(f.dam)) / 2) for f in born])
-            db.executemany("INSERT INTO bots VALUES(?,?,?,?,?,?,?,?,?,?)", [
+            db.executemany("INSERT INTO bots VALUES(?,?,?,?,?,?,?,?,?,?,?)", [
                 (o, season - 1, b["strat"], b["arrived"], b["quit"], e.cash.get(o, 0),
                  sum(1 for h in horses if h.owner == o and not h.retired),
                  sum(1 for h in horses if h.owner == o and h.retired and h.sex == "f"),
-                 sum(1 for h in horses if h.owner == o and h.retired and h.sex == "m"), purses.get(o, 0))
+                 sum(1 for h in horses if h.owner == o and h.retired and h.sex == "m"), purses.get(o, 0), e.level.get(o, 0))
                 for o, b in bots.items() if b["quit"] is None or b["quit"] == season - 1])
             year_turn_bots(horses, season)
             sk.year_tick(horses, ai, d)
@@ -393,7 +401,7 @@ def main():
             db.commit()
             g = m["groups"]
             print(f"season {season}/{SEASONS}: {len(active())} players, {len(horses)} horses, S+ {m['s_plus_all']:.1%}, "
-                  f"AI pot {g.get('ai', {}).get('pot', 0):.1f} bred pot {g.get('bred', {}).get('pot', float('nan')):.1f}, "
+                  f"filler pot {g.get('ai', {}).get('pot', 0):.1f} bred pot {g.get('bred', {}).get('pot', float('nan')):.1f}, "
                   f"foals {m['foals']} top5 {m.get('top5_share', 0):.0%}, {(time.time() - t0) / season:.1f} s a season", flush=True)
         while due and due[0] <= week:
             due.pop(0)
