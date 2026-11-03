@@ -1177,14 +1177,15 @@ def run_race(r, alive, log):
                 story["captions"].append([0.5, f"{h.name} is fractious behind the car"])
             if why.get("broke"):
                 story["captions"].append([when.get(h.name) or story["calls"][2], f"{h.name} breaks stride"])
-            r = rows.get(h.name)
-            if r and len(r["behind"]) == 7 and r["behind"][5] - r["behind"][4] >= 3 and order.index(h) >= 3:   # lost three lengths off the turn
-                story["captions"].append([story["calls"][5] - 1, f"{h.name} is backing up"])
+        lost = {h.name: rows[h.name]["behind"][5] - rows[h.name]["behind"][4] for h in order if h.name in rows and len(rows[h.name]["behind"]) == 7}
+        worst = max(lost, key=lost.get, default=None)
+        if worst and lost[worst] >= 6 and rows[worst]["behind"][4] <= 3:     # was up with them at the three-quarters, then gave way
+            story["captions"].append([story["calls"][5] - 1, f"{worst} is backing up"])
         fo = next((h for h in order if "first-over" in h.trip), None)
         lead = next((h for h in order if "on the lead" in h.trip), None)
         if fo and lead and rows.get(fo.name) and abs(rows[fo.name]["behind"][4] - rows[lead.name]["behind"][4]) < 1.5:
             story["captions"].append([story["calls"][4], f"{fo.name} and {lead.name} go head and head"])
-        if any((getattr(h, "why", None) or {}).get("fight") for h in order[:2]):
+        if len(order) > 1 and getattr(order[1], "margin_l", 9) < 1.0:
             story["captions"].append([story["calls"][6] - 1.5, f"{order[0].name} and {order[1].name} fight it out"])
         story["captions"].sort(key=lambda x: x[0])
     line = tote_odds(field)
