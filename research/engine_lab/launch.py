@@ -14,7 +14,7 @@ Recorded beside the encyclopedia's tables (same file layout, so research/encyclo
   foals     every foal: breeder kind, sire and his source (curated or player-listed), its genetic potential and its parents'
   world     one JSON row per season: player herd vs AI, S+ share, stud book, sire concentration, pedigree strength
 
-  python research/engine_lab/launch.py <players> <seed> [seasons=100]   -> research/engine_lab/launch/p<players>_s<seed>.db
+  python research/engine_lab/launch.py <players> <seed> [seasons=100] [mutate]   -> research/engine_lab/launch/p<players>_s<seed>[_m<mutate>].db
   python research/engine_lab/launch.py check                             2 seasons, 12 players, with self-checks
 """
 import importlib.util
@@ -30,14 +30,17 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 CHECK = sys.argv[1:2] == ["check"]
 PLAYERS, SEED = (12, 7) if CHECK else (int(sys.argv[1]), int(sys.argv[2]))
 SEASONS = 6 if CHECK else int(sys.argv[3]) if len(sys.argv) > 3 else 100
+MUTATE = float(sys.argv[4]) if len(sys.argv) > 4 else None   # a test of the gene-revert chance (sim.MUTATE; None: the game's own)
 OUT = os.path.join(HERE, "launch")
 os.makedirs(OUT, exist_ok=True)
-DB = os.path.join(OUT, "check.db" if CHECK else f"p{PLAYERS}_s{SEED}.db")
+DB = os.path.join(OUT, "check.db" if CHECK else f"p{PLAYERS}_s{SEED}" + (f"_m{MUTATE:g}" if MUTATE is not None else "") + ".db")
 
 sys.argv = ["sim100.py", "0", DB]                                # sim100 reads its own argv at import
 spec = importlib.util.spec_from_file_location("sim100", os.path.join(ROOT, "research", "encyclopedia", "sim100.py"))
 S100 = importlib.util.module_from_spec(spec); spec.loader.exec_module(S100)
 app, c, e, sk, sim, O = S100.app, S100.c, S100.e, S100.sk, S100.sim, S100.O
+if MUTATE is not None:
+    sim.MUTATE = MUTATE
 
 AI_SHIFT = 0.0                 # the AI top-up recipe: founders' stock, every season (Patrick tunes this by hand, D60)
 AI_RACERS, AI_FLOOR = 900, 300  # AI racers in all, less the players' racers; never fewer than the floor
@@ -404,7 +407,7 @@ def main():
     sk.new_calendar()
     db.execute("INSERT OR REPLACE INTO meta VALUES('seasons_planned', ?)", (str(SEASONS),))
     db.execute("INSERT OR REPLACE INTO meta VALUES('launch', ?)", (json.dumps({"players": PLAYERS, "seed": SEED, "ai_shift": AI_SHIFT,
-               "curated": CURATED, "list_fee": LIST_FEE, "book": e.BOOK, "strats": STRATS, "quit": QUIT}),))
+               "curated": CURATED, "list_fee": LIST_FEE, "mutate": sim.MUTATE, "book": e.BOOK, "strats": STRATS, "quit": QUIT}),))
     t0, n_bots, log = time.time(), 0, []
     due = arrivals_for(0, horses)
     for d in range(SEASONS * c.YEAR):
