@@ -127,7 +127,7 @@ class Stake:
 
 
 RATINGS = {}   # division -> learned class rating
-LEGS = ("leg",)   # the Sire Stakes legs: no trophy, only their finals (the Invitational Series has no final, so its legs keep theirs)
+LEGS = ("leg", "invitational")   # a series leg pays a purse, never a trophy (Patrick 2026-11-03: no trophy for every leg)
 KIND_OF = {t: k for *_, t, _p, k in SCHEDULE}   # a stake's title -> its kind: which trophy icon a win earns
 
 
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     assert len(finals) >= 10 and len(CHAMPIONS[0]) == 6 and len(CHAMPIONS[1]) >= 4, "every division crowns a champion"
     assert all(len(set(v.values())) == len(v) for v in CHAMPIONS.values()), "a horse holds one title a year: boys and girls apart"
     assert all(any(s.name in t for t in getattr(s.result[0], "trophies", [])) for s in ran if s.result and s.kind not in LEGS), "every winner keeps the trophy"
-    assert not any("Sire Stakes Leg" in t for h in horses for t in getattr(h, "trophies", [])), "a series leg gives no trophy"
+    assert not any(" Leg " in t for h in horses for t in getattr(h, "trophies", [])), "a series leg gives no trophy"
     assert all(s.eligible(h) or h.retired or c.age_group(h) != s.group for s in ran for h in s.result), "every starter was eligible"
     import collections as _co
     for cal in years:

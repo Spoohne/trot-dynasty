@@ -404,9 +404,9 @@ def load(path=None):
             r["key"] = (("all" if n in c.ALL_AGES else r["key"][0]), r["key"][1], n, next(p for nm, _, p, _ in c.CONDITIONS if nm == n), 0, r["key"][5])
     if not any(getattr(h, "drawn", False) for h in G["horses"]):                # a save from before the program: post this week's
         c.draw_claimers(G["horses"], G["ai"])
-    for h in c.lineage(G["horses"] + e.nursery + sk.HALL):                  # Sire Stakes legs stopped giving trophies (2026-11-02): take back old ones
-        if any("Sire Stakes Leg" in t for t in getattr(h, "trophies", [])):
-            h.trophies = [t for t in h.trophies if "Sire Stakes Leg" not in t]
+    for h in c.lineage(G["horses"] + e.nursery + sk.HALL):                  # series legs stopped giving trophies (Sire Stakes 2026-11-02, Invitational 2026-11-03): take back old ones
+        if any(" Leg " in t for t in getattr(h, "trophies", [])):
+            h.trophies = [t for t in h.trophies if " Leg " not in t]
     for h in c.lineage(G["horses"] + e.nursery + sk.HALL):                  # season ledgers for saves from before they existed:
         if not hasattr(h, "seasons"):                                         # rebuilt from the starts each horse still keeps
             h.seasons = {}
@@ -4111,7 +4111,7 @@ def trophy_case(h):
         return "<div class=card><span class=sub>No trophies yet. Stakes wins, championships and course records go here.</span></div>"
     art = {"cup": "cup", "crown": "crown", "clock": "clock", "medal": "medal", "money": "money", "laurel": "horseshoe"}   # SpriteCook trophy icons
     tiles = "".join(f"<div class='tcase t{k}' data-pi><img class=ticon src=/mock/brand/trophies/{art[k]}.png alt=''><b>{esc(t)}</b><span>{esc(sub)}</span></div>" for k, t, sub in items)
-    return pbox(f"<div class=tgrid>{tiles}</div>", len(items))
+    return pbox(f"<div class=tgrid>{tiles}</div>", len(items), 6)   # two rows, about the pedigree table's height
 
 
 def career_phase(h):
