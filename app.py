@@ -2041,7 +2041,7 @@ GUIDE = [
         ("The vet's appraisal", "A young horse shows what it is over its starts. If you'd rather know sooner, the vet will "
          "appraise one of yours for a few Markers: the grade it should reach at its peak, told to you and nobody else. It "
          "changes nothing on the track; it only saves you the wait. Until a horse has raced a few times, its letter is drawn "
-         "hollow: that's the pedigree's guess, and a well-bred foal often comes out below its parents."),
+         "hollow: that's what its bars say today against horses its age, and a youngster can still grow into more, or less."),
     ]),
     ("On the track", [
         ("How a race is run", "Every race on this circuit is run the same way for every barn, the house's horses included. Nothing "
@@ -2134,7 +2134,7 @@ GUIDE = [
         ("Foals", "A foal is born into your nursery and grows up through its weanling and yearling years. As a yearling it goes on "
          "your Training day sheet, and a yearling worked through its year comes to the races further along. Its name is yours to change until it's registered. At two it can be registered "
          "to race, for a flat fee, and moves into your racing barn. Until then it keeps its place in the shed, and the house will take "
-         "an unregistered horse off your hands for a token price. Its early rating is a guess from its pedigree until it gets to the races."),
+         "an unregistered horse off your hands for a token price. Until it gets to the races, its letter is read off its bars against horses its age."),
     ]),
     ("Your barn's name", [
         ("Silks and emblems", "Every barn races in its silks: a jacket in two colors and a pattern, shown beside its name everywhere "
@@ -2202,7 +2202,7 @@ TIP_SEQUENCE = [
     "Nothing in your barn races unless you enter it. Tap the + on a horse's card to enter it.",
     "A horse needs to be fresh to run its best. Rest it, or use a grooming slot to get it back sooner.",
     "Mile time is how fast a horse is expected to trot. Tier is the letter grade that comes with it: D up to S+.",
-    "A hollow, dashed letter is a pedigree's guess. A horse earns its own grade once it has raced a few times.",
+    "A hollow, dashed letter is read off the horse's bars against horses its age. A horse earns its grade on the track once it has raced a few times.",
     "Two yearlings came with your barn, papers paid. Find them on the Training tab; they join your racers at two.",
     "Youngsters are yours to make. The Training tab is their day sheet: jog, train, school or turn out, one job a day.",
     "Your mare is your way up. Buy the Breeder's License on the Breeding tab, and her foals can race for you.",
@@ -3198,25 +3198,48 @@ MILE_TIERS = tuple((sim.retime(x), t) for x, t in ((107.5, "S+"), (109.5, "S"), 
 # seconds for a mile, slower is D: the original cuts, moved exactly onto the 2026-10-27 clock (S+ ~1:50.9 ... C ~2:00.1)
 
 
-PED_STARTS = 5                 # under this many starts a bred horse's grade is its pedigree's guess, shown hollow
-PED_FIT = -92.32, 2.027        # foal's peak rating ~ A + B x parents' average peak, fitted 2026-10-31 on 598 bred racers (r 0.58)
+PED_STARTS = 5                 # under this many starts a horse's badge is read off its bars against its peers, shown hollow
+CARD_W = {"late_speed": .5, "stamina": .4, "gait": .1}     # Speed >> Stamina >>> Manners (Grit shows only once it has raced)
 
 
-def is_pedigree(h):
-    """A bred horse that hasn't raced enough to earn a grade: its badge is the pedigree's realistic guess."""
-    return not h.retired and h.starts < PED_STARTS and getattr(h, "sire", None) is not None and getattr(h, "dam", None) is not None
+def unproven(h):
+    """A horse that hasn't raced enough to earn its badge on the clock: a foal, a yearling, a lightly raced horse."""
+    return not h.retired and h.starts < PED_STARTS
 
 
-def pedigree_grade(h):
-    a, b = PED_FIT
-    est = max(30.0, min(80.0, a + b * (c.peak_est(h.sire) + c.peak_est(h.dam)) / 2))
-    secs = c.mile_secs(est)
-    return next((t for cut, t in MILE_TIERS if secs <= cut), "D")
+def card_score(h):
+    return sum(w * bar_of(h, t) for t, w in CARD_W.items())
+
+
+_GRADED = {}
+
+
+def bars_grade(h):
+    """An unproven horse's badge (Patrick 2026-11-02: the pedigree's guess told an owner nothing): its bars against the
+    other unproven horses its age (weanlings and yearlings together: their bars already allow for age), cut at the
+    shares the proven horses' badges come in, so a top-tenth foal wears what a top-tenth racehorse does."""
+    key = (G["day"], len(e.nursery), len(G["horses"]))
+    if key not in _GRADED:
+        _GRADED.clear()
+        proven = [tier_label(x) for x in G["horses"] if not unproven(x) and not x.retired and x.age >= 2]
+        shares, run = [], 0.0
+        for t in ("S+", "S", "A", "B", "C"):
+            run += sum(1 for x in proven if x == t) / max(1, len(proven))
+            shares.append((run, t))
+        peers = {}
+        for x in list(e.nursery) + G["horses"]:
+            if unproven(x):
+                peers.setdefault(max(x.age, 1), []).append(card_score(x))                          # 0 and 1: one pool
+        _GRADED[key] = shares, {a: sorted(v) for a, v in peers.items()}
+    shares, peers = _GRADED[key]
+    crop = peers.get(max(h.age, 1), [])
+    above = (len(crop) - bisect.bisect_right(crop, card_score(h))) / max(1, len(crop))   # the share of its peers ahead of it
+    return next((t for run, t in shares if above < run), "D")
 
 
 def tier_label(h):
-    if is_pedigree(h):
-        return pedigree_grade(h)
+    if unproven(h):
+        return bars_grade(h)
     if h.age < 2 or c.age_group(h) not in c.GROUP_STATS:                       # a foal hasn't raced: no rating yet
         return h.tier
     secs = c.mile_secs(c.peak_est(h) if h.retired else h.est)                 # a retired horse keeps the rating of its prime
@@ -3229,7 +3252,7 @@ def tier_base(h):
 
 
 def tier_cls(h):
-    return ("Sp" if tier_label(h) == "S+" else tier_base(h)) + (" ped" if is_pedigree(h) else "")
+    return ("Sp" if tier_label(h) == "S+" else tier_base(h)) + (" ped" if unproven(h) else "")
 
 
 STABLEMATE = ("<svg class=mate viewBox='0 0 28 28' width=24 height=24 aria-hidden=true>"   # a plain square tile, two black heads
