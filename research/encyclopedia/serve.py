@@ -252,5 +252,6 @@ class H(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print("encyclopedia on http://127.0.0.1:8114/", flush=True)
-    ThreadingHTTPServer(("127.0.0.1", int(sys.argv[2]) if len(sys.argv) > 2 else 8114), H).serve_forever()
+    port = int(sys.argv[2]) if len(sys.argv) > 2 else 8114
+    print(f"encyclopedia on http://127.0.0.1:{port}/", flush=True)
+    ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
