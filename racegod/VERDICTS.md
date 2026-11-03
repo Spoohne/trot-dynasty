@@ -427,3 +427,6 @@ winner within 3 L at the half 57 (band 60-90), favorite 40.0, margin 2.1 L, phot
 one week's noise either side of 10), trips lead 43 / pocket 13 / first-over 6 / mid-pack 25 / behind 12.
 Seven of ten in band, the two post misses gone on the half. RaceGod: deploy the nudge; the mile's post 8 needs a
 bigger sample than a week to call.
+
+Patrick: deploy (2026-11-02). Post costs half 0.12 / mile 0.20 live, commit f90a396; no save change. Next: audit the
+real nights as they accumulate (`audit.py --since 2630` on a live copy) and write V11 when there's a week of them.
