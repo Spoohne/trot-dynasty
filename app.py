@@ -43,6 +43,7 @@ SECURE = "; Secure" if os.environ.get("TD_SECURE") else ""   # on the HTTPS serv
 FAILED = {}                       # visitor address -> recent failed logins
 ADMIN = 0   # the original playtest barn: runs the clock and can wipe the world
 # shortcut: the week only advances when ADMIN presses Post time; before going live, add a scheduled week advance for all players
+CLOCK = {ADMIN, 1}   # barns that get the Post time button (barn 1: PATFRIO, the owner's second login)
 ME = 0   # the barn of the player making this request (set per request; the server handles one request at a time)
 G = {}   # the game: horses, day, ai, players, sessions
 
@@ -1225,7 +1226,7 @@ def page(title, body, foot=True, theme=None):
     top = (f"<div class=top><div class=tleft><span class=money>${e.cash[ME]:,.0f}</span>" + (f"<a href=/shop#markers class=mkbar>{mk_tag(markers())}</a>" if markers() else "") +
            f"<span class=when>Year {c.year_of(day)}, wk {day % c.YEAR + 1}{' <b style=color:#ff6f7d>DEV</b>' if DEV else ''}<br>{countdown()}</span></div>"
            f"<a href=/welcome class=brand><img src=/mock/brand/logo_text.png alt='Trot Dynasty'></a><div class=tright>"
-           + ("<form method=post action=/advance class=inline><button name=days value=1>Post time</button></form>" if ME == ADMIN else "") + "</div></div>" + ("" if title == "Your barn" else plaque))
+           + ("<form method=post action=/advance class=inline><button name=days value=1>Post time</button></form>" if ME in CLOCK else "") + "</div></div>" + ("" if title == "Your barn" else plaque))
     under = plaque if title == "Your barn" else ""              # on the barn screen the Marquee sits under the heading
     if G.get("held"):
         under += "<div class=ev>Tonight's card is delayed. The results will post once the track sorts it out.</div>"
@@ -5845,7 +5846,7 @@ class H(BaseHTTPRequestHandler):
         back = self.headers.get("Referer", "/")
         if entries_closed() and ME != ADMIN and p in ("/entries", "/enter", "/scratch", "/order", "/tonic"):   # claims stay open until post time
             return self.send("", 303, back)                         # 7:55 to 8 PM: the program is final
-        if p == "/advance" and ME == ADMIN:                       # the world clock: admin only
+        if p == "/advance" and ME in CLOCK:                       # the world clock: admin only
             if q.get("days") == "run":
                 for _ in range(c.YEAR * 3):
                     if tick():
