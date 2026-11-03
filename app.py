@@ -846,7 +846,7 @@ form.inl{display:inline;margin:0}form.inl button{padding:4px 8px;font-size:12px}
 .besttime{margin-top:10px;text-align:center;line-height:1.1}.besttime span{display:block;font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
 .besttime.rate{margin-top:8px}.besttime.rate b{color:var(--ink);text-shadow:none}
 .mrate{display:flex;align-items:baseline;gap:8px}.mrate span{font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}.mrate b{font-size:20px;font-variant-numeric:tabular-nums}
-.besttime b{font-size:17px;color:var(--led);font-variant-numeric:tabular-nums;text-shadow:0 0 5px rgba(255,179,71,.35)}
+.besttime b{font-size:17px;color:var(--led);font-variant-numeric:tabular-nums;text-shadow:0 0 5px rgba(255,179,71,.35)}.besttime small{display:block;font-size:10px;color:var(--ink3);margin-top:2px;max-width:140px;margin-inline:auto}
 .filt{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.filt input,.filt select{font:inherit;font-size:16px;padding:4px 6px;color:var(--ink)}
 .filt input[name=q]{flex:1 1 140px}.filt .ages input{width:52px}.filt label{display:flex;gap:8px;align-items:center}
 .arch td{vertical-align:top}.arch tr.me td,table tr.me td{color:var(--led)}
@@ -2686,6 +2686,18 @@ def best_time(h):
     return c.mile_time(best) if best < 999 else "—"
 
 
+def best_line(h):
+    """Where the best time was set, so it can be checked against the charts: the race and the year, or a note that the
+    start is older than the thirty kept."""
+    rs = [r for r in getattr(h, "results", []) if r.get("time")]
+    if getattr(h, "best", 999) >= 999 or not rs:
+        return ""
+    r = min(rs, key=lambda r: r["time"])
+    if r["time"] > h.best + 0.05:
+        return "earlier in its career"
+    return f"{esc(r['race'])} · Year {c.year_of(r['day'])}"
+
+
 def barn_name(o):
     if o == ME:
         return "You"
@@ -3408,7 +3420,7 @@ def horse_card(h, link=True):
                 act = corner.replace("class=enterplus", "class=go").replace("class='enterplus pause'", "class='go pause'").replace(">+</a>", ">Enter</a>")
                 act = act.replace("</svg></a>", "</svg> Enter</a>")
             o_ = getattr(h, "order", None)
-    return (f"<div class='card brow hc hc2{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b></div></div><div class=hr2>"
+    return (f"<div class='card brow hc hc2{' sp' if tier_label(h) == 'S+' else ''}' style='--tc:{'#c084fc' if tier_label(h) == 'S+' else TIER_RGB[tier_base(h)]}'><div class=pcol>{square_portrait(h)}<div class=besttime><span>Best Time</span><b>{best_time(h)}</b><small>{best_line(h)}</small></div></div><div class=hr2>"
             f"<div class=bname>{name}</div>"
             f"<div class=facts><span class=chip>{h.age}yo {sex_word(h)}</span>"
             f"<span class=chip title='starts-wins'><b>S{h.starts}-W{h.wins}</b></span><span class='chip cash'>${h.earnings:,.0f}</span>"

@@ -918,8 +918,7 @@ def back_record(horses, arrivals, year):
             if row and y not in h.seasons:
                 h.seasons[y] = list(row)
                 h.starts += row[0]; h.wins += row[1]; h.places += row[2]; h.shows += row[3]; h.earnings += row[4]
-                if row[5] < 999:
-                    h.best = min(getattr(h, "best", 999), row[5])
+                h.seasons[y][5] = 999                                 # a best time is only ever the horse's own finish (Patrick 2026-11-03)
 
 
 if __name__ == "__main__":
