@@ -16,6 +16,7 @@ import os, time
 from datetime import datetime, timedelta, timezone
 import traceback
 import collections
+import contextlib
 import pickle
 from itertools import count
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -564,6 +565,7 @@ def tick():
             open_sponsor_auction()                            # and the season's stakes go up for sponsorship
         G["horses"] = e.new_year(G["horses"], G["ai"])
         e.ROLLED[0] = G["day"]                                # (the week-1 night itself won't roll it a second time)
+        refit_entries()                                       # an entry made for last season's age races in this season's class
     if G["day"] % c.YEAR == SPONSOR_WEEKS and G.get("sponsor_auction"):
         settle_sponsors()
     c.draw_claimers(G["horses"], G["ai"])                     # next week's claiming program goes up now
@@ -1296,16 +1298,43 @@ def has_pass(o):
     return bool(P(o).get("pass"))
 
 
+@contextlib.contextmanager
+def entry_age(horses):
+    """Entries are for tomorrow night. On the season's last night that's week 1, when every horse is a year older: the
+    entry sheet, the trainer's picks and the Enter button judge each horse at the age it will race."""
+    hs = [h for h in horses if not getattr(h, "ageless", False)] if (G["day"] + 1) % c.YEAR == 0 else []
+    for h in hs:
+        h.age += 1
+    try:
+        yield
+    finally:
+        for h in hs:
+            h.age -= 1
+
+
+def refit_entries():
+    """At the year turn: an entry for a class its horse has aged out of goes in the matching class for its new age (same
+    track, claimer or not, nearest purse)."""
+    for h in G["horses"]:
+        o = getattr(h, "order", None)
+        if h.owner in c.HUMAN and not h.retired and isinstance(o, tuple) and o[0] == "enter":
+            ok = c.eligible_races(h)
+            same = [r for r in ok if r[3] == o[4] and bool(r[2]) == bool(o[3])]
+            if (o[1], o[2], o[3], o[4]) not in ok and same:
+                h.order = ("enter",) + min(same, key=lambda r: abs(r[1] - o[2]))
+
+
 def setup_plan(o):
     """What the Stable Manager would do for barn o right now, without doing it: [(horse, race title, track)] it would
     enter, and the youngsters whose sets it would deploy."""
     entries = []
-    for h in G["horses"]:
-        if h.owner == o and not h.retired and not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h):
-            c.trainer_of(h).plan(h)
-            group, sex, name, purse, tag = c.entry(h)
-            if not tag:
-                entries.append((h, c.race_title(group, name), getattr(h, "ship", None) or ("mile", "half")[h.id % 2]))
+    with entry_age(G["horses"]):
+        for h in G["horses"]:
+            if h.owner == o and not h.retired and not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h):
+                c.trainer_of(h).plan(h)
+                group, sex, name, purse, tag = c.entry(h)
+                if not tag:
+                    entries.append((h, c.race_title(group, name), getattr(h, "ship", None) or ("mile", "half")[h.id % 2]))
     sets = [x for x in unworked(o) if set_of(x)]
     return entries, sets
 
@@ -3449,16 +3478,15 @@ def trainers_entries(horses, o=None):
     putting a horse up for a tag is the owner's call alone."""
     o = ME if o is None else o
     n = 0
-    for h in horses:
-        if h.owner == o and not h.retired and not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h):
-            tr = c.trainer_of(h)
-            tr.plan(h)                                         # sets h.ship by style
-            group, sex, name, purse, tag = c.entry(h)
-            if tag:
-                continue
-            track = getattr(h, "ship", None) or ("mile", "half")[h.id % 2]
-            h.order = ("enter", name, purse, tag, track)
-            n += 1
+    with entry_age(horses):                                    # plan() sets h.ship by style; entry() picks the class
+        picks = [(h, c.trainer_of(h).plan(h), c.entry(h)) for h in horses
+                 if h.owner == o and not h.retired and not getattr(h, "order", None) and h.freshness >= 50 and not on_card(h)]
+    for h, _, (group, sex, name, purse, tag) in picks:
+        if tag:
+            continue
+        track = getattr(h, "ship", None) or ("mile", "half")[h.id % 2]
+        h.order = ("enter", name, purse, tag, track)
+        n += 1
     return n
 
 
@@ -3717,9 +3745,10 @@ def entries_page(qs=None):
     purses = {n: p for n, _, p, _ in c.CONDITIONS} | {c.clm_name(t): p for t, _, p in c.CLAIMERS}
     tags = {c.clm_name(t): t for t, _, _ in c.CLAIMERS}
     can = {}                                                    # (track id, class) -> your horses that can go
-    for h in racers:
-        for v, rname, purse, vpurse, tag, track in c.offerings(h):
-            can.setdefault((v["id"], rname), []).append((h, purse, tag, track))
+    with entry_age(racers):
+        for h in racers:
+            for v, rname, purse, vpurse, tag, track in c.offerings(h):
+                can.setdefault((v["id"], rname), []).append((h, purse, tag, track))
     def keep(name):
         clm, young, top = name.startswith("CLM"), name[:3] in ("2YO", "3YO"), name in ("Open", "Aged Open", "Preferred", "Invitational")
         return {"all": True, "cond": not clm and not top, "clm": clm, "young": young, "top": top}.get(kind, True)
@@ -4045,7 +4074,9 @@ def entry_sheet(h):
     him = "him" if h.sex == "m" else "her"
     tags = {c.clm_name(t): t for t, _, _ in c.CLAIMERS}
     races = {}
-    for v, rname, purse, vpurse, tag, track in c.offerings(h):
+    with entry_age([h]):
+        offered = c.offerings(h)
+    for v, rname, purse, vpurse, tag, track in offered:
         races.setdefault(rname, []).append((vpurse, v, purse, tag, track))
 
     def level(r):                                             # the tier a horse rated r would carry: how good this class runs
@@ -5026,7 +5057,8 @@ def program_races():
         o = getattr(h, "order", None)
         if not h.retired and isinstance(o, tuple) and o[0] in ("enter", "claim"):
             track = o[4] if o[0] == "enter" else getattr(h, "ship", None) or "mile"
-            by.setdefault(c.entry(h) + (track,), []).append(h)
+            with entry_age([h]):
+                by.setdefault(c.entry(h) + (track,), []).append(h)
     out = []
     for k, f in sorted(by.items(), key=lambda kv: (kv[0][5], str(kv[0][0]), -kv[0][3])):
         n = -(-len(f) // c.FIELD[k[5]])                                   # more than the gate holds: divisions, as the draw will split them
@@ -5843,7 +5875,9 @@ class H(BaseHTTPRequestHandler):
         h = by_name.get(q.get("h", ""))
         if p == "/enter" and h and h.owner == ME:
             name, purse, tag, track, *vid = q["r"].split("|")
-            if (name, int(purse), int(tag), track) in c.eligible_races(h) and (not vid or c.hosts(name, track) and vid[0] in [v["id"] for v in c.hosts(name, track)]):
+            with entry_age([h]):
+                fits = (name, int(purse), int(tag), track) in c.eligible_races(h)
+            if fits and (not vid or c.hosts(name, track) and vid[0] in [v["id"] for v in c.hosts(name, track)]):
                 h.order = ("enter", name, int(purse), int(tag), track) + tuple(vid[:1])   # the track asked for rides along as o[5]
                 save()
                 return self.send("", 303, "/")                       # entered: back to the barn to set the next one
