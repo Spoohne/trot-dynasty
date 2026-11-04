@@ -2087,7 +2087,7 @@ GUIDE = [
     ("After the races", [
         ("Results and replays", "Results are spoiler-free: your starters are listed in post order, and you choose when to reveal each "
          "result or watch the replay. The barn sends you to Results first after a race night, so nothing gets spoiled. The replay is "
-         "the race as it was run: watch from the grandstand, from the blimp, or the TV coverage."),
+         "the race as it was run: watch from the grandstand, from the blimp, head-on at the wire, or the TV coverage, and zoom the lens in."),
         ("Money", "Purses pay down the order of finish, with the lion's share to the winner. The trainer and driver take their cut of "
          "what each horse wins. Your Earnings page shows where every dollar came from and went."),
         ("The Market", "The <b>Auction</b> is the sale board, and the only place a horse changes hands between barns: every horse "
