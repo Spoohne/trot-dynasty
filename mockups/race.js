@@ -336,9 +336,10 @@ RACE.simulate = () => {
 
       r.o = nextO;
       r.d += r.v * dt;
-      // the run to the wire: each horse eases onto its story distance over the last six seconds, so at the official time every
-      // nose is where the result says (the winner's on the wire, the margins as charted); the feel above shapes the race before that
-      if (t > RACE.FIN - 6) { const u = Math.min(1, (t - (RACE.FIN - 6)) / 6); r.d += (sd - r.d) * u * u * .25; }
+      // the run home: each horse works back onto its story distance from twenty-five seconds out, never more than 10 ft/s quicker
+      // (or 6 ft/s slower) than it is already going, so at the official time every nose is where the result says without a
+      // sprint the legs would show (the 2026-11-04 blend closed the gap in the last few seconds at up to 137 ft/s)
+      if (t > RACE.FIN - 25) { const w = Math.min(1, (t - (RACE.FIN - 25)) / 2); r.d += Math.max(-6 * dt, Math.min(10 * dt, sd - r.d)) * w; }
     }
   }
 
