@@ -88,7 +88,7 @@ RACE.rebuild = () => {
   RACE.paths = null;
   RACE.D = RACE.curve(RACE.TT, RACE.DD, true);                           // leader's distance run
   RACE.H.forEach(h => {
-    h.b = RACE.SIM ? RACE.linear(RACE.CT, h[2]) : RACE.real ? RACE.ease(RACE.CT, h[2]) : RACE.curve(RACE.CT, h[2]);   // sim calls are dense: easing between them would pulse the speed at each call
+    h.b = RACE.SIM ? RACE.linear(RACE.CT, h[2]) : RACE.real ? RACE.ease(RACE.CT, h[2], [Math.max(1, RACE.CT[1] - 2.5)]) : RACE.curve(RACE.CT, h[2]);   // the field leaves as one line: nobody drops toward its first-call mark until 2.5 s after the gate (the outside posts read as a second tier)   // sim calls are dense: easing between them would pulse the speed at each call
     h.lane = RACE.SIM ? RACE.linear(RACE.CT, h[3]) : RACE.real ? RACE.ease(RACE.CT, h[3], [0, 0, 6, 6, 4, 0]) : RACE.curve(RACE.CT, h[3]);   // the field cuts over to the rail through the whole first turn
     h.b.hold = h[2].at(-1); h.lane.hold = h[3].at(-1);   // the finish call is the last one (a sim story carries many calls)
   });
