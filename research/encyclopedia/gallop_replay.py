@@ -22,7 +22,7 @@ DB = os.path.join(HERE, "gallop100.db")
 
 LENGTH = 2.44            # metres: a length is 8 ft in the viewer
 LANE = 0.65              # metres: the sim's lane step; the viewer draws a lane as a sulky's width
-CALL_S = 2.0             # seconds between calls in the story
+CALL_S = 0.5             # seconds between calls in the story: fine enough that interpolation never draws one horse through another
 QUARTER = gallop.MILE / 4
 
 
@@ -54,7 +54,7 @@ def main():
     for i, h in enumerate(horses):
         out.append({"name": h["name"], "post": h["post"], "place": int(place[i]), "time": round(float(times[i]), 2),
                     "behind": [round(float((lead[at(t)] - prog[at(t), i]) / LENGTH), 2) for t in calls],
-                    "lane": [round(float(max(0.0, (lat[at(t), i] - LANE) / LANE)), 2) for t in calls],
+                    "lane": [round(float(lat[at(t), i] / LANE), 2) for t in calls],
                     "trip": f"post {h['post']}, rank {h['rank']}, blocked {blocked[i] / gallop.FPS * gallop.CFG['clock_scale']:.1f} s",
                     "coat": "bay", "rank": h["rank"]})
     out.sort(key=lambda h: h["place"])

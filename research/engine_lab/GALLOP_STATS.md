@@ -42,4 +42,4 @@ a held driver whose target pace beats the horse ahead pulls out a lane once with
 within 8 m ahead in the lane) saves 30 % of the pool and reserve drain, racing off the rail without cover
 costs 30 % more, and each lane out loses a quarter percent of ground. A driver with cover rates off the
 horse ahead rather than the leader; a horse wide off the gate with nobody to follow eases back for cover;
-the leader eases only when clear by 9.75 m (the game's own rule).
+the leader rates once 3.5 m clear (`lead_clear`; the game's own rule is 9.75 m).
