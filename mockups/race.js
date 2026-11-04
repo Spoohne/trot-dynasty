@@ -336,6 +336,9 @@ RACE.simulate = () => {
 
       r.o = nextO;
       r.d += r.v * dt;
+      // the run to the wire: each horse eases onto its story distance over the last six seconds, so at the official time every
+      // nose is where the result says (the winner's on the wire, the margins as charted); the feel above shapes the race before that
+      if (t > RACE.FIN - 6) { const u = Math.min(1, (t - (RACE.FIN - 6)) / 6); r.d += (sd - r.d) * u * u * .25; }
     }
   }
 
