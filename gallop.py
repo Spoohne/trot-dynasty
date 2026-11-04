@@ -24,7 +24,7 @@ DRAIN_C = np.array([2000, 1900, 1800, 1700, 1600, 1500, 1400, 1300, 1200, 1100, 
 A0, DRAG, FPS = 4_000_000.0, 800_000.0, 30
 
 CFG = {   # everything inferred rather than read from the code, and the rank rule: tune here
-    "track_class": 4,           # course class 0..7 in the Power reserve: cap*(1 - class*(99-Power)/10000)
+    "track_class": 30,          # the Power reserve: cap*(1 - this*(99-Power)/10000). The game reads a course class 0..7 here, which left Power worth nothing at a mile
     "surface": 0,               # table row: 0 turf (fast track), 1 dirt (inferred)
     "apt_offset": [[0, -75, -150, -225], [0, 75, 150, 225]],   # pace offset by aptitude 3..0 (row order inferred); all horses apt 3 = 0
     "early_line_m": 350,        # reserve drain halved before this (300 under 1400 m)
@@ -44,15 +44,26 @@ CFG = {   # everything inferred rather than read from the code, and the rank rul
     "pull_margin": 50,          # a held driver pulls when its target pace beats the horse ahead by this (km/h x100)
     "pull_p": 0.02,             # per frame, once it wants to: about two seconds' patience
     "leave_m": 200,             # the leave: metres off the gate in which every driver asks for position
-    "leave_push": 600,          # the ask a 99-Breaking horse leaves with (scaled by Breaking): a 27 s first quarter, paid for in reserve
+    "leave_push": 800,          # the ask a 99-Breaking horse leaves with (scaled by Breaking): a 27 s first quarter, paid for in reserve
     "lead_push": -100,          # the leader's ask once the leave is over (the take-back is ease_push; at equal asks wide horses never drop back)
+    # what each stat does beyond the game's formulas, all ours: at a mile the game's own numbers left most of them dead
+    "rebase_share": 0.85,       # at the drive the reserve is cut to this share of itself (+2500 a metre behind): the game cut everyone to one level, 650k, which erased Power and every cost paid earlier
+    "exhaust": 0.06,            # share of the drain table lost a frame with the stamina pool empty (the game: 0.05), x (130-Tenacity)/70: Tenacity also sets this in the game (FUN_004d2368)
+    "spurt_scale": 0.8,         # the driver's estimate of how far the reserve lasts, as a share of the sum (the game: 0.8); more goes earlier and runs the tank lower
+    "duel_scale": 6.0,          # the game's Fierce duel (14.7) on the pace limit in the drive: nearest rival within 19.5 m
+    "step_div": 5,              # effort step Response/this + 1 (the game: 5)
+    "leave_pow": 2.0,           # how steeply Breaking buys the leave's ask: (Brk/99)^this
+    "courage_pull": 1.0,        # pull_p x (1 + this x (Courage-60)/40): a brave driver goes for the move sooner
+    "leave_saving": 0.04,        # a quick leaver gets there for less: pool drain in the leave x (1 - this x (Brk-60))
+    "resp_pull": 2.0,           # pull_p x (1 + this x (Response-60)/40): a quick driver takes the gap first
+    "feel_judge": 0.6,          # the spurt point's error per race, x (99-Feel)/100
     "follow_slack": 1.5,        # metres beyond a body a driver lets the horse ahead get before closing up again
     "cut_behind": 1.0,          # a sideways step never lands closer than this many bodies ahead of a horse in that lane
     "tuck_ahead": 1.2,          # a horse drops in only with this many bodies clear ahead in that lane...
     "tuck_behind": 1.5,         # ...and nobody closer than this behind: room to finish the 1.5 s move while that horse closes
     "rate_push": 600,           # the most a driver asks before the drive, closing a gap (at 800 the field sprinted up to a leader eight lengths clear)
     "ease_push": -500,          # the most a driver takes back before the drive (at -800 the field crawled while the leader opened eight lengths)
-    "clock_scale": 1.26,        # reported seconds per sim second: the sim's 90 s mile reads as a trotter's 1:53.5 (dynamics untouched)
+    "clock_scale": 1.27,        # reported seconds per sim second: the sim's 89.5 s mile reads as a trotter's 1:53.5 (dynamics untouched)
     "rank_stats": [SPD, STAY, STAM, FIERCE, TEN, POW, RESP],
     "rank_bands": [(570, "SS"), (500, "S"), (460, "A"), (420, "B"), (370, "C"), (330, "D"), (280, "E"), (0, "F")],
 }
@@ -94,8 +105,9 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
     drain_b = lerp(DRAIN_B, st[..., STAY]) * (1 + (70 - st[..., FIERCE]) / 5000)
     drain_c = lerp(DRAIN_C, st[..., TEN])
     fierce_k = 1 + (70 - st[..., FIERCE]) / 5000
-    accel = 2 * (A0 - 12000 * (99 - st[..., BRK]))
-    step_brk, step_resp = st[..., BRK] // 5 + 1, st[..., RESP] // 5 + 1
+    accel = 2 * (A0 - 12000 * (198 - st[..., BRK] - st[..., RESP]) / 2)              # the game's player formula: its CPU horses read Breaking alone, which left Response dead
+    step_brk, step_resp = st[..., BRK] // 5 + 1, st[..., RESP] // CFG["step_div"] + 1
+    judge = 1 + CFG["feel_judge"] * (99 - st[..., FEEL]) / 100 * rng.normal(size=(R, n))
     push_up = st[..., RESP] / 5 + 52
     early = CFG["early_line_m"] if dist >= 1400 else CFG["early_line_m"] - 50
     phase1, phase2 = (300, 450) if dist >= 1400 else (250, 350)
@@ -137,7 +149,7 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         vAvg = np.maximum(cruise + 0.2 * d, np.minimum(v60, v))
         n1 = (Rr - 500000) / drain_a + 1
         n2 = np.maximum(1, (v60 - vAvg) / (0.4 * d) * 250000 / drain_b)
-        spurt_dist = ((mps10(vR) + mps10(v60)) * n1 * 0.5 + (mps10(v60) + mps10(vAvg)) * n2 * 0.5) * 0.8
+        spurt_dist = ((mps10(vR) + mps10(v60)) * n1 * 0.5 + (mps10(v60) + mps10(vAvg)) * n2 * 0.5) * CFG["spurt_scale"] * judge
         phase = np.where((phase < 5) & (left < spurt_dist), 5, phase)
         # driver's push (FUN_00476be0): keep up with the leader, everything once the spurt is on
         # with a horse ahead in the lane a driver keeps to its wheel (a body and a little slack); with nobody ahead it
@@ -149,7 +161,7 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         more = (phase >= 5) | (~start & ~stray & (moving | (slack & (cover | pulled | (lane == 0)))))
         less = ~more & stray
         push = np.clip(push + np.where(more, push_up, 0) - np.where(less, 120, 0), -800, 800)
-        push = np.where(leaving & ~held, np.minimum(push + push_up, CFG["leave_push"] * st[..., BRK] / 99), push)
+        push = np.where(leaving & ~held, np.minimum(push + push_up, CFG["leave_push"] * (st[..., BRK] / 99) ** CFG["leave_pow"]), push)
         # the leader rates: slower than standard, but faster than a wide horse taking back, so those can drop behind the line
         rating = (prog == lead) & ~leaving & (phase < 5)
         push = np.where(rating, np.maximum(push - 120, CFG["lead_push"]), push)
@@ -168,6 +180,12 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
                     np.where(Rs >= 500000, cruise + 0.6 * d + (0.4 * d) * (Rs - 500000) / 500000,
                     np.where(Rs >= 250000, cruise + 0.2 * d + 0.4 * d * (Rs - 250000) / 250000,
                              minp + (cruise + 0.2 * d - minp) * Rs / 250000)))
+        if CFG["duel_scale"]:                                                     # the Fierce duel (FUN_00488738), s = d/3 throughout: the game's flat 5 inside 15 points made most of Fierce dead
+            near = np.where(np.eye(n, dtype=bool) | ~live[:, None, :], np.inf, np.abs(dp))
+            jr = near.argmin(2)
+            df = st[..., FIERCE] - np.take_along_axis(st[..., FIERCE], jr, 1)
+            duel = df * CFG["duel_scale"] * ((near.min(2) < 19.5) & (phase >= 5))
+            max_avail = max_avail + duel
         # target pace and the energy step
         T = np.clip(std + (top + brk - std) * effort / 1000, minp, max_avail)
         dv = np.abs(T - v)
@@ -179,15 +197,15 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         # stamina pool, drained by pace band (FUN_0048f2d8)
         dr = np.where(v < cruise - 25, 0, np.where(v < cruise, 750, np.where(v < std, 750 + 250 * (v - cruise) / (std - cruise),
                       np.where(v < top, 1000 + 1000 * (v - std) / (top - std), 2000))))
-        pool = np.maximum(0, pool - dr * mult)
+        pool = np.maximum(0, pool - dr * mult * np.where(leaving, np.maximum(0.2, 1 - CFG["leave_saving"] * (st[..., BRK] - 60)), 1))
         # spurt reserve drain (FUN_004d1960) and the exhausted penalty (FUN_004d2368)
         base = np.where(Rs >= 500000, drain_a / fierce_k, np.where(Rs >= 250000, drain_b / fierce_k, drain_c))
         mid = (std + top) / 2
         f_hi = np.clip((v - mid) / (top - mid), 0, 1) * np.where(prog < early, 0.5, 1)
         f = np.maximum(CFG["rating_drain"], np.where(Rs >= 500000, f_hi, (v >= max_avail - 100).astype(float)))
-        reserve = reserve - (base * f * fierce_k + np.where(pool == 0, 0.05 * base, 0)) * mult
+        reserve = reserve - (base * f * fierce_k + np.where(pool == 0, CFG["exhaust"] * base * (130 - st[..., TEN]) / 70, 0)) * mult
         rebase = ~spurted & (left < 800) & (phase >= 5)
-        reserve = np.where(rebase, np.minimum(reserve, np.clip(650000 + gap * 100 * 25, 0, 1500000)), reserve)
+        reserve = np.where(rebase, np.minimum(reserve, np.clip(CFG["rebase_share"] * reserve + gap * 100 * 25, 0, 1500000)), reserve)
         spurted |= rebase
         reserve = np.maximum(0, reserve)
         # nobody runs through the horse ahead: a follower in the same lane is held to its back, and its pace with it
@@ -208,7 +226,7 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
             return ~(at & (dp > -CFG["tuck_behind"] * BODY) & (dp < CFG["tuck_ahead"] * BODY) & live[:, None, :] & ~np.eye(n, dtype=bool)).any(2)
         v_ahead = np.take_along_axis(v, j_ahead, 1)
         want_in = settled & (lane > 0) & clear(lane - 1)
-        want_out = settled & ~want_in & held & (prog > CFG["pull_after_m"]) & (left < CFG["pull_range"] * spurt_dist)             & (T > v_ahead + CFG["pull_margin"]) & (lane < np.where(phase >= 5, 4, 2)) & clear(lane + 1) & (rng.random((R, n)) < CFG["pull_p"])
+        want_out = settled & ~want_in & held & (prog > CFG["pull_after_m"]) & (left < CFG["pull_range"] * spurt_dist)             & (T > v_ahead + CFG["pull_margin"]) & (lane < np.where(phase >= 5, 4, 2)) & clear(lane + 1) & (rng.random((R, n)) < CFG["pull_p"] * (1 + CFG["courage_pull"] * (st[..., COUR] - 60) / 40) * (1 + CFG["resp_pull"] * (st[..., RESP] - 60) / 40))
         tgt = np.where(want_in, lane - 1, np.where(want_out, lane + 1, tgt))
         pulled = (pulled | want_out) & ~want_in
         # the sideways step, held while a horse sits within a body ahead of where it would go, or close behind (that one eases)
