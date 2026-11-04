@@ -874,6 +874,22 @@ function shotAt(t) {
     if (lead >= wire - 160) return "finish"; }                                   // the long lens on the wire
   return "pan";
 }
+// the framing: the leader's nose well toward the front of the picture, so the field trails behind it across the frame. Each
+// shot says where (0 the center, 1 the edge it's running at); near the wire it eases back to square, so the freeze stays honest
+const LEAD_FRAME = { pan: .58, reverse: .58, wire: .58, finish: .58, flat: .58, stretch: .5, wide: .5, across: .5, blimp: .62 };
+const LEAD_K = +(new URLSearchParams(location.search).get("lead") ?? 1);        // ?lead=0: the old centered framing, to compare
+function frameLeader(shot, p, a, fov, st) {
+  const want = LEAD_FRAME[shot]; if (!want || !LEAD_K) return;
+  const wire = RACE.SF + 5280, nose = Math.min(RACE.SF + RACE.camLead(st), wire) + 10, o = st.reduce((x, h) => h.s > x.s ? h : x).o;
+  const k = want * LEAD_K, ease = shot === "blimp" ? 1 : Math.min(1, Math.max(0, (wire - nose + 10) / 160));   // ease 0 at the wire: the shot's own square framing, untouched
+  const T = V(nose + 1, o).sub(V(nose, o)).setY(0).normalize(), Q = V(nose, o, 3), Q2 = V(nose + 30, o, 3), tan = Math.tan(fov * Math.PI / 360);
+  const ndc = (q, dp) => { const c = p.clone().addScaledVector(T, dp), f = a.clone().addScaledVector(T, dp).sub(c).normalize(), r = f.clone().cross(new THREE.Vector3(0, 1, 0)).normalize(), u = r.clone().cross(f), d = q.clone().sub(c), z = Math.max(1, d.dot(f));
+    return shot === "blimp" ? d.dot(u) / z / tan : d.dot(r) / z / tan / cam.aspect; };
+  const dir = Math.sign(ndc(Q2, 0) - ndc(Q, 0)) || 1, cur = dir * ndc(Q, 0), slope = (dir * ndc(Q, 10) - cur) / 10;
+  if (Math.abs(slope) < 1e-5) return;
+  const move = Math.max(-220, Math.min(220, (k - cur) / slope)) * ease;
+  p.addScaledVector(T, move); a.addScaledVector(T, move);
+}
 function aimCamera(t, st, dt) {
   const shot = shotAt(t); if (shot !== lastShot) { camSnap = true; lastShot = shot; sponsorBoards.forEach(b => b.userData.on = shot !== "reverse" && shot !== "flat" && shot !== "across");
     if (hedgeMesh) hedgeMesh.visible = shot !== "across";                         // the long lens sees over an open infield to the far rail
@@ -910,6 +926,7 @@ function aimCamera(t, st, dt) {
   else if (shot === "head") {                                                  // head-on past the wire, the field coming down to the line
     const wire = RACE.SF + 5280, lead = Math.min(RACE.SF + RACE.camLead(st), wire);
     p = V(wire + 110, mo, 7); a = V(lead, mo, 4); fov = 18;                       // on the track line beyond the wire, a touch above head height, on the leader
+    a.y += p.distanceTo(a) * Math.tan(fov * Math.PI / 360) * .35 * LEAD_K;        // tilted up the track: the leader low in the frame, the field behind it above
   }
   else if (shot === "flat") {                                                  // eye level beside the wire: a dead side-on look as they cross
     // follows the leader alone, so the lens is exactly in the wire's plane when the nose gets there: judged against the
@@ -944,6 +961,8 @@ function aimCamera(t, st, dt) {
   else { const w = RACE.SF + 5280, u = Math.min(1, Math.max(0, (w - cs) / 120)), back = 18 * u;
     const c = Math.min(w, cs + (RACE.SF + RACE.camLead(st) - cs) * (1 - u)); p = V(c - back, 150, 46);   // square to the wire as they reach it: over the last 120 ft it closes on the leader alone, so near and far side line up on the nose
     a = V(c, mo + 9, 3); fov = 19; }   // one pan the whole way: it stops dead on the wire                // on the roof, a touch behind the leaders
+  if (LEAD_K && (shot === "pan" || shot === "reverse")) { const ss = st.map(h => h.s), span = Math.min(180, Math.max(...ss) - Math.min(...ss)); fov = Math.min(fov + 8, fov + Math.max(0, span - 60) * .067); }   // a strung-out field: a wider lens, up to about half again as much track
+  frameLeader(shot, p, a, fov, st); if (shot === "across") clearLine(p, a);
   if (["pan", "reverse", "wire", "finish", "flat"].includes(shot)) {                   // side-on: widen just enough that the leader stays in frame on any screen shape
     const lead = st.reduce((x, h) => h.s > x.s ? h : x), look = a.clone().sub(p), toLead = V(lead.s + 10, lead.o, 3).sub(p);   // +10 ft: the horse's nose
     const small = cv.clientHeight < 460;                                        // a phone: overlays cover more of the frame, so give more room

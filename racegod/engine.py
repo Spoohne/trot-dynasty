@@ -318,8 +318,7 @@ def race(field, track="mile", passing=False, decided=None):
 
 # The last quarter of a decided race: the horses are actors and the result is the script. Each one's distance is a smooth
 # curve from where it is at the three-quarters to the wire at its official time, so traffic can't make it late. Lanes are
-# then planned in finish order: a horse keeps its lane if it can, swings out to go round if that costs less than making
-# others move, and must clear the line of every horse that beats it. A lane change is one committed move.
+# then planned front to back: a horse keeps its lane if it can, and one coming from behind goes round it. A lane change is one committed move.
 GATE_HOLD = 2.5                # seconds a choreographed field runs straight off the car before anyone crosses over
 GATE_LINE = (1.5, 4.5)         # seconds: one line until the first, its own position by the second
 FIN_TOUCH = 13.5               # ft along the track that counts as two horses touching when they're in a lane together
@@ -329,29 +328,46 @@ FIN_EASE_MAX = 24.0            # ft a horse gives up in all
 FIN_REPAIRS = 40
 FIN_BODY = 16.0                # ft two horses in one lane stay apart: the viewer's horse and sulky, 15.5
 FIN_MOVE = 2.0                 # seconds to change a lane
-FIN_LANES = 3                  # lanes 0, 1, 2: three wide; a fourth only at a heavy cost, when there's truly no other way
+FIN_TURN, FIN_TOP = 2789.0, 4328.0   # ft run where the final turn starts and where it ends, on the replay's oval
+# Lane logic (Patrick 2026-11-04). Off the wood: only to advance, or on the final turn to set up for the stretch. Two to three
+# before the stretch: only with a stalled horse in front. In the stretch: as wide as it takes to clear a stalled horse.
+FIN_NO_REASON = 400.0          # the price of a move out with no reason: paid only when the alternative is running through a horse
 FIN_SHAPES = (0.0, -15.0, 15.0, -30.0, 30.0, -45.0, 45.0)   # ft a horse may sit back of, or go on from, its smooth line through the middle of the run home
 FIN_LENGTH = 2.0               # a length on the clock is a fifth of a second, 9.6 ft; a horse and sulky is 15.5. Drawn at that, the margins at the
                                # wire read as lengths you can see and a length's margin doesn't force two horses abreast. Picture only: times and margins stand.
 
 
-def _lane_dp(cv, i, lanes, curves, starts, planned, move):
+def _lane_dp(cv, i, lanes, curves, starts, planned, move, behind):
     """The cheapest lanes for one horse on one distance curve: (cost, lane at each step, inside and outside lane it fills at each step)."""
     n = len(cv)
     cost = {l: [0.0] * n for l in lanes}
-    rest = [(starts[j], curves[j]) for j in range(i + 1, len(curves))]
+    rest = [(starts[j], curves[j]) for j in behind]           # the horses behind it: they go round it, but it can't cut across one that's right there
+    step_1s = int(round(1.0 / DT))
+    reason = {l: [False] * n for l in lanes}                  # may it move out of lane l at step k?
+    for k in range(n):
+        x, e = cv[k], min(n - 1, k + step_1s)
+        gain = cv[e] - x
+        for lo_, hi_, other in [(lo[k], hi[k], o) for lo, hi, o in planned] + [(lj, lj, cj) for lj, cj in rest]:
+            d = other[k] - x
+            if not 0 < d < 110 or gain <= other[e] - other[k] + 0.3:
+                continue                                      # only a horse ahead that it's closing on: a stalled horse, or one it's about to pass
+            for l in lanes:
+                if lo_ <= l <= hi_ and d < (2 * FIN_BODY if x < FIN_TOP else 3 * FIN_BODY) if l > 0 else lo_ <= l <= hi_ and d < (110 if x >= FIN_TURN else 70):
+                    reason[l][k] = True
+        if -1 in reason:
+            reason[-1][k] = True
     for k in range(n):
         x = cv[k]
         near = [(lo[k], hi[k]) for lo, hi, other in planned if abs(other[k] - x) < FIN_BODY]
         soft = [lj for lj, cj in rest if abs(cj[k] - x) < FIN_BODY]
         for l in lanes:
-            c = 0.01 * max(l, 0) + (0.03 if l >= 2 else 0.0) + (1.5 if l >= FIN_LANES else 0.0)   # wide costs a little, so it waits till it needs to go; never enough to come back in
+            c = 0.01 * max(l, 0) + (0.03 if l >= 2 else 0.0) + (0.03 * (l - 2) if l > 2 else 0.0)   # wide costs a little, so it waits till it needs to go; never enough to come back in
             for lo, hi in near:
                 if lo <= l <= hi:
                     c += 1000.0                                   # a horse that beats it: get out of its way
             for lj in soft:
-                if lj == l:
-                    c += 100.0 if k < 2 * move else 1.0           # one it beats, still in that lane: going round is usually kinder, and it can't clear in time if it's right there now
+                if lj == l and l != starts[i]:
+                    c += 100.0 if k < 2 * move else 30.0          # not into the path of a horse beside or behind it; on its own line, it's the one coming who goes round
             cost[l][k] = c
     pre = {l: [0.0] * (n + 1) for l in lanes}
     for l in lanes:
@@ -368,7 +384,7 @@ def _lane_dp(cv, i, lanes, curves, starts, planned, move):
                 for m in (l - 1, l + 1):
                     if m in lanes:
                         nw = m - l
-                        v = 3.0 + (6.0 if w == -nw else 0.0) + pre[l][k + move] - pre[l][k] + pre[m][k + move] - pre[m][k] + best[(m, nw)][k + move]
+                        v = 3.0 + (6.0 if w == -nw else 0.0) + (FIN_NO_REASON if nw > 0 and not reason[l][k] else 0.0) + pre[l][k + move] - pre[l][k] + pre[m][k + move] - pre[m][k] + best[(m, nw)][k + move]
                         if v < b - 1e-9:
                             b, how = v, m
             best[x][k], step[x][k] = b, how
@@ -389,13 +405,15 @@ def _plan_lanes(curves, starts, lanes_for, bumps=None):
     """curves[i][k]: horse i's distance at step k, in finish order (replaced in place if it sits back or goes on to find room);
     starts[i]: its lane at step 0. bumps[i][k]: how much of FIN_SHAPES a curve takes at step k. Returns each horse's lane at every step."""
     n, move = len(curves[0]), int(round(FIN_MOVE / DT))
-    planned, out = [], []
-    for i in range(len(curves)):
+    planned, out = [], [None] * len(curves)
+    order = sorted(range(len(curves)), key=lambda j: -curves[j][0])   # front to back: the horse in front has first claim on its line, the one coming goes round it
+    for pos, i in enumerate(order):
         lanes = sorted(set(lanes_for(i)) | {starts[i]})
+        behind = order[pos + 1:]
         pick = None
         for a in FIN_SHAPES if bumps else (0.0,):                 # the wire and the speeds at each end are fixed; between them it may sit back or go on
             cv = curves[i] if not a else [x + a * y for x, y in zip(curves[i], bumps[i])]
-            got = _lane_dp(cv, i, lanes, curves, starts, planned, move)
+            got = _lane_dp(cv, i, lanes, curves, starts, planned, move, behind)
             if pick is None or got[0] + 0.02 * abs(a) < pick[0][0]:
                 pick = (got, cv, a)
             if not a and got[0] < 50.0 and max(got[3]) <= max(1, starts[i]):
@@ -403,7 +421,7 @@ def _plan_lanes(curves, starts, lanes_for, bumps=None):
         (_, tr, lo, hi), cv, _ = pick
         curves[i] = cv
         planned.append((lo, hi, cv))
-        out.append(tr)
+        out[i] = tr
     return out
 
 
@@ -430,7 +448,7 @@ def _author_finish(states, fins, t0, diver):
         bumps.append([16 * u * u * (1 - u) * (1 - u) if 0 < (u := ((k0 + k) * DT - t0) / H) < 1 else 0.0 for k in range(n)])
     was = [d["path"][min(k0, len(d["path"]) - 1)][1] for d in states]
     starts = [int(round(x)) for x in was]
-    plan = _plan_lanes(curves, starts, lambda i: [-1, 0, 1, 2] if diver(states[i]["h"]) else [0, 1, 2], bumps)
+    plan = _plan_lanes(curves, starts, lambda i: [-1, 0, 1, 2, 3, 4, 5] if diver(states[i]["h"]) else [0, 1, 2, 3, 4, 5], bumps)
     for i, d in enumerate(states):
         tail = []
         for k in range(n):
