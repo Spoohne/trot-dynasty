@@ -38,9 +38,10 @@ CFG = {   # everything inferred rather than read from the code, and the rank rul
     "wide_cost": 0.0025,        # ground lost per lane out, as a share of speed (a lane is 4 m a mile of extra turn)
     "lat_rate": 0.015,          # metres a frame a horse moves sideways: a lane in a second and a half
     "pull_after_m": 300,        # no pulling out before this: the field files in off the gate
+    "pull_range": 1.6,          # a driver pulls only within this many spurt distances of the wire (the move at the half, not the quarter)
     "pull_margin": 50,          # a held driver pulls when its target pace beats the horse ahead by this (km/h x100)
     "pull_p": 0.02,             # per frame, once it wants to: about two seconds' patience
-    "clock_scale": 1.20,        # reported seconds per sim second: the game's 94 s mile reads as a trotter's 1:53 (dynamics untouched)
+    "clock_scale": 1.24,        # reported seconds per sim second: the sim's 92 s mile reads as a trotter's 1:54 (dynamics untouched)
     "rank_stats": [SPD, STAY, STAM, FIERCE, TEN, POW, RESP],
     "rank_bands": [(570, "SS"), (500, "S"), (460, "A"), (420, "B"), (370, "C"), (330, "D"), (280, "E"), (0, "F")],
 }
@@ -94,7 +95,7 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
     LANE, BODY = CFG["lane_m"], CFG["body_m"]
     prog = np.zeros((R, n)); tgt = np.tile(np.arange(n), (R, 1)); lat = tgt * LANE   # post 1 on the rail
     effort = np.full((R, n), 10.0); push = np.zeros((R, n)); brk = np.zeros((R, n))
-    phase = np.zeros((R, n), int); spurted = np.zeros((R, n), bool); blocked = np.zeros((R, n), int)
+    phase = np.zeros((R, n), int); spurted = np.zeros((R, n), bool); blocked = np.zeros((R, n), int); pulled = np.zeros((R, n), bool)
     done = np.full((R, n), -1.0)
     frames = []
     for frame in range(1, FPS * 400):
@@ -128,9 +129,11 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         # driver's push (FUN_00476be0): keep up with the leader, everything once the spurt is on
         second = np.sort(prog, 1)[:, -2:-1]                                        # the leader eases only when clear by 9.75 m (14.6)
         contact = np.where(np.isfinite(gap_ahead), gap_ahead, gap)                 # with cover a driver rates: it is the horse ahead it keeps up with
-        more = (phase >= 1) & ((contact > 9.75) | (phase >= 5))
-        less = (phase >= 1) & ~more & (prog - second > 9.75)
+        more = (phase >= 5) | ((phase >= 1) & (contact > 9.75) & (cover | pulled | (lane == 0)))
+        stray = (phase >= 1) & (phase < 5) & (lane >= 1) & ~cover & ~pulled         # wide off the gate with nobody to follow: ease back and find cover
+        less = (phase >= 1) & ~more & ((prog - second > 9.75) | stray)
         push = np.clip(push + np.where(more, push_up, 0) - np.where(less, 120, 0), -800, 800)
+        push = np.where(more | less, push, push - np.sign(push) * np.minimum(np.abs(push), 60))   # the dead band: the ask fades
         # effort follows the push (FUN_00485b50)
         step = np.where(start, step_brk, step_resp)
         brk = np.where(start, 2 * st[..., BRK], np.maximum(brk - 1, 0))
@@ -184,8 +187,9 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
             return ~(at & (dp > -1.0) & (dp < 1.2 * BODY) & live[:, None, :] & ~np.eye(n, dtype=bool)).any(2)
         v_ahead = np.take_along_axis(v, j_ahead, 1)
         want_in = settled & (lane > 0) & clear(lane - 1)
-        want_out = settled & ~want_in & held & (prog > CFG["pull_after_m"]) & (T > v_ahead + CFG["pull_margin"])             & (lane < np.where(phase >= 5, 4, 2)) & clear(lane + 1) & (rng.random((R, n)) < CFG["pull_p"])
+        want_out = settled & ~want_in & held & (prog > CFG["pull_after_m"]) & (left < CFG["pull_range"] * spurt_dist)             & (T > v_ahead + CFG["pull_margin"]) & (lane < np.where(phase >= 5, 4, 2)) & clear(lane + 1) & (rng.random((R, n)) < CFG["pull_p"])
         tgt = np.where(want_in, lane - 1, np.where(want_out, lane + 1, tgt))
+        pulled = (pulled | want_out) & ~want_in
         lat = lat + np.clip(tgt * LANE - lat, -CFG["lat_rate"], CFG["lat_rate"])
         spd = spd * (1 - lane * CFG["wide_cost"])                                  # the ground lost out wide
         prog = prog + np.where(live, spd, 0)
