@@ -214,6 +214,8 @@ class H(BaseHTTPRequestHandler):
                 return self.send(surprises(db, q.get("age", ["3"])[0]))
             if p == "/api/notes":
                 return self.send(notes())
+            if p == "/gallop":                                       # gallop_report.py's page over the Gallop-model world
+                return self.send(open(os.path.join(HERE, "gallop.html"), "rb").read(), "text/html; charset=utf-8")
             if p == "/builder":
                 return self.send(open(os.path.join(HERE, "builder.html"), "rb").read(), "text/html; charset=utf-8")
             if p == "/api/tiers":

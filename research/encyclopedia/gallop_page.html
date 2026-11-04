@@ -1,0 +1,129 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trot Dynasty Encyclopedia · Gallop model</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--paper:#070a14;--panel:#111a2b;--rule:#2b3a55;--rule2:#1b2539;--ink:#e6e8ec;--ink2:#a4acb9;--ink3:#6f7886;--tote:#e8a33a;--led:#ffb347;--win:#3fb96b;--loss:#e0704f}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(#0b1430,var(--paper) 360px) var(--paper);color:var(--ink);font:400 15px/1.4 'Barlow Semi Condensed',system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#070a14ee;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+h1{margin:0;font:800 24px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;text-shadow:2px 2px 0 #000}
+h1 span{color:var(--tote)}
+.meta{color:var(--ink3);font-size:13px}
+nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--ink2);font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--ink);border-color:var(--tote)}
+main{padding:14px 16px 40px;max-width:1400px;margin:0 auto}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:12px;margin-bottom:14px}
+.sec{margin:0 0 8px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--tote)}
+p.lead{color:var(--ink2);max-width:90ch;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:#16203a;text-align:right;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);padding:7px 8px;white-space:nowrap;cursor:pointer}
+th:first-child,td:first-child{text-align:left}
+th.on{color:var(--led)}
+td{padding:5px 8px;border-top:1px solid var(--rule2);white-space:nowrap;text-align:right}
+tr.h:hover td{background:#16203a;cursor:pointer}
+.money{color:var(--led);font-weight:700}
+.bar{display:inline-block;height:10px;background:var(--tote);vertical-align:middle;border-radius:1px}
+.neg{background:var(--loss)}
+.hist{display:flex;align-items:flex-end;gap:2px;height:140px;border-bottom:1px solid var(--rule);padding:0 2px}
+.hist i{flex:1;background:var(--tote);min-width:3px;position:relative}
+.hist i:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:0;background:#000;padding:2px 5px;font-size:12px;white-space:nowrap}
+.axis{display:flex;justify-content:space-between;color:var(--ink3);font-size:12px}
+.g{display:inline-block;min-width:26px;text-align:center;font:800 12px 'Barlow Condensed',sans-serif;padding:1px 5px;border-radius:2px;color:#fff;background:#26324c}
+.gSS{color:#111;background:linear-gradient(135deg,#f0abfc,#67e8f9,#fde68a)}.gS{background:#c8781a}.gA{background:#7c4bc4}.gB{background:#2f6fb5}.gC{background:#3f7d5b}.gD{background:#5b6270}.gE{background:#3a3f4a}.gF{background:#262a33}
+.bar-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+input,select{background:#0c1322;border:1px solid var(--rule);color:var(--ink);font:15px 'Barlow Semi Condensed',sans-serif;padding:5px 7px;border-radius:3px}
+.pager{display:flex;gap:4px;margin-left:auto}.pager button{background:#26324c;border:0;color:var(--ink);padding:5px 11px;border-radius:3px;cursor:pointer;font:700 14px 'Barlow Semi Condensed'}
+.count{color:var(--ink2)}.count b{color:var(--led)}
+.hidden{display:none!important}
+#drawer{position:fixed;inset:0 0 0 auto;width:min(640px,100%);background:#0b1222;border-left:1px solid var(--rule);z-index:20;overflow-y:auto;padding:16px;transform:translateX(100%);transition:transform .25s}
+#drawer.on{transform:none}#shade{position:fixed;inset:0;background:#0009;z-index:19;display:none}#shade.on{display:block}
+@media(prefers-reduced-motion:reduce){#drawer{transition:none}}
+.dh h2{margin:0 0 4px;font:800 26px 'Barlow Condensed',sans-serif;text-transform:uppercase;text-shadow:2px 2px 0 #000}
+.close{float:right;background:#26324c;border:0;color:var(--ink);font-size:20px;width:36px;height:36px;border-radius:3px;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0}.stats div{background:#16203a;padding:6px;border-radius:3px;text-align:center}.stats b{display:block;font:800 20px 'Barlow Condensed'}.stats span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+</style></head><body>
+<header><h1>Trot Dynasty <span>Encyclopedia</span> · Gallop model</h1><span class=meta id=meta></span>
+<nav id=tabs><button data-t=winners class=on>Winners vs the field</button><button data-t=ranks>Rank letters</button><button data-t=times>Winning times</button><button data-t=horses>Horses</button></nav></header>
+<main>
+<section id=t-winners>
+<p class=lead id=lead></p>
+<div class=grid>
+<div class=panel><div class=sec>Mean of each stat by win rate</div><div class=tw><table id=means></table></div></div>
+<div class=panel><div class=sec>Each stat's pull on win rate</div><p class=lead>Correlation with career win rate across horses, and the fit: win-rate points (per thousand starts) one stat point buys with the other nine held fixed.</p><div class=tw><table id=corr></table></div></div>
+</div></section>
+<section id=t-ranks class=hidden>
+<p class=lead id=rlead></p>
+<div class=panel><div class=tw><table id=ranks></table></div></div>
+</section>
+<section id=t-times class=hidden>
+<p class=lead id=tlead></p>
+<div class=panel><div class=sec>Winning times, every race</div><div class=hist id=hist></div><div class=axis id=axis></div></div>
+</section>
+<section id=t-horses class=hidden>
+<div class=bar-top><input id=q placeholder="search a name"><select id=rk><option value="">Any rank</option></select><label class=count><input type=checkbox id=done checked> retired only</label><span class=count id=count></span>
+<div class=pager><button id=prev>‹</button><span class=count id=pg></span><button id=next>›</button></div></div>
+<div class=tw><table id=list></table></div>
+</section>
+</main>
+<div id=shade></div><aside id=drawer></aside>
+<script>
+const D = /*DATA*/null;
+const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const cap = s => s[0].toUpperCase() + s.slice(1), money = v => "$" + Math.round(v || 0).toLocaleString();
+const mt = t => t == null ? "–" : `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
+const chip = r => `<span class="g g${r}">${r}</span>`;
+const pct = v => (100 * v).toFixed(1) + "%";
+const m = D.meta;
+$("#meta").textContent = `${m.season_done || 0} of ${m.seasons_planned} seasons · ${D.horses.length.toLocaleString()} horses · ${D.times.n.toLocaleString()} races at a mile${m.finished ? "" : " · still running"}`;
+$("#lead").innerHTML = `Horses with ${D.min_starts}+ starts (${D.n_done.toLocaleString()}), ranked by career win rate. <b>Top</b> is the best tenth (win rate ${pct(D.group_wr.top)}), <b>middle</b> the tenth around the median (${pct(D.group_wr.middle)}), <b>bottom</b> the worst tenth (${pct(D.group_wr.bottom)}). Stats are the horse's own, before age.`;
+const W = 90;
+$("#means").innerHTML = `<tr><th>Stat</th><th>Top 10%</th><th>Middle</th><th>Bottom 10%</th><th>All</th><th>Top − bottom</th></tr>` + D.stats.map(k => {
+  const d = D.means.top[k] - D.means.bottom[k];
+  return `<tr><td>${cap(k)}</td><td>${D.means.top[k].toFixed(1)}</td><td>${D.means.middle[k].toFixed(1)}</td><td>${D.means.bottom[k].toFixed(1)}</td><td>${D.means.all[k].toFixed(1)}</td><td><i class="bar ${d < 0 ? "neg" : ""}" style="width:${Math.min(W, Math.abs(d) * 4)}px"></i> ${d > 0 ? "+" : ""}${d.toFixed(1)}</td></tr>`}).join("");
+$("#corr").innerHTML = `<tr><th>Stat</th><th>Pearson r</th><th>Spearman</th><th>Fit ‰ / point</th></tr>` + D.stats.slice().sort((a, b) => D.corr[b].pearson - D.corr[a].pearson).map(k => {
+  const c = D.corr[k];
+  return `<tr><td>${cap(k)}</td><td><i class="bar ${c.pearson < 0 ? "neg" : ""}" style="width:${Math.abs(c.pearson) * W}px"></i> ${c.pearson.toFixed(2)}</td><td>${c.spearman.toFixed(2)}</td><td>${D.fit[k] > 0 ? "+" : ""}${D.fit[k].toFixed(2)}</td></tr>`}).join("");
+$("#rlead").innerHTML = `Rank = sum of Speed, Staying, Stamina, Fierce, Tenacity, Power and Response; bands ${D.bands.filter(b => b[0]).map(b => `${b[1]} ≥ ${b[0]}`).join(", ")}, F below. In a field of ten a random horse wins 10%. The top-ranked horse in each field (by that sum) won <b>${pct(D.fav_by_rank)}</b> of races.`;
+$("#ranks").innerHTML = `<tr><th>Rank</th><th>Horses</th><th>Starts</th><th>Win %</th><th>Top 3 %</th><th>Avg purses</th><th>Fastest mile</th></tr>` + D.by_rank.map(r =>
+  `<tr><td>${chip(r.rank)}</td><td>${r.horses.toLocaleString()}</td><td>${r.starts.toLocaleString()}</td><td><i class=bar style="width:${r.winpct * 3}px"></i> ${r.winpct.toFixed(1)}</td><td>${r.placepct.toFixed(1)}</td><td class=money>${money(r.earn)}</td><td>${mt(r.best)}</td></tr>`).join("");
+const T = D.times;
+$("#tlead").innerHTML = `${T.n.toLocaleString()} races. Winning mile: mean <b>${mt(T.mean)}</b>, median ${mt(T.median)}, fastest <b>${mt(T.fastest)}</b>, slowest ${mt(T.slowest)}; eight in ten between ${mt(T.p10)} and ${mt(T.p90)}. First two at the wire ${T.margin_mean.toFixed(2)} s apart on average; ${pct(T.margin_under_02)} of races under a fifth of a second. The clock is the game's own time × ${D.clock_scale} (gallop.CFG clock_scale).`;
+const mx = Math.max(...T.hist.map(h => h[1]));
+$("#hist").innerHTML = T.hist.map(([e, c]) => `<i style="height:${100 * c / mx}%" data-t="${mt(e)}–${mt(e + .5)}: ${c.toLocaleString()}"></i>`).join("");
+$("#axis").innerHTML = `<span>${mt(T.hist[0][0])}</span><span>${mt(T.hist[Math.floor(T.hist.length / 2)][0])}</span><span>${mt(T.hist[T.hist.length - 1][0] + .5)}</span>`;
+// horses
+const COLS = ["id", "name", "sex", "foaled", "retired", "rank", ...D.stats, "starts", "wins", "places", "earnings", "best"];
+const I = Object.fromEntries(COLS.map((c, i) => [c, i]));
+const SHOW = ["name", "rank", ...D.stats, "starts", "wins", "winpct", "earnings", "best"];
+const val = (h, c) => c === "winpct" ? (h[I.starts] ? h[I.wins] / h[I.starts] : 0) : h[I[c]];
+let sort = "wins", dir = -1, page = 0;
+$("#rk").innerHTML += D.bands.map(b => `<option>${b[1]}</option>`).join("");
+function list() {
+  const q = $("#q").value.toLowerCase(), rk = $("#rk").value, done = $("#done").checked;
+  let rows = D.horses.filter(h => (!q || h[I.name].toLowerCase().includes(q)) && (!rk || h[I.rank] === rk) && (!done || h[I.retired] != null));
+  rows.sort((a, b) => { const x = val(a, sort), y = val(b, sort); return (x == null) - (y == null) || (x > y ? 1 : x < y ? -1 : 0) * dir; });
+  const per = 50, np = Math.max(1, Math.ceil(rows.length / per)); page = Math.min(page, np - 1);
+  $("#count").innerHTML = `<b>${rows.length.toLocaleString()}</b> horses`; $("#pg").textContent = `${page + 1} / ${np}`;
+  $("#list").innerHTML = `<tr>${SHOW.map(c => `<th class="${c === sort ? "on" : ""}" data-c=${c}>${c === "winpct" ? "Win %" : c === "earnings" ? "Purses" : c === "best" ? "Best mile" : cap(c)}</th>`).join("")}</tr>` +
+    rows.slice(page * per, page * per + per).map(h => `<tr class=h data-id=${h[I.id]}>${SHOW.map(c => c === "name" ? `<td>${esc(h[I.name])}</td>` : c === "rank" ? `<td>${chip(h[I.rank])}</td>` : c === "winpct" ? `<td>${pct(val(h, c))}</td>` : c === "earnings" ? `<td class=money>${money(h[I.earnings])}</td>` : c === "best" ? `<td>${mt(h[I.best])}</td>` : `<td>${h[I[c]] ?? "–"}</td>`).join("")}</tr>`).join("");
+}
+$("#list").onclick = e => { const th = e.target.closest("th"); if (th) { const c = th.dataset.c; dir = sort === c ? -dir : (c === "name" ? 1 : -1); sort = c; page = 0; return list(); }
+  const tr = e.target.closest("tr.h"); if (tr) open(+tr.dataset.id); };
+["q", "rk", "done"].forEach(id => $("#" + id).oninput = () => { page = 0; list(); });
+$("#prev").onclick = () => { page = Math.max(0, page - 1); list(); }; $("#next").onclick = () => { page++; list(); };
+function open(id) {
+  const h = D.horses.find(x => x[I.id] === id), ss = D.seasons[id] || [];
+  $("#drawer").innerHTML = `<button class=close onclick="shut()">×</button><div class=dh><h2>${esc(h[I.name])}</h2>${chip(h[I.rank])} <span class=count>${h[I.sex] === "f" ? "mare" : "horse"} · foaled season ${h[I.foaled]}${h[I.retired] != null ? ` · retired after season ${h[I.retired]}` : " · in training"}</span></div>
+    <div class=stats>${D.stats.map(k => `<div><b>${h[I[k]]}</b><span>${k}</span></div>`).join("")}</div>
+    <div class=stats><div><b>${h[I.starts]}</b><span>starts</span></div><div><b>${h[I.wins]}</b><span>wins</span></div><div><b>${h[I.places]}</b><span>top 3</span></div><div><b class=money>${money(h[I.earnings])}</b><span>purses</span></div><div><b>${mt(h[I.best])}</b><span>best mile</span></div></div>
+    <div class=sec>Season by season</div><div class=tw><table><tr><th>Season</th><th>Age</th><th>Starts</th><th>Wins</th><th>Top 3</th><th>Purses</th><th>Best</th><th>Blocked</th></tr>${ss.map(s => `<tr><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td><td>${s[4]}</td><td class=money>${money(s[5])}</td><td>${mt(s[6])}</td><td>${s[7].toFixed(0)} fr</td></tr>`).join("")}</table></div>`;
+  $("#drawer").classList.add("on"); $("#shade").classList.add("on");
+}
+function shut() { $("#drawer").classList.remove("on"); $("#shade").classList.remove("on"); }
+$("#shade").onclick = shut;
+$("#tabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b)); document.querySelectorAll("main section").forEach(s => s.classList.toggle("hidden", s.id !== "t-" + b.dataset.t)); };
+list();
+</script></body></html>
