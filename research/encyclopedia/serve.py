@@ -228,7 +228,10 @@ class H(BaseHTTPRequestHandler):
                 return self.send(open(path, "rb").read(), "image/png")
             if p.startswith("/race/") and p.endswith(".json"):
                 r = db.execute("SELECT json FROM stories WHERE rid = ?", (p[6:-5],)).fetchone()
-                return self.send(zlib.decompress(r[0]), "application/json") if r else self.send({"error": "not kept"}, code=404)
+                if r:
+                    return self.send(zlib.decompress(r[0]), "application/json")
+                f = os.path.join(HERE, "gallop_races", os.path.basename(p[6:]))         # gallop_replay.py's recorded races
+                return self.send(open(f, "rb").read(), "application/json") if os.path.isfile(f) else self.send({"error": "not kept"}, code=404)
             if p.startswith("/replay/"):
                 html = open(os.path.join(MOCK, "replay_hd2d.html"), encoding="utf-8").read()
                 rid = p[len("/replay/"):]

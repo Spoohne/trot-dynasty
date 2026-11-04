@@ -52,8 +52,9 @@ def lerp(table, stat):
     return table[i] + (table[np.minimum(13, i + 1)] - table[i]) / 10 * (s % 10)
 
 
-def run(stats, dist=MILE, rng=None, apt=None):
-    """Race every field in stats (R, n, 10). Returns place (R, n) 1-based, time in seconds (R, n), frames blocked (R, n)."""
+def run(stats, dist=MILE, rng=None, apt=None, record=False):
+    """Race every field in stats (R, n, 10). Returns place (R, n) 1-based, time in seconds (R, n), frames blocked (R, n);
+    with record, also every frame's progress (m) and lane (m) as an array (frames, R, n, 2)."""
     rng = rng or np.random.default_rng()
     st = np.asarray(stats, float)
     one = st.ndim == 2
@@ -86,6 +87,7 @@ def run(stats, dist=MILE, rng=None, apt=None):
     effort = np.full((R, n), 10.0); push = np.zeros((R, n)); brk = np.zeros((R, n))
     phase = np.zeros((R, n), int); spurted = np.zeros((R, n), bool); blocked = np.zeros((R, n), int)
     done = np.full((R, n), -1.0)
+    frames = []
     for frame in range(1, FPS * 400):
         live = done < 0
         if not live.any():
@@ -157,10 +159,15 @@ def run(stats, dist=MILE, rng=None, apt=None):
         prog = prog + np.where(live, spd, 0)
         over = live & (prog >= dist)
         done = np.where(over, frame - (prog - dist) / spd, done)
+        if record:
+            frames.append(np.stack([prog, lat], -1))
     done = np.where(done < 0, frame, done)
     place = done.argsort(1).argsort(1) + 1
     times = done / FPS * CFG["clock_scale"]
-    return (place[0], times[0], blocked[0]) if one else (place, times, blocked)
+    out = [place, times, blocked] + ([np.array(frames)] if record else [])
+    if one:
+        out = [x[0] for x in out[:3]] + [out[3][:, 0] for _ in out[3:]]
+    return tuple(out)
 
 
 def field(n, rng):

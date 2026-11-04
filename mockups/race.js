@@ -85,7 +85,7 @@ RACE.rebuild = () => {
   RACE.H.forEach(h => {
     h.b = RACE.real ? RACE.ease(RACE.CT, h[2]) : RACE.curve(RACE.CT, h[2]);
     h.lane = RACE.real ? RACE.ease(RACE.CT, h[3], [0, 0, 6, 6, 4, 0]) : RACE.curve(RACE.CT, h[3]);   // the field cuts over to the rail through the whole first turn
-    h.b.hold = h[2][6]; h.lane.hold = h[3][6];
+    h.b.hold = h[2].at(-1); h.lane.hold = h[3].at(-1);   // the finish call is the last one (a sim story carries many calls)
   });
 };
 RACE.rebuild();
@@ -129,7 +129,7 @@ RACE.story = (h, t) => {
 RACE.HZ = 20;
 RACE.simulate = () => {
   const dt = 1 / RACE.HZ, n = Math.ceil(RACE.END * RACE.HZ) + 2, H = RACE.H;
-  const rank = H.map((h, i) => i).sort((a, b) => H[a][2][6] - H[b][2][6]).reduce((m, i, place) => (m[i] = place, m), []);
+  const rank = H.map((h, i) => i).sort((a, b) => H[a][2].at(-1) - H[b][2].at(-1)).reduce((m, i, place) => (m[i] = place, m), []);
   const run = H.map((h, i) => { const [d, o] = RACE.story(h, 0), [d1] = RACE.story(h, dt); return { i, h, rank: rank[i], d, o, v: (d1 - d) / dt, ov: 0, out: 0, side: 0, nudge: 0, drive: 0, path: new Float32Array(n * 2) }; });
   // From the top of the stretch the result decides right of way: a horse doesn't wait on, or steer
   // round, one that it beats; that one gets out of its road instead. Before then, whoever is there first.
@@ -244,7 +244,7 @@ RACE.state = t => {                                                      // ever
     // Run the race; any horse that finishes worse than the official result was boxed in, so send it
     // wider through the stretch and run it again, the way a closer swings out to find clear track.
     RACE.H.forEach(h => h.wide = 0);
-    const want = RACE.H.map((h, i) => i).sort((a, b) => RACE.H[a][2][6] - RACE.H[b][2][6]);
+    const want = RACE.H.map((h, i) => i).sort((a, b) => RACE.H[a][2].at(-1) - RACE.H[b][2].at(-1));
     for (let pass = 0; pass < 6; pass++) {
       RACE.simulate();
       const k = Math.floor(RACE.FIN * RACE.HZ), got = RACE.paths.map((p, i) => i).sort((a, b) => RACE.paths[b][k * 2] - RACE.paths[a][k * 2]);
