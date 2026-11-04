@@ -88,8 +88,8 @@ RACE.rebuild = () => {
   RACE.paths = null;
   RACE.D = RACE.curve(RACE.TT, RACE.DD, true);                           // leader's distance run
   RACE.H.forEach(h => {
-    h.b = RACE.SIM ? RACE.linear(RACE.CT, h[2]) : RACE.real ? RACE.ease(RACE.CT, h[2], [Math.max(1, RACE.CT[1] - 2.5)]) : RACE.curve(RACE.CT, h[2]);   // the field leaves as one line: nobody drops toward its first-call mark until 2.5 s after the gate (the outside posts read as a second tier)   // sim calls are dense: easing between them would pulse the speed at each call
-    h.lane = RACE.SIM ? RACE.linear(RACE.CT, h[3]) : RACE.real ? RACE.ease(RACE.CT, h[3], [0, 0, 6, 6, 4, 0]) : RACE.curve(RACE.CT, h[3]);   // the field cuts over to the rail through the whole first turn
+    h.b = RACE.SIM ? RACE.linear(RACE.TRACE, h[2]) : RACE.real ? RACE.ease(RACE.CT, h[2], [Math.max(1, RACE.CT[1] - 2.5)]) : RACE.curve(RACE.CT, h[2]);   // the field leaves as one line: nobody drops toward its first-call mark until 2.5 s after the gate (the outside posts read as a second tier)   // sim calls are dense: easing between them would pulse the speed at each call
+    h.lane = RACE.SIM ? RACE.linear(RACE.TRACE, h[3]) : RACE.real ? RACE.ease(RACE.CT, h[3], [0, 0, 6, 6, 4, 0]) : RACE.curve(RACE.CT, h[3]);   // the field cuts over to the rail through the whole first turn
     h.b.hold = h[2].at(-1); h.lane.hold = h[3].at(-1);   // the finish call is the last one (a sim story carries many calls)
   });
 };
@@ -106,7 +106,8 @@ RACE.load = async (id, myName) => {
   RACE.tlook = s.tlook || null;                                             // the track's identity: colors, type, badge, motto                                // the track it was run at (older races: the flagship)
   RACE.TT = s.quarters; RACE.DD = [0, 1320, 2640, 3960, 5280];
   RACE.REC = s.records || null;                                           // course records going in (null: none yet, or an older story)
-  RACE.CT = s.calls; RACE.FIN = s.final; RACE.END = s.final + 12;   // room to run on past the wire, the result, and the winner's circle
+  RACE.CT = s.marks || s.calls; RACE.TRACE = s.calls; RACE.FIN = s.final;   // a sim story: dense positions at calls, the seven landmarks the cameras cut on at marks
+  RACE.END = s.final + 12;   // room to run on past the wire, the result, and the winner's circle
   horses.forEach(h => { h.lane[0] = h.post - 1; h.behind[0] = 0; });       // everyone on the gate, one wide line (older saved stories had a second tier)
   // older saved stories carry no coat: give each horse one from its name, in the breed's proportions
   const COATS = ["bay", "bay", "bay", "bay", "bay", "brown", "brown", "black", "black", "chestnut", "chestnut", "grey"];
