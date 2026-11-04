@@ -37,5 +37,12 @@ if __name__ == "__main__":
     k = [int(np.argmax(lead.mean(1) >= m)) for m in (200, 300, 400, 500, 600, 800)]
     print("off the rail at 200..800 m:", [f"{100 * float((np.rint(f[j, :, :, 1] / gallop.CFG['lane_m']) >= 1).mean()):.0f}%" for j in k])
     print(f"pack's slowest (median horse) 0-700 m: {np.median(sp[60:k[-1] - 60], axis=2).min(0).mean():.1f} m/s, leader then {sp[60:k[-1] - 60].max(2).mean():.1f}")
+    k_half = int(np.argmax(lead.mean(1) >= gallop.MILE / 2))
+    hole = np.diff(np.sort(f[k_half, :, :, 0], 1), axis=1).max(1)
+    mid = np.abs(f[:, :, :, 1] / gallop.CFG["lane_m"] - np.rint(f[:, :, :, 1] / gallop.CFG["lane_m"])) > 1e-6
+    run = np.zeros(mid.shape[1:], int); longest = run.copy()
+    for k in range(len(mid)):
+        run = np.where(mid[k], run + 1, 0); longest = np.maximum(longest, run)
+    print(f"longest time between lanes: mean {longest.mean() / gallop.FPS:.1f} s, worst {longest.max() / gallop.FPS:.1f} s; at the half, biggest hole between neighbours: mean {hole.mean():.0f} m, races with one over 20 m: {100 * float((hole > 20).mean()):.0f}%")
     print(f"post win %: {[round(100 * float((p[:, i] == 1).mean()), 1) for i in range(10)]}")
     print(f"winner {t.min(1).mean():.1f} s, last {np.sort(t, 1)[:, -1].mean() - t.min(1).mean():.1f} s back")

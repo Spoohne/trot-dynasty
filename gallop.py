@@ -49,7 +49,7 @@ CFG = {   # everything inferred rather than read from the code, and the rank rul
     "follow_slack": 1.5,        # metres beyond a body a driver lets the horse ahead get before closing up again
     "cut_behind": 1.0,          # a sideways step never lands closer than this many bodies ahead of a horse in that lane
     "tuck_ahead": 1.2,          # a horse drops in only with this many bodies clear ahead in that lane...
-    "tuck_behind": 0.2,         # ...and nobody closer than this behind (that horse eases and gives the spot)
+    "tuck_behind": 1.5,         # ...and nobody closer than this behind: room to finish the 1.5 s move while that horse closes
     "rate_push": 600,           # the most a driver asks before the drive, closing a gap (at 800 the field sprinted up to a leader eight lengths clear)
     "ease_push": -500,          # the most a driver takes back before the drive (at -800 the field crawled while the leader opened eight lengths)
     "clock_scale": 1.26,        # reported seconds per sim second: the sim's 90 s mile reads as a trotter's 1:53.5 (dynamics untouched)
@@ -144,8 +144,9 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         # keeps within 9.75 m of the leader (14.6). From the end of the start zone, not the game's phase 1 at 300 m
         slack = np.where(np.isfinite(gap_ahead), gap_ahead - BODY > CFG["follow_slack"], gap > 9.75)
         leaving = prog < CFG["leave_m"]                                            # the leave: everyone asks for position, the quick-gaited ask hardest
-        stray = ~leaving & (phase < 5) & (lane >= 1) & ~pulled                       # wide without having pulled to pass: take back until there's a slot, cover or none
-        more = (phase >= 5) | (~start & ~stray & slack & (cover | pulled | (lane == 0)))
+        moving = np.abs(lat - tgt * LANE) > 1e-6                                     # mid-move a horse keeps going, or it holds up whoever is behind it for good
+        stray = ~leaving & (phase < 5) & (lane >= 1) & ~pulled & ~moving             # wide without having pulled to pass: take back until there's a slot, cover or none
+        more = (phase >= 5) | (~start & ~stray & (moving | (slack & (cover | pulled | (lane == 0)))))
         less = ~more & stray
         push = np.clip(push + np.where(more, push_up, 0) - np.where(less, 120, 0), -800, 800)
         push = np.where(leaving & ~held, np.minimum(push + push_up, CFG["leave_push"] * st[..., BRK] / 99), push)
@@ -212,9 +213,11 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         pulled = (pulled | want_out) & ~want_in
         # the sideways step, held while a horse sits within a body ahead of where it would go, or close behind (that one eases)
         cand = lat + np.clip(tgt * LANE - lat, -CFG["lat_rate"], CFG["lat_rate"])
-        bump = ((np.abs(cand[:, :, None] - lat[:, None, :]) < 0.95 * LANE) & (dp < BODY) & (dp > -CFG["cut_behind"] * BODY)
+        bump = ((np.abs(cand[:, :, None] - lat[:, None, :]) < 0.95 * LANE) & (np.abs(cand[:, :, None] - lat[:, None, :]) < np.abs(lat[:, :, None] - lat[:, None, :])) & (dp < BODY) & (dp > -CFG["cut_behind"] * BODY)
                 & live[:, None, :] & ~np.eye(n, dtype=bool)).any(2)
         lat = np.where(bump, lat, cand)
+        between = np.abs(lat / LANE - np.rint(lat / LANE)) > 1e-6
+        tgt = np.where(bump & between, np.where(tgt * LANE < lat, np.ceil(lat / LANE), np.floor(lat / LANE)).astype(int), tgt)   # blocked mid-move: back to the lane it left, or it pens the horse behind it
         spd = spd * (1 - lane * CFG["wide_cost"])                                  # the ground lost out wide
         prog = prog + np.where(live, spd, 0)
         over = live & (prog >= dist)
@@ -244,7 +247,7 @@ if __name__ == "__main__":
     win = t.min(1); second = np.sort(t, 1)[:, 1]
     print(f"{N} twelve-horse miles: winner {win.mean():.1f} s (range {win.min():.1f}..{win.max():.1f}), "
           f"first two {np.mean(second - win):.2f} s apart, blocked {bl.mean():.0f} frames a horse")
-    assert 88 < win.mean() < 97 and np.mean(second - win) < 1.0
+    assert 86 < win.mean() < 97 and np.mean(second - win) < 1.0   # 86: the running start skips the game's standing-start acceleration
     print(f"as a trotter's clock (x{raw}): {win.mean() * raw:.1f} s")
     rows = []
     for k, name in enumerate(STATS):
