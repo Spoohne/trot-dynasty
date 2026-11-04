@@ -725,6 +725,7 @@ const TOP_ASTRA = new URLSearchParams(location.search).get("top") !== "old";   /
 const topLoaded = new Promise(r => { const i = new Image(); i.astra = TOP_ASTRA; i.onload = () => { topImg = i; r(); }; i.src = P(TOP_ASTRA ? (new URLSearchParams(location.search).get("topstab") ? "/mock/pixel/top/astra/cycle12_stable.png" : "/mock/pixel/top/astra/cycle12.png") : "/mock/pixel/top/cycle12_h.png"); });
 const HEAD_ASTRA = new URLSearchParams(location.search).get("head") !== "old";   // Astra's head-on sheet (live 2026-11-03); ?head=old for the SpriteCook card
 const HEAD_RATE = +(new URLSearchParams(location.search).get("headrate") || (HEAD_ASTRA ? .45 : 1));   // strides per cycle of the head-on card
+const LEG_RATE = +(new URLSearchParams(location.search).get("legrate") || .65);   // the side runner's leg cycles per stride of ground (Patrick 2026-11-04: legs read too fast at 1); ?legrate= to tune
 const TOP_RATE = +(new URLSearchParams(location.search).get("toprate") || (TOP_ASTRA ? .45 : 1));   // strides per cycle of the overhead strip; Astra's sheet at .45 (Patrick, 2026-11-03)
 const TFW = TOP_ASTRA ? 480 : 191, TFH = TOP_ASTRA ? 160 : 81, TOP_LEN = 15;                                       // the SpriteCook top-down stride, for cameras looking down
 function dyeRed(img, hex, base = img) {                                        // its silks and pad are red; base: the uncolored art, so a recolored coat is never mistaken for silks
@@ -1055,7 +1056,7 @@ function place(t, st, dt) {
     if (r.flip === undefined || Math.abs(across) > .2) r.flip = across < 0;          // only flip once it's clearly crossing the other way
     // seen from its other side the card shows mirrored, which is the horse facing the other way: no flip needed
     const stride = Math.floor((h.d - gateLag(h)) / STRIDE_FT * FR + i * 3), frame = ((stride % FR) + FR) % FR;   // legs geared to the ground: one cycle per stride travelled
-    const sfr = Math.floor((h.d - gateLag(h)) / STRIDE_FT * r.fr + i * 3 * r.fr / FR), side = ((sfr % r.fr) + r.fr) % r.fr;   // the side card at its own frame count
+    const sfr = Math.floor((h.d - gateLag(h)) / STRIDE_FT * r.fr * LEG_RATE + i * 3 * r.fr / FR), side = ((sfr % r.fr) + r.fr) % r.fr;   // the side card at its own frame count, at LEG_RATE
     r.t.offset.x = (side % r.cols) / r.cols; r.t.offset.y = 1 - (Math.floor(side / r.cols) + 1) / r.rows; r.dt2.offset.x = frame / FR;
     const bk = RACE.H[i].broke;                                                   // broke stride (the story says when): a ragged, hopping gait for a few seconds
     if (RACE.H[i].fractious && t > 0 && t < 2.5) { r.card.position.y += Math.abs(Math.sin(t * 11)) * 1.2; r.dt2.offset.x = ((frame * 2) % FR) / FR; }   // fractious behind the car: a hop or two leaving

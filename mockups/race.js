@@ -85,7 +85,7 @@ RACE.rebuild = () => {
   RACE.H.forEach(h => {
     h.b = RACE.real ? RACE.ease(RACE.CT, h[2]) : RACE.curve(RACE.CT, h[2]);
     h.lane = RACE.real ? RACE.ease(RACE.CT, h[3], [0, 0, 6, 6, 4, 0]) : RACE.curve(RACE.CT, h[3]);   // the field cuts over to the rail through the whole first turn
-    h.b.hold = h[2][6]; h.lane.hold = h[3][6];
+    h.b.hold = h[2].at(-1); h.lane.hold = h[3].at(-1);   // the finish call is the last one (a sim story carries many calls)
   });
 };
 RACE.rebuild();
@@ -110,7 +110,7 @@ RACE.load = async (id, myName) => {
   RACE.PICK = s.pick || ""; RACE.HERO = s.hero ? horses.findIndex(h => h.name === s.hero) : -1;   // a scripted showcase: its hero runs exactly as written
   RACE.MATINEE = !!s.matinee;                                              // a daytime track: the replay draws it in daylight
   RACE.PASSING = !!s.passing; RACE.DIVER = horses.findIndex(h => (h.trip || "").includes("passing lane"));   // a passing-lane track, and who goes up it
-  RACE.real = true; RACE.CAPS = s.captions; RACE.ME = Math.max(0, horses.findIndex(h => h.name === myName));
+  RACE.real = true; RACE.SIM = !!s.sim; RACE.CAPS = s.captions; RACE.ME = Math.max(0, horses.findIndex(h => h.name === myName));   // sim: a recorded race, drawn as recorded
   RACE.PAD = RACE.PAD.concat(["#2e8b8b", "#c05020"]).slice(0, Math.max(10, horses.length));
   RACE.rebuild(); return true;
 };
@@ -128,231 +128,128 @@ RACE.story = (h, t) => {
 // once per race and stored, so scrubbing just reads the track.
 RACE.HZ = 20;
 RACE.simulate = () => {
-  // ------------------------------------------------------------------
-  // Harness-feel rewrite
-  // Goals:
-  //   - low acceleration (no Thoroughbred surges)
-  //   - committed, slow lane changes
-  //   - early-race single-file discipline
-  //   - parked / three-wide horses stay out longer and "pay"
-  //   - closers wait, then swing decisively
-  //   - finish order still matches the story (lengths + lanes at calls)
-  // ------------------------------------------------------------------
-  const dt = 1 / RACE.HZ;
-  const n = Math.ceil(RACE.END * RACE.HZ) + 2;
-  const H = RACE.H;
-  const rank = H.map((h, i) => i)
-    .sort((a, b) => H[a][2][6] - H[b][2][6])
-    .reduce((m, i, place) => (m[i] = place, m), {});
-
-  // Tunables for the feel
-  const MAX_ACCEL = 3.8;          // ft/s²  (was ~6-9) — trotters don't explode
-  const MAX_DECEL = 6.5;          // ft/s²
-  const LANE_SPEED = 3.2;         // ft/s sideways when changing lanes (slow tip)
-  const COMMIT_TIME = 1.5;        // seconds a lane change is locked once started
-  const EARLY = RACE.CT[3];       // roughly the half — stay disciplined until then
-  const STRETCH = RACE.CT[5] - 7; // start of real stretch action
-  const BODY = RACE.BODY;
-  const WIDE = RACE.WIDE;
-
-  const run = H.map((h, i) => {
-    const [d0, o0] = RACE.story(h, 0);
-    const [d1] = RACE.story(h, dt);
-    return {
-      i, h, rank: rank[i],
-      d: d0, o: o0,
-      v: (d1 - d0) / dt,
-      // lateral state
-      ov: 0,              // current lateral velocity
-      wantO: o0,          // target offset we are currently committed to
-      commitT: 0,         // time left on the current lateral commitment
-      side: 0,            // last chosen side for a go-round
-      path: new Float32Array(n * 2)
-    };
-  });
-
-  const minO = r => r.i === RACE.DIVER
-    ? 4 - Math.min(6, RACE.inset(RACE.SF + r.d))
-    : 4;
-
-  const yields = (r, p, late) => !late || p.rank < r.rank;
-
-  const ahead = (r, o, late) => run.filter(p =>
-    p !== r && p.d > r.d && Math.abs(p.o - o) < WIDE && yields(r, p, late));
-
-  const crowds = (r, o) => run.some(p =>
-    p !== r &&
-    Math.abs(p.d - r.d) < BODY &&
-    Math.abs(p.o - o) < Math.min(WIDE, Math.abs(p.o - r.o) + 0.3));
-
-  // Start them a legal body apart if the story put two on top of each other
-  for (const r of [...run].sort((a, b) => b.d - a.d))
-    for (const p of ahead(r, r.o, false))
-      r.d = Math.min(r.d, p.d - BODY);
-
+  const dt = 1 / RACE.HZ, n = Math.ceil(RACE.END * RACE.HZ) + 2, H = RACE.H;
+  const rank = H.map((h, i) => i).sort((a, b) => H[a][2].at(-1) - H[b][2].at(-1)).reduce((m, i, place) => (m[i] = place, m), []);
+  const run = H.map((h, i) => { const [d, o] = RACE.story(h, 0), [d1] = RACE.story(h, dt); return { i, h, rank: rank[i], d, o, v: (d1 - d) / dt, ov: 0, out: 0, side: 0, nudge: 0, drive: 0, path: new Float32Array(n * 2) }; });
+  // From the top of the stretch the result decides right of way: a horse doesn't wait on, or steer
+  // round, one that it beats; that one gets out of its road instead. Before then, whoever is there first.
+  let late = false;
+  const yields = (r, p) => !late || p.rank < r.rank;
+  const minO = r => r.i === RACE.DIVER ? 4 - Math.min(6, RACE.inset(RACE.SF + r.d)) : 4;   // the inside limit: the rail, or the passing lane for the pocket horse
+  const ahead = (r, o) => run.filter(p => p !== r && p.d > r.d && Math.abs(p.o - o) < RACE.WIDE && yields(r, p));
+  // moving to o would squeeze a horse alongside: closer than a sulky's width, and closer than it already is
+  const crowds = (r, o) => run.some(p => p !== r && Math.abs(p.d - r.d) < RACE.BODY && Math.abs(p.o - o) < Math.min(RACE.WIDE, Math.abs(p.o - r.o)));   // nobody squeezes sideways into anybody
+  for (const r of [...run].sort((p, q) => q.d - p.d))                   // the gate's second tier starts a legal body back
+    for (const p of ahead(r, r.o)) r.d = Math.min(r.d, p.d - RACE.BODY);
+  // How much more the oval turns between distance d and the top of the stretch, in radians: every foot a
+  // horse is out from the rail costs it that many extra feet of running before the stretch.
+  const turnLeft = d => { const end = RACE.D(RACE.CT[5]); let a = 0, h0 = null;
+    for (let x = d; x < end; x += 20) { const p = RACE.pt(RACE.SF + x, 0), q = RACE.pt(RACE.SF + x + 4, 0), h = Math.atan2(q[1] - p[1], q[0] - p[0]);
+      if (h0 !== null) { let dh = h - h0; dh = Math.atan2(Math.sin(dh), Math.cos(dh)); a += Math.abs(dh); } h0 = h; }
+    return a; };
   for (let k = 0; k < n; k++) {
-    const t = k * dt;
-    const late = t > STRETCH;
-    const early = t < EARLY;
-
-    // write current state
-    for (const r of run) {
-      r.path[k * 2] = r.d;
-      r.path[k * 2 + 1] = r.o;
-    }
-
-    // process front-to-back so leaders move first
-    for (const r of [...run].sort((a, b) => b.d - a.d)) {
-
-      // ---------- HERO / showcase: exact story ----------
-      if (r.i === RACE.HERO) {
-        const [d, o] = RACE.story(r.h, t + dt);
-        r.v = (d - r.d) / dt;
-        r.d = d;
-        r.o = o;
-        continue;
-      }
-
-      // ---------- target from the story ----------
-      const [sd, so] = RACE.story(r.h, t + dt);
-      const [sd0] = RACE.story(r.h, t);
-      const storyV = (sd - sd0) / dt;                 // speed the story wants right now
-      const storyLane = (so - 4) / 6;                 // story lane index
-
-      // ---------- longitudinal (speed) ----------
-      // Pull toward the story speed, but with tight accel limits.
-      // Extra cost when parked / three-wide so those horses look like they are working.
-      const parkedPenalty = Math.max(0, (r.o - 4) / 6 - 0.4) * 0.7;  // ~0.7 ft/s slower per extra lane
-      let targetV = storyV - parkedPenalty;
-
-      // Never run through a horse ahead in the same lane
+    const t = k * dt; late = t > RACE.CT[5] - 6;
+    for (const r of run) { r.path[k * 2] = r.d; r.path[k * 2 + 1] = r.o; }
+    for (const r of [...run].sort((p, q) => q.d - p.d)) {                // leaders first: those behind react to where they've gone
+      if (r.i === RACE.HERO) { const [d, o] = RACE.story(r.h, t + dt); r.v = (d - r.d) / dt; r.d = d; r.o = o;   // the story's hero: no traffic touches it,
+        for (const p of run) if (p !== r && p.d > r.d - RACE.BODY && p.d - r.d < RACE.BODY * 4 && Math.abs(p.o - r.o) < RACE.WIDE + 1) p.room = p.o >= r.o ? 1 : -1;   // and the field parts for it
+        continue; }
+      const [sd, so] = RACE.story(r.h, t), [sd1] = RACE.story(r.h, t + dt), vs = (sd1 - sd) / dt;
+      // keep pace with the story, close any gap gently; a horse boxing in a closer moves on or drops back to let it out
+      const vWant = vs + (sd - r.d) * (t > RACE.FIN - 10 ? 4 : 1.5) + r.nudge * 5;   // keep station tighter in the run to the wire
+      r.nudge *= Math.exp(-dt / .8);
+      // Seeking the rail. A horse the plan wants further in, held out only because it isn't clear of the horse
+      // inside, weighs it up: the ground lost staying out through the turns still to come, against the ground
+      // it must gain to clear by a body, which costs a horse with less stamina more. If clearing is cheaper it
+      // pushes on (r.drive) until it can cross, then tucks in.
+      if (!late && r.o - so > 2.5 && k % 10 === 0) {
+        const inside = run.filter(p => p !== r && p.o < r.o - 1 && p.o > so - 3 && Math.abs(p.d - r.d) < RACE.BODY * 1.5);
+        const need = inside.length ? Math.max(0, ...inside.map(p => RACE.BODY + 1.5 - (r.d - p.d))) : 0;
+        const stay = (r.o - so) * turnLeft(r.d), effort = 1.6 - .35 * Math.max(-2, Math.min(2, r.h.stamina || 0));
+        r.drive = need > 0 && need < 40 && stay > need * effort && (r.driveT || 0) < 4 ? 1 : 0;   // a push that hasn't cleared in 4 s is given up
+      } else if (late || r.o - so <= 2.5) r.drive = 0;
+      // before the half, one the plan wants in on the rail but who can't cross because a horse is alongside
+      // inside it eases back and drops in behind (unless it has decided to push on clear)
+      r.driveT = r.drive ? (r.driveT || 0) + dt : r.driveT;
+      if (t < RACE.CT[3] && r.o - so > 2.5) for (const p of run)            // wanting in: the rail horse just behind gives it room to drop in
+        if (p !== r && p.o < r.o - 1 && r.d > p.d && r.d - p.d < RACE.BODY + 2) p.nudge = -1;
+      const tuck = t < RACE.CT[3] && !r.drive && r.o - so > 2.5 && run.some(p => p !== r && p.o < r.o - 1 && Math.abs(p.d - r.d) < RACE.BODY + 1) ? 3 : 0;
+      let vNew = r.v + Math.max(-9 * dt, Math.min(6 * dt, vWant + r.drive * 3.5 - tuck - r.v));    // ~6 ft/s/s to quicken, ~9 to check
       let held = false;
-      for (const p of ahead(r, r.o, late)) {
-        const room = p.d - r.d - BODY;
-        const cap = room < 0
-          ? p.v + room * 1.2
-          : p.v + Math.sqrt(2 * MAX_DECEL * Math.max(0, room));
-        if (targetV > cap) {
-          targetV = Math.max(cap, r.v - MAX_DECEL * dt);
-          held = true;
-        }
+      for (const p of ahead(r, r.o)) {                                     // a horse ahead in the way: ease off so the gap never closes
+        const room = p.d - r.d - RACE.BODY, cap = room < 0 && !late ? p.v + room * 1.5 : p.v + Math.sqrt(2 * 9 * Math.max(0, room));   // inside a body: ease back to one (before the stretch)
+        if (vNew > cap) { vNew = Math.max(cap, r.v - 14 * dt); held = true; }
       }
-
-      // Soft clamp so we don't overshoot the story position late
-      if (late && r.d + targetV * dt > sd + 2) {
-        targetV = Math.max((sd - r.d) / dt, r.v - MAX_DECEL * dt);
+      // a horse that beats it closing from behind in its path: quicken to stay clear while it steps aside
+      // in the stretch: a horse that beats it, coming up behind or alongside in its path; it steps out of the way (below)
+      const chaser = late && run.find(p => p.rank < r.rank && r.d - p.d > -RACE.BODY && r.d - p.d < RACE.BODY * 4 && Math.abs(p.o - r.o) < RACE.WIDE + 1.5 && p.v > r.v - 1);
+      // and one it beats, in front in its path: it steers round early rather than running up its back
+      const blocker = late && run.filter(p => p.rank > r.rank && p.d > r.d && p.d - r.d < RACE.BODY * 3 && Math.abs(p.o - r.o) < RACE.WIDE + .5).sort((a, b) => a.d - b.d)[0];
+      if (blocker && Math.abs(blocker.o - r.o) < RACE.WIDE) {              // not round it yet: never through it, check behind it meanwhile
+        const cap = blocker.v + Math.sqrt(2 * 9 * Math.max(0, blocker.d - r.d - RACE.BODY));
+        if (vNew > cap) vNew = Math.max(cap, r.v - 14 * dt);
       }
-
-      // Apply limited acceleration
-      const dv = targetV - r.v;
-      const maxDv = (dv > 0 ? MAX_ACCEL : MAX_DECEL) * dt;
-      r.v += Math.max(-maxDv, Math.min(maxDv, dv));
-
-      // ---------- lateral (lane) ----------
-      // 1. Desired offset from story
-      let desiredO = so;
-
-      // 2. Early race: strongly prefer staying put unless the story change is large
-      if (early) {
-        const storyDelta = Math.abs(so - r.o);
-        if (storyDelta < 3.5) {           // less than ~0.6 lanes
-          desiredO = r.o;                 // hold current line
-        }
+      // catching up late, a horse never runs past its own story spot: overshooting it is how a beaten horse (Harbor Oak,
+      // 2626-stake-S6637) hit the wire a length and a half before the winner
+      if (late && r.d + vNew * dt > sd1) vNew = Math.max((sd1 - r.d) / dt, r.v - 9 * dt);   // ease back onto it, at the usual braking
+      r.v = vNew;
+      // held up but the story wants it further on: pull out a lane and go round, the way a closer swings wide
+      const slowAhead = ahead(r, r.o).some(p => p.d - r.d < RACE.BODY * 3 && p.v < vs - .5);   // the one in front is coming back to it
+      const early = t < RACE.CT[3];                                         // to the half they string out single file: wait in line, don't swing out
+      if ((held || slowAhead) && sd - r.d > 1 && !early) {                 // go round: outside if there's room, else up the inside
+        if (!r.side) r.side = !crowds(r, r.o + 1) ? 1 : r.o > 6 && !crowds(r, r.o - 1) ? -1 : 0;
+        if (r.side) r.out = Math.min(late ? 1.5 : 1, r.out + dt * 1.2);   // one lane round, a little more in the stretch
+      } else if (sd - r.d < 1 || early) { r.out = Math.max(0, r.out - dt * (early ? 1 : .3)); if (!r.out) r.side = 0; }
+      let ovWant = Math.max(-4, Math.min(4, (so + r.out * 6 * (r.side || 1) - r.o) * 1.2));   // up to 4 ft/s sideways
+      if (chaser) { const away = r.o >= chaser.o || chaser.o - RACE.WIDE - 1 < 4 ? 1 : -1; ovWant = Math.max(-6, Math.min(6, (chaser.o + away * (RACE.WIDE + 1) - r.o) * 2)); }   // step aside: outward, or in if there's rail room
+      if (blocker) { r.passSide = r.passSide || (minO(r) < 4 ? -1 : r.o >= blocker.o || blocker.o - RACE.WIDE - 1 < 4 ? 1 : -1); ovWant = Math.max(-6, Math.min(6, (blocker.o + r.passSide * (RACE.WIDE + 1) - r.o) * 2)); }
+      else if (!late) r.passSide = 0;
+      if (blocker) for (const p of run)                                     // whoever it beats alongside on that side moves over to open the gap
+        if (p !== r && p !== blocker && p.rank > r.rank && Math.abs(p.d - r.d) < RACE.BODY * 1.5 && Math.sign(p.o - r.o) === r.passSide && Math.abs(p.o - r.o) < RACE.WIDE * 2) p.room = r.passSide;
+      if (r.room) { ovWant = r.room * 5; r.room = 0; }
+      // last resort in the stretch: two horses nose-to-tail inside a body of each other split apart sideways,
+      // the better one taking the outside (or the rail if it's already inside), and they fan out from there
+      let split = 0;
+      if (late) for (const p of run) {
+        if (p === r || p.rank > r.rank || Math.abs(p.d - r.d) >= RACE.BODY || Math.abs(p.o - r.o) >= RACE.WIDE) continue;   // a horse that finishes ahead holds its line
+        r.nudge = -1;                                                       // the one it beats checks a little while it gives way
+        const dirn = Math.abs(r.o - p.o) > .3 ? Math.sign(r.o - p.o) : (r.rank < p.rank ? 1 : -1);
+        const pinned = (r.o <= minO(r) + .2 && dirn < 0) || (r.o >= 4 + 6 * 4 && dirn > 0);   // on the rail, or five wide: no room that way
+        if (pinned) { split = 0; r.nudge = -2; } else split = dirn;            // pinned: drop back behind it instead
       }
-
-      // 3. If held up and the story still wants us further forward, commit to a go-round
-      if ((held || (late && storyV > r.v + 1.5)) && sd - r.d > 3 && !early) {
-        if (r.commitT <= 0) {
-          // pick a side once
-          const outOK = !crowds(r, r.o + WIDE * 1.1);
-          const inOK  = r.o > minO(r) + 2 && !crowds(r, r.o - WIDE * 1.1);
-          if (outOK) r.side = 1;
-          else if (inOK) r.side = -1;
-          else r.side = 0;
-          if (r.side) {
-            r.commitT = COMMIT_TIME + 0.6;
-            desiredO = r.o + r.side * WIDE * 1.15;
-            r.wantO = desiredO;
-          }
-        }
-      }
-
-      // 4. Commitment: once we start a lateral move we finish it
-      if (r.commitT > 0) {
-        r.commitT -= dt;
-        desiredO = r.wantO;
-      } else {
-        // new commitment only if the desired is meaningfully different
-        if (Math.abs(desiredO - r.o) > 1.8) {
-          r.wantO = desiredO;
-          r.commitT = COMMIT_TIME;
-        } else {
-          r.wantO = desiredO;
-        }
-      }
-
-      // 5. Parked / three-wide horses resist dropping in too early
-      //    (they look like they are still working on the outside)
-      const storyWantsIn = (so - r.o) < -2.5;
-      if (!late && r.o > 4 + 6 * 0.9 && storyWantsIn && r.commitT <= 0) {
-        // delay the drop-in a bit unless the story is screaming for it
-        if (Math.abs(so - r.o) < 5) {
-          desiredO = r.o;                 // stay out
-          r.wantO = r.o;
-        }
-      }
-
-      // 6. In the stretch, higher-ranked horses get clearer right of way;
-      //    lower-ranked ones give ground laterally rather than collide
+      if (split) ovWant = split * 6;
+      if (held && sd - r.d > 3) for (const p of run)                      // boxed: the horses penning it in give way
+        if (p !== r && Math.abs(p.d - r.d) < RACE.BODY + 2 && Math.abs(p.o - r.o) < RACE.WIDE + 1.5) p.nudge = p.d > r.d + 4 ? 1 : -1;   // clearly ahead: move on; level or behind: drop back
+      // Lines, not wobbles: in the stretch a horse holds the line it has picked; it only changes
+      // sideways direction after holding a new wish for a moment, and small corrections are ignored.
       if (late) {
-        for (const p of run) {
-          if (p === r) continue;
-          if (Math.abs(p.d - r.d) < BODY + 4 && Math.abs(p.o - r.o) < WIDE + 1) {
-            if (p.rank < r.rank) {
-              // they finish ahead of us — we should not sit on their line
-              if (Math.abs(desiredO - p.o) < WIDE * 0.85) {
-                desiredO = p.o + Math.sign(r.o - p.o || 1) * WIDE * 1.05;
-              }
-            }
-          }
-        }
+        if (Math.abs(ovWant) < .6) ovWant = 0;
+        // never tuck into the wake of a horse that beats it: it would only be held up behind it and swing out again
+        if (ovWant < 0 && !split && run.some(p => p.rank < r.rank && p.d > r.d && p.d - r.d < RACE.BODY * 3 && Math.abs(p.o - (r.o - RACE.WIDE)) < RACE.WIDE)) ovWant = 0;
+        if (r.o >= 4 + 6 * 4 && ovWant > 0) ovWant = 0;                       // five wide at the most
+        const dir = Math.sign(ovWant);
+        if (dir && r.ldir && dir !== r.ldir && !split) { r.flipT = (r.flipT || 0) + dt; if (r.flipT < 2) ovWant = 0; else { r.ldir = dir; r.flipT = 0; } }
+        else { r.flipT = 0; if (dir) r.ldir = dir; }
       }
-
-      // 7. Move laterally with limited speed and no crowding
-      const maxDo = LANE_SPEED * dt;
-      let do_ = Math.max(-maxDo, Math.min(maxDo, desiredO - r.o));
-      let nextO = r.o + do_;
-
-      // clamp to inside rail
-      nextO = Math.max(minO(r), nextO);
-
-      // refuse the move if it would crowd someone
-      if (crowds(r, nextO) && Math.abs(do_) > 0.05) {
-        // try half step, otherwise stay
-        const half = r.o + do_ * 0.4;
-        if (!crowds(r, half) && half >= minO(r)) nextO = half;
-        else nextO = r.o;
-      }
-
-      r.o = nextO;
+      r.ov += Math.max(-8 * dt, Math.min(8 * dt, ovWant - r.ov));
+      const oNext = Math.max(minO(r), r.o + r.ov * dt);                   // only the pocket horse may use the passing lane
+      if (crowds(r, oNext) && !split) r.ov = 0; else r.o = oNext;        // someone alongside on that side: wait (unless splitting from an overlap)
       r.d += r.v * dt;
-      // the run home: each horse works back onto its story distance from twenty-five seconds out, never more than 10 ft/s quicker
-      // (or 6 ft/s slower) than it is already going, so at the official time every nose is where the result says without a
-      // sprint the legs would show (the 2026-11-04 blend closed the gap in the last few seconds at up to 137 ft/s)
-      if (t > RACE.FIN - 25) { const w = Math.min(1, (t - (RACE.FIN - 25)) / 2); r.d += Math.max(-6 * dt, Math.min(10 * dt, sd - r.d)) * w; }
     }
   }
-
-  RACE.paths = run.map(r => r.path);
-  RACE.pathN = n;
-}
-;
+  RACE.paths = run.map(r => r.path); RACE.pathN = n;
+};
 RACE.state = t => {                                                      // everyone at time t: distance, lane, track offset
+  if (RACE.SIM && (!RACE.paths || RACE.paths.src !== RACE.H)) {       // a recorded race already has its traffic in it: draw the story line by line
+    const n = Math.ceil(RACE.END * RACE.HZ) + 2;
+    RACE.paths = RACE.H.map(h => { const p = new Float32Array(n * 2); for (let k = 0; k < n; k++) { const [d, o] = RACE.story(h, k / RACE.HZ); p[k * 2] = d; p[k * 2 + 1] = o; } return p; });
+    RACE.pathN = n; RACE.paths.src = RACE.H;
+  }
   if (!RACE.paths || RACE.paths.src !== RACE.H) {
     // Run the race; any horse that finishes worse than the official result was boxed in, so send it
     // wider through the stretch and run it again, the way a closer swings out to find clear track.
     RACE.H.forEach(h => h.wide = 0);
-    const want = RACE.H.map((h, i) => i).sort((a, b) => RACE.H[a][2][6] - RACE.H[b][2][6]);
+    const want = RACE.H.map((h, i) => i).sort((a, b) => RACE.H[a][2].at(-1) - RACE.H[b][2].at(-1));
     for (let pass = 0; pass < 6; pass++) {
       RACE.simulate();
       const k = Math.floor(RACE.FIN * RACE.HZ), got = RACE.paths.map((p, i) => i).sort((a, b) => RACE.paths[b][k * 2] - RACE.paths[a][k * 2]);
