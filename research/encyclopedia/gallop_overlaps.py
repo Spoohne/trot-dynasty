@@ -33,5 +33,9 @@ if __name__ == "__main__":
         print(f"frames {lo:4d}-{hi:4d}: {m:.2f} overlapping pairs a field")
     srt = np.sort(f[:900, :, :, 0], 2)
     print(f"leader clear of second, peak in the first 36 s: {(srt[:, :, -1] - srt[:, :, -2]).max(0).mean():.1f} m")
+    lead = f[:, :, :, 0].max(2); sp = np.diff(f[:, :, :, 0], axis=0) * gallop.FPS
+    k = [int(np.argmax(lead.mean(1) >= m)) for m in (200, 300, 400, 500, 600, 800)]
+    print("off the rail at 200..800 m:", [f"{100 * float((np.rint(f[j, :, :, 1] / gallop.CFG['lane_m']) >= 1).mean()):.0f}%" for j in k])
+    print(f"pack's slowest (median horse) 0-700 m: {np.median(sp[60:k[-1] - 60], axis=2).min(0).mean():.1f} m/s, leader then {sp[60:k[-1] - 60].max(2).mean():.1f}")
     print(f"post win %: {[round(100 * float((p[:, i] == 1).mean()), 1) for i in range(10)]}")
     print(f"winner {t.min(1).mean():.1f} s, last {np.sort(t, 1)[:, -1].mean() - t.min(1).mean():.1f} s back")

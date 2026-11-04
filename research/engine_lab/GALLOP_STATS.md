@@ -38,8 +38,8 @@ the aptitude offset table's row order, the early-race line (350 m), and the cloc
 `gallop.CFG`): posts line the gate with post 1 on the rail; a follower in the same lane sits a body (5 m)
 off the horse ahead and cannot pass through it; a settled driver drops to the inner lane when it is clear;
 a held driver whose target pace beats the horse ahead pulls out a lane once within range of the wire
-(1.6 spurt distances, never before 300 m) and goes round, tucking back in once clear; cover (a horse
+(2 spurt distances, never before 300 m) and goes round, tucking back in once clear; cover (a horse
 within 8 m ahead in the lane) saves 30 % of the pool and reserve drain, racing off the rail without cover
-costs 30 % more, and each lane out loses a quarter percent of ground. A driver with cover rates off the
-horse ahead rather than the leader; a horse wide off the gate with nobody to follow eases back for cover;
-the leader rates once 3.5 m clear (`lead_clear`; the game's own rule is 9.75 m).
+costs 10 % more, and each lane out loses a quarter percent of ground. A driver with cover rates off the
+horse ahead rather than the leader; a horse wide without having pulled to pass takes back until there's a slot;
+the leader rates after the leave at `lead_push`, slower than standard but faster than `ease_push`, so wide horses can drop behind the line (the game's rule, easing once 9.75 m clear, is not used).

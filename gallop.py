@@ -36,23 +36,23 @@ CFG = {   # everything inferred rather than read from the code, and the rank rul
     "draft_m": 8.0,             # cover: a horse this close ahead in the same lane
     "rating_drain": 0.0,        # the reserve drains at least this share of its table rate even at rating pace (the game: nothing below mid pace), so cover and a parked trip cost something before the drive
     "draft_save": 0.3,          # share of the pool and reserve drain that cover saves
-    "parked_cost": 0.3,         # extra drain racing off the rail with no cover (first-over, three wide)
+    "parked_cost": 0.1,         # extra drain racing off the rail with no cover (first-over, three wide)
     "wide_cost": 0.0025,        # ground lost per lane out, as a share of speed (a lane is 4 m a mile of extra turn)
     "lat_rate": 0.015,          # metres a frame a horse moves sideways: a lane in a second and a half
     "pull_after_m": 300,        # no pulling out before this: the field files in off the gate
-    "pull_range": 1.6,          # a driver pulls only within this many spurt distances of the wire (the move at the half, not the quarter)
+    "pull_range": 2.0,          # a driver pulls only within this many spurt distances of the wire (the move at the half, not the quarter)
     "pull_margin": 50,          # a held driver pulls when its target pace beats the horse ahead by this (km/h x100)
     "pull_p": 0.02,             # per frame, once it wants to: about two seconds' patience
     "leave_m": 200,             # the leave: metres off the gate in which every driver asks for position
     "leave_push": 600,          # the ask a 99-Breaking horse leaves with (scaled by Breaking): a 27 s first quarter, paid for in reserve
-    "lead_clear": 3.5,          # metres clear at which the leader rates (the game's 9.75 let it open five lengths on a field still filing in)
+    "lead_push": -100,          # the leader's ask once the leave is over (the take-back is ease_push; at equal asks wide horses never drop back)
     "follow_slack": 1.5,        # metres beyond a body a driver lets the horse ahead get before closing up again
     "cut_behind": 1.0,          # a sideways step never lands closer than this many bodies ahead of a horse in that lane
     "tuck_ahead": 1.2,          # a horse drops in only with this many bodies clear ahead in that lane...
     "tuck_behind": 0.2,         # ...and nobody closer than this behind (that horse eases and gives the spot)
     "rate_push": 600,           # the most a driver asks before the drive, closing a gap (at 800 the field sprinted up to a leader eight lengths clear)
     "ease_push": -500,          # the most a driver takes back before the drive (at -800 the field crawled while the leader opened eight lengths)
-    "clock_scale": 1.21,        # reported seconds per sim second: the sim's 94 s mile reads as a trotter's 1:53.5 (dynamics untouched)
+    "clock_scale": 1.26,        # reported seconds per sim second: the sim's 90 s mile reads as a trotter's 1:53.5 (dynamics untouched)
     "rank_stats": [SPD, STAY, STAM, FIERCE, TEN, POW, RESP],
     "rank_bands": [(570, "SS"), (500, "S"), (460, "A"), (420, "B"), (370, "C"), (330, "D"), (280, "E"), (0, "F")],
 }
@@ -140,16 +140,18 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         spurt_dist = ((mps10(vR) + mps10(v60)) * n1 * 0.5 + (mps10(v60) + mps10(vAvg)) * n2 * 0.5) * 0.8
         phase = np.where((phase < 5) & (left < spurt_dist), 5, phase)
         # driver's push (FUN_00476be0): keep up with the leader, everything once the spurt is on
-        second = np.sort(prog, 1)[:, -2:-1]                                        # the leader eases only when clear by 9.75 m (14.6)
         # with a horse ahead in the lane a driver keeps to its wheel (a body and a little slack); with nobody ahead it
         # keeps within 9.75 m of the leader (14.6). From the end of the start zone, not the game's phase 1 at 300 m
         slack = np.where(np.isfinite(gap_ahead), gap_ahead - BODY > CFG["follow_slack"], gap > 9.75)
         leaving = prog < CFG["leave_m"]                                            # the leave: everyone asks for position, the quick-gaited ask hardest
-        more = (phase >= 5) | (~start & slack & (cover | pulled | (lane == 0)))
-        stray = ~leaving & (phase < 5) & (lane >= 1) & ~cover & ~pulled             # wide with nobody to follow once the leave is over: take back and find cover
-        less = ~more & (((phase >= 1) & (prog - second > CFG["lead_clear"])) | stray)
+        stray = ~leaving & (phase < 5) & (lane >= 1) & ~pulled                       # wide without having pulled to pass: take back until there's a slot, cover or none
+        more = (phase >= 5) | (~start & ~stray & slack & (cover | pulled | (lane == 0)))
+        less = ~more & stray
         push = np.clip(push + np.where(more, push_up, 0) - np.where(less, 120, 0), -800, 800)
         push = np.where(leaving & ~held, np.minimum(push + push_up, CFG["leave_push"] * st[..., BRK] / 99), push)
+        # the leader rates: slower than standard, but faster than a wide horse taking back, so those can drop behind the line
+        rating = (prog == lead) & ~leaving & (phase < 5)
+        push = np.where(rating, np.maximum(push - 120, CFG["lead_push"]), push)
         push = np.where(phase >= 5, push, np.clip(push, CFG["ease_push"], CFG["rate_push"]))   # before the drive: close a gap or take back at a rating pace
         push = np.where(more | less, push, push - np.sign(push) * np.minimum(np.abs(push), 60))   # the dead band: the ask fades
         # effort follows the push (FUN_00485b50)

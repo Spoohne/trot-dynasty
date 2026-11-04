@@ -56,6 +56,11 @@ RACE.ease = (ts, vs, win) => t => {
   }
   return vs[vs.length - 1];
 };
+RACE.linear = (ts, vs) => t => {
+  if (t <= ts[0]) return vs[0];
+  for (let i = 1; i < ts.length; i++) if (t <= ts[i]) return vs[i - 1] + (vs[i] - vs[i - 1]) * (t - ts[i - 1]) / (ts[i] - ts[i - 1]);
+  return vs[vs.length - 1];
+};
 // Each driver's silks: one color per horse, unique in the race and clearly unlike its own saddle pad (the pad
 // colors are fixed by post; silks belong to the stable). Picked from the horse's name, so a horse's silks
 // never change from race to race.
@@ -83,8 +88,8 @@ RACE.rebuild = () => {
   RACE.paths = null;
   RACE.D = RACE.curve(RACE.TT, RACE.DD, true);                           // leader's distance run
   RACE.H.forEach(h => {
-    h.b = RACE.real ? RACE.ease(RACE.CT, h[2]) : RACE.curve(RACE.CT, h[2]);
-    h.lane = RACE.real ? RACE.ease(RACE.CT, h[3], [0, 0, 6, 6, 4, 0]) : RACE.curve(RACE.CT, h[3]);   // the field cuts over to the rail through the whole first turn
+    h.b = RACE.SIM ? RACE.linear(RACE.CT, h[2]) : RACE.real ? RACE.ease(RACE.CT, h[2]) : RACE.curve(RACE.CT, h[2]);   // sim calls are dense: easing between them would pulse the speed at each call
+    h.lane = RACE.SIM ? RACE.linear(RACE.CT, h[3]) : RACE.real ? RACE.ease(RACE.CT, h[3], [0, 0, 6, 6, 4, 0]) : RACE.curve(RACE.CT, h[3]);   // the field cuts over to the rail through the whole first turn
     h.b.hold = h[2].at(-1); h.lane.hold = h[3].at(-1);   // the finish call is the last one (a sim story carries many calls)
   });
 };
