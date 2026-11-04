@@ -27,9 +27,19 @@ CFG = {   # everything inferred rather than read from the code, and the rank rul
     "track_class": 4,           # course class 0..7 in the Power reserve: cap*(1 - class*(99-Power)/10000)
     "surface": 0,               # table row: 0 turf (fast track), 1 dirt (inferred)
     "apt_offset": [[0, -75, -150, -225], [0, 75, 150, 225]],   # pace offset by aptitude 3..0 (row order inferred); all horses apt 3 = 0
-    "lane_change_odds": 0.30,   # base chance a blocked horse moves a lane, scaled by (Fierce - Courage + 100)/2000
     "early_line_m": 350,        # reserve drain halved before this (300 under 1400 m)
-    "block_slow": 0.98,         # a blocked horse's speed this frame
+    # the harness lane layer (ours, not the game's): posts line the gate, everyone wants the rail, nobody runs through
+    # the horse ahead, a held horse may pull out and go round, cover saves energy and racing parked out costs it
+    "lane_m": 0.65,             # a lane's width in the sim's lateral metres; lane 0 is the rail
+    "body_m": 5.0,              # horse plus sulky: a follower in the same lane sits this far back and can't pass
+    "draft_m": 8.0,             # cover: a horse this close ahead in the same lane
+    "draft_save": 0.3,          # share of the pool and reserve drain that cover saves
+    "parked_cost": 0.3,         # extra drain racing off the rail with no cover (first-over, three wide)
+    "wide_cost": 0.0025,        # ground lost per lane out, as a share of speed (a lane is 4 m a mile of extra turn)
+    "lat_rate": 0.015,          # metres a frame a horse moves sideways: a lane in a second and a half
+    "pull_after_m": 300,        # no pulling out before this: the field files in off the gate
+    "pull_margin": 50,          # a held driver pulls when its target pace beats the horse ahead by this (km/h x100)
+    "pull_p": 0.02,             # per frame, once it wants to: about two seconds' patience
     "clock_scale": 1.20,        # reported seconds per sim second: the game's 94 s mile reads as a trotter's 1:53 (dynamics untouched)
     "rank_stats": [SPD, STAY, STAM, FIERCE, TEN, POW, RESP],
     "rank_bands": [(570, "SS"), (500, "S"), (460, "A"), (420, "B"), (370, "C"), (330, "D"), (280, "E"), (0, "F")],
@@ -72,8 +82,6 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
     drain_b = lerp(DRAIN_B, st[..., STAY]) * (1 + (70 - st[..., FIERCE]) / 5000)
     drain_c = lerp(DRAIN_C, st[..., TEN])
     fierce_k = 1 + (70 - st[..., FIERCE]) / 5000
-    lane_p = CFG["lane_change_odds"] * (1 + (st[..., FIERCE] - st[..., COUR] + 100) / 2000)
-    lane_cost = 15 * (200 - (st[..., FIERCE] + st[..., COUR])) + 2000
     accel = 2 * (A0 - 12000 * (99 - st[..., BRK]))
     step_brk, step_resp = st[..., BRK] // 5 + 1, st[..., RESP] // 5 + 1
     push_up = st[..., RESP] / 5 + 52
@@ -83,7 +91,8 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
 
     v = 3500 + 30 * rng.integers(0, (st[..., BRK] // 6 + 1).astype(int), endpoint=False)
     E = 25 * v * v
-    prog = np.zeros((R, n)); lat = 0.65 + 0.65 * rng.integers(0, 18, (R, n))
+    LANE, BODY = CFG["lane_m"], CFG["body_m"]
+    prog = np.zeros((R, n)); tgt = np.tile(np.arange(n), (R, 1)); lat = tgt * LANE   # post 1 on the rail
     effort = np.full((R, n), 10.0); push = np.zeros((R, n)); brk = np.zeros((R, n))
     phase = np.zeros((R, n), int); spurted = np.zeros((R, n), bool); blocked = np.zeros((R, n), int)
     done = np.full((R, n), -1.0)
@@ -94,6 +103,15 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
             break
         lead = prog.max(1, keepdims=True)
         gap = lead - prog
+        # who is where: the nearest horse ahead in my lane, whether it gives me cover, whether I'm parked
+        dp = prog[:, None, :] - prog[:, :, None]                                   # [r, me, other]: how far ahead
+        same = (np.abs(lat[:, None, :] - lat[:, :, None]) < 0.75 * LANE) & live[:, None, :]
+        dp_ahead = np.where(same & (dp > 0), dp, np.inf)
+        j_ahead = dp_ahead.argmin(2)
+        gap_ahead = np.take_along_axis(dp_ahead, j_ahead[..., None], 2)[..., 0]
+        lane = np.rint(lat / LANE).astype(int)
+        cover = gap_ahead < CFG["draft_m"]
+        mult = np.where(cover, 1 - CFG["draft_save"], np.where(lane >= 1, 1 + CFG["parked_cost"], 1.0))
         left = dist - prog
         start = prog < 100
         phase = np.where((phase < 1) & (prog > phase1), 1, phase)
@@ -108,8 +126,10 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         spurt_dist = ((mps10(vR) + mps10(v60)) * n1 * 0.5 + (mps10(v60) + mps10(vAvg)) * n2 * 0.5) * 0.8
         phase = np.where((phase < 5) & (left < spurt_dist), 5, phase)
         # driver's push (FUN_00476be0): keep up with the leader, everything once the spurt is on
-        more = (phase >= 1) & ((gap > 9.75) | (phase >= 5))
-        less = (phase >= 1) & ~more & (gap < 2)
+        second = np.sort(prog, 1)[:, -2:-1]                                        # the leader eases only when clear by 9.75 m (14.6)
+        contact = np.where(np.isfinite(gap_ahead), gap_ahead, gap)                 # with cover a driver rates: it is the horse ahead it keeps up with
+        more = (phase >= 1) & ((contact > 9.75) | (phase >= 5))
+        less = (phase >= 1) & ~more & (prog - second > 9.75)
         push = np.clip(push + np.where(more, push_up, 0) - np.where(less, 120, 0), -800, 800)
         # effort follows the push (FUN_00485b50)
         step = np.where(start, step_brk, step_resp)
@@ -135,30 +155,42 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         # stamina pool, drained by pace band (FUN_0048f2d8)
         dr = np.where(v < cruise - 25, 0, np.where(v < cruise, 750, np.where(v < std, 750 + 250 * (v - cruise) / (std - cruise),
                       np.where(v < top, 1000 + 1000 * (v - std) / (top - std), 2000))))
-        pool = np.maximum(0, pool - dr)
+        pool = np.maximum(0, pool - dr * mult)
         # spurt reserve drain (FUN_004d1960) and the exhausted penalty (FUN_004d2368)
         base = np.where(Rs >= 500000, drain_a / fierce_k, np.where(Rs >= 250000, drain_b / fierce_k, drain_c))
         mid = (std + top) / 2
         f_hi = np.clip((v - mid) / (top - mid), 0, 1) * np.where(prog < early, 0.5, 1)
         f = np.where(Rs >= 500000, f_hi, (v >= max_avail - 100).astype(float))
-        reserve = reserve - base * f * fierce_k - np.where(pool == 0, 0.05 * base, 0)
+        reserve = reserve - (base * f * fierce_k + np.where(pool == 0, 0.05 * base, 0)) * mult
         rebase = ~spurted & (left < 800) & (phase >= 5)
         reserve = np.where(rebase, np.minimum(reserve, np.clip(650000 + gap * 100 * 25, 0, 1500000)), reserve)
         spurted |= rebase
         reserve = np.maximum(0, reserve)
-        # traffic: a horse within 1.5 m ahead in the same lane slows this one 2 %; it may swing a lane (FUN_0047d678)
-        dp = prog[:, None, :] - prog[:, :, None]                                   # [r, me, other]
-        same = np.abs(lat[:, None, :] - lat[:, :, None]) < 0.65
-        held = ((dp > 0) & (dp < 1.5) & same & live[:, None, :]).any(2) & live
+        # nobody runs through the horse ahead: a follower in the same lane is held to its back, and its pace with it
+        spd = (v + apt_off) / 100 * 1000 / 3600 / FPS
+        free = spd.copy()
+        for _ in range(2):                                                         # twice, so a line of three settles
+            room = np.take_along_axis(spd, j_ahead, 1) + np.clip((gap_ahead - BODY) * 0.05, -0.03, np.inf)   # eases back onto its wheel
+            spd = np.where(np.isfinite(gap_ahead), np.minimum(spd, room), spd)
+        held = live & (spd < free - 1e-9)
         blocked += held
-        swing = held & (rng.random((R, n)) < lane_p)
-        lat = lat + np.where(swing, np.where(rng.random((R, n)) < 0.5, 0.65, -0.65), 0)
-        reserve = np.maximum(0, reserve - np.where(swing, lane_cost, 0))
-        lat = np.clip(lat + (rng.random((R, n)) - 0.5) * 0.05, 0.455, 11)
-        spd = (v + apt_off) / 100 * 1000 / 3600 / FPS * np.where(held, CFG["block_slow"], 1)
+        v = np.where(held, np.maximum(minp, spd * FPS * 3600 / 1000 * 100 - apt_off), v)
+        E = np.where(held, 25 * v * v, E)
+        # drivers: settled in a lane, drop in when the inner lane is clear; a held driver
+        # who wants to go faster than the horse ahead pulls out a lane when that lane is clear, with a little patience
+        settled = np.abs(lat - tgt * LANE) < 1e-6
+        def clear(k):                                                              # lane k beside me: nobody within a body and a bit ahead (a pulled horse must gain before it tucks back), nobody at my wheel behind
+            at = np.abs(lat[:, None, :] - (k * LANE)[:, :, None]) < 0.75 * LANE
+            return ~(at & (dp > -1.0) & (dp < 1.2 * BODY) & live[:, None, :] & ~np.eye(n, dtype=bool)).any(2)
+        v_ahead = np.take_along_axis(v, j_ahead, 1)
+        want_in = settled & (lane > 0) & clear(lane - 1)
+        want_out = settled & ~want_in & held & (prog > CFG["pull_after_m"]) & (T > v_ahead + CFG["pull_margin"])             & (lane < np.where(phase >= 5, 4, 2)) & clear(lane + 1) & (rng.random((R, n)) < CFG["pull_p"])
+        tgt = np.where(want_in, lane - 1, np.where(want_out, lane + 1, tgt))
+        lat = lat + np.clip(tgt * LANE - lat, -CFG["lat_rate"], CFG["lat_rate"])
+        spd = spd * (1 - lane * CFG["wide_cost"])                                  # the ground lost out wide
         prog = prog + np.where(live, spd, 0)
         over = live & (prog >= dist)
-        done = np.where(over, frame - (prog - dist) / spd, done)
+        done = np.where(over, frame - (prog - dist) / np.maximum(spd, 1e-9), done)
         if record:
             frames.append(np.stack([prog, lat], -1))
     done = np.where(done < 0, frame, done)

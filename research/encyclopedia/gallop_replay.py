@@ -16,7 +16,9 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))
 import gallop                                                    # noqa: E402
-from gallop100 import AGE_K, DB                                  # noqa: E402
+from gallop100 import AGE_K                                      # noqa: E402
+
+DB = os.path.join(HERE, "gallop100.db")
 
 LENGTH = 2.44            # metres: a length is 8 ft in the viewer
 LANE = 0.65              # metres: the sim's lane step; the viewer draws a lane as a sulky's width
