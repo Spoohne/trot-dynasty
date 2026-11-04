@@ -1058,7 +1058,6 @@ function place(t, st, dt) {
     const stride = Math.floor((h.d - gateLag(h)) / STRIDE_FT * FR + i * 3), frame = ((stride % FR) + FR) % FR;   // legs geared to the ground: one cycle per stride travelled
     const sfr = Math.floor((h.d - gateLag(h)) / STRIDE_FT * r.fr * LEG_RATE + i * 3 * r.fr / FR), side = ((sfr % r.fr) + r.fr) % r.fr;   // the side card at its own frame count, at LEG_RATE
     r.t.offset.x = (side % r.cols) / r.cols; r.t.offset.y = 1 - (Math.floor(side / r.cols) + 1) / r.rows; r.dt2.offset.x = frame / FR;
-    const bk = RACE.H[i].broke;                                                   // broke stride (the story says when): a ragged, hopping gait for a few seconds
     // the fractious start and the break are told by the captions only (Patrick 2026-11-04: the hop read as a glitch)
     const lead = st.reduce((m, x) => Math.max(m, x.d), 0);
     const urging = t > RACE.FIN - 10 && t < RACE.FIN + .3 && lead - h.d < RACE.LEN * 4 && cam.position.distanceTo(p) < 700;   // driving for the line
