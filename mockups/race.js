@@ -110,7 +110,7 @@ RACE.load = async (id, myName) => {
   RACE.PICK = s.pick || ""; RACE.HERO = s.hero ? horses.findIndex(h => h.name === s.hero) : -1;   // a scripted showcase: its hero runs exactly as written
   RACE.MATINEE = !!s.matinee;                                              // a daytime track: the replay draws it in daylight
   RACE.PASSING = !!s.passing; RACE.DIVER = horses.findIndex(h => (h.trip || "").includes("passing lane"));   // a passing-lane track, and who goes up it
-  RACE.real = true; RACE.CAPS = s.captions; RACE.ME = Math.max(0, horses.findIndex(h => h.name === myName));
+  RACE.real = true; RACE.SIM = !!s.sim; RACE.CAPS = s.captions; RACE.ME = Math.max(0, horses.findIndex(h => h.name === myName));   // sim: a recorded race, drawn as recorded
   RACE.PAD = RACE.PAD.concat(["#2e8b8b", "#c05020"]).slice(0, Math.max(10, horses.length));
   RACE.rebuild(); return true;
 };
@@ -240,6 +240,11 @@ RACE.simulate = () => {
   RACE.paths = run.map(r => r.path); RACE.pathN = n;
 };
 RACE.state = t => {                                                      // everyone at time t: distance, lane, track offset
+  if (RACE.SIM && (!RACE.paths || RACE.paths.src !== RACE.H)) {       // a recorded race already has its traffic in it: draw the story line by line
+    const n = Math.ceil(RACE.END * RACE.HZ) + 2;
+    RACE.paths = RACE.H.map(h => { const p = new Float32Array(n * 2); for (let k = 0; k < n; k++) { const [d, o] = RACE.story(h, k / RACE.HZ); p[k * 2] = d; p[k * 2 + 1] = o; } return p; });
+    RACE.pathN = n; RACE.paths.src = RACE.H;
+  }
   if (!RACE.paths || RACE.paths.src !== RACE.H) {
     // Run the race; any horse that finishes worse than the official result was boxed in, so send it
     // wider through the stretch and run it again, the way a closer swings out to find clear track.

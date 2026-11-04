@@ -41,6 +41,10 @@ CFG = {   # everything inferred rather than read from the code, and the rank rul
     "pull_range": 1.6,          # a driver pulls only within this many spurt distances of the wire (the move at the half, not the quarter)
     "pull_margin": 50,          # a held driver pulls when its target pace beats the horse ahead by this (km/h x100)
     "pull_p": 0.02,             # per frame, once it wants to: about two seconds' patience
+    "tuck_ahead": 1.2,          # a horse drops in only with this many bodies clear ahead in that lane...
+    "tuck_behind": 0.2,         # ...and nobody closer than this behind (that horse eases and gives the spot)
+    "rate_push": 600,           # the most a driver asks before the drive, closing a gap (at 800 the field sprinted up to a leader eight lengths clear)
+    "ease_push": -500,          # the most a driver takes back before the drive (at -800 the field crawled while the leader opened eight lengths)
     "clock_scale": 1.24,        # reported seconds per sim second: the sim's 92 s mile reads as a trotter's 1:54 (dynamics untouched)
     "rank_stats": [SPD, STAY, STAM, FIERCE, TEN, POW, RESP],
     "rank_bands": [(570, "SS"), (500, "S"), (460, "A"), (420, "B"), (370, "C"), (330, "D"), (280, "E"), (0, "F")],
@@ -133,6 +137,7 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         stray = ~start & (phase < 5) & (lane >= 1) & ~cover & ~pulled               # wide off the gate with nobody to follow: take back and find cover
         less = ~more & (((phase >= 1) & (prog - second > 9.75)) | stray)
         push = np.clip(push + np.where(more, push_up, 0) - np.where(less, 120, 0), -800, 800)
+        push = np.where(phase >= 5, push, np.clip(push, CFG["ease_push"], CFG["rate_push"]))   # before the drive: close a gap or take back at a rating pace
         push = np.where(more | less, push, push - np.sign(push) * np.minimum(np.abs(push), 60))   # the dead band: the ask fades
         # effort follows the push (FUN_00485b50)
         step = np.where(start, step_brk, step_resp)
@@ -173,7 +178,7 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         spd = (v + apt_off) / 100 * 1000 / 3600 / FPS
         free = spd.copy()
         for _ in range(2):                                                         # twice, so a line of three settles
-            room = np.take_along_axis(spd, j_ahead, 1) + np.clip((gap_ahead - BODY) * 0.05, -0.03, np.inf)   # eases back onto its wheel
+            room = np.take_along_axis(spd, j_ahead, 1) + np.clip((gap_ahead - BODY) * 0.05, -0.01, np.inf)   # eases back onto its wheel, gently
             spd = np.where(np.isfinite(gap_ahead), np.minimum(spd, room), spd)
         held = live & (spd < free - 1e-9)
         blocked += held
@@ -182,9 +187,9 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         # drivers: settled in a lane, drop in when the inner lane is clear; a held driver
         # who wants to go faster than the horse ahead pulls out a lane when that lane is clear, with a little patience
         settled = np.abs(lat - tgt * LANE) < 1e-6
-        def clear(k):                                                              # lane k beside me: nobody within a body and a bit ahead (a pulled horse must gain before it tucks back), nobody at my wheel behind
+        def clear(k):                                                              # lane k beside me: its nose past the horse there's middle, nobody at my wheel behind (that horse eases and gives the spot)
             at = np.abs(lat[:, None, :] - (k * LANE)[:, :, None]) < 0.75 * LANE
-            return ~(at & (dp > -1.0) & (dp < 1.2 * BODY) & live[:, None, :] & ~np.eye(n, dtype=bool)).any(2)
+            return ~(at & (dp > -CFG["tuck_behind"] * BODY) & (dp < CFG["tuck_ahead"] * BODY) & live[:, None, :] & ~np.eye(n, dtype=bool)).any(2)
         v_ahead = np.take_along_axis(v, j_ahead, 1)
         want_in = settled & (lane > 0) & clear(lane - 1)
         want_out = settled & ~want_in & held & (prog > CFG["pull_after_m"]) & (left < CFG["pull_range"] * spurt_dist)             & (T > v_ahead + CFG["pull_margin"]) & (lane < np.where(phase >= 5, 4, 2)) & clear(lane + 1) & (rng.random((R, n)) < CFG["pull_p"])

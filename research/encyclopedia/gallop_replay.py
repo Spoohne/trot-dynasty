@@ -62,7 +62,7 @@ def main():
             [quarters[3], f"Three-quarters in {fmt(quarters[3])}"], [final, f"{horses[win]['name']} wins it in {fmt(final)}"]]
     rid = f"gallop-{key[0]}-{key[1]}-{key[2]}"
     story = {"id": rid, "track": "mile", "name": f"Gallop model · season {key[0]} week {key[1]} race {key[2] + 1}", "purse": round(purse),
-             "venue": "Harness Park", "day": key[0] * 52 + key[1], "passing": False, "matinee": False,
+             "venue": "Harness Park", "day": key[0] * 52 + key[1], "passing": False, "matinee": False, "sim": True,
              "calls": calls, "quarters": quarters, "final": round(final, 2), "horses": out, "captions": caps}
     os.makedirs(os.path.join(HERE, "gallop_races"), exist_ok=True)
     path = os.path.join(HERE, "gallop_races", rid + ".json")
