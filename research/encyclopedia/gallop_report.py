@@ -60,11 +60,12 @@ def main():
              "sd": float(wt.std()), "p10": float(np.percentile(wt, 10)), "p90": float(np.percentile(wt, 90)),
              "margin_mean": float(margins.mean()), "margin_under_02": float((margins < 0.2).mean()),
              "hist": [[float(e), int(c)] for e, c in zip(edges, hist)]}
-    # what a rank letter predicts of a single race: the favorite by rank in each field, how often it won
-    fav = db.execute("""SELECT AVG(won) FROM (SELECT s.place = 1 AS won FROM starts s JOIN horses h ON h.id = s.id
-                        WHERE NOT EXISTS (SELECT 1 FROM starts s2 JOIN horses h2 ON h2.id = s2.id WHERE s2.season = s.season AND s2.week = s.week
-                        AND s2.race = s.race AND (h2.speed + h2.staying + h2.stamina + h2.fierce + h2.tenacity + h2.power + h2.response) >
-                        (h.speed + h.staying + h.stamina + h.fierce + h.tenacity + h.power + h.response)))""").fetchone()[0]
+    # what a rank letter predicts of a single race: the top horse by the rank sum in each field, how often it won
+    rs = {h["id"]: sum(h[k] for k in ("speed", "staying", "stamina", "fierce", "tenacity", "power", "response")) for h in horses}
+    st = np.array([(r[0] * 100000 + r[1] * 1000 + r[2], rs[r[3]], r[4]) for r in db.execute("SELECT season, week, race, id, place FROM starts")], float)
+    st = st[np.lexsort((-st[:, 1], st[:, 0]))]                                 # by race, best rank sum first
+    first = np.r_[True, st[1:, 0] != st[:-1, 0]]
+    fav = float((st[first, 2] == 1).mean())
     seasons = {}
     for r in db.execute("SELECT id, season, COUNT(*) st, SUM(place = 1) w, SUM(place <= 3) p, SUM(won) e, MIN(time) b, AVG(blocked) bl, MIN(age) age FROM starts GROUP BY id, season"):
         seasons.setdefault(r["id"], []).append([r["season"], r["age"], r["st"], r["w"], r["p"], r["e"], r["b"], r["bl"]])
