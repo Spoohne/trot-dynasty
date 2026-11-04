@@ -207,13 +207,13 @@ def race(field, track="mile", passing=False, decided=None):
                         want = v_f                                # boxed
                 else:
                     want = min(want, max(v_f, 0.9 * st))
-            if r == 2 and s >= move_s and ln == 0:
+            if r == 2 and s >= move_s and ln == 0 and (not decided or _clear(states, d, 1)):
                 d["tgt"] = 1
-            if r == 3 and mover and s >= move_s and S[mover.id]["s"] > s + 0.5 * SLOT and round(S[mover.id]["lane"]) == 1 and ln == 0:
+            if r == 3 and mover and s >= move_s and S[mover.id]["s"] > s + (SLOT if decided else 0.5 * SLOT) and round(S[mover.id]["lane"]) == 1 and ln == 0 and (not decided or _clear(states, d, 1)):
                 d["tgt"] = 1                                      # pull out behind the first-over horse, into its cover
             if ln > 0 and d["tgt"] >= ln and not (r in (2, 3) and s >= move_s) and not drive:
                 senior_behind = any(o is not d and peck[o["h"].id] < peck[h.id] and round(o["lane"]) >= ln and 0 < s - o["s"] < 2 * SLOT for o in states)
-                if _clear(states, d, ln - 1, 0.6 * SLOT) and not senior_behind:   # get to the rail when there's room, and nobody who ranks above it is still coming
+                if _clear(states, d, ln - 1, SLOT if decided else 0.6 * SLOT) and not senior_behind:   # get to the rail when there's room, and nobody who ranks above it is still coming
                     d["tgt"] = ln - 1
                 else:
                     inner = [o for o in states if o is not d and round(o["lane"]) == ln - 1 and abs(o["s"] - s) < SLOT]
@@ -241,15 +241,30 @@ def race(field, track="mile", passing=False, decided=None):
         for d in states:
             d["v"] = plan[d["h"].id]
             tgt = d["tgt"]
-            d["lane"] += max(-E["lane_rate"] * DT, min(E["lane_rate"] * DT, tgt - d["lane"]))
+            if not decided or t >= GATE_HOLD:
+                d["lane"] += max(-E["lane_rate"] * DT, min(E["lane_rate"] * DT, tgt - d["lane"]))
             ln = d["lane"]
-            d["s"] += d["v"] * DT * (R / (R + ln * LANE_FT) if ln > 0 and on_turn(d["s"]) else 1.0)
+            d["s"] += d["v"] * DT * (R / (R + ln * LANE_FT) if ln > 0 and on_turn(d["s"]) and not decided else 1.0)
             if d["fin"] is None and d["s"] >= MILE:
                 d["fin"] = t + DT - (d["s"] - MILE) / d["v"]
         t += DT
     for d in S.values():
         if d["fin"] is None:
             d["fin"] = t + (MILE - d["s"]) / max(d["v"], 1.0)
+    if decided:                                                # the field leaves the gate as one line, then sorts itself out
+        for k in range(int(GATE_LINE[1] / DT) + 1):
+            u = max(0.0, min(1.0, (k * DT - GATE_LINE[0]) / (GATE_LINE[1] - GATE_LINE[0])))
+            u = u * u * (3 - 2 * u)
+            at_k = [d["path"][k] for d in S.values() if k < len(d["path"])]
+            line = sum(x[0] for x in at_k) / max(1, len(at_k))
+            for d in S.values():
+                if k < len(d["path"]):
+                    x = d["path"][k]
+                    d["path"][k] = (line + (x[0] - line) * u, x[1], x[2])
+    if decided and len(quarters) == 3:
+        first = fin_t[decided[0].id]
+        _author_finish([S[h.id] for h in decided], [first + (fin_t[h.id] - first) * FIN_LENGTH for h in decided], quarters[2],
+                       lambda h: passing and "passing lane" in h.trip)
     global _LAST
     _LAST = S                                                  # the last run's states, for the lab to look at
     order = list(decided) if decided else sorted(field, key=lambda h: S[h.id]["fin"])
@@ -272,27 +287,6 @@ def race(field, track="mile", passing=False, decided=None):
             at[h.id][c] = (round(float(round(ln)), 1), round((s_lead - s) / (SEC_PER_LENGTH * max(v_lead, 1.0)), 2))
     for h in field:
         at[h.id][6] = (at[h.id][6][0], round(h.margin_l, 2))
-    if decided:                                                # hold the stretch line to the wire; two in a lane never closer than a body
-        for h in field:
-            at[h.id][6] = (at[h.id][5][0], at[h.id][6][1])
-        taken = []
-        for h in order:
-            ln, b = at[h.id][6]
-            while any(pl == ln and abs(pb - b) < BODY_L for pl, pb in taken) and ln < 4:
-                ln += 1.0
-            taken.append((ln, b))
-            at[h.id][6] = (ln, b); at[h.id][5] = (ln, at[h.id][5][1])
-        def crossed(h, o):                                     # the two swap order between the stretch call and the wire
-            return (at[o.id][5][1] < at[h.id][5][1]) != (at[o.id][6][1] < at[h.id][6][1])
-        for _ in range(6):                                     # a pass inside one lane can't be drawn (the viewer won't run a horse
-            moved = False                                      # through another): the passer pulls out a lane, until the picture is clean
-            for h in order:
-                ln, b = at[h.id][6]
-                while ln < 4 and any(o is not h and at[o.id][6][0] == ln and (abs(at[o.id][6][1] - b) < BODY_L or (crossed(h, o) and b < at[o.id][6][1])) for o in field):
-                    ln += 1.0; moved = True
-                at[h.id][6] = (ln, b); at[h.id][5] = (ln, at[h.id][5][1])
-            if not moved:
-                break
     leader3 = max(field, key=lambda h: -at[h.id][3][1])
     rail3 = sorted((h for h in field if at[h.id][3][0] == 0 and h is not leader3), key=lambda h: at[h.id][3][1])
     pocket3 = rail3[0] if rail3 and at[leader3.id][3][0] == 0 else None
@@ -322,12 +316,172 @@ def race(field, track="mile", passing=False, decided=None):
     return order
 
 
+# The last quarter of a decided race: the horses are actors and the result is the script. Each one's distance is a smooth
+# curve from where it is at the three-quarters to the wire at its official time, so traffic can't make it late. Lanes are
+# then planned in finish order: a horse keeps its lane if it can, swings out to go round if that costs less than making
+# others move, and must clear the line of every horse that beats it. A lane change is one committed move.
+GATE_HOLD = 2.5                # seconds a choreographed field runs straight off the car before anyone crosses over
+GATE_LINE = (1.5, 4.5)         # seconds: one line until the first, its own position by the second
+FIN_TOUCH = 13.5               # ft along the track that counts as two horses touching when they're in a lane together
+FIN_LANE_TOUCH = 0.75          # lanes apart that still counts as together
+FIN_EASE = 5.0                 # seconds either side a horse eases back over
+FIN_EASE_MAX = 24.0            # ft a horse gives up in all
+FIN_REPAIRS = 40
+FIN_BODY = 16.0                # ft two horses in one lane stay apart: the viewer's horse and sulky, 15.5
+FIN_MOVE = 2.0                 # seconds to change a lane
+FIN_LANES = 3                  # lanes 0, 1, 2: three wide; a fourth only at a heavy cost, when there's truly no other way
+FIN_SHAPES = (0.0, -15.0, 15.0, -30.0, 30.0, -45.0, 45.0)   # ft a horse may sit back of, or go on from, its smooth line through the middle of the run home
+FIN_LENGTH = 2.0               # a length on the clock is a fifth of a second, 9.6 ft; a horse and sulky is 15.5. Drawn at that, the margins at the
+                               # wire read as lengths you can see and a length's margin doesn't force two horses abreast. Picture only: times and margins stand.
+
+
+def _lane_dp(cv, i, lanes, curves, starts, planned, move):
+    """The cheapest lanes for one horse on one distance curve: (cost, lane at each step, inside and outside lane it fills at each step)."""
+    n = len(cv)
+    cost = {l: [0.0] * n for l in lanes}
+    rest = [(starts[j], curves[j]) for j in range(i + 1, len(curves))]
+    for k in range(n):
+        x = cv[k]
+        near = [(lo[k], hi[k]) for lo, hi, other in planned if abs(other[k] - x) < FIN_BODY]
+        soft = [lj for lj, cj in rest if abs(cj[k] - x) < FIN_BODY]
+        for l in lanes:
+            c = 0.01 * max(l, 0) + (0.03 if l >= 2 else 0.0) + (1.5 if l >= FIN_LANES else 0.0)   # wide costs a little, so it waits till it needs to go; never enough to come back in
+            for lo, hi in near:
+                if lo <= l <= hi:
+                    c += 1000.0                                   # a horse that beats it: get out of its way
+            for lj in soft:
+                if lj == l:
+                    c += 100.0 if k < 2 * move else 1.0           # one it beats, still in that lane: going round is usually kinder, and it can't clear in time if it's right there now
+            cost[l][k] = c
+    pre = {l: [0.0] * (n + 1) for l in lanes}
+    for l in lanes:
+        for k in range(n):
+            pre[l][k + 1] = pre[l][k] + cost[l][k]
+    states = [(l, w) for l in lanes for w in (-1, 0, 1)]          # the lane and the way it last moved: out and back in is the wobble, and costs double
+    best = {x: [0.0] * (n + 1) for x in states}
+    step = {x: [None] * n for x in states}
+    for k in range(n - 1, -1, -1):
+        for x in states:
+            l, w = x
+            b, how = cost[l][k] + best[x][k + 1], None
+            if k + move < n:
+                for m in (l - 1, l + 1):
+                    if m in lanes:
+                        nw = m - l
+                        v = 3.0 + (6.0 if w == -nw else 0.0) + pre[l][k + move] - pre[l][k] + pre[m][k + move] - pre[m][k] + best[(m, nw)][k + move]
+                        if v < b - 1e-9:
+                            b, how = v, m
+            best[x][k], step[x][k] = b, how
+    l, w, k, lo, hi, tr = starts[i], 0, 0, [0] * n, [0] * n, [0.0] * n
+    while k < n:
+        m = step[(l, w)][k]
+        if m is None:
+            lo[k], hi[k], tr[k] = l, l, float(l)
+            k += 1
+        else:
+            for j in range(move):
+                lo[k + j], hi[k + j], tr[k + j] = min(l, m), max(l, m), l + (m - l) * j / move
+            k, w, l = k + move, m - l, m
+    return best[(starts[i], 0)][0], tr, lo, hi
+
+
+def _plan_lanes(curves, starts, lanes_for, bumps=None):
+    """curves[i][k]: horse i's distance at step k, in finish order (replaced in place if it sits back or goes on to find room);
+    starts[i]: its lane at step 0. bumps[i][k]: how much of FIN_SHAPES a curve takes at step k. Returns each horse's lane at every step."""
+    n, move = len(curves[0]), int(round(FIN_MOVE / DT))
+    planned, out = [], []
+    for i in range(len(curves)):
+        lanes = sorted(set(lanes_for(i)) | {starts[i]})
+        pick = None
+        for a in FIN_SHAPES if bumps else (0.0,):                 # the wire and the speeds at each end are fixed; between them it may sit back or go on
+            cv = curves[i] if not a else [x + a * y for x, y in zip(curves[i], bumps[i])]
+            got = _lane_dp(cv, i, lanes, curves, starts, planned, move)
+            if pick is None or got[0] + 0.02 * abs(a) < pick[0][0]:
+                pick = (got, cv, a)
+            if not a and got[0] < 50.0 and max(got[3]) <= max(1, starts[i]):
+                break                                             # clear as it stands, and no wider than it need be
+        (_, tr, lo, hi), cv, _ = pick
+        curves[i] = cv
+        planned.append((lo, hi, cv))
+        out.append(tr)
+    return out
+
+
+def _author_finish(states, fins, t0, diver):
+    """Rewrite each state's path from t0 (the leader at the three-quarters): `states` and `fins` in finish order."""
+    k0 = int(t0 / DT)
+    t0 = k0 * DT
+    n = int(math.ceil(max(fins) / DT)) + 4 - k0
+    curves, bumps = [], []
+    for d, f in zip(states, fins):
+        s0, v0 = d["path"][min(k0, len(d["path"]) - 1)][0], (d["path"][k0][0] - d["path"][k0 - 1][0]) / DT
+        H = max(f - t0, DT)
+        avg = (MILE - s0) / H
+        v1 = max(0.85 * avg, min(1.10 * avg, avg + 0.5 * (avg - v0)))     # still coming, or coming back, at the wire
+        cv = []
+        for k in range(n):
+            t = (k0 + k) * DT
+            if t >= f:
+                cv.append(MILE + v1 * (t - f))
+            else:
+                u = (t - t0) / H
+                cv.append((2 * u**3 - 3 * u**2 + 1) * s0 + (u**3 - 2 * u**2 + u) * H * v0 + (-2 * u**3 + 3 * u**2) * MILE + (u**3 - u**2) * H * v1)
+        curves.append(cv)
+        bumps.append([16 * u * u * (1 - u) * (1 - u) if 0 < (u := ((k0 + k) * DT - t0) / H) < 1 else 0.0 for k in range(n)])
+    was = [d["path"][min(k0, len(d["path"]) - 1)][1] for d in states]
+    starts = [int(round(x)) for x in was]
+    plan = _plan_lanes(curves, starts, lambda i: [-1, 0, 1, 2] if diver(states[i]["h"]) else [0, 1, 2], bumps)
+    for i, d in enumerate(states):
+        tail = []
+        for k in range(n):
+            ln = plan[i][k] + (was[i] - starts[i]) * max(0.0, 1 - k * DT)   # a horse caught mid-move finishes it
+            v = (curves[i][k] - curves[i][k - 1]) / DT if k else (curves[i][1] - curves[i][0]) / DT
+            tail.append((curves[i][k], ln, v))
+        d["path"], d["fin"], d["s"] = d["path"][:k0] + tail, fins[i], MILE
+    _part_traffic(states, fins)
+
+
+def _part_traffic(states, fins):
+    """Two horses touching in a lane: the one behind eases back a little, smoothly, and comes back to its line. Far from the wire only:
+    the arrivals stand, and it never takes more than a few ft/s off a horse."""
+    half = int(FIN_EASE / DT)
+    paths = [[list(x) for x in d["path"]] for d in states]
+    used = [0.0] * len(paths)
+    n = min(len(p) for p in paths)
+    for _ in range(FIN_REPAIRS):
+        worst = None
+        for k in range(int(2.0 / DT), n, 2):
+            for a in range(len(paths)):
+                for b in range(a + 1, len(paths)):
+                    gap = abs(paths[a][k][0] - paths[b][k][0])
+                    if gap < FIN_TOUCH and abs(paths[a][k][1] - paths[b][k][1]) < FIN_LANE_TOUCH and (worst is None or FIN_TOUCH - gap > worst[0]):
+                        back = a if paths[a][k][0] < paths[b][k][0] else b
+                        if (k + half) * DT < fins[back] and used[back] < FIN_EASE_MAX:
+                            worst = (FIN_TOUCH - gap, k, back)
+        if worst is None:
+            break
+        need, k, back = worst
+        take = min(need + 1.0, FIN_EASE_MAX - used[back], 8.0)
+        used[back] += take
+        for j in range(max(0, k - half), min(n, k + half + 1)):
+            paths[back][j][0] -= take * math.cos(0.5 * math.pi * (j - k) / (half + 1)) ** 2
+    for d, p in zip(states, paths):
+        d["path"] = [tuple(x) for x in p]
+
+
 def choreograph(order, track, passing=False):
     """The replay's story for a result another engine decided: the run plays the ledger's trips to the decided finish."""
     field = sorted(order, key=lambda h: h.post)
     rng.seed(sum(int(h.raw_time * 10) for h in order))
     race(field, track, passing, decided=order)
-    return story(order, track, passing)
+    s = story(order, track, passing)
+    k = s["final"] / order[0].raw_time                         # the nose on the wire at the official time
+    last = max(len(_LAST[h.id]["path"]) for h in order) * DT * k
+    s["len_ft"] = round(SEC_PER_LENGTH * MILE / s["final"] * FIN_LENGTH, 2)   # the viewer's length at the wire, so the margins it prints are the chart's
+    for r, h in zip(s["horses"], order):                       # the whole run, a point a second, for the viewer to play as it is
+        pts = [_at(_LAST[h.id]["path"], tc / k) for tc in range(int(last) + 1)]
+        r["pd"], r["pl"] = [int(round(p[0] * 10)) for p in pts], [int(round(p[1] * 100)) for p in pts]
+    return s
 
 
 def _clear(states, d, lane, behind=SLOT):
@@ -386,4 +540,10 @@ if __name__ == "__main__":
         assert all(x > 0 for x in [b - a for a, b in zip(s["quarters"], s["quarters"][1:])]), s["quarters"]
         print(track, "winner", order[0].name, order[0].trip, "in", s["final"], "quarters", s["quarters"], "margins", [r["behind"][6] for r in s["horses"]])
         print("  lanes at the three-quarters", [r["lane"][4] for r in s["horses"]], "behind at the half", [r["behind"][3] for r in s["horses"]])
+    # a closer coming up the rail behind a tiring horse: different lanes when level, nobody overlaps, the closer moves once
+    fast = [1000.0 + 60 * DT * k for k in range(200)]
+    slow = [1100.0 + 40 * DT * k for k in range(200)]
+    pl = _plan_lanes([fast, slow], [0, 0], lambda i: [0, 1, 2, 3])
+    assert all(abs(fast[k] - slow[k]) >= FIN_BODY or abs(pl[0][k] - pl[1][k]) >= 1 for k in range(200)), "overlap"
+    assert sum(pl[0][k] != pl[0][k + 1] for k in range(199)) <= int(FIN_MOVE / DT), "wobble"
     print("all checks passed")

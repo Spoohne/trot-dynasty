@@ -112,10 +112,12 @@ RACE.load = async (id, myName) => {
   // older saved stories carry no coat: give each horse one from its name, in the breed's proportions
   const COATS = ["bay", "bay", "bay", "bay", "bay", "brown", "brown", "black", "black", "chestnut", "chestnut", "grey"];
   const pick = n => COATS[[...n].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) % COATS.length];
-  RACE.H = horses.map(h => Object.assign([h.name, "#5a3420", h.behind, h.lane], { broke: h.broke_at ?? null, fractious: !!h.fractious, stamina: h.stamina || 0, early: h.early || 0, coat: h.coat || pick(h.name), odds: h.odds || "", owner: h.owner || "", stable: h.stable || "", player: !!h.player, silks: h.silks || null, wraps: h.wraps || "", mask: h.mask || "", driver: h.driver || "", emblem: h.emblem || "", marquee: h.marquee || "" }));
+  RACE.H = horses.map(h => Object.assign([h.name, "#5a3420", h.behind, h.lane], { broke: h.broke_at ?? null, fractious: !!h.fractious, stamina: h.stamina || 0, early: h.early || 0, coat: h.coat || pick(h.name), odds: h.odds || "", owner: h.owner || "", stable: h.stable || "", player: !!h.player, silks: h.silks || null, pd: h.pd || null, pl: h.pl || null, wraps: h.wraps || "", mask: h.mask || "", driver: h.driver || "", emblem: h.emblem || "", marquee: h.marquee || "" }));
   RACE.PICK = s.pick || ""; RACE.HERO = s.hero ? horses.findIndex(h => h.name === s.hero) : -1;   // a scripted showcase: its hero runs exactly as written
   RACE.MATINEE = !!s.matinee;                                              // a daytime track: the replay draws it in daylight
   RACE.PASSING = !!s.passing; RACE.DIVER = horses.findIndex(h => (h.trip || "").includes("passing lane"));   // a passing-lane track, and who goes up it
+  RACE.DRAWN = !s.sim && horses.every(h => h.pd);                         // the choreographer's whole run came with the story: play it, no traffic rules
+  if (RACE.DRAWN) { RACE.LEN0 = .2 * 5280 / s.final; RACE.LEN1 = s.len_ft || RACE.LEN0; RACE.LEN = RACE.LEN0; }   // a length as drawn: a fifth of a second until the three-quarters, opening to the story's by the wire
   RACE.real = true; RACE.SIM = !!s.sim; RACE.CAPS = s.captions; RACE.ME = Math.max(0, horses.findIndex(h => h.name === myName));   // sim: a recorded race, drawn as recorded
   RACE.PAD = RACE.PAD.concat(["#2e8b8b", "#c05020"]).slice(0, Math.max(10, horses.length));
   RACE.rebuild(); return true;
@@ -246,6 +248,20 @@ RACE.simulate = () => {
   RACE.paths = run.map(r => r.path); RACE.pathN = n;
 };
 RACE.state = t => {                                                      // everyone at time t: distance, lane, track offset
+  if (RACE.DRAWN) RACE.LEN = RACE.LEN0 + (RACE.LEN1 - RACE.LEN0) * Math.max(0, Math.min(1, (t - RACE.CT[4]) / (RACE.FIN - RACE.CT[4])));   // so the margins printed on screen stay the chart's
+  if (RACE.DRAWN && (!RACE.paths || RACE.paths.src !== RACE.H)) {         // a point a second: smooth through the distances, straight between the lanes
+    const n = Math.ceil(RACE.END * RACE.HZ) + 2;
+    RACE.paths = RACE.H.map(h => {
+      const p = new Float32Array(n * 2), m = h.pd.length, D = i => i < m ? h.pd[i] / 10 : h.pd[m - 1] / 10 + (h.pd[m - 1] - h.pd[m - 2]) / 10 * (i - m + 1);
+      for (let k = 0; k < n; k++) {
+        const x = k / RACE.HZ, i = Math.floor(x), u = x - i, a = D(Math.max(0, i - 1)), b = D(i), c = D(i + 1), e = D(i + 2);
+        p[k * 2] = b + .5 * u * (c - a + u * (2 * a - 5 * b + 4 * c - e + u * (3 * (b - c) + e - a)));
+        const j = Math.min(m - 1, i), l = h.pl[j] + (h.pl[Math.min(m - 1, j + 1)] - h.pl[j]) * u;
+        p[k * 2 + 1] = 4 + 6 * l / 100;
+      }
+      return p; });
+    RACE.pathN = n; RACE.paths.src = RACE.H;
+  }
   if (RACE.SIM && (!RACE.paths || RACE.paths.src !== RACE.H)) {       // a recorded race already has its traffic in it: draw the story line by line
     const n = Math.ceil(RACE.END * RACE.HZ) + 2;
     RACE.paths = RACE.H.map(h => { const p = new Float32Array(n * 2); for (let k = 0; k < n; k++) { const [d, o] = RACE.story(h, k / RACE.HZ); p[k * 2] = d; p[k * 2 + 1] = o; } return p; });
@@ -279,7 +295,7 @@ RACE.state = t => {                                                      // ever
   const f = Math.max(0, Math.min(RACE.pathN - 1.001, t * RACE.HZ)), k = Math.floor(f), u = f - k;
   return RACE.paths.map((p, i) => {
     let d = p[k * 2] + (p[k * 2 + 2] - p[k * 2]) * u; const o = p[k * 2 + 1] + (p[k * 2 + 3] - p[k * 2 + 1]) * u;
-    if (t > RACE.FIN) {                                                   // past the finish: everyone keeps running at the pace they hit the wire
+    if (t > RACE.FIN && !RACE.DRAWN) {                                    // past the finish: everyone keeps running at the pace they hit the wire
       const kf = Math.floor(RACE.FIN * RACE.HZ), v = (p[kf * 2] - p[(kf - 2) * 2]) * RACE.HZ / 2;
       d = p[kf * 2] + v * (t - kf / RACE.HZ);
     }
