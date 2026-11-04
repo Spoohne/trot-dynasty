@@ -259,4 +259,5 @@ class H(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 8114
     print(f"encyclopedia on http://127.0.0.1:{port}/", flush=True)
-    ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
+    host = sys.argv[3] if len(sys.argv) > 3 else "127.0.0.1"                      # 0.0.0.0 to reach it from a phone on the same network
+    ThreadingHTTPServer((host, port), H).serve_forever()

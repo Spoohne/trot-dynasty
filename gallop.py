@@ -130,8 +130,8 @@ def run(stats, dist=MILE, rng=None, apt=None, record=False):
         second = np.sort(prog, 1)[:, -2:-1]                                        # the leader eases only when clear by 9.75 m (14.6)
         contact = np.where(np.isfinite(gap_ahead), gap_ahead, gap)                 # with cover a driver rates: it is the horse ahead it keeps up with
         more = (phase >= 5) | ((phase >= 1) & (contact > 9.75) & (cover | pulled | (lane == 0)))
-        stray = (phase >= 1) & (phase < 5) & (lane >= 1) & ~cover & ~pulled         # wide off the gate with nobody to follow: ease back and find cover
-        less = (phase >= 1) & ~more & ((prog - second > 9.75) | stray)
+        stray = ~start & (phase < 5) & (lane >= 1) & ~cover & ~pulled               # wide off the gate with nobody to follow: take back and find cover
+        less = ~more & (((phase >= 1) & (prog - second > 9.75)) | stray)
         push = np.clip(push + np.where(more, push_up, 0) - np.where(less, 120, 0), -800, 800)
         push = np.where(more | less, push, push - np.sign(push) * np.minimum(np.abs(push), 60))   # the dead band: the ask fades
         # effort follows the push (FUN_00485b50)
