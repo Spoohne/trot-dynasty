@@ -23,8 +23,6 @@ try:
 except Exception:                                                # noqa: BLE001
     make_name = lambda rng, sex: f"Horse {rng.integers(10**6)}"
 
-SEASONS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
-DB = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "research", "encyclopedia", "gallop100.db")
 HERD = 900                 # in training (app.BARNS 90 x 10)
 FIELD = 10                 # circuit.FIELD["mile"]
 WEEKS = 52                 # circuit.YEAR
@@ -77,6 +75,8 @@ class Herd:
 
 
 def main():
+    SEASONS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
+    DB = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "research", "encyclopedia", "gallop100.db")
     rng = np.random.default_rng(100)
     db = open_db(DB)
     herd = Herd(rng)

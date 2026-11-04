@@ -7,6 +7,7 @@ Search, filter and sort every horse by its card at an age and by its career; a c
 family, trophies and kept replays (played in the game's own replay viewer); notes saved to notes.json beside this file.
 Read-only on the world file; the run can still be writing it.
 """
+import html
 import json
 import os
 import sqlite3
@@ -184,6 +185,32 @@ def notes(new=None):
     return n
 
 
+def races_page():
+    """Every recorded Gallop-model race (gallop_replay.py), best class first, each a link to its replay."""
+    folder = os.path.join(HERE, "gallop_races")
+    stories = sorted((json.load(open(os.path.join(folder, f))) for f in os.listdir(folder) if f.endswith(".json")),
+                     key=lambda s: (-s.get("level", 4), s["final"]))
+    rows, last = [], None
+    for s in stories:
+        lv = s.get("name", "")
+        if lv != last:
+            rows.append(f"<h2>{html.escape(lv)}</h2>")
+            last = lv
+        w, second = s["horses"][0], s["horses"][1]
+        field = "".join(f'<i class="r{h["rank"]}">{h["rank"]}</i>' for h in sorted(s["horses"], key=lambda h: h["post"]))
+        rows.append(f'<a href="/replay/{html.escape(s["id"])}"><b>{html.escape(w["name"])}</b><span class=t>{int(s["final"] // 60)}:{s["final"] % 60:04.1f}</span>'
+                    f'<small>Post {w["post"]}, {w["rank"]} · by {second["time"] - w["time"]:.2f} s over {html.escape(second["name"])}</small><span class=f>{field}</span></a>')
+    return f"""<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Gallop Races</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Barlow+Semi+Condensed:wght@400;700&display=swap" rel=stylesheet>
+<style>body{{margin:0 auto;max-width:560px;padding:12px 16px 40px;background:linear-gradient(#0b1430,#070a14 360px) #070a14;color:#e6e8ec;font:400 15px/1.35 'Barlow Semi Condensed',system-ui,sans-serif;font-variant-numeric:tabular-nums}}
+h1{{margin:6px 0 2px;font:800 24px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;text-shadow:2px 2px 0 #000}}p{{margin:0 0 8px;color:#a4acb9}}
+h2{{margin:18px 0 6px;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#a4acb9}}
+a{{display:grid;grid-template-columns:1fr auto;gap:2px 10px;min-height:44px;background:#111a2b;border:1px solid #2b3a55;border-radius:4px;padding:9px 11px;margin-bottom:6px;color:inherit;text-decoration:none}}a:hover{{border-color:#e8a33a}}
+b{{font-weight:700;overflow-wrap:anywhere}}small{{grid-column:1/-1;color:#a4acb9;font-size:13px}}.f{{grid-column:1/-1;display:flex;gap:2px;margin-top:3px}}
+i{{flex:1;text-align:center;font:800 11px 'Barlow Condensed',sans-serif;background:#1b2539;border-radius:2px;color:#a4acb9;padding:1px 0}}i.rSS,i.rS{{color:#e6e8ec;background:#2b3a55}}</style>
+<h1>Gallop Races</h1><p>{len(stories)} recorded miles on the current sim. The strip is the field by post, with each horse's rank.</p>{"".join(rows)}"""
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -216,6 +243,8 @@ class H(BaseHTTPRequestHandler):
                 return self.send(notes())
             if p == "/gallop":                                       # gallop_report.py's page over the Gallop-model world
                 return self.send(open(os.path.join(HERE, "gallop.html"), "rb").read(), "text/html; charset=utf-8")
+            if p == "/races":
+                return self.send(races_page(), "text/html; charset=utf-8")
             if p == "/builder":
                 return self.send(open(os.path.join(HERE, "builder.html"), "rb").read(), "text/html; charset=utf-8")
             if p == "/api/tiers":
