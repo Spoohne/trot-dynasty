@@ -152,7 +152,7 @@
   <div id="flash"></div><div id="bulbs"></div><div id="pf"><div class="pfsign">PHOTO</div><div class="pfstrip"><canvas id="pfc"></canvas><div class="pfcap">PHOTO FINISH</div></div></div>
   <div class="lt2"><div class="lb"><span class="ven" id="ven"></span><span class="sl">//</span><span class="rn">RACE<b id="rno">1</b></span><span class="dt" id="rdt"></span></div>
     <div class="ls"><span id="clk">0:00.0</span><span class="sub" id="rt"></span><span class="rp">REPLAY</span></div></div>
-  <canvas id="mm" aria-label="Where everyone is on the track"></canvas><div class="views"><button id="sndBtn" title="Sound">🔊</button><div id="volPop"><input id="vol" type="range" min="0" max="100" step="1" aria-label="Sound volume"><span id="volPct"></span></div><button data-v="tv" class="sel">TV</button><button data-v="blimp">Blimp</button></div>
+  <canvas id="mm" aria-label="Where everyone is on the track"></canvas><div class="views"><button id="sndBtn" title="Sound">🔊</button><div id="volPop"><input id="vol" type="range" min="0" max="100" step="1" aria-label="Sound volume"><span id="volPct"></span></div><button data-v="tv" class="sel">TV</button><button data-v="blimp">Blimp</button><button data-v="head">Wire</button><button id="zoomBtn" title="Zoom">1×</button></div>
   <div id="nowPlaying"><span>♪ Now playing</span><b></b></div>
   <div class="bot"><div id="cap"></div><div class="strip"><div id="ord"></div><div id="fr"></div></div><div id="rest"></div></div>
   <div id="field"><div class="fbrand"><img src="/mock/brand/logo_text.png" alt="Trot Dynasty"></div><div class="fh"><span>THE FIELD</span><span id="fhs"></span></div><div id="frows"></div></div>
@@ -564,7 +564,8 @@ function coat(img, kind) {
   const was = new Uint8ClampedArray(p);                                           // the bay's pixels, to mark the ones that became coat
   for (let i = 0; i < p.length; i += 4) {
     if (!p[i + 3]) continue;
-    const r = p[i], gg = p[i + 1], b = p[i + 2], warm = r > gg + 12 && r > b + 25 && !(b > r + 40);
+    const r = p[i], gg = p[i + 1], b = p[i + 2], warm = img.astra ? r > b + 10 && r > gg + 4 && !(b > r + 40) && !(r > 150 && b > .52 * r && gg > .68 * r)   // Astra's sheets: every brown down to the deepest shadow is coat, light skin (the driver's face) is not
+      : r > gg + 12 && r > b + 25 && !(b > r + 40);
     if (k === "grey") {
       const l = (r + gg + b) / 3;
       if (warm) { const v = Math.min(235, 70 + l * 1.25); p[i] = v; p[i + 1] = v; p[i + 2] = v + 6; }
@@ -710,8 +711,8 @@ const shadowTex = (() => { const c = document.createElement("canvas"); c.width =
 let runners = [], cycleImg = null, topImg = null;
 // front and rear three-quarter strides (SpriteCook frame-engine), drawn at the side cycle's scale
 const PXFT = LEN_FT / FW, ANG = { front: { src: P("/mock/pixel/angles/front12.png"), fw: 86, fh: 110 }, rear: { src: P("/mock/pixel/angles/rear12.png"), fw: 111, fh: 110 },
-  head: { src: P("/mock/pixel/angles/head12.png"), fw: 85, fh: 110 }, away: { src: P("/mock/pixel/angles/away12.png"), fw: 78, fh: 110 } };
-const angLoaded = Promise.all(Object.values(ANG).map(a => new Promise(r => { const i = new Image(); i.onload = () => { a.img = i; a.geo = new THREE.PlaneGeometry(a.fw * PXFT, a.fh * PXFT).translate(0, a.fh * PXFT / 2, 0); r(); }; i.src = a.src; })));
+  head: new URLSearchParams(location.search).get("head") !== "old" ? { src: P("/mock/pixel/top/astra/head12.png"), fw: 77, fh: 110, astra: true } : { src: P("/mock/pixel/angles/head12.png"), fw: 85, fh: 110 }, away: { src: P("/mock/pixel/angles/away12.png"), fw: 78, fh: 110 } };
+const angLoaded = Promise.all(Object.values(ANG).map(a => new Promise(r => { const i = new Image(); i.onload = () => { a.img = i; i.astra = a.astra; a.geo = new THREE.PlaneGeometry(a.fw * PXFT, a.fh * PXFT).translate(0, a.fh * PXFT / 2, 0); r(); }; i.src = a.src; })));
 function dyeOnly(img, hex) {                                                    // the silks in the driver's colors (pad color for older stories)
   const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
   const g = c.getContext("2d"); g.drawImage(img, 0, 0);
@@ -720,14 +721,19 @@ function dyeOnly(img, hex) {                                                    
   g.putImageData(d, 0, 0); return c;
 }
 const nearest = t => { sharp(t); t.repeat.set(1 / FR, 1); return t; };
-const topLoaded = new Promise(r => { const i = new Image(); i.onload = () => { topImg = i; r(); }; i.src = P("/mock/pixel/top/cycle12_h.png"); });
-const TFW = 191, TFH = 81, TOP_LEN = 15;                                       // the SpriteCook top-down stride, for cameras looking down
+const TOP_ASTRA = new URLSearchParams(location.search).get("top") !== "old";   // Astra's overhead sheet (live 2026-11-03); ?top=old for the SpriteCook still
+const topLoaded = new Promise(r => { const i = new Image(); i.astra = TOP_ASTRA; i.onload = () => { topImg = i; r(); }; i.src = P(TOP_ASTRA ? (new URLSearchParams(location.search).get("topstab") ? "/mock/pixel/top/astra/cycle12_stable.png" : "/mock/pixel/top/astra/cycle12.png") : "/mock/pixel/top/cycle12_h.png"); });
+const HEAD_ASTRA = new URLSearchParams(location.search).get("head") !== "old";   // Astra's head-on sheet (live 2026-11-03); ?head=old for the SpriteCook card
+const HEAD_RATE = +(new URLSearchParams(location.search).get("headrate") || (HEAD_ASTRA ? .45 : 1));   // strides per cycle of the head-on card
+const TOP_RATE = +(new URLSearchParams(location.search).get("toprate") || (TOP_ASTRA ? .45 : 1));   // strides per cycle of the overhead strip; Astra's sheet at .45 (Patrick, 2026-11-03)
+const TFW = TOP_ASTRA ? 480 : 191, TFH = TOP_ASTRA ? 160 : 81, TOP_LEN = 15;                                       // the SpriteCook top-down stride, for cameras looking down
 function dyeRed(img, hex, base = img) {                                        // its silks and pad are red; base: the uncolored art, so a recolored coat is never mistaken for silks
   const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
   const g = c.getContext("2d"); g.drawImage(img, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data, t = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
   const o = base === img ? p : (() => { const k = document.createElement("canvas"); k.width = base.width; k.height = base.height; const kg = k.getContext("2d"); kg.drawImage(base, 0, 0); return kg.getImageData(0, 0, k.width, k.height).data; })();
-  for (let i = 0; i < p.length; i += 4) { const r = o[i], gg = o[i + 1], b = o[i + 2]; if (p[i + 3] && r > gg + 70 && r > b + 70) { const l = Math.min(1.25, r / 200); p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l; } }
+  const strict = TOP_ASTRA && base === topImg;                                 // Astra's sheet: silks keyed pure red (slice_astra.py), its orange coat must not take the dye
+  for (let i = 0; i < p.length; i += 4) { const r = o[i], gg = o[i + 1], b = o[i + 2]; if (p[i + 3] && r > gg + 70 && r > b + 70 && (!strict || (gg < 40 && b < 40))) { const l = Math.min(1.25, r / 200); p[i] = t[0] * l; p[i + 1] = t[1] * l; p[i + 2] = t[2] * l; } }
   g.putImageData(d, 0, 0); return c;
 }
 const flatGeo = new THREE.PlaneGeometry(TOP_LEN, TOP_LEN * TFH / TFW).rotateX(-Math.PI / 2).translate(-TOP_LEN / 2, .3, 0);   // lying on the dirt, nose at the origin, drawn to the profile's proportions (no squash)
@@ -848,6 +854,8 @@ const wings = [wing(), wing()];
 let view = "tv";
 document.querySelectorAll(".views [data-v]").forEach(b => b.onclick = () => { view = b.dataset.v; document.querySelectorAll(".views [data-v]").forEach(o => o.classList.toggle("sel", o === b)); });   // camera buttons only: the sound button has its own
 const camPos = new THREE.Vector3(), camAim = new THREE.Vector3(); let camSnap = true, lastShot = "";
+const ZOOMS = [1, 1.5, 2, 3]; let zoomI = 0;                                    // the lens: a tap steps 1x, 1.5x, 2x, 3x and round
+document.getElementById("zoomBtn").onclick = () => { zoomI = (zoomI + 1) % ZOOMS.length; cam.zoom = ZOOMS[zoomI]; cam.updateProjectionMatrix(); document.getElementById("zoomBtn").textContent = ZOOMS[zoomI] + "×"; };
 // the scenery far from the wire (backstretch barns, trees, distant towers): hidden while the low wire shot is up,
 // which would otherwise draw all of it for a sliver of background. The sky, ground, track and rails stay.
 let farList = null;
@@ -897,6 +905,10 @@ function aimCamera(t, st, dt) {
     // above the infield looking out, so the field runs the other way across the frame with the crowd behind it
     const c = RACE.camS(st);
     p = V(c - 18, -150, 60); a = V(c, mo + 10, 3); fov = 20;   // over the cut-down hedge on the straights
+  }
+  else if (shot === "head") {                                                  // head-on past the wire, the field coming down to the line
+    const wire = RACE.SF + 5280, lead = Math.min(RACE.SF + RACE.camLead(st), wire);
+    p = V(wire + 110, mo, 7); a = V(lead, mo, 4); fov = 18;                       // on the track line beyond the wire, a touch above head height, on the leader
   }
   else if (shot === "flat") {                                                  // eye level beside the wire: a dead side-on look as they cross
     // follows the leader alone, so the lens is exactly in the wire's plane when the nose gets there: judged against the
@@ -1079,10 +1091,10 @@ function place(t, st, dt) {
       a.m.position.copy(p).addScaledVector(dir, -LEN_FT * .45);                    // stand it over the middle of horse and sulky
       a.m.rotation.set(0, Math.atan2(toCam.x, toCam.z), 0);
       a.m.scale.x = k === "head" || k === "away" || r.flip ? 1 : -1;               // both three-quarters are drawn heading screen-left: mirror when it heads right
-      a.t.offset.x = frame / FR;
+      a.t.offset.x = (k === "head" && HEAD_RATE !== 1 ? ((Math.floor(stride * HEAD_RATE) % FR) + FR) % FR : frame) / FR;
     }
     r.flat.position.copy(p); r.flat.rotation.y = Math.atan2(-dir.z, dir.x);
-    r.ft.offset.x = frame / FR;
+    r.ft.offset.x = (TOP_RATE === 1 ? frame : ((Math.floor(stride * TOP_RATE) % FR) + FR) % FR) / FR;   // the overhead strip at its own rate (mockup knob)
   });
   // gate car: starts in the middle of the track with its wings spread rail to rail just ahead of the noses,
   // swings them forward until they lie flush along each side of the truck (full length, hinged at its sides),
