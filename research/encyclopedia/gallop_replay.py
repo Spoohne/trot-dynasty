@@ -17,11 +17,12 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))
 import gallop                                                    # noqa: E402
+import replay_check                                              # noqa: E402
 from gallop100 import AGE_K                                      # noqa: E402
 
 DB = os.path.join(HERE, "gallop100.db")
 
-LENGTH = 2.44            # metres: a length is 8 ft in the viewer
+LENGTH = gallop.CFG["body_m"] / replay_check.BODY   # metres a drawn length: the sim's following distance is drawn as the viewer's horse and sulky, nose to tail
 LANE = 0.65              # metres: the sim's lane step; the viewer draws a lane as a sulky's width
 LEVELS = {0: "Bottom class", 1: "Low class", 2: "Middle class", 3: "High class", 4: "Top class"}
 CALL_S = 0.5             # seconds between calls in the story: fine enough that interpolation never draws one horse through another
@@ -72,10 +73,17 @@ def record(db, key):
     at = lambda t: min(len(frames) - 1, int(round(t / scale)))
     quarters = [0.0] + [round(float(np.argmax(lead >= q * QUARTER) * scale), 1) for q in (1, 2, 3)] + [round(final, 1)]
     win = int(np.argmin(times))
+    # the last call is the wire: where each horse was as the winner crossed, kept in finishing order (a horse that passes
+    # another after the winner is home is drawn a nose ahead of it, not behind it)
+    wire = (lead[at(final)] - prog[at(final)]) / LENGTH
+    for i in np.argsort(place):
+        ahead = place == place[i] - 1
+        if ahead.any():
+            wire[i] = max(wire[i], wire[ahead][0] + 0.05)
     out = []
     for i, h in enumerate(horses):
         out.append({"name": h["name"], "post": h["post"], "place": int(place[i]), "time": round(float(times[i]), 2),
-                    "behind": [round(float((lead[at(t)] - prog[at(t), i]) / LENGTH), 2) for t in calls],
+                    "behind": [round(float((lead[at(t)] - prog[at(t), i]) / LENGTH), 2) for t in calls[:-1]] + [round(float(wire[i]), 2)],
                     "lane": [round(float(lat[at(t), i] / LANE), 2) for t in calls],
                     "trip": f"post {h['post']}, rank {h['rank']}, blocked {blocked[i] / gallop.FPS * gallop.CFG['clock_scale']:.1f} s",
                     "coat": "bay", "rank": h["rank"]})
@@ -86,10 +94,11 @@ def record(db, key):
     story = {"id": rid, "track": "mile", "name": LEVELS[level_of(db, key)], "level": level_of(db, key), "season": key[0], "week": key[1], "purse": round(purse),
              "venue": "Harness Park", "day": key[0] * 52 + key[1], "passing": False, "matinee": False, "sim": True,
              "calls": calls, "marks": [0.0, round(quarters[1] * 0.45, 2), *quarters[1:4], round(final - 12.5, 2), round(final, 2)], "quarters": quarters, "final": round(final, 2), "horses": out, "captions": caps}
+    story = replay_check.guard(story)                                   # never saved broken: clean, repaired, or single file
     os.makedirs(os.path.join(HERE, "gallop_races"), exist_ok=True)
     path = os.path.join(HERE, "gallop_races", rid + ".json")
     json.dump(story, open(path, "w"), separators=(",", ":"))
-    print(f"{path}: {len(calls)} calls, winner {horses[win]['name']} ({horses[win]['rank']}) in {fmt(final)}, quarters {quarters}")
+    print(f"{path}: {story['guard']}, {len(calls)} calls, winner {horses[win]['name']} ({horses[win]['rank']}) in {fmt(final)}, quarters {quarters}")
     print("replay: http://127.0.0.1:8119/replay/" + rid)
 
 
